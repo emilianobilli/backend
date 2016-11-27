@@ -4,6 +4,7 @@ class Structured(object):
         self.fq            = []         
         self.size          = None
         self.start         = None
+        self.sort          = None
         self.return_fields = []
         
     def fq_add (self, kv={}):
@@ -33,12 +34,17 @@ class Structured(object):
         
         return ret
         
+    def _make_sort(self):
+        if self.sort is not None:
+            return '&sort=%s %s' % ((self.sort[1:], 'desc') if self.sort.startswith('-') else (self.sort,'asc'))
+        return ''
+
     def _make_size(self):
         if self.size is not None:
             return '&size=%s' % (int(self.size) if type(self.size).__name__ == 'int' else self.size)
         return ''
     def _make_start(self):
-        if self.size is not None:
+        if self.start is not None:
             return '&start=%s' % (int(self.start) if type(self.start).__name__ == 'int' else self.start)
         return ''
         
@@ -51,9 +57,10 @@ class Structured(object):
         return ('q=%s' % ret) if ret != '' else 'q=matchall'
         
     def make(self):
-        return '%s%s%s%s%s' % (self._make_query(),
-                                self._make_filter_query(),
-                                self._make_size(),
-                                self._make_start(),
+        return '%s%s%s%s%s%s' % (self._make_query(),
+                                 self._make_filter_query(),
+                                 self._make_size(),
+                                 self._make_start(),
+                                 self._make_sort(),
                                 '&q.parser=structured')
 
