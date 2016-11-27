@@ -3,23 +3,37 @@ from flask import request
 from flask import redirect
 from flask import Response
 from flask_cors import CORS, cross_origin
-from models import Blocks
+from models import smallCollection
 from json   import dumps 
 
 api = Flask(__name__)
 
-block = Blocks({"database": {
-                    "table": "Blocks",
-                    "pk": "lang",
-                    "sk": "block_id",
-                    "schema": {
-                        "lang":  "S",
-                        "block_id":  "S",
-                        "block_name": "S",
-                        "channel":   "S"
-                    }
-                }})
+block = smallCollection({"database": {
+                            "table": "Blocks",
+                            "pk": "lang",
+                            "sk": "block_id",
+                            "schema": {
+                                "lang":  "S",
+                                "block_id":  "S",
+                                "block_name": "S",
+                                "channel":   "S"
+                            }
+                        }})
 
+
+slider = smallCollection({"database": {
+                            "table": "Sliders",
+                            "pk": "lang",
+                            "sk": "slider_id",
+                            "schema": {
+                                "lang":  "S",
+                                "slider_id":  "S",
+                                "media_url": "S",
+                                "media_type": "S",
+                                "linked_asset_id": "S",
+                                "linked_asset_type": "S"
+                            }
+                        }})
 
 
 @api.route('/v1/blocks/', methods=['GET', 'POST'])

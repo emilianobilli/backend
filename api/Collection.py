@@ -121,7 +121,6 @@ class dynamodbCollection(object):
         
     def add(self, Item ={}):
 
-
         if self.pk not in Item:
             return {'status': 'fail', 'message': 'Primary key not present in Item -> %s' % self.pk }
 
@@ -194,7 +193,6 @@ db = dynamodbCollection({
         "filter_query": {},
         "schema": [],
         "return_field": [],
-        "parser": "",
         "useHttps": "",
         }
     }
@@ -213,24 +211,37 @@ class cloudsearchCollection(object):
         if not 'name' in domain:
             pass # Raise
 
+        if not 'id_field' in domain:
+            pass # Raise
+
+        if not 'schema' in domain:
+            pass # Raise
+
+        if not 'return_fields' in domain:
+            pass # Raise
+
+
+        self.id_field           = domain['id_field']
+        self.schema             = domain['schema']
+        self.return_fields      = domain['return_fields']
+        self.parser_class       = parser
+	self.domain_name        = domain['name']
+
         if not 'useHttps' in domain:
             self.useHttps = False
+        else:
+            self.useHttps = domain['useHttps']
 
-        self.parser_class = parser
-	self.domain_name  = domain['name']
+        if not 'filter_query' in domain:
+            self.filter_query = None
+        else:
+            if type(domain['filter_query']).__name__ == 'dict':
+                self.filter_query = domain['filter_query']
+            else:
+                self.filter_query = None
+
+	self.__init_domain()
 	
-	domain = self.__get_domain()
-
-	if domain is not None:
-	    if self.useHttps:
-		base = 'https://'
-	    else:
-		base = 'http://'
-	    document_ep = base + domain['DocService']['Endpoint']
-	    search_ep   = base + domain['SearchService']['Endpoint']
-	    self.__endpoint_init(document_ep,search_ep)
-	else:
-	    pass # Raise
 
     def __get_domain(self):
 	try:
@@ -241,6 +252,21 @@ class cloudsearchCollection(object):
 	    domain = response['DomainStatusList'][0]
 	    return domain
 	return None
+
+    
+    def __init_domain(self):
+        search_domain = self.__get_domain()
+
+	if search_domain is not None:
+	    if self.useHttps:
+		base = 'https://'
+	    else:
+		base = 'http://'
+	    document_ep = base + search_domain['DocService']['Endpoint']
+	    search_ep   = base + search_domain['SearchService']['Endpoint']
+	    self.__endpoint_init(document_ep,search_ep)
+	else:
+	    pass # Raise
 
     def __endpoint_init(self, document_ep, search_ep):
 	self.document_endpoint 	= document_ep
@@ -295,7 +321,18 @@ class cloudsearchCollection(object):
     
 	return False, content
 
-    def add(self, did, fields):
+
+    def add(self, Item={}):
+
+        if self.id_field not in Item:
+            pass # error
+
+        did = Item[self.id_field]
+        doc = dataStringDict(self.schema).String(Item)
+        return self._add(did,doc)
+
+
+    def _add(self, did, fields):
 	doc = {}
 	doc['id']     = did
 	doc['type']   = 'add'
@@ -337,6 +374,10 @@ class cloudsearchCollection(object):
 
     def query(self, querylist=[], start=0, size=10, sort=None, order=None):
         p = self.parser_class()
+
+        if self.filter_query is not None:
+            p.fq_add(self.filter_query)
+
         for q in querylist:
             if type(q).__name__ == 'dict':
                 p.fq_add(q)

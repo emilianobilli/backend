@@ -2,7 +2,6 @@ from Collection import dynamodbCollection
 from Collection import cloudsearchCollection
 
 
-
 class objBase(object):
     def __init__(self):
         raise NotImplementedError
@@ -23,13 +22,11 @@ class objBase(object):
         raise NotImplementedError
 
 
+class smallCollection(objBase):
+    def __init__(self, db_config):
+        self.db = dynamodbCollection(db_config)
 
-class Blocks(objBase):
-    def __init__(self, config):
-        self.db = dynamodbCollection(config)
-
-    def query(self, lang=None):
-        if lang is not None:
-            return self.db.query(lang)
-
+    def query(self, pk=None):
+        if pk is not None:
+            return self.db.query(pk)
 
