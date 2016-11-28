@@ -7,28 +7,10 @@ import json
 import httplib2
 import urlparse
 
-'''
-Blocks 
-schema = { 'language':  'S',
-           'block_id':  'S',
-           'block_name: 'S',
-           'channel':   'S' }
-    {
-        "database": {
-            "table": "Blocks",
-            "pk": "language",
-            "sk": "block_id",
-            "schema": { 
-                "language":  "S",
-                "block_id":  "S",
-                "block_name: "S",
-                "channel":   "S" 
-            }
-        }
-    }              
-'''
 
-           
+
+
+
 class dynamodbCollection(object):
     def __init__(self, config):
         db = config['database']
@@ -114,7 +96,6 @@ class dynamodbCollection(object):
                 to_get[self.sk] = skv
 
         doc = self.data_mapper.Map(to_get)
-
         ret = self.client.get_item(TableName=self.table, Key=doc)
 
         return self._check_get_return(ret)
@@ -172,20 +153,6 @@ class dynamodbCollection(object):
             return {'status': 'fail', 'message' : str(e)}
 
 
-db = dynamodbCollection({
-        "database": {
-            "table": "Blocks",
-            "pk": "lang",
-            "sk": "block_id",
-            "schema": { 
-                "lang":  "S",
-                "block_id":  "S",
-                "block_name": "S",
-                "channel":   "S" 
-            }
-        }
-    })
-
 '''
     { "domain": {
         "id_field": "house_id",
@@ -208,16 +175,15 @@ class cloudsearchCollection(object):
 
         domain = config['domain']
 
-        if not 'name' in domain:
-            pass # Raise
+        #
+        # Se consulta la existencia de los campos 
+        # mandatorios
+        #
 
-        if not 'id_field' in domain:
-            pass # Raise
-
-        if not 'schema' in domain:
-            pass # Raise
-
-        if not 'return_fields' in domain:
+        if (not 'name'          in domain or
+            not 'id_field'      in domain or
+            not 'schema'        in domain or
+            not 'return_fields' in domain):
             pass # Raise
 
 
@@ -237,7 +203,18 @@ class cloudsearchCollection(object):
         else:
             if type(domain['filter_query']).__name__ == 'dict':
                 self.filter_query = domain['filter_query']
+            elif type(domain['filter_query']).__name__ == 'list':
+                self.filter_query = []
+                for fq domain['filter_query']:
+                    if type(fq).__name__ == 'dict':
+                        self.filter_query.append(fq)
             else:
+            
+                #    Si el filter query no esta bien expresando como un
+                #    diccionario o como una lista de diccionarios se 
+                #    ignora. Da igual a fines practicos que el valor
+                #    sea None o []
+                
                 self.filter_query = None
 
 	self.__init_domain()
@@ -376,7 +353,11 @@ class cloudsearchCollection(object):
         p = self.parser_class()
 
         if self.filter_query is not None:
-            p.fq_add(self.filter_query)
+            if type(self.filter_query).__name__ == 'list':
+                for fq in self.filter_query:
+                p.fq_add(fq)
+            else:
+                p.fq_add(self.filter_query)
 
         for q in querylist:
             if type(q).__name__ == 'dict':

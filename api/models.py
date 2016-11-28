@@ -12,21 +12,34 @@ class objBase(object):
     def query(self):
         raise NotImplementedError
 
-    def put(self):
+    def update(self):
         raise NotImplementedError
 
-    def post(self):
+    def add(self):
         raise NotImplementedError
 
     def delete(self):
         raise NotImplementedError
 
 
-class smallCollection(objBase):
+class dbCollection(objBase):
     def __init__(self, db_config):
         self.db = dynamodbCollection(db_config)
 
     def query(self, pk=None):
         if pk is not None:
             return self.db.query(pk)
+
+
+class dbseCollection(objBase):
+    def __init__(self, db_config, se_config):
+        self.db = dynamodbCollection(db_config)
+
+    def get(self, pk, sk):
+        if pk is not None:
+            return self.db.get(pk,sk)
+
+    def query(self, lang=None, fq=[], sort):
+        pass
+
 

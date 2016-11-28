@@ -44,7 +44,7 @@ def urlBlock():
         qArgs = request.args
         if 'lang' not in qArgs:
             return Response(status='400')
-    
+
         return Response(response=dumps(block.query(qArgs['lang'])), status=200)
 
     if request.method == 'POST':
