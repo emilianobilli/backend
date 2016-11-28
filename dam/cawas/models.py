@@ -1,6 +1,7 @@
 from __future__ import unicode_literals
 
 from django.db import models
+import time
 
 # Create your models here.
 
@@ -51,6 +52,21 @@ class Category(models.Model):
     def __unicode__(self):
         return self.name
 
+    def toDict(self):
+        dict = {}
+
+        dict["name"]            = self.name
+        dict["lang"]            = self.language
+        if self.image is not None:
+            if self.image.portrait is not None:
+                dict["image_portrait"] = self.image.portrait
+            if self.image.landscape is not None:
+                dict["image_landscape"] = self.image.landscape
+            if self.image.big is not None:
+                dict["image_big"] = self.image.big
+
+        return dict
+
 
 class Channel(models.Model):
     name = models.CharField(max_length=128, unique=True, help_text="Nombre del canal")
@@ -59,20 +75,30 @@ class Channel(models.Model):
     def __unicode__(self):
         return self.name
 
+    def toDict(self):
+        dict = {}
+
+        dict["name"] = self.name
+        if self.logo is not None:
+            dict["logo"] = self.logo
+
+        return dict
+
 
 class Asset(models.Model):
     TYPE = (
-        ("mo", "Movie"),
-        ("se", "Serie"),
-        ("ep", "Episode"),
-        ("gi", "Girl")
+        ("movie", "Movie"),
+        ("serie", "Serie"),
+        ("episode", "Episode"),
+        ("girl", "Girl")
     )
 
-    asset_id       = models.CharField(max_length=8, unique=True, help_text="ID del Asset")
-    asset_type     = models.CharField(max_length=2, choices=TYPE, blank=True, null=True, help_text="Tipo de Asset")
-    creation_date  = models.DateTimeField(auto_now=False, auto_now_add=True)
-    publish_date   = models.DateTimeField(auto_now=False, auto_now_add=False, blank=True, null=True)
-    publish_status = models.BooleanField(default=False)
+    asset_id          = models.CharField(max_length=8, unique=True, help_text="ID del Asset")
+    asset_type        = models.CharField(max_length=10, choices=TYPE, blank=True, null=True, help_text="Tipo de Asset")
+    creation_date     = models.DateTimeField(auto_now=False, auto_now_add=True)
+    modification_date = models.DateTimeField(auto_now=True)
+    publish_date      = models.DateTimeField(auto_now=False, auto_now_add=False, blank=True, null=True)
+    publish_status    = models.BooleanField(default=False)
 
     def save(self, *args, **kwargs):
         super(Asset, self).save(*args, **kwargs)
@@ -99,15 +125,20 @@ class Asset(models.Model):
 
         dict["asset_id"]     = self.asset_id
         dict["asset_type"]   = self.asset_type
-        dict["publish_date"] = self.publish_date
+        dict["publish_date"] = self.publish_date.strftime('%s')
+
+        return dict
 
 
 class Block(models.Model):
-    block_id = models.CharField(max_length=8, unique=True, help_text="ID del Bloque")
-    name     = models.CharField(max_length=128, help_text="Nombre del bloque")
-    language = models.CharField(max_length=2, choices=(("es","es"),("pt","pt")), help_text="Lenguage del bloque")
-    channel  = models.ForeignKey(Channel)
-    assets   = models.ManyToManyField(Asset)
+    block_id          = models.CharField(max_length=8, unique=True, help_text="ID del Bloque")
+    name              = models.CharField(max_length=128, help_text="Nombre del bloque")
+    language          = models.CharField(max_length=2, choices=(("es","es"),("pt","pt")), help_text="Lenguage del bloque")
+    channel           = models.ForeignKey(Channel, blank=True, null=True)
+    assets            = models.ManyToManyField(Asset, blank=True)
+    modification_date = models.DateTimeField(auto_now=True)
+    publish_date      = models.DateTimeField(auto_now=False, auto_now_add=False, blank=True, null=True)
+    publish_status    = models.BooleanField(default=False)
 
     def save(self, *args, **kwargs):
         super(Block, self).save(*args, **kwargs)
@@ -124,17 +155,32 @@ class Block(models.Model):
     def __unicode__(self):
         return self.block_id
 
+    def toDict(self):
+        dict = {}
+
+        dict["block_id"] = self.block_id
+        dict["name"]     = self.name
+        dict["lang"]     = self.language
+        if self.channel is not None:
+            dict["channel"]  = self.channel.name
+
+
+        return dict
+
 
 class Slider(models.Model):
     TYPE = (
-        ("im", "Image"),
-        ("vi", "Video")
+        ("image", "Image"),
+        ("video", "Video")
     )
 
-    slider_id  = models.CharField(max_length=8, unique=True, help_text="ID del Slider")
-    media_type = models.CharField(max_length=2, choices=TYPE, help_text="Tipo de Slider")
-    media_url  = models.CharField(max_length=256, help_text="Media url")
-    asset      = models.ForeignKey(Asset)
+    slider_id         = models.CharField(max_length=8, unique=True, help_text="ID del Slider")
+    media_type        = models.CharField(max_length=10, choices=TYPE, help_text="Tipo de Slider")
+    media_url         = models.CharField(max_length=256, help_text="Media url")
+    asset             = models.ForeignKey(Asset, blank=True, null=True)
+    modification_date = models.DateTimeField(auto_now=True)
+    publish_date      = models.DateTimeField(auto_now=False, auto_now_add=False, blank=True, null=True)
+    publish_status    = models.BooleanField(default=False)
 
     def save(self, *args, **kwargs):
         super(Slider, self).save(*args, **kwargs)
@@ -154,10 +200,12 @@ class Slider(models.Model):
     def toDict(self):
         dict = {}
 
-        dict["slider_id"]         = self.slider_id
-        dict["media_type"]        = self.media_type
-        dict["linked_asset_id"]   = self.asset.asset_id
-        dict["linked_asset_type"] = self.asset.asset_type
+        dict["slider_id"]  = self.slider_id
+        dict["media_type"] = self.media_type
+        dict["media_url"]  = self.media_url
+        if self.asset is not None:
+            dict["linked_asset_id"]   = self.asset.asset_id
+            dict["linked_asset_type"] = self.asset.asset_type
 
         return dict
 
@@ -173,20 +221,31 @@ class SliderMetadata(models.Model):
     def __unicode__(self):
         return ('%s:%s') % (self.slider.slider_id, self.language)
 
+    def toDict(self):
+        dict = {}
+
+        dict["lang"] = self.language
+        dict["text"] = self.text
+
+        return dict
+
 
 class Girl(models.Model):
     TYPE = (
-        ("po", "Pornstar"),
-        ("pl", "Playmate")
+        ("pornstar", "Pornstar"),
+        ("playmate", "Playmate")
     )
 
-    asset       = models.ForeignKey(Asset)
-    name        = models.CharField(max_length=128, unique=True, help_text="Nombre de la actriz")
-    type        = models.CharField(max_length=2, choices=TYPE, help_text="Tipo de actriz")
-    image       = models.ForeignKey(Image, blank=True, null=True)
-    birth_date  = models.DateField(blank=True, null=True, help_text="Fecha de nacimiento")
-    height      = models.IntegerField(blank=True, null=True, help_text="Altura en cm")
-    weight      = models.IntegerField(blank=True, null=True, help_text="Peso en KG")
+    asset             = models.ForeignKey(Asset)
+    name              = models.CharField(max_length=128, unique=True, help_text="Nombre de la actriz")
+    type              = models.CharField(max_length=20, choices=TYPE, help_text="Tipo de actriz")
+    image             = models.ForeignKey(Image, blank=True, null=True)
+    birth_date        = models.DateField(blank=True, null=True, help_text="Fecha de nacimiento")
+    height            = models.IntegerField(blank=True, null=True, help_text="Altura en cm")
+    weight            = models.IntegerField(blank=True, null=True, help_text="Peso en KG")
+    modification_date = models.DateTimeField(auto_now=True)
+    publish_date      = models.DateTimeField(auto_now=False, auto_now_add=False, blank=True, null=True)
+    publish_status    = models.BooleanField(default=False)
 
     def __unicode__(self):
         return self.asset.asset_id
@@ -196,12 +255,19 @@ class Girl(models.Model):
 
         dict["name"]            = self.name
         dict["type"]            = self.type
-        dict["image_portrait"]  = self.image.portrait
-        dict["image_landscape"] = self.image.landscape
-        dict["image_big"]       = self.image.big
-        dict["birth_date"]      = self.birth_date
-        dict["height"]          = self.height
-        dict["weight"]          = self.weight
+        if self.image is not None:
+            if self.image.portrait is not None:
+                dict["image_portrait"] = self.image.portrait
+            if self.image.landscape is not None:
+                dict["image_landscape"] = self.image.landscape
+            if self.image.big is not None:
+                dict["image_big"] = self.image.big
+        if self.birth_date is not None:
+            dict["birth_date"] = self.birth_date.strftime("%Y-%m-%d")
+        if self.height is not None:
+            dict["height"] = self.height
+        if self.weight is not None:
+            dict["weight"] = self.weight
 
         return dict
 
