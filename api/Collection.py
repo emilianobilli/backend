@@ -7,16 +7,26 @@ import json
 import httplib2
 import urlparse
 
+class CollectionException(Exception):
+    def __init__(self, value):
+        self.value = value
+    def __str__(self):
+        return repr(self.value)
 
-
+class DynamoException(Exception):
+    def __init__(self, value):
+        self.value = value
+    def __str__(self):
+        return repr(self.value)
 
 
 class dynamodbCollection(object):
     def __init__(self, config):
         db = config['database']
+
         self.table               = db['table']
         if 'pk' not in db:
-            pass # Raise exception
+            CollectionException('(__init__) Primary Key field not found in config')
 
         self.pk                  = db['pk']
         if 'sk' in db:
@@ -25,14 +35,14 @@ class dynamodbCollection(object):
             self.sk              = None
 
         if 'schema' not in db:
-            pass # Raise exception
+            CollectionException('(__init__) Schema not found in config')
 
         self.schema              = db['schema']
         self.data_mapper         = dataMapper(self.schema)
         try:
             self.client          = boto3.client('dynamodb')
-        except Exception as e:
-            pass # Raise exception
+        except Exception, e:
+            DynamoException(str(e))
 
     
     
@@ -69,45 +79,53 @@ class dynamodbCollection(object):
 
 
 
-    def query(self, pkv=None):
-        if pkv is None:
-            pass # Raise -> Need Partition Key
+    def query(self, q={}):
 
-        ret =  self.client.query(TableName=self.table,
-                                 KeyConditionExpression='%s = :val' % (self.pk), 
-                                 ExpressionAttributeValues={':val': {self.schema[self.pk]: pkv}})
+        if self.pk not in q:
+            raise CollectionException('(Query) Primary key not found in item (%s)' % self.pk )
+
+        try:
+            ret =  self.client.query(TableName=self.table,
+                                     KeyConditionExpression='%s = :val' % (self.pk), 
+                                     ExpressionAttributeValues={':val': {self.schema[self.pk]: q[self.pk]}})
+        except Exception, e:
+            raise DynamoException(str(e))
 
         return self._check_query_return(ret)
 
-    def get(self, pkv=None, skv=None):
+    def get(self, Item={}):
         
         to_get = {}
         
-        if pkv is None:
-            pass # Raise -> Need Partition Key to perform a get_item()
-        
-        to_get[self.pk] = pkv
-        
-        
-        if self.sk is not None:
-            if skv is None:
-                pass # Raise -> Need Sort Key
-            else:
-                to_get[self.sk] = skv
-
-        doc = self.data_mapper.Map(to_get)
-        ret = self.client.get_item(TableName=self.table, Key=doc)
-
-        return self._check_get_return(ret)
-        
-    def add(self, Item ={}):
-
         if self.pk not in Item:
-            return {'status': 'fail', 'message': 'Primary key not present in Item -> %s' % self.pk }
+            raise CollectionException('(Get) Primary key not found in item (%s)' % self.pk )
 
         if self.sk is not None:
             if self.sk not in Item:
-                return {'status': 'fail', 'message': 'Sork key not present in Item -> %s' % self.sk }
+                raise CollectionException('(Get) Sort key not found in item (%s)' % self.sk )
+            to_get[self.sk] = Item[self.sk]
+
+        to_get[self.pk] = Item[self.pk]
+
+        doc = self.data_mapper.Map(to_get)
+
+        try:
+            ret = self.client.get_item(TableName=self.table, Key=doc)
+        except Exception, e:
+            raise DynamoException(str(e))
+
+        return self._check_get_return(ret)
+
+
+
+    def add(self, Item ={}):
+
+        if self.pk not in Item:
+            raise CollectionException('(Add) Primary key not found in item (%s)' % self.pk )
+
+        if self.sk is not None:
+            if self.sk not in Item:
+                raise CollectionException('(Add) Sort key not found in item (%s)' % self.sk )
 
         '''
         Primero convertir todos los campos a String
@@ -117,41 +135,40 @@ class dynamodbCollection(object):
 
         try:
             ret = self.client.put_item(TableName=self.table, Item=doc)
-            if 'ResponseMetadata' in ret:
-                if 'HTTPStatusCode' in ret['ResponseMetadata'] and ret['ResponseMetadata']['HTTPStatusCode'] == 200:
-                    return {'status': 'success'}
-                else:
-                    return {'status': 'fail', 'message': str(ret)}
         except Exception, e:
-            return {'status': 'fail', 'message' : str(e)}
+            raise DynamoException(str(e))
+        
+        if 'ResponseMetadata' in ret:
+            if 'HTTPStatusCode' not in ret['ResponseMetadata'] or ret['ResponseMetadata']['HTTPStatusCode'] != 200:
+                raise DynamoException(str(ret))
+        
+        return Item
 
-
-    def delete(self, pkv=None, skv=None):
+    def delete(self, Item={}):
         toDel = {}
 
-        if pkv is None:
-            pass # Raise Error
-        else:
-            toDel[self.pk] = pkv
+        if self.pk not in Item:
+            raise CollectionException('(Delete) Primary key not found in item (%s)' % self.pk )
+
+        toDel[self.pk] = Item[self.pk]
 
         if self.sk is not None:
-            if skv is None:
-                return {'status': 'fail', 'message': 'Sort key (%s) not in Item (%s)' % (self.sortKey, Item) }
-            else:
-                toDel[self.sk]  = skv
+            if self.sk not in Item:
+                raise CollectionException('(Delete) Sort key not found in item (%s)' % self.sk )
+            toDel[self.sk] = Item[self.sk]
 
         doc = self.data_mapper.Map(toDel)
 
         try:
             ret = self.client.delete_item(TableName=self.table, Key=doc)
-            if 'ResponseMetadata' in ret:
-                if 'HTTPStatusCode' in ret['ResponseMetadata'] and ret['ResponseMetadata']['HTTPStatusCode'] == 200:
-                    return {'status': 'success'}
-                else:
-                    return {'status': 'fail', 'message': str(ret)}
         except Exception, e:
-            return {'status': 'fail', 'message' : str(e)}
+            raise DynamoException(str(e))
 
+        if 'ResponseMetadata' in ret:
+            if 'HTTPStatusCode' not in ret['ResponseMetadata'] or ret['ResponseMetadata']['HTTPStatusCode'] != 200:
+                raise DynamoException(str(e))
+
+        return toDel
 
 '''
     { "domain": {
@@ -168,6 +185,7 @@ class dynamodbCollection(object):
 
 class cloudsearchCollection(object):
     def __init__(self, config, parser=Structured):
+
 	self.client       = boto3.client('cloudsearch')
 
         if not 'domain' in config:
@@ -198,27 +216,7 @@ class cloudsearchCollection(object):
         else:
             self.useHttps = domain['useHttps']
 
-        if not 'filter_query' in domain:
-            self.filter_query = None
-        else:
-            if type(domain['filter_query']).__name__ == 'dict':
-                self.filter_query = domain['filter_query']
-            elif type(domain['filter_query']).__name__ == 'list':
-                self.filter_query = []
-                for fq domain['filter_query']:
-                    if type(fq).__name__ == 'dict':
-                        self.filter_query.append(fq)
-            else:
-            
-                #    Si el filter query no esta bien expresando como un
-                #    diccionario o como una lista de diccionarios se 
-                #    ignora. Da igual a fines practicos que el valor
-                #    sea None o []
-                
-                self.filter_query = None
-
-	self.__init_domain()
-	
+        self.__init_domain()
 
     def __get_domain(self):
 	try:
@@ -349,19 +347,8 @@ class cloudsearchCollection(object):
         return doc
 
 
-    def query(self, querylist=[], start=0, size=10, sort=None, order=None):
+    def query(self, querylist=[], start=0, size=10, order=None):
         p = self.parser_class()
-
-        if self.filter_query is not None:
-            if type(self.filter_query).__name__ == 'list':
-                for fq in self.filter_query:
-                p.fq_add(fq)
-            else:
-                p.fq_add(self.filter_query)
-
-        for q in querylist:
-            if type(q).__name__ == 'dict':
-                p.fq_add(q)
 
         p.start = start
         p.size  = size

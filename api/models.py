@@ -1,45 +1,112 @@
 from Collection import dynamodbCollection
 from Collection import cloudsearchCollection
+from Collection import CollectionException
+from Collection import DynamoException
 
 
-class objBase(object):
-    def __init__(self):
-        raise NotImplementedError
+class Backend(object):
+    def __init__(self, config):
+        if 'blocks' in config:
+            self.blocks  = dynamodbCollection(config['blocks'])
 
-    def get(self):
-        raise NotImplementedError
+        if 'sliders' in config:
+            self.sliders = dynamodbCollection(config['sliders']) 
+    
+        self.channels = None
+        self.categories = None        
+#        if 'channels' in config:
+#            self.channels = dynamodbCollection(config['channels'])
 
-    def query(self):
-        raise NotImplementedError
-
-    def update(self):
-        raise NotImplementedError
-
-    def add(self):
-        raise NotImplementedError
-
-    def delete(self):
-        raise NotImplementedError
-
-
-class dbCollection(objBase):
-    def __init__(self, db_config):
-        self.db = dynamodbCollection(db_config)
-
-    def query(self, pk=None):
-        if pk is not None:
-            return self.db.query(pk)
+#        if 'categories' in config:
+#            self.categories = dynamodbCollection(config['categories'])
+#        self.girls
+#        self.shows
 
 
-class dbseCollection(objBase):
-    def __init__(self, db_config, se_config):
-        self.db = dynamodbCollection(db_config)
+    def __query(self, where, q):
+        try:
+            ret    = where.query(q)
+            status = 200
+        except CollectionException as e:
+            status = 422
+            ret    = {'status': 'failure', 'message': str(e)}
+        except DynamoException as e:
+            ret    = {'status': 'failure', 'message': str(e)}
+            status = 500
+        except Exception as e:
+            status = 500
+            ret    = {'status': 'failure', 'message': str(e)}
+        
+        return {'status': status, 'body': ret}
+            
 
-    def get(self, pk, sk):
-        if pk is not None:
-            return self.db.get(pk,sk)
+    def __add(self, where, item):
+        try:
+            ret    = where.add(item)
+            status = 201
+        except CollectionException as e:
+            status = 422
+            ret    = {'status': 'failure', 'message': str(e)}
+        except DynamoException as e:
+            ret    = {'status': 'failure', 'message': str(e)}
+            status = 500
+        except Exception as e:
+            status = 500
+            ret    = {'status': 'failure', 'message': str(e)}
+        
+        return {'status': status, 'body': ret}
 
-    def query(self, lang=None, fq=[], sort):
-        pass
 
+    def __del(self, where, item):
+        try:
+            ret    = where.delete(item)
+            print ret
+            status = 204
+        except CollectionException as e:
+            status = 422
+            ret    = {'status': 'failure', 'message': str(e)}
+        except DynamoException as e:
+            ret    = {'status': 'failure', 'message': str(e)}
+            status = 500
+        except Exception as e:
+            status = 500
+            ret    = {'status': 'failure', 'message': str(e)}
+        
+        return {'status': status, 'body': ret}
+
+    '''
+        Add Methods for Slider, Block and Category
+    '''
+    def add_slider(self, Item={}):
+        return self.__add(self.sliders, Item)
+
+    def add_block(self, Item={}):
+        return self.__add(self.blocks, Item)
+
+    def add_category(self, Item={}):
+        return self.__add(self.categories, Item)
+
+    '''
+        Del Methods for Slider, Block and Category
+    '''
+    def del_block(self, Item={}):
+        return self.__del(self.blocks, Item)
+
+    def del_category(self, Item={}):
+        return self.__del(self.categories, Item)
+
+    def del_slider(self, Item={}):
+        return self.__del(self.sliders, Item)
+
+    '''
+        Query Methods for Slider, Block and Category
+    '''
+    def query_block(self, arg):
+        return self.__query(self.blocks,arg)
+
+    def query_slider(self, arg):
+        return self.__query(self.sliders,arg)
+
+    def query_category(self, arg):
+        return self.__query(self.categories,arg)
 

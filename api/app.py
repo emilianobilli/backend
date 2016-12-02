@@ -3,12 +3,15 @@ from flask import request
 from flask import redirect
 from flask import Response
 from flask_cors import CORS, cross_origin
-from models import smallCollection
+from models import Backend
 from json   import dumps 
+from json   import loads
 
 api = Flask(__name__)
 
-block = smallCollection({"database": {
+
+backend = Backend({ "blocks" : 
+                        {"database": {
                             "table": "Blocks",
                             "pk": "lang",
                             "sk": "block_id",
@@ -18,48 +21,136 @@ block = smallCollection({"database": {
                                 "block_name": "S",
                                 "channel":   "S"
                             }
-                        }})
-
-
-slider = smallCollection({"database": {
+                       }},
+                     "sliders":
+                        {"database": {
                             "table": "Sliders",
                             "pk": "lang",
                             "sk": "slider_id",
                             "schema": {
                                 "lang":  "S",
                                 "slider_id":  "S",
-                                "media_url": "S",
+                                "media_url":  "S",
                                 "media_type": "S",
                                 "linked_asset_id": "S",
-                                "linked_asset_type": "S"
+                                "linked_asset_type": "S",
+                                "text" : "S",
+                            }
+                       }}
+                    })
+
+
+'''
+channel = dbCollection({"database": {
+                            "table": "Channels",
+                            "pk": "name",
+                    #        "sk": "slider_id",
+                            "schema": {
+                                "name":  "S",
+                                "logo":  "S",
+                            }
+                       }})
+
+category = dbCollection({"database": {
+                            "table": "Categories",
+                            "pk": "lang",
+                            "sk": "name",
+                            "schema": {
+                                "lang":  "S",
+                                "name":  "S",
+                                "order":  "N",
+                                "image_big" : "S",
+                                "image_landscape": "S",
+                                "image_portrait": "S"
+                            }
+                       }})
+
+
+
+girls    = dbseCollection({"database": {
+                            "table": "Girls",
+                            "pk": "lang",
+                            "sk": "asset_id",
+                            "schema": {
+                                    "lang": "S",
+                                    "asset_id": "S",
+                                    "name": "S",
+                                    "image_portrait": "S",
+                                    "image_landscape": "S",
+                                    "image_big": "S",
+                                    "views": "N",
+                                    "ranking": "N",
+                                    "asset_type": "S",
+                                    "blocks": "SS",
+                                    "publish_date": "N",
+                                    "class": "S",
+                                    "summary_long": "S",
+                                    "nationality": "S",
+                                    "birth_date": "S",
+                                    "height": "S",
+                                    "weight": "S"
+                            }
+                          },
+                         "search" : {
+                            "pk": "lang",
+                            "value": { 
+                                "es": {
+                                    "domain": {
+                                        "id_field": "asset_id",
+                                        "filter_query" : {'asset_type' : 'girl'},
+                                        "schema": ["asset_id", "name", "image_big", "image_landscape", "image_portrait", "views", "ranking", "asset_type", "blocks", "publish_date", "class", "summary_long", "nationality"],
+                                        "return_fields": [],
+                                        "name" : "eshotgodomain",
+                                    }
+                                }
                             }
                         }})
 
+'''
 
-@api.route('/v1/blocks/', methods=['GET', 'POST'])
+
+@api.route('/v1/sliders/', methods=['GET', 'POST', 'DELETE'])
 @cross_origin()
-def urlBlock():
-
+def urlSlider():
     if request.method == 'GET':
-        qArgs = request.args
-        if 'lang' not in qArgs:
-            return Response(status='400')
-
-        return Response(response=dumps(block.query(qArgs['lang'])), status=200)
+        args  = {}
+        for k in request.args.keys():
+            args[k] = request.args.get(k)
+        ret = backend.query_slider(args)
+        return Response(response=dumps(ret['body']), status=ret['status'])
 
     if request.method == 'POST':
+        item = loads(request.get_json())
+        ret  = backend.add_slider(item)
+        return Response(response=dumps(ret['body']), status=ret['status'])
 
-        item = request.get_json()
-        ret  = block.add(item)
-        if ret['status'] == 'success':
-            status = 201
-        else:
-            status = 200
+    if request.method == 'DELETE':
+        item = loads(request.get_json())
+        ret  = backend.del_slider(item)
+        return Response(response=dumps(ret['body']), status=ret['status'])
 
-        return Response(response=dumps(ret), status=status)
+
+@api.route('/v1/blocks/', methods=['GET', 'POST', 'DELETE'])
+@cross_origin()
+def urlBlock():
+    if request.method == 'GET':
+        args  = {}
+        for k in request.args.keys():
+            args[k] = request.args.get(k)
+        ret = backend.query_block(args)
+        return Response(response=dumps(ret['body']), status=ret['status'])
+
+    if request.method == 'POST':
+        item = loads(request.get_json())
+        ret  = backend.add_block(item)
+        return Response(response=dumps(ret['body']), status=ret['status'])
+
+    if request.method == 'DELETE':
+        item = loads(request.get_json())
+        ret  = backend.del_block(item)
+        return Response(response=dumps(ret['body']), status=ret['status'])
 
 
 
 if __name__ == "__main__":
     api.run("0.0.0.0", 8000)
-

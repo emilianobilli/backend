@@ -2,6 +2,7 @@ class Structured(object):
     def __init__(self):
         self.q             = []
         self.fq            = []         
+        self.exclude       = None
         self.size          = None
         self.start         = None
         self.sort          = None
@@ -15,6 +16,16 @@ class Structured(object):
         if len(kv.keys()) > 0:
             self.q.append(kv)
     
+
+    def _exclude(self):
+        if self.exclude is not None and type(self.exclude).__name__ == 'dict':
+            exclude = self.exclude
+            ek = (exclude.keys())[0]     
+            ev = exclude[ek]
+            return "(not %s:\'%s\')" % (ek, ev)
+        else:
+            return ""
+
     def _make_q(self, q=[]):
         ret = ''
         if len(q) == 0:
@@ -26,12 +37,14 @@ class Structured(object):
                 k = kv.keys()[0]
                 v = kv[k]
                 ret = ret + "%s:\'%s\' " % (k,v)
-            ret = ret[0:len(ret)-1] + ')'
+            ret = ret[0:len(ret)-1] + '%s)' % (self._exclude())
         else:
             k = (q[0].keys())[0]
             v = (q[0])[k]
-            ret = "%s:\'%s\'" % (k,v)
-        
+            if self.exclude is not None:
+                ret = "(and %s:\'%s\' %s)" % (k,v, self._exclude())
+            else:
+                ret = "%s:\'%s\'" % (k,v)
         return ret
         
     def _make_sort(self):
@@ -64,3 +77,10 @@ class Structured(object):
                                  self._make_sort(),
                                 '&q.parser=structured')
 
+
+
+flens = Structured()
+flens.fq_add({'channel':'Venus'})
+flens.fq_add({'category':'mamadas'})
+flens.exclude = {'category':'anal'}
+print flens.make()
