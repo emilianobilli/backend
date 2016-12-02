@@ -20,6 +20,34 @@ class Setting(models.Model):
     enabled          = models.BooleanField(default=False)
 
 
+class PublishQueue(models.Model):
+    STATUS = (
+        ('Q', 'Queued'),
+        ('D', 'Done'),
+        ('E', 'Error')
+    )
+
+    TYPE = (
+        ('BL', 'Block'),
+        ('AS', 'Asset'),
+        ('SL', 'Slider'),
+        ('CA', 'Category'),
+        ('CH', 'Channel')
+    )
+
+    item_id       = models.CharField(max_length=8, help_text="ID del item")
+    item_lang     = models.CharField(max_length=2, choices=(("es", "es"), ("pt", "pt")), help_text="Lenguage del item")
+    item_type     = models.CharField(max_length=2, choices=TYPE, default='', help_text='Tipo de item')
+    creation_date = models.DateTimeField(auto_now=False, auto_now_add=True)
+    endpoint      = models.CharField(max_length=256, help_text="Endpoint url")
+    status        = models.CharField(max_length=1, choices=STATUS, default='Q', help_text='Job Status')
+    schedule_date = models.DateTimeField(auto_now=False, auto_now_add=False, blank=True, null=True)
+    message       = models.CharField(max_length=510, blank=True, help_text="Error or Warning message")
+
+    def __unicode__(self):
+        return "%s:%s" % (self.item_id, self.item_lang)
+
+
 class Image(models.Model):
     name      = models.CharField(max_length=128, unique=True, help_text="Nombre de la imagen")
     portrait  = models.FileField(help_text="Portrait image", null=True, blank=True)
@@ -31,7 +59,7 @@ class Image(models.Model):
 
 
 class Tag(models.Model):
-    name = models.CharField(max_length=128, unique=True, help_text="Nombre del tag")
+    name     = models.CharField(max_length=128, unique=True, help_text="Nombre del tag")
     language = models.CharField(max_length=2, choices=(("es", "es"), ("pt", "pt")), help_text="Lenguage de la metadata")
 
     class Meta:
@@ -42,12 +70,25 @@ class Tag(models.Model):
 
 
 class Category(models.Model):
-    name     = models.CharField(max_length=128, help_text="Nombre de la categoria")
-    language = models.CharField(max_length=2, choices=(("es","es"),("pt","pt")), help_text="Lenguage de la metadata")
-    image    = models.ForeignKey(Image, blank=True, null=True)
+    category_id       = models.CharField(max_length=8, unique=True, help_text="ID de la Categoria")
+    name              = models.CharField(max_length=128, help_text="Nombre de la categoria")
+    image             = models.ForeignKey(Image, blank=True, null=True)
+    order             = models.IntegerField(unique=True, help_text="Orden de la categoria")
+    modification_date = models.DateTimeField(auto_now=True)
+    publish_date      = models.DateTimeField(auto_now=False, auto_now_add=False, blank=True, null=True)
+    publish_status    = models.BooleanField(default=False)
 
-    class Meta:
-        unique_together = ('name', 'language',)
+    def save(self, *args, **kwargs):
+        super(Category, self).save(*args, **kwargs)
+        if self.category_id == '':
+
+            id = str(self.id)
+
+            while len(id) < 6:
+                id = "0" + id
+
+            self.category_id = "CA%s" % (self.id)
+        super(Category, self).save(*args, **kwargs)
 
     def __unicode__(self):
         return self.name
@@ -55,8 +96,7 @@ class Category(models.Model):
     def toDict(self):
         dict = {}
 
-        dict["name"]            = self.name
-        dict["lang"]            = self.language
+        dict["order"] = self.order
         if self.image is not None:
             if self.image.portrait is not None:
                 dict["image_portrait"] = self.image.portrait
@@ -68,9 +108,32 @@ class Category(models.Model):
         return dict
 
 
+class CategoryMetadata(models.Model):
+    category = models.ForeignKey(Category)
+    language = models.CharField(max_length=2, choices=(("es", "es"), ("pt", "pt")), help_text="Lenguage de la metadata")
+    name     = models.CharField(max_length=128, help_text="Nombre de la categoria")
+
+    class Meta:
+        unique_together = ('category', 'language',)
+
+    def __unicode__(self):
+        return ('%s:%s') % (self.category.category_id, self.language)
+
+    def toDict(self):
+        dict = {}
+
+        dict["lang"] = self.language
+        dict["name"] = self.name
+
+        return dict
+
+
 class Channel(models.Model):
-    name = models.CharField(max_length=128, unique=True, help_text="Nombre del canal")
-    logo = models.FileField(help_text="Logo image", null=True, blank=True)
+    name              = models.CharField(max_length=128, unique=True, help_text="Nombre del canal")
+    logo              = models.FileField(help_text="Logo image", null=True, blank=True)
+    modification_date = models.DateTimeField(auto_now=True)
+    publish_date      = models.DateTimeField(auto_now=False, auto_now_add=False, blank=True, null=True)
+    publish_status    = models.BooleanField(default=False)
 
     def __unicode__(self):
         return self.name
@@ -124,7 +187,10 @@ class Asset(models.Model):
         dict = {}
 
         dict["asset_id"]     = self.asset_id
-        dict["asset_type"]   = self.asset_type
+        if self.asset_type == 'girl':
+            dict["asset_type"] = 'girl'
+        else:
+            dict["asset_type"] = 'show'
         dict["publish_date"] = self.publish_date.strftime('%s')
 
         return dict
@@ -158,12 +224,11 @@ class Block(models.Model):
     def toDict(self):
         dict = {}
 
-        dict["block_id"] = self.block_id
-        dict["name"]     = self.name
-        dict["lang"]     = self.language
+        dict["block_id"]   = self.block_id
+        dict["block_name"] = self.name
+        dict["lang"]       = self.language
         if self.channel is not None:
-            dict["channel"]  = self.channel.name
-
+            dict["channel"] = self.channel.name
 
         return dict
 
@@ -191,7 +256,7 @@ class Slider(models.Model):
             while len(id) < 6:
                 id = "0" + id
 
-            self.slider_id = "SL%s" % (self.id)
+            self.slider_id = "SL%s" % (id)
         super(Slider, self).save(*args, **kwargs)
 
     def __unicode__(self):
@@ -243,9 +308,6 @@ class Girl(models.Model):
     birth_date        = models.DateField(blank=True, null=True, help_text="Fecha de nacimiento")
     height            = models.IntegerField(blank=True, null=True, help_text="Altura en cm")
     weight            = models.IntegerField(blank=True, null=True, help_text="Peso en KG")
-    modification_date = models.DateTimeField(auto_now=True)
-    publish_date      = models.DateTimeField(auto_now=False, auto_now_add=False, blank=True, null=True)
-    publish_status    = models.BooleanField(default=False)
 
     def __unicode__(self):
         return self.asset.asset_id
@@ -253,8 +315,8 @@ class Girl(models.Model):
     def toDict(self):
         dict = {}
 
-        dict["name"]            = self.name
-        dict["type"]            = self.type
+        dict["name"]             = self.name
+        dict["class"]            = self.type
         if self.image is not None:
             if self.image.portrait is not None:
                 dict["image_portrait"] = self.image.portrait
@@ -265,9 +327,9 @@ class Girl(models.Model):
         if self.birth_date is not None:
             dict["birth_date"] = self.birth_date.strftime("%Y-%m-%d")
         if self.height is not None:
-            dict["height"] = self.height
+            dict["height"] = "%d cm" % self.height
         if self.weight is not None:
-            dict["weight"] = self.weight
+            dict["weight"] = "%d kg" % self.weight
 
         return dict
 
@@ -287,9 +349,9 @@ class GirlMetadata(models.Model):
     def toDict(self):
         dict = {}
 
-        dict["language"]    = self.language
-        dict["description"] = self.description
-        dict["nationality"] = self.nationality
+        dict["lang"]         = self.language
+        dict["summary_long"] = self.description
+        dict["nationality"]  = self.nationality
 
         return dict
 
@@ -335,7 +397,6 @@ class SerieMetadata(models.Model):
     language       = models.CharField(max_length=2, choices=(("es","es"),("pt","pt")), help_text="Lenguage de la metadata")
     title          = models.CharField(max_length=128, help_text="Titulo en el idioma correspondiente")
     summary_short  = models.CharField(max_length=256, blank=True, help_text="Descripcion corta")
-    summary_medium = models.CharField(max_length=1024, blank=True, help_text="Descripcion mediana")
     summary_long   = models.CharField(max_length=4096, blank=True, help_text="Descripcion larga")
     category       = models.ManyToManyField(Category)
     subtitle       = models.BooleanField(default=False)
@@ -354,10 +415,9 @@ class SerieMetadata(models.Model):
         for cat in self.category.all():
             categories.append(cat.name)
 
-        dict["language"]       = self.language
+        dict["lang"]           = self.language
         dict["title"]          = self.title
         dict["summary_short"]  = self.summary_short
-        dict["summary_medium"] = self.summary_medium
         dict["summary_long"]   = self.summary_long
         dict["categories"]     = categories
         dict["subtitle"]       = self.subtitle
@@ -414,7 +474,6 @@ class EpisodeMetadata(models.Model):
     language       = models.CharField(max_length=2, choices=(("es","es"),("pt","pt")), help_text="Lenguage de la metadata")
     title          = models.CharField(max_length=128, help_text="Titulo en el idioma correspondiente")
     summary_short  = models.CharField(max_length=256, blank=True, help_text="Descripcion corta")
-    summary_medium = models.CharField(max_length=1024, blank=True, help_text="Descripcion mediana")
     summary_long   = models.CharField(max_length=4096, blank=True, help_text="Descripcion larga")
     category       = models.ManyToManyField(Category)
     subtitle       = models.BooleanField(default=False)
@@ -433,10 +492,9 @@ class EpisodeMetadata(models.Model):
         for cat in self.category.all():
             categories.append(cat.name)
 
-        dict["language"]       = self.language
+        dict["lang"]           = self.language
         dict["title"]          = self.title
         dict["summary_short"]  = self.summary_short
-        dict["summary_medium"] = self.summary_medium
         dict["summary_long"]   = self.summary_long
         dict["categories"]     = categories
         dict["subtitle"]       = self.subtitle
@@ -487,7 +545,6 @@ class MovieMetadata(models.Model):
     language       = models.CharField(max_length=2, choices=(("es","es"),("pt","pt")), help_text="Lenguage de la metadata")
     title          = models.CharField(max_length=128, help_text="Titulo en el idioma correspondiente")
     summary_short  = models.CharField(max_length=256, blank=True, help_text="Descripcion corta")
-    summary_medium = models.CharField(max_length=1024, blank=True, help_text="Descripcion mediana")
     summary_long   = models.CharField(max_length=4096, blank=True, help_text="Descripcion larga")
     category       = models.ManyToManyField(Category)
     subtitle       = models.BooleanField(default=False)
@@ -506,10 +563,9 @@ class MovieMetadata(models.Model):
         for cat in self.category.all():
             categories.append(cat.name)
 
-        dict["language"]       = self.language
+        dict["lang"]           = self.language
         dict["title"]          = self.title
         dict["summary_short"]  = self.summary_short
-        dict["summary_medium"] = self.summary_medium
         dict["summary_long"]   = self.summary_long
         dict["categories"]     = categories
         dict["subtitle"]       = self.subtitle

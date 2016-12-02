@@ -15,12 +15,12 @@ class SerializerException(Exception):
         return repr(self.value)
 
 
-def block_serializer(block_name):
+def block_serializer(block_id):
     ret = []
     try:
-        block = Block.objects.get(name=block_name)
+        block = Block.objects.get(block_id=block_id)
     except ObjectDoesNotExist:
-        msg = "Block with name %s does not exist" % block_name
+        msg = "Block with ID %s does not exist" % block_id
         raise SerializerException(msg)
 
     ret.append(block.toDict())
@@ -28,7 +28,31 @@ def block_serializer(block_name):
     return ret
 
 
-def category_serializer(cat_name):
+def slider_serializer(slider_id, lang=''):
+    ret = []
+    try:
+        slider = Slider.objects.get(slider_id=slider_id)
+    except:
+        msg = "Slider with ID %s does not exist" % slider_id
+        raise SerializerException(msg)
+
+    slider_dict = slider.toDict()
+
+    if lang == '':
+        metadata_list = SliderMetadata.objects.filter(slider=slider)
+    else:
+        metadata_list = SliderMetadata.objects.filter(slider=slider, language=lang)
+
+    if len(metadata_list) == 0:
+        ret.append(slider_dict)
+    else:
+        for metadata in metadata_list:
+            ret.append(dict(slider_dict.items() + metadata.toDict().items()))
+
+    return ret
+
+
+def category_serializer(cat_name, lang=''):
     ret = []
     try:
         category = Category.objects.get(name=cat_name)
@@ -36,7 +60,18 @@ def category_serializer(cat_name):
         msg = "Category with name %s does not exist" % cat_name
         raise SerializerException(msg)
 
-    ret.append(category.toDict())
+    category_dict = category.toDict()
+
+    if lang == '':
+        metadata_list = CategoryMetadata.objects.filter(category=category)
+    else:
+        metadata_list = CategoryMetadata.objects.filter(category=category, lang=lang)
+
+    if len(metadata_list) == 0:
+        ret.append(category_dict)
+    else:
+        for metadata in metadata_list:
+            ret.append(dict(category_dict.items() + metadata.toDict().items()))
 
     return ret
 
@@ -54,7 +89,7 @@ def channel_serializer(channel_name):
     return ret
 
 
-def asset_serializer(asset_id):
+def asset_serializer(asset_id, lang=''):
     ret = []
 
     try:
@@ -64,18 +99,26 @@ def asset_serializer(asset_id):
         raise SerializerException(msg)
 
     if asset.asset_type == "movie":
-        asset_list = movie_serializer(asset)
+        asset_list = movie_serializer(asset, lang)
     elif asset.asset_type == "serie":
-        asset_list = serie_serializer(asset)
+        asset_list = serie_serializer(asset, lang)
     elif asset.asset_type == "episode":
-        asset_list = episode_serializer(asset)
+        asset_list = episode_serializer(asset, lang)
     elif asset.asset_type == "girl":
-        asset_list = girl_serializer(asset)
+        asset_list = girl_serializer(asset, lang)
     else:
         msg = "Invalid asset type: %s" % asset.asset_type
         raise SerializerException(msg)
 
     asset_dict = asset.toDict()
+
+    block_list = Block.objects.filter(assets=asset)
+
+    if len(block_list) > 0:
+        blocks = []
+        for block in block_list:
+            blocks.append(block.block_id)
+        asset_dict["blocks"] = blocks
 
     for ast in asset_list:
         ret.append(dict(ast.items() + asset_dict.items()))
@@ -83,7 +126,7 @@ def asset_serializer(asset_id):
     return ret
 
 
-def movie_serializer(asset):
+def movie_serializer(asset, lang):
     ret = []
 
     try:
@@ -94,7 +137,10 @@ def movie_serializer(asset):
 
     movie_dict = movie.toDict()
 
-    metadata_list = MovieMetadata.objects.filter(movie=movie)
+    if lang == '':
+        metadata_list = MovieMetadata.objects.filter(movie=movie)
+    else:
+        metadata_list = MovieMetadata.objects.filter(movie=movie, language=lang)
 
     if len(metadata_list) == 0:
         ret.append(movie_dict)
@@ -105,7 +151,7 @@ def movie_serializer(asset):
     return ret
 
 
-def serie_serializer(asset):
+def serie_serializer(asset, lang):
     ret = []
 
     try:
@@ -116,7 +162,10 @@ def serie_serializer(asset):
 
     serie_dict = serie.toDict()
 
-    metadata_list = SerieMetadata.objects.filter(serie=serie)
+    if lang == '':
+        metadata_list = SerieMetadata.objects.filter(serie=serie)
+    else:
+        metadata_list = SerieMetadata.objects.filter(serie=serie, language=lang)
 
     if len(metadata_list) == 0:
         ret.append(serie_dict)
@@ -127,7 +176,7 @@ def serie_serializer(asset):
     return ret
 
 
-def episode_serializer(asset):
+def episode_serializer(asset, lang):
     ret = []
 
     try:
@@ -138,7 +187,10 @@ def episode_serializer(asset):
 
     episode_dict = episode.toDict()
 
-    metadata_list = EpisodeMetadata.objects.filter(episode=episode)
+    if lang == '':
+        metadata_list = EpisodeMetadata.objects.filter(episode=episode)
+    else:
+        metadata_list = EpisodeMetadata.objects.filter(episode=episode, language=lang)
 
     if len(metadata_list) == 0:
         ret.append(episode_dict)
@@ -149,7 +201,7 @@ def episode_serializer(asset):
     return ret
 
 
-def girl_serializer(asset):
+def girl_serializer(asset, lang):
     ret = []
 
     try:
@@ -160,7 +212,11 @@ def girl_serializer(asset):
 
     girl_dict = girl.toDict()
 
-    metadata_list = GirlMetadata.objects.filter(girl=girl)
+    if lang == '':
+        metadata_list = GirlMetadata.objects.filter(girl=girl)
+    else:
+        metadata_list = GirlMetadata.objects.filter(girl=girl, language=lang)
+
 
     if len(metadata_list) == 0:
         ret.append(girl_dict)
@@ -170,104 +226,3 @@ def girl_serializer(asset):
 
     return ret
 
-
-
-
-"""
-def movie_serializer(movie):
-    ret = []
-
-    movie
-
-
-def asset_serializer(asset):
-    ret = []
-
-    asset_dict = asset.toDict()
-
-    if asset.type == 'ep':
-        try:
-            episode = Episode.objects.get(asset=asset)
-        except ObjectDoesNotExist:
-            msg = "Episode with house_id %s does not exist" % asset.house_id
-            raise SerializerException(msg)
-    elif asset.type == 'se':
-        try:
-            content = Serie.objects.get(asset=asset)
-        except ObjectDoesNotExist:
-            msg = "Serie with house_id %s does not exist" % asset.house_id
-            raise SerializerException(msg)
-    elif asset.type == 'mo':
-        try:
-            content = Movie.objects.get(asset=asset)
-        except ObjectDoesNotExist:
-            msg = "Movie with house_id %s does not exist" % asset.house_id
-            raise SerializerException(msg)
-    elif asset.type == 'gi':
-        try: content
-
-    asset_dict = dict(asset_dict.items() + content.toDict().items())
-
-    metadata_list = Metadata.objects.filter(asset=asset)
-
-    if len(metadata_list) == 0:
-        msg = "Metadata with house_id %s does not exist" % asset.house_id
-        raise SerializerException(msg)
-
-    for metadata in metadata_list:
-        m = metadata.toDict()
-        ret.append(dict(m.items() + asset_dict.items()))
-
-    return ret
-
-
-def publish_asset(house_id):
-    data = []
-
-    try:
-        asset = Asset.objects.get(house_id=house_id)
-    except ObjectDoesNotExist:
-        msg = "Asset with house_id %s does not exist" % house_id
-        raise PublisherException(msg) # Excepcion de Publicacion
-
-    try:
-        data = asset_serializer(asset)
-    except SerializerException as e:
-        print e.value
-
-    '''
-    for d in data:
-        if publicar d ok:
-            asset.publish_status = True
-            asset.publish_date   = datetime.now()
-            asset.save()
-            return data
-        else:
-            raise PublisherException(msg)  # Excepcion de Publicacion
-    '''
-    return []
-
-
-def unpublish_asset(house_id):
-    try:
-        asset = Asset.objects.get(house_id=house_id)
-    except ObjectDoesNotExist:
-        msg = "Asset with house_id %s does not exist" % house_id
-        raise PublisherException(msg)  # Excepcion de Publicacion
-
-    # despublicar data en DynamoFB.
-    '''
-    if despublicar ok:
-        asset.publish_status = False
-        asset.save()
-    '''
-
-
-
-try:
-    print asset_to_dict("0024890")
-    print asset_to_dict("0024889")
-    print asset_to_dict("0052346")
-except SerializerException as e:
-    print e.value
-"""

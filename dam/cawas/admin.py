@@ -7,15 +7,22 @@ import models
 class SettingAdmin(admin.ModelAdmin):
     list_display = ['name', 'enabled']
 
+@admin.register(models.PublishQueue)
+class PublishQueueAdmin(admin.ModelAdmin):
+    list_display = ['item_id', 'item_type', 'status', 'schedule_date', 'message']
 
 @admin.register(models.Image)
 class ImageAdmin(admin.ModelAdmin):
     list_display = ['name', 'portrait', 'landscape']
 
-
 @admin.register(models.Category)
 class CategoryAdmin(admin.ModelAdmin):
-    list_display = ['name', 'language', 'image']
+    list_display = ['category_id', 'name']
+
+
+@admin.register(models.CategoryMetadata)
+class CategoryMetadataAdmin(admin.ModelAdmin):
+    list_display = ['category', 'language', 'name']
 
 
 @admin.register(models.Channel)
