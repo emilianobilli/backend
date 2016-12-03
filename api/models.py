@@ -127,25 +127,20 @@ class Backend(object):
     def query_category(self, arg):
         return self.__query(self.categories,arg)
 
-    def query_show(self, args):
-        exclude = {'show_type' :'episode'}
-        fq      = {'asset_type':'show'}
-        pass
 
-    def query_girls(self, args):
-        fq      = {'asset_type':'girl'}
-        fqset   = []
+    def _load_filter_query(self, args, qArgs):
+        fset = []
+        for q in qArgs:
+            if q in args:
+                fset.append({q:args[q]})
+        return fset
     
+    def _cs_query(args, qArgs, fq, exclude):
         if 'lang' in args:
-            lang = args['lang']
-
+            lang  = args['lang']
+            
+            fqset = self._load_filter_query(args,qArgs)
             fqset.append(fq)
-            if 'class' in args:
-                fqset.append({'class'  : args['class']  })
-            if 'ranking' in args:
-                fqset.append({'ranking': args['ranking']})
-            if 'views' in args:
-                fqset.append({'views'  : args['views']  })
             if 'start' in args:
                 start = args['start']
             else:
@@ -155,13 +150,26 @@ class Backend(object):
             else:
                 size  = 10
 
-            return self.__cloudsearch_query(lang, fqset, None, start, size)
+            return self.__cloudsearch_query(lang, fqset, exclude, start, size)
         else:
             ret    = {'status': 'failure', 'message': 'Mandatory parameter not found (lang)'}
             status = 422
 
         return {'status': status, 'body': ret}
+ 
+    def query_girls(self, args):
+        fq      = {'asset_type':'girl'}
+        qArgs   = ['class', 'ranking', 'views']
+        exclude = None
 
+        return self._cs_query(args,qArgs,fq,exclude)
+    
+    def query_show(self, args):
+        exclude = {'show_type' :'episode'}
+        fq      = {'asset_type':'show'}
+        qArgs   = ['ranking', 'views', 'show_type', 'channel', 'girl', 'year']
+
+        return self._cs_query(args,qArgs,fq,exclude)
 
     def query_assets(self, args):
         exclude = {'show_type':'episode'}
