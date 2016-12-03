@@ -12,7 +12,7 @@ class Backend(object):
         if 'sliders' in config:
             self.sliders = dynamodbCollection(config['sliders']) 
     
-        self.channels = None
+        self.channels   = None
         self.categories = None        
 #        if 'channels' in config:
 #            self.channels = dynamodbCollection(config['channels'])
