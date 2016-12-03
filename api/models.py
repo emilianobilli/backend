@@ -23,6 +23,23 @@ class Backend(object):
 #        self.shows
 
 
+    def __cloudsearch_query(self, lang, fqset, exclude, start, size):
+        try:
+            ret    = domain[lang].query(fqset,exclude,start,size)
+            status = 200
+        except CollectionException as  e:
+            ret    = {'status': 'failure', 'message': str(e)}
+            status = 422
+        except CloudSearchException as e:
+            ret    = {'status': 'failure', 'message': str(e)}
+            status = 500
+        except Exception, e:
+            ret    = {'status': 'failure', 'message': str(e)}
+            status = 500
+
+        return {'status': status, 'body': ret}
+
+
     def __query(self, where, q):
         try:
             ret    = where.query(q)
@@ -109,4 +126,44 @@ class Backend(object):
 
     def query_category(self, arg):
         return self.__query(self.categories,arg)
+
+    def query_show(self, args):
+        exclude = {'show_type' :'episode'}
+        fq      = {'asset_type':'show'}
+        pass
+
+    def query_girls(self, args):
+        fq      = {'asset_type':'girl'}
+        fqset   = []
+    
+        if 'lang' in args:
+            lang = args['lang']
+
+            fqset.append(fq)
+            if 'class' in args:
+                fqset.append({'class'  : args['class']  })
+            if 'ranking' in args:
+                fqset.append({'ranking': args['ranking']})
+            if 'views' in args:
+                fqset.append({'views'  : args['views']  })
+            if 'start' in args:
+                start = args['start']
+            else:
+                start = 0
+            if 'size' in args:
+                size  = args['size']
+            else:
+                size  = 10
+
+            return self.__cloudsearch_query(lang, fqset, None, start, size)
+        else:
+            ret    = {'status': 'failure', 'message': 'Mandatory parameter not found (lang)'}
+            status = 422
+
+        return {'status': status, 'body': ret}
+
+
+    def query_assets(self, args):
+        exclude = {'show_type':'episode'}
+        pass
 

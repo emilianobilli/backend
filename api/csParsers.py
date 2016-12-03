@@ -1,7 +1,10 @@
+import re
+
+
 class Structured(object):
     def __init__(self):
         self.q             = []
-        self.fq            = []         
+        self.fq            = []
         self.exclude       = None
         self.size          = None
         self.start         = None
@@ -21,10 +24,27 @@ class Structured(object):
         if self.exclude is not None and type(self.exclude).__name__ == 'dict':
             exclude = self.exclude
             ek = (exclude.keys())[0]     
-            ev = exclude[ek]
-            return "(not %s:\'%s\')" % (ek, ev)
+            ev = self._check_range(exclude[ek])
+            if ev is not None:
+                return "(not %s:%s)" % (ek,ev)
+            return ''
         else:
-            return ""
+            return ''
+
+    def _check_range(self, v=None):
+        if (v.startswith('[') or v.startswith('{')) and (v.endswith(']') or v.endswith('}')):
+            close  = '\[\d+,\d+\]'
+            open_r = '\[\d+,\]'
+            open_l = '\[,\d+\]'
+            if re.match(close,v):
+                return v
+            elif re.match(open_r,v):
+                return v.replace(']','}')
+            elif re.match(open_l,v):
+                return v.replace('[','{')
+            else:
+                return None
+        return '\'%s\'' % v
 
     def _make_q(self, q=[]):
         ret = ''
@@ -35,16 +55,19 @@ class Structured(object):
             ret = ret + '(and '
             for kv in q:
                 k = kv.keys()[0]
-                v = kv[k]
-                ret = ret + "%s:\'%s\' " % (k,v)
+                v = self._check_range(kv[k])
+                if v is not None:    
+                    ret = ret + "%s:%s " % (k,v)
             ret = ret[0:len(ret)-1] + '%s)' % (self._exclude())
         else:
             k = (q[0].keys())[0]
-            v = (q[0])[k]
-            if self.exclude is not None:
-                ret = "(and %s:\'%s\' %s)" % (k,v, self._exclude())
-            else:
-                ret = "%s:\'%s\'" % (k,v)
+            v = self._check_range((q[0])[k])
+            if v is not None:
+                if self.exclude is not None:
+                    ret = "(and %s:%s %s)" % (k,v, self._exclude())
+                else:
+                    ret = "%s:%s" % (k,v)
+            ret = ''
         return ret
         
     def _make_sort(self):
@@ -83,4 +106,5 @@ flens = Structured()
 flens.fq_add({'channel':'Venus'})
 flens.fq_add({'category':'mamadas'})
 flens.exclude = {'category':'anal'}
+flens.fq_add({'year': '[,201a]'})
 print flens.make()

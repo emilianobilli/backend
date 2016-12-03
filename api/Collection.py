@@ -355,12 +355,12 @@ class cloudsearchCollection(object):
         return doc
 
 
-    def query(self, querylist=[], start=0, size=10, order=None):
+    def query(self, querylist=[], exclude=None, start=0, size=10, order=None):
         p = self.parser_class()
-
-        p.start = start
-        p.size  = size
-        qString = p.make()
+        p.exclude = exclude
+        p.start   = start
+        p.size    = size
+        qString   = p.make()
         ret = self.doGet(qString)
 
         return self._check_query_return(ret)
