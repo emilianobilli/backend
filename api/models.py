@@ -20,9 +20,8 @@ class Backend(object):
         if 'categories' in config:
             self.categories = dynamodbCollection(config['categories'])
 
-
         if 'search_domain' in config:
-            self.domain = cloudsearchCollection(config['search_domain'])
+            self.domain     = cloudsearchCollection(config['search_domain'])
 
         self.channels   = None
 #        if 'channels' in config:
@@ -65,7 +64,35 @@ class Backend(object):
             ret    = {'status': 'failure', 'message': str(e)}
         
         return {'status': status, 'body': ret}
-            
+
+
+    def __add_search_domain(self,where,item):
+        if 'lang' in item:
+        lang = item['lang']
+            try:
+                domain.add(item)
+                ret = where.add(item)
+                status = 201
+            except CollectionException as e:
+                status = 422
+                ret    = {'status': 'failure', 'message': str(e)}
+            except DynamoException as e:
+                ret    = {'status': 'failure', 'message': str(e)}
+                status = 500
+            except CloudSearchException as e:
+                ret    = {'status': 'failure', 'message': str(e)}
+                status = 500    
+            except Exception as e:
+                ret    = {'status': 'failure', 'message': str(e)}
+                status = 500
+        else:
+            status = 422
+            ret    = {'status': 'failure', 'message': 'Mandatory parameter not found in item (lang)'}
+
+        return {'status': status, 'body': ret}
+
+    def __del_search_domain(self,where,item):
+        pass
 
     def __add(self, where, item):
         try:
@@ -112,6 +139,9 @@ class Backend(object):
 
     def add_category(self, Item={}):
         return self.__add(self.categories, Item)
+
+    def add_show(self, Item={}):
+        return self.__add_search_domain(self.shows,Item)
 
     '''
         Del Methods for Slider, Block and Category
