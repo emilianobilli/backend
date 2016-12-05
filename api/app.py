@@ -36,38 +36,9 @@ backend = Backend({ "blocks" :
                                 "linked_asset_type": "S",
                                 "text" : "S",
                             }
-                       }}
-                    })
-
-
-'''
-channel = dbCollection({"database": {
-                            "table": "Channels",
-                            "pk": "name",
-                    #        "sk": "slider_id",
-                            "schema": {
-                                "name":  "S",
-                                "logo":  "S",
-                            }
-                       }})
-
-category = dbCollection({"database": {
-                            "table": "Categories",
-                            "pk": "lang",
-                            "sk": "name",
-                            "schema": {
-                                "lang":  "S",
-                                "name":  "S",
-                                "order":  "N",
-                                "image_big" : "S",
-                                "image_landscape": "S",
-                                "image_portrait": "S"
-                            }
-                       }})
-
-
-
-girls    = dbseCollection({"database": {
+                       }},
+                     "girls":
+                        {"database": {
                             "table": "Girls",
                             "pk": "lang",
                             "sk": "asset_id",
@@ -90,7 +61,44 @@ girls    = dbseCollection({"database": {
                                     "height": "S",
                                     "weight": "S"
                             }
-                          },
+                         }},
+                       "categories":
+                          {"database": {
+                            "table": "Categories",
+                            "pk": "lang",
+                            "sk": "name",
+                            "schema": {
+                                "lang":  "S",
+                                "name":  "S",
+                                "order":  "N",
+                                "image_big" : "S",
+                                "image_landscape": "S",
+                                "image_portrait": "S"
+                            }
+                       }},
+                       "search_domain": {"domain": {
+                                        "id_field": "house_id",
+                                        "filter_query" : '',
+                                        "schema": [],
+                                        "return_fields": [],
+                                        "name" : "sdhotgotest",
+                                    }}
+                    })
+
+
+'''
+channel = dbCollection({"database": {
+                            "table": "Channels",
+                            "pk": "name",
+                    #        "sk": "slider_id",
+                            "schema": {
+                                "name":  "S",
+                                "logo":  "S",
+                            }
+                       }})
+
+
+girls    = dbseCollection({,
                          "search" : {
                             "pk": "lang",
                             "value": { 
@@ -107,7 +115,34 @@ girls    = dbseCollection({"database": {
                         }})
 
 '''
+@api.route('/v1/shows/', methods=['GET'])
+def urlShow():
+    if request.method == 'GET':
+        args  = {}
+        for k in request.args.keys():
+            args[k] = request.args.get(k)
+        ret = backend.query_show(args)
+        return Response(response=dumps(ret['body']), status=ret['status'])
 
+@api.route('/v1/categories/', methods=['GET', 'POST', 'DELETE'])
+@cross_origin()
+def urlCategory():
+    if request.method == 'GET':
+        args  = {}
+        for k in request.args.keys():
+            args[k] = request.args.get(k)
+        ret = backend.query_category(args)
+        return Response(response=dumps(ret['body']), status=ret['status'])
+
+    if request.method == 'POST':
+        item = loads(request.get_json())
+        ret  = backend.add_category(item)
+        return Response(response=dumps(ret['body']), status=ret['status'])
+
+    if request.method == 'DELETE':
+        item = loads(request.get_json())
+        ret  = backend.del_category(item)
+        return Response(response=dumps(ret['body']), status=ret['status'])
 
 @api.route('/v1/sliders/', methods=['GET', 'POST', 'DELETE'])
 @cross_origin()

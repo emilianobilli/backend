@@ -67,7 +67,8 @@ class Structured(object):
                     ret = "(and %s:%s %s)" % (k,v, self._exclude())
                 else:
                     ret = "%s:%s" % (k,v)
-            ret = ''
+            else:
+                ret = ''
         return ret
         
     def _make_sort(self):
@@ -93,6 +94,7 @@ class Structured(object):
         return ('q=%s' % ret) if ret != '' else 'q=matchall'
         
     def make(self):
+        print self.fq
         return '%s%s%s%s%s%s' % (self._make_query(),
                                  self._make_filter_query(),
                                  self._make_size(),
@@ -103,8 +105,8 @@ class Structured(object):
 
 
 flens = Structured()
-flens.fq_add({'channel':'Venus'})
+#flens.fq_add({'channel':'Venus'})
 flens.fq_add({'category':'mamadas'})
-flens.exclude = {'category':'anal'}
-flens.fq_add({'year': '[,201a]'})
+#flens.exclude = {'category':'anal'}
+#flens.fq_add({'year': '[,201a]'})
 print flens.make()

@@ -2,30 +2,40 @@ from Collection import dynamodbCollection
 from Collection import cloudsearchCollection
 from Collection import CollectionException
 from Collection import DynamoException
-
+from Collection import CloudSearchException
 
 class Backend(object):
     def __init__(self, config):
+        print "Que pasa aca"
+
         if 'blocks' in config:
-            self.blocks  = dynamodbCollection(config['blocks'])
+            self.blocks     = dynamodbCollection(config['blocks'])
 
         if 'sliders' in config:
-            self.sliders = dynamodbCollection(config['sliders']) 
+            self.sliders    = dynamodbCollection(config['sliders']) 
     
+        if 'girls' in config:
+            self.girls      = dynamodbCollection(config['girls'])
+
+        if 'categories' in config:
+            self.categories = dynamodbCollection(config['categories'])
+
+
+        if 'search_domain' in config:
+            self.domain = cloudsearchCollection(config['search_domain'])
+
         self.channels   = None
-        self.categories = None        
 #        if 'channels' in config:
 #            self.channels = dynamodbCollection(config['channels'])
 
-#        if 'categories' in config:
-#            self.categories = dynamodbCollection(config['categories'])
+
 #        self.girls
 #        self.shows
 
 
     def __cloudsearch_query(self, lang, fqset, exclude, start, size):
         try:
-            ret    = domain[lang].query(fqset,exclude,start,size)
+            ret    = self.domain.query(fqset,exclude,start,size)
             status = 200
         except CollectionException as  e:
             ret    = {'status': 'failure', 'message': str(e)}
@@ -34,7 +44,7 @@ class Backend(object):
             ret    = {'status': 'failure', 'message': str(e)}
             status = 500
         except Exception, e:
-            ret    = {'status': 'failure', 'message': str(e)}
+            ret    = {'status': 'failure', 'message ---': str(e)}
             status = 500
 
         return {'status': status, 'body': ret}
@@ -128,19 +138,36 @@ class Backend(object):
         return self.__query(self.categories,arg)
 
 
-    def _load_filter_query(self, args, qArgs):
+    def _load_valid_fq_from_args(self, args, qArgs):
+        '''
+            args: Received Arguments
+            qArgs: Valid Arguments
+        '''
         fset = []
         for q in qArgs:
             if q in args:
-                fset.append({q:args[q]})
+                print args[q]
+                if ',' in args[q] and (not args[q].startswith('[') and not args[q].startswith('{')) and len(args[q].split(',')) > 1:
+                    values = args[q].split(',')
+                    for v in values:
+                        fset.append({q:v})
+                else:    
+                    fset.append({q:args[q]})
         return fset
     
-    def _cs_query(args, qArgs, fq, exclude):
+    def _cs_query(self, args, qArgs, fq, exclude):
+        '''
+            args:  Received Arguments
+            qArgs: Valid Arguments
+            fq:    Default filter query
+            exclude: Negative default filter query
+        '''
         if 'lang' in args:
             lang  = args['lang']
             
-            fqset = self._load_filter_query(args,qArgs)
-            fqset.append(fq)
+            fqset = self._load_valid_fq_from_args(args,qArgs)
+            if fq is not None:
+                fqset.append(fq)
             if 'start' in args:
                 start = args['start']
             else:
@@ -157,7 +184,7 @@ class Backend(object):
 
         return {'status': status, 'body': ret}
  
-    def query_girls(self, args):
+    def query_girl(self, args):
         fq      = {'asset_type':'girl'}
         qArgs   = ['class', 'ranking', 'views']
         exclude = None
@@ -165,13 +192,14 @@ class Backend(object):
         return self._cs_query(args,qArgs,fq,exclude)
     
     def query_show(self, args):
+        print args
         exclude = {'show_type' :'episode'}
         fq      = {'asset_type':'show'}
-        qArgs   = ['ranking', 'views', 'show_type', 'channel', 'girl', 'year']
+        qArgs   = ['ranking', 'views', 'show_type', 'channel', 'girl', 'year', 'categories', 'category']
 
-        return self._cs_query(args,qArgs,fq,exclude)
+        return self._cs_query(args,qArgs,None,None) #fq,exclude)
 
-    def query_assets(self, args):
+    def query_asset(self, args):
         exclude = {'show_type':'episode'}
         pass
 

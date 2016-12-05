@@ -224,11 +224,14 @@ class cloudsearchCollection(object):
 
         self.__init_domain()
 
+
+        self.h = httplib2.Http()
+
     def __get_domain(self):
 	try:
 	    response = self.client.describe_domains(DomainNames=[self.domain_name])
 	except Exception, e:
-	    raise CloudSearchException(e)
+	    raise CloudSearchException('(__get_domain) ' + e)
 	if 'DomainStatusList' in response and len(response['DomainStatusList']) == 1:
 	    domain = response['DomainStatusList'][0]
 	    return domain
@@ -262,12 +265,12 @@ class cloudsearchCollection(object):
 	header = { 'Content-type': 'application/json' }
 
 	uri = urlparse.urlparse(self.document_endpoint + self.document_url) 
-	h = httplib2.Http()
+#	h = httplib2.Http()
 
 	try:
-    	    response, content = h.request(uri.geturl(), method, body, header)
+    	    response, content = self.h.request(uri.geturl(), method, body, header)
 	except socket.error as err:
-	    raise CloudSearchException(err)
+	    raise CloudSearchException('(doPost) ' + err)
 
     	return response, content
 
@@ -279,12 +282,12 @@ class cloudsearchCollection(object):
 
         print self.search_endpoint + self.search_url + '?' + qString
 	uri = urlparse.urlparse(self.search_endpoint + self.search_url + '?' + qString)
-	h = httplib2.Http()
+#	h = httplib2.Http()
 
 	try:
-	    response, content = h.request(uri.geturl(), method)
+	    response, content = self.h.request(uri.geturl(), method)
 	except socket.error as err:
-    	    raise CloudSearchException(err)
+    	    raise CloudSearchException('(doGet) ' + err)
 
 	return response, content
 
@@ -357,12 +360,15 @@ class cloudsearchCollection(object):
 
     def query(self, querylist=[], exclude=None, start=0, size=10, order=None):
         p = self.parser_class()
+        for ql in querylist:
+            print ql
+            p.fq_add(ql)
         p.exclude = exclude
         p.start   = start
         p.size    = size
         qString   = p.make()
+        print qString
         ret = self.doGet(qString)
-
         return self._check_query_return(ret)
 
     def search(self):
