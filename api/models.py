@@ -6,7 +6,6 @@ from Collection import CloudSearchException
 
 class Backend(object):
     def __init__(self, config):
-        print "Que pasa aca"
 
         if 'blocks' in config:
             self.blocks     = dynamodbCollection(config['blocks'])
@@ -28,9 +27,6 @@ class Backend(object):
 #            self.channels = dynamodbCollection(config['channels'])
 
 
-#        self.girls
-#        self.shows
-
 
     def __cloudsearch_query(self, lang, fqset, exclude, start, size):
         try:
@@ -43,7 +39,7 @@ class Backend(object):
             ret    = {'status': 'failure', 'message': str(e)}
             status = 500
         except Exception, e:
-            ret    = {'status': 'failure', 'message ---': str(e)}
+            ret    = {'status': 'failure', 'message': str(e)}
             status = 500
 
         return {'status': status, 'body': ret}
@@ -66,13 +62,24 @@ class Backend(object):
         return {'status': status, 'body': ret}
 
 
-    def __add_search_domain(self,where,item):
+    def __add_search_domain(self,where,item,inmutable_fields=[]):
         if 'lang' in item:
-        lang = item['lang']
+            lang = item['lang']
             try:
-                domain.add(item)
+                doc  = where.get(item)
+                Item = doc['item']
+                if Item == {}:
+                    for k in inmutable_fields:
+                        if where.schema[k] == 'N':
+                            item[k]   = 0
+                else:
+                    for k in inmutable_fields:
+                        item[k]   = Item[k]
+
+                self.domain.add(item)
                 ret = where.add(item)
                 status = 201
+
             except CollectionException as e:
                 status = 422
                 ret    = {'status': 'failure', 'message': str(e)}
@@ -125,7 +132,7 @@ class Backend(object):
         except Exception as e:
             status = 500
             ret    = {'status': 'failure', 'message': str(e)}
-        
+
         return {'status': status, 'body': ret}
 
     '''
@@ -143,6 +150,18 @@ class Backend(object):
     def add_show(self, Item={}):
         return self.__add_search_domain(self.shows,Item)
 
+    def __get(self, where, Item={}):
+        return where.get(Item)
+
+    def add_girl(self, Item={}):
+        inmutable_fields = ['views', 'ranking']
+        return self.__add_search_domain(self.girls,Item, inmutable_fields)
+
+
+    def add_show(self, Item={}):
+        inmutable_fields = ['views', 'ranking']
+        return self.__add_search_domain(self.shows,Item, inmutable_fields)
+
     '''
         Del Methods for Slider, Block and Category
     '''
@@ -154,6 +173,13 @@ class Backend(object):
 
     def del_slider(self, Item={}):
         return self.__del(self.sliders, Item)
+
+    def del_show(self, Item={}):
+        return self.__del_search_domain(self.shows,Item)
+
+    def del_girl(self, Item={}):
+        return self.__del_search_domain(self.girls,Item)
+
 
     '''
         Query Methods for Slider, Block and Category
@@ -222,7 +248,6 @@ class Backend(object):
         return self._cs_query(args,qArgs,fq,exclude)
     
     def query_show(self, args):
-        print args
         exclude = {'show_type' :'episode'}
         fq      = {'asset_type':'show'}
         qArgs   = ['ranking', 'views', 'show_type', 'channel', 'girl', 'year', 'categories', 'category']

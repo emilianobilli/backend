@@ -19,6 +19,7 @@ class DynamoException(Exception):
     def __str__(self):
         return repr(self.value)
 
+
 class CloudSearchException(Exception):
     def __init__(self, value):
         self.value = value
@@ -50,8 +51,6 @@ class dynamodbCollection(object):
         except Exception, e:
             DynamoException(str(e))
 
-    
-    
     def _check_query_return(self, ret):
         doc = {}
         n   = 0
@@ -121,7 +120,6 @@ class dynamodbCollection(object):
             raise DynamoException(str(e))
 
         return self._check_get_return(ret)
-
 
 
     def add(self, Item ={}):
@@ -280,7 +278,7 @@ class cloudsearchCollection(object):
 	qString = qString.replace(' ', '%20')
 	qString = qString.replace('\'', '%27')
 
-        print self.search_endpoint + self.search_url + '?' + qString
+#        print self.search_endpoint + self.search_url + '?' + qString
 	uri = urlparse.urlparse(self.search_endpoint + self.search_url + '?' + qString)
 #	h = httplib2.Http()
 
@@ -361,13 +359,13 @@ class cloudsearchCollection(object):
     def query(self, querylist=[], exclude=None, start=0, size=10, order=None):
         p = self.parser_class()
         for ql in querylist:
-            print ql
+#            print ql
             p.fq_add(ql)
         p.exclude = exclude
         p.start   = start
         p.size    = size
         qString   = p.make()
-        print qString
+#        print qString
         ret = self.doGet(qString)
         return self._check_query_return(ret)
 

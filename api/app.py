@@ -60,7 +60,8 @@ backend = Backend({ "blocks" :
                                     "birth_date": "S",
                                     "height": "S",
                                     "weight": "S"
-                            }
+                            },
+                            "inmutable_fields": ['ranking', 'views']
                          }},
                        "categories":
                           {"database": {
@@ -77,11 +78,11 @@ backend = Backend({ "blocks" :
                             }
                        }},
                        "search_domain": {"domain": {
-                                        "id_field": "house_id",
+                                        "id_field": "asset_id",
                                         "filter_query" : '',
-                                        "schema": [],
+                                        "schema": ["asset_id", "name", "image_big", "image_landscape", "image_portrait", "views", "ranking", "asset_type", "blocks", "publish_date", "class", "summary_long", "nationality"],
                                         "return_fields": [],
-                                        "name" : "sdhotgotest",
+                                        "name" : "eshotgodomain",
                                     }}
                     })
 
@@ -123,6 +124,21 @@ def urlShow():
             args[k] = request.args.get(k)
         ret = backend.query_show(args)
         return Response(response=dumps(ret['body']), status=ret['status'])
+
+@api.route('/v1/girls/', methods=['GET', 'POST'])
+@cross_origin()
+def urlGirl():
+    if request.method == 'GET':
+        args  = {}
+        for k in request.args.keys():
+            args[k] = request.args.get(k)
+        ret = backend.query_girl(args)
+        return Response(response=dumps(ret['body']), status=ret['status'])
+    if request.method == 'POST':
+        item = loads(request.get_json())
+        ret  = backend.add_girl(item)
+        return Response(response=dumps(ret['body']), status=ret['status'])
+
 
 @api.route('/v1/categories/', methods=['GET', 'POST', 'DELETE'])
 @cross_origin()
