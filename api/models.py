@@ -150,9 +150,6 @@ class Backend(object):
     def add_show(self, Item={}):
         return self.__add_search_domain(self.shows,Item)
 
-    def __get(self, where, Item={}):
-        return where.get(Item)
-
     def add_girl(self, Item={}):
         inmutable_fields = ['views', 'ranking']
         return self.__add_search_domain(self.girls,Item, inmutable_fields)
@@ -246,7 +243,45 @@ class Backend(object):
         exclude = None
 
         return self._cs_query(args,qArgs,fq,exclude)
+
+    def _get(self, where, args):
+        try:
+            item = {}
+            if 'lang' in args:
+                item['lang']     = args['lang']
+            
+            if 'asset_id' in args:
+                item['asset_id'] = args['asset_id']
+                
+            ret =  where.get(item)
+            if ret['item'] == {}:
+                status = 404
+            else:
+                status = 200
+
+        except CollectionException as e:
+            status = 422
+            ret    = {'status': 'failure', 'message': str(e)}
+        except DynamoException as e:
+            ret    = {'status': 'failure', 'message': str(e)}
+            status = 500
+        except Exception as e:
+            status = 500
+            ret    = {'status': 'failure', 'message': str(e)}
+
+        return {'status': status, 'body': ret}
+
+    def get_girl(self, args):
+        return self._get(self.girls, args)
+
+    def get_show(self, args):
+        item = self._get(self.shows, args)
+            
     
+    def _query_episodes(self, serie_id):
+        fq      = {'show_type' :'episode'}
+        
+
     def query_show(self, args):
         exclude = {'show_type' :'episode'}
         fq      = {'asset_type':'show'}

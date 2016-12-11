@@ -61,7 +61,6 @@ backend = Backend({ "blocks" :
                                     "height": "S",
                                     "weight": "S"
                             },
-                            "inmutable_fields": ['ranking', 'views']
                          }},
                        "categories":
                           {"database": {
@@ -124,6 +123,16 @@ def urlShow():
             args[k] = request.args.get(k)
         ret = backend.query_show(args)
         return Response(response=dumps(ret['body']), status=ret['status'])
+
+@api.route('/v1/girls/<string:asset_id>', methods=['GET'])
+@cross_origin()
+def urlGetGirl(asset_id):
+    args = {}
+    args['asset_id'] = asset_id
+    for k in request.args.keys():
+        args[k] = request.args.get(k)
+    ret = backend.get_girl(args)
+    return Response(response=dumps(ret['body']), status=ret['status'])
 
 @api.route('/v1/girls/', methods=['GET', 'POST'])
 @cross_origin()
