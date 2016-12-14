@@ -41,7 +41,12 @@ def slider_serializer(slider_id, lang=''):
     if lang == '':
         metadata_list = SliderMetadata.objects.filter(slider=slider)
     else:
-        metadata_list = SliderMetadata.objects.filter(slider=slider, language=lang)
+        try:
+            language = Language.objects.get(code=lang)
+        except ObjectDoesNotExist:
+            msg = "Language code %s does not exist for slider ID %s" % (lang, slider_id)
+            raise SerializerException(msg)
+        metadata_list = SliderMetadata.objects.filter(slider=slider, language=language)
 
     if len(metadata_list) == 0:
         ret.append(slider_dict)
@@ -65,7 +70,12 @@ def category_serializer(cat_name, lang=''):
     if lang == '':
         metadata_list = CategoryMetadata.objects.filter(category=category)
     else:
-        metadata_list = CategoryMetadata.objects.filter(category=category, lang=lang)
+        try:
+            language = Language.objects.get(code=lang)
+        except ObjectDoesNotExist:
+            msg = "Language code %s does not exist for category %s" % (lang, cat_name)
+            raise SerializerException(msg)
+        metadata_list = CategoryMetadata.objects.filter(category=category, lang=language)
 
     if len(metadata_list) == 0:
         ret.append(category_dict)
@@ -140,7 +150,12 @@ def movie_serializer(asset, lang):
     if lang == '':
         metadata_list = MovieMetadata.objects.filter(movie=movie)
     else:
-        metadata_list = MovieMetadata.objects.filter(movie=movie, language=lang)
+        try:
+            language = Language.objects.get(code=lang)
+        except ObjectDoesNotExist:
+            msg = "Language code %s does not exist for asset ID %s" % (lang, asset.asset_id)
+            raise SerializerException(msg)
+        metadata_list = MovieMetadata.objects.filter(movie=movie, language=language)
 
     if len(metadata_list) == 0:
         ret.append(movie_dict)
@@ -165,7 +180,12 @@ def serie_serializer(asset, lang):
     if lang == '':
         metadata_list = SerieMetadata.objects.filter(serie=serie)
     else:
-        metadata_list = SerieMetadata.objects.filter(serie=serie, language=lang)
+        try:
+            language = Language.objects.get(code=lang)
+        except ObjectDoesNotExist:
+            msg = "Language code %s does not exist for asset ID %s" % (lang, asset.asset_id)
+            raise SerializerException(msg)
+        metadata_list = SerieMetadata.objects.filter(serie=serie, language=language)
 
     if len(metadata_list) == 0:
         ret.append(serie_dict)
@@ -190,7 +210,12 @@ def episode_serializer(asset, lang):
     if lang == '':
         metadata_list = EpisodeMetadata.objects.filter(episode=episode)
     else:
-        metadata_list = EpisodeMetadata.objects.filter(episode=episode, language=lang)
+        try:
+            language = Language.objects.get(code=lang)
+        except ObjectDoesNotExist:
+            msg = "Language code %s does not exist for asset ID %s" % (lang, asset.asset_id)
+            raise SerializerException(msg)
+        metadata_list = EpisodeMetadata.objects.filter(episode=episode, language=language)
 
     if len(metadata_list) == 0:
         ret.append(episode_dict)
@@ -215,8 +240,12 @@ def girl_serializer(asset, lang):
     if lang == '':
         metadata_list = GirlMetadata.objects.filter(girl=girl)
     else:
-        metadata_list = GirlMetadata.objects.filter(girl=girl, language=lang)
-
+        try:
+            language = Language.objects.get(code=lang)
+        except ObjectDoesNotExist:
+            msg = "Language code %s does not exist for asset ID %s" % (lang, asset.asset_id)
+            raise SerializerException(msg)
+        metadata_list = GirlMetadata.objects.filter(girl=girl, language=language)
 
     if len(metadata_list) == 0:
         ret.append(girl_dict)

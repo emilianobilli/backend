@@ -36,7 +36,7 @@ class ApiBackendServer(object):
             return content
         else:
             cont = json.loads(content)
-            raise ApiBackendException(cont['error'])
+            raise ApiBackendException(cont['message'])
 
 
     def post(self, url, body):
@@ -59,11 +59,11 @@ class ApiBackendServer(object):
             return content
         else:
             cont = json.loads(content)
-            raise ApiBackendException(cont['error'])
+            raise ApiBackendException(cont['message'])
 
 
     def delete(self, url, body):
-        method = 'DELETE'
+        method = 'POST'
         header = {'Content-type': 'application/json'}
 
         http = httplib2.Http()
@@ -91,10 +91,10 @@ class ApiBackendResource(object):
         self.url = url
 
     def add(self, item):
-        return self.server.post(self.url, json.dumps(item))
+        return self.server.post(self.url, {"action":"add", "item":item})
 
     def update(self, item):
-        return self.server.post(self.url, json.dumps(item))
+        return self.server.post(self.url, {"action":"add", "item":item})
 
     def delete(self, item):
-        return self.server.delete(self.url, json.dumps(item))
+        return self.server.delete(self.url, {"action":"del", "item":item})

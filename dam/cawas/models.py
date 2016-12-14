@@ -1,7 +1,8 @@
 from __future__ import unicode_literals
 
 from django.db import models
-import time
+from django.utils import timezone
+from django.core.exceptions import *
 
 # Create your models here.
 
@@ -20,6 +21,14 @@ class Setting(models.Model):
     enabled          = models.BooleanField(default=False)
 
 
+class Language(models.Model):
+    name = models.CharField(max_length= 20, help_text="Lenguage")
+    code = models.CharField(max_length=2, help_text="Lenguage code")
+
+    def __unicode__(self):
+        return self.name
+
+
 class PublishQueue(models.Model):
     STATUS = (
         ('Q', 'Queued'),
@@ -36,7 +45,7 @@ class PublishQueue(models.Model):
     )
 
     item_id       = models.CharField(max_length=8, help_text="ID del item")
-    item_lang     = models.CharField(max_length=2, choices=(("es", "es"), ("pt", "pt")), help_text="Lenguage del item")
+    item_lang     = models.ForeignKey(Language)
     item_type     = models.CharField(max_length=2, choices=TYPE, default='', help_text='Tipo de item')
     creation_date = models.DateTimeField(auto_now=False, auto_now_add=True)
     endpoint      = models.CharField(max_length=256, help_text="Endpoint url")
@@ -60,7 +69,7 @@ class Image(models.Model):
 
 class Tag(models.Model):
     name     = models.CharField(max_length=128, unique=True, help_text="Nombre del tag")
-    language = models.CharField(max_length=2, choices=(("es", "es"), ("pt", "pt")), help_text="Lenguage de la metadata")
+    language = models.ForeignKey(Language)
 
     class Meta:
         unique_together = ('name', 'language',)
@@ -70,13 +79,10 @@ class Tag(models.Model):
 
 
 class Category(models.Model):
-    category_id       = models.CharField(max_length=8, unique=True, help_text="ID de la Categoria")
-    name              = models.CharField(max_length=128, help_text="Nombre de la categoria")
-    image             = models.ForeignKey(Image, blank=True, null=True)
-    order             = models.IntegerField(unique=True, help_text="Orden de la categoria")
-    modification_date = models.DateTimeField(auto_now=True)
-    publish_date      = models.DateTimeField(auto_now=False, auto_now_add=False, blank=True, null=True)
-    publish_status    = models.BooleanField(default=False)
+    category_id   = models.CharField(max_length=8, unique=True, help_text="ID de la Categoria")
+    original_name = models.CharField(max_length=128, help_text="Nombre de la categoria")
+    image         = models.ForeignKey(Image, blank=True, null=True)
+    order         = models.IntegerField(unique=True, blank=True, null=True, help_text="Orden de la categoria")
 
     def save(self, *args, **kwargs):
         super(Category, self).save(*args, **kwargs)
@@ -87,11 +93,15 @@ class Category(models.Model):
             while len(id) < 6:
                 id = "0" + id
 
-            self.category_id = "CA%s" % (self.id)
+            self.category_id = "CA%s" % (id)
+        metadata = CategoryMetadata.objects.filter(category=self)
+        for m in metadata:
+            m.modification_date = timezone.now()
+            m.save()
         super(Category, self).save(*args, **kwargs)
 
     def __unicode__(self):
-        return self.name
+        return self.original_name
 
     def toDict(self):
         dict = {}
@@ -109,9 +119,12 @@ class Category(models.Model):
 
 
 class CategoryMetadata(models.Model):
-    category = models.ForeignKey(Category)
-    language = models.CharField(max_length=2, choices=(("es", "es"), ("pt", "pt")), help_text="Lenguage de la metadata")
-    name     = models.CharField(max_length=128, help_text="Nombre de la categoria")
+    category          = models.ForeignKey(Category)
+    language          = models.ForeignKey(Language)
+    name              = models.CharField(max_length=128, help_text="Nombre de la categoria")
+    modification_date = models.DateTimeField(auto_now=True)
+    publish_date      = models.DateTimeField(auto_now=False, auto_now_add=False, blank=True, null=True)
+    publish_status    = models.BooleanField(default=False)
 
     class Meta:
         unique_together = ('category', 'language',)
@@ -122,7 +135,7 @@ class CategoryMetadata(models.Model):
     def toDict(self):
         dict = {}
 
-        dict["lang"] = self.language
+        dict["lang"] = self.language.code
         dict["name"] = self.name
 
         return dict
@@ -159,9 +172,6 @@ class Asset(models.Model):
     asset_id          = models.CharField(max_length=8, unique=True, help_text="ID del Asset")
     asset_type        = models.CharField(max_length=10, choices=TYPE, blank=True, null=True, help_text="Tipo de Asset")
     creation_date     = models.DateTimeField(auto_now=False, auto_now_add=True)
-    modification_date = models.DateTimeField(auto_now=True)
-    publish_date      = models.DateTimeField(auto_now=False, auto_now_add=False, blank=True, null=True)
-    publish_status    = models.BooleanField(default=False)
 
     def save(self, *args, **kwargs):
         super(Asset, self).save(*args, **kwargs)
@@ -191,7 +201,6 @@ class Asset(models.Model):
             dict["asset_type"] = 'girl'
         else:
             dict["asset_type"] = 'show'
-        dict["publish_date"] = self.publish_date.strftime('%s')
 
         return dict
 
@@ -199,7 +208,7 @@ class Asset(models.Model):
 class Block(models.Model):
     block_id          = models.CharField(max_length=8, unique=True, help_text="ID del Bloque")
     name              = models.CharField(max_length=128, help_text="Nombre del bloque")
-    language          = models.CharField(max_length=2, choices=(("es","es"),("pt","pt")), help_text="Lenguage del bloque")
+    language          = models.ForeignKey(Language)
     channel           = models.ForeignKey(Channel, blank=True, null=True)
     assets            = models.ManyToManyField(Asset, blank=True)
     modification_date = models.DateTimeField(auto_now=True)
@@ -226,7 +235,7 @@ class Block(models.Model):
 
         dict["block_id"]   = self.block_id
         dict["block_name"] = self.name
-        dict["lang"]       = self.language
+        dict["lang"]       = self.language.code
         if self.channel is not None:
             dict["channel"] = self.channel.name
 
@@ -257,6 +266,10 @@ class Slider(models.Model):
                 id = "0" + id
 
             self.slider_id = "SL%s" % (id)
+        metadata = SliderMetadata.objects.filter(slider=self)
+        for m in metadata:
+            m.modification_date = timezone.now()
+            m.save()
         super(Slider, self).save(*args, **kwargs)
 
     def __unicode__(self):
@@ -276,9 +289,12 @@ class Slider(models.Model):
 
 
 class SliderMetadata(models.Model):
-    slider   = models.ForeignKey(Slider)
-    language = models.CharField(max_length=2, choices=(("es","es"),("pt","pt")), help_text="Lenguage del Slider")
-    text     = models.CharField(max_length=256, blank=True, help_text="Texto asociado al Slider")
+    slider            = models.ForeignKey(Slider)
+    language          = models.ForeignKey(Language)
+    text              = models.CharField(max_length=256, blank=True, help_text="Texto asociado al Slider")
+    modification_date = models.DateTimeField(auto_now=True)
+    publish_date      = models.DateTimeField(auto_now=False, auto_now_add=False, blank=True, null=True)
+    publish_status    = models.BooleanField(default=False)
 
     class Meta:
         unique_together = ('slider', 'language',)
@@ -312,18 +328,25 @@ class Girl(models.Model):
     def __unicode__(self):
         return self.asset.asset_id
 
+    def save(self, *args, **kwargs):
+        metadata = GirlMetadata.objects.filter(girl=self)
+        for m in metadata:
+            m.modification_date = timezone.now()
+            m.save()
+        super(Girl, self).save(*args, **kwargs)
+
     def toDict(self):
         dict = {}
 
         dict["name"]             = self.name
         dict["class"]            = self.type
         if self.image is not None:
-            if self.image.portrait is not None:
-                dict["image_portrait"] = self.image.portrait
-            if self.image.landscape is not None:
-                dict["image_landscape"] = self.image.landscape
-            if self.image.big is not None:
-                dict["image_big"] = self.image.big
+            if self.image.portrait.name != '':
+                dict["image_portrait"] = self.image.portrait.name
+            if self.image.landscape.name != '':
+                dict["image_landscape"] = self.image.landscape.name
+            if self.image.big.name != '':
+                dict["image_big"] = self.image.big.name
         if self.birth_date is not None:
             dict["birth_date"] = self.birth_date.strftime("%Y-%m-%d")
         if self.height is not None:
@@ -335,10 +358,13 @@ class Girl(models.Model):
 
 
 class GirlMetadata(models.Model):
-    girl        = models.ForeignKey(Girl)
-    language    = models.CharField(max_length=2, choices=(("es", "es"), ("pt", "pt")), help_text="Lenguage de la metadata")
-    description = models.CharField(max_length=256, blank=True, help_text="Descripcion de la actriz")
-    nationality = models.CharField(max_length=128, blank=True, help_text="Nacionalidad de la aztriz")
+    girl              = models.ForeignKey(Girl)
+    language          = models.ForeignKey(Language)
+    description       = models.CharField(max_length=256, blank=True, help_text="Descripcion de la actriz")
+    nationality       = models.CharField(max_length=128, blank=True, help_text="Nacionalidad de la aztriz")
+    modification_date = models.DateTimeField(auto_now=True)
+    publish_date      = models.DateTimeField(auto_now=False, auto_now_add=False, blank=True, null=True)
+    publish_status    = models.BooleanField(default=False)
 
     class Meta:
         unique_together = ('girl', 'language',)
@@ -349,7 +375,7 @@ class GirlMetadata(models.Model):
     def toDict(self):
         dict = {}
 
-        dict["lang"]         = self.language
+        dict["lang"]         = self.language.code
         dict["summary_long"] = self.description
         dict["nationality"]  = self.nationality
 
@@ -367,9 +393,17 @@ class Serie(models.Model):
     image           = models.ForeignKey(Image, blank=True, null=True)
     seasons         = models.IntegerField(default=0, help_text="Cantidad de temporadas")
     episodes        = models.IntegerField(default=0, help_text="Cantidad de episodios")
+    category        = models.ManyToManyField(Category)
 
     def __unicode__(self):
         return self.asset.asset_id
+
+    def save(self, *args, **kwargs):
+        metadata = SerieMetadata.objects.filter(serie=self)
+        for m in metadata:
+            m.modification_date = timezone.now()
+            m.save()
+        super(Serie, self).save(*args, **kwargs)
 
     # Convierte la serie en un diccionario
     def toDict(self):
@@ -383,9 +417,12 @@ class Serie(models.Model):
         dict["year"]            = self.year
         dict["cast"]            = cast
         dict["directors"]       = directors
-        dict["image_portrait"]  = self.image.portrait
-        dict["image_landscape"] = self.image.landscape
-        dict["image_big"]       = self.image.big
+        if self.image.portrait.name != '':
+            dict["image_portrait"] = self.image.portrait.name
+        if self.image.landscape.name != '':
+            dict["image_landscape"] = self.image.landscape.name
+        if self.image.big.name != '':
+            dict["image_big"] = self.image.big.name
         dict["seasons"]         = self.seasons
         dict["episodes"]        = self.episodes
 
@@ -393,13 +430,15 @@ class Serie(models.Model):
 
 
 class SerieMetadata(models.Model):
-    serie          = models.ForeignKey(Serie)
-    language       = models.CharField(max_length=2, choices=(("es","es"),("pt","pt")), help_text="Lenguage de la metadata")
-    title          = models.CharField(max_length=128, help_text="Titulo en el idioma correspondiente")
-    summary_short  = models.CharField(max_length=256, blank=True, help_text="Descripcion corta")
-    summary_long   = models.CharField(max_length=4096, blank=True, help_text="Descripcion larga")
-    category       = models.ManyToManyField(Category)
-    subtitle       = models.BooleanField(default=False)
+    serie             = models.ForeignKey(Serie)
+    language          = models.ForeignKey(Language)
+    title             = models.CharField(max_length=128, help_text="Titulo en el idioma correspondiente")
+    summary_short     = models.CharField(max_length=256, blank=True, help_text="Descripcion corta")
+    summary_long      = models.CharField(max_length=4096, blank=True, help_text="Descripcion larga")
+    subtitle          = models.BooleanField(default=False)
+    modification_date = models.DateTimeField(auto_now=True)
+    publish_date      = models.DateTimeField(auto_now=False, auto_now_add=False, blank=True, null=True)
+    publish_status    = models.BooleanField(default=False)
 
     class Meta:
         unique_together = ('serie', 'language',)
@@ -410,12 +449,16 @@ class SerieMetadata(models.Model):
     # Convierte la metadata en un diccionario
     def toDict(self):
         dict = {}
+
         categories = []
+        for cat in self.serie.category.all():
+            try:
+                cat_metadata = CategoryMetadata.objects.get(category=cat, language=self.language)
+                categories.append(cat_metadata.name)
+            except ObjectDoesNotExist:
+                pass
 
-        for cat in self.category.all():
-            categories.append(cat.name)
-
-        dict["lang"]           = self.language
+        dict["lang"]           = self.language.code
         dict["title"]          = self.title
         dict["summary_short"]  = self.summary_short
         dict["summary_long"]   = self.summary_long
@@ -440,9 +483,26 @@ class Episode(models.Model):
     chapter         = models.IntegerField(default=0, help_text="Numero de capitulo")
     season          = models.IntegerField(default=0, help_text="Numero de temporada")
     thumbnails      = models.BooleanField(default=False)
+    category        = models.ManyToManyField(Category)
 
     def __unicode__(self):
         return self.asset.asset_id
+
+    def save(self, *args, **kwargs):
+        metadata = EpisodeMetadata.objects.filter(episode=self)
+        for m in metadata:
+            m.modification_date = timezone.now()
+            m.save()
+        self.serie.episodes += 1
+        if self.season > self.serie.seasons:
+            self.serie.seasons = self.season
+        self.serie.save()
+        super(Episode, self).save(*args, **kwargs)
+
+    def delete(self, *args, **kwargs):
+        self.serie.episodes -= 1
+        self.serie.save()
+        super(Episode, self).delete(*args, **kwargs)
 
     # Convierte el episode en un diccionario
     def toDict(self):
@@ -456,9 +516,12 @@ class Episode(models.Model):
         dict["year"]            = self.year
         dict["cast"]            = cast
         dict["directors"]       = directors
-        dict["image_portrait"]  = self.image.portrait
-        dict["image_landscape"] = self.image.landscape
-        dict["image_big"]       = self.image.big
+        if self.image.portrait.name != '':
+            dict["image_portrait"] = self.image.portrait.name
+        if self.image.landscape.name != '':
+            dict["image_landscape"] = self.image.landscape.name
+        if self.image.big.name != '':
+            dict["image_big"] = self.image.big.name
         dict["runtime"]         = self.runtime
         dict["display_runtime"] = self.display_runtime
         dict["chapter"]         = self.chapter
@@ -470,13 +533,15 @@ class Episode(models.Model):
 
 
 class EpisodeMetadata(models.Model):
-    episode        = models.ForeignKey(Episode)
-    language       = models.CharField(max_length=2, choices=(("es","es"),("pt","pt")), help_text="Lenguage de la metadata")
-    title          = models.CharField(max_length=128, help_text="Titulo en el idioma correspondiente")
-    summary_short  = models.CharField(max_length=256, blank=True, help_text="Descripcion corta")
-    summary_long   = models.CharField(max_length=4096, blank=True, help_text="Descripcion larga")
-    category       = models.ManyToManyField(Category)
-    subtitle       = models.BooleanField(default=False)
+    episode           = models.ForeignKey(Episode)
+    language          = models.ForeignKey(Language)
+    title             = models.CharField(max_length=128, help_text="Titulo en el idioma correspondiente")
+    summary_short     = models.CharField(max_length=256, blank=True, help_text="Descripcion corta")
+    summary_long      = models.CharField(max_length=4096, blank=True, help_text="Descripcion larga")
+    subtitle          = models.BooleanField(default=False)
+    modification_date = models.DateTimeField(auto_now=True)
+    publish_date      = models.DateTimeField(auto_now=False, auto_now_add=False, blank=True, null=True)
+    publish_status    = models.BooleanField(default=False)
 
     class Meta:
         unique_together = ('episode', 'language',)
@@ -487,17 +552,21 @@ class EpisodeMetadata(models.Model):
     # Convierte la metadata en un diccionario
     def toDict(self):
         dict = {}
+
         categories = []
+        for cat in self.episode.category.all():
+            try:
+                cat_metadata = CategoryMetadata.objects.get(category=cat, language=self.language)
+                categories.append(cat_metadata.name)
+            except ObjectDoesNotExist:
+                pass
 
-        for cat in self.category.all():
-            categories.append(cat.name)
-
-        dict["lang"]           = self.language
+        dict["lang"]           = self.language.code
         dict["title"]          = self.title
         dict["summary_short"]  = self.summary_short
         dict["summary_long"]   = self.summary_long
-        dict["categories"]     = categories
         dict["subtitle"]       = self.subtitle
+        dict["categories"]     = categories
 
         return dict
 
@@ -514,9 +583,17 @@ class Movie(models.Model):
     runtime         = models.IntegerField(default=0, help_text="Duracion expresada en segundos")
     display_runtime = models.CharField(default="00:00", max_length=5, help_text="Duracion expresada en HH:MM")
     thumbnails      = models.BooleanField(default=False)
+    category        = models.ManyToManyField(Category)
 
     def __unicode__(self):
         return self.asset.asset_id
+
+    def save(self, *args, **kwargs):
+        metadata = MovieMetadata.objects.filter(movie=self)
+        for m in metadata:
+            m.modification_date = timezone.now()
+            m.save()
+        super(Movie, self).save(*args, **kwargs)
 
     # Convierte la movie en un diccionario
     def toDict(self):
@@ -530,9 +607,12 @@ class Movie(models.Model):
         dict["year"]            = self.year
         dict["cast"]            = cast
         dict["directors"]       = directors
-        dict["image_portrait"]  = self.image.portrait
-        dict["image_landscape"] = self.image.landscape
-        dict["image_big"]       = self.image.big
+        if self.image.portrait.name != '':
+            dict["image_portrait"] = self.image.portrait.name
+        if self.image.landscape.name != '':
+            dict["image_landscape"] = self.image.landscape.name
+        if self.image.big.name != '':
+            dict["image_big"] = self.image.big.name
         dict["runtime"]         = self.runtime
         dict["display_runtime"] = self.display_runtime
         dict["thumbnails"]      = self.thumbnails
@@ -541,13 +621,15 @@ class Movie(models.Model):
 
 
 class MovieMetadata(models.Model):
-    movie          = models.ForeignKey(Movie)
-    language       = models.CharField(max_length=2, choices=(("es","es"),("pt","pt")), help_text="Lenguage de la metadata")
-    title          = models.CharField(max_length=128, help_text="Titulo en el idioma correspondiente")
-    summary_short  = models.CharField(max_length=256, blank=True, help_text="Descripcion corta")
-    summary_long   = models.CharField(max_length=4096, blank=True, help_text="Descripcion larga")
-    category       = models.ManyToManyField(Category)
-    subtitle       = models.BooleanField(default=False)
+    movie             = models.ForeignKey(Movie)
+    language          = models.ForeignKey(Language)
+    title             = models.CharField(max_length=128, help_text="Titulo en el idioma correspondiente")
+    summary_short     = models.CharField(max_length=256, blank=True, help_text="Descripcion corta")
+    summary_long      = models.CharField(max_length=4096, blank=True, help_text="Descripcion larga")
+    subtitle          = models.BooleanField(default=False)
+    modification_date = models.DateTimeField(auto_now=True)
+    publish_date      = models.DateTimeField(auto_now=False, auto_now_add=False, blank=True, null=True)
+    publish_status    = models.BooleanField(default=False)
 
     class Meta:
         unique_together = ('movie', 'language',)
@@ -558,16 +640,20 @@ class MovieMetadata(models.Model):
     # Convierte la metadata en un diccionario
     def toDict(self):
         dict = {}
+
         categories = []
+        for cat in self.movie.category.all():
+            try:
+                cat_metadata = CategoryMetadata.objects.get(category=cat, language=self.language)
+                categories.append(cat_metadata.name)
+            except ObjectDoesNotExist:
+                pass
 
-        for cat in self.category.all():
-            categories.append(cat.name)
-
-        dict["lang"]           = self.language
+        dict["lang"]           = self.language.code
         dict["title"]          = self.title
         dict["summary_short"]  = self.summary_short
         dict["summary_long"]   = self.summary_long
-        dict["categories"]     = categories
         dict["subtitle"]       = self.subtitle
+        dict["categories"]     = categories
 
         return dict

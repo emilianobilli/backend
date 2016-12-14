@@ -7,6 +7,10 @@ import models
 class SettingAdmin(admin.ModelAdmin):
     list_display = ['name', 'enabled']
 
+@admin.register(models.Language)
+class LanguageAdmin(admin.ModelAdmin):
+    list_display = ['name', 'code']
+
 @admin.register(models.PublishQueue)
 class PublishQueueAdmin(admin.ModelAdmin):
     list_display = ['item_id', 'item_type', 'status', 'schedule_date', 'message']
@@ -17,7 +21,7 @@ class ImageAdmin(admin.ModelAdmin):
 
 @admin.register(models.Category)
 class CategoryAdmin(admin.ModelAdmin):
-    list_display = ['category_id', 'name']
+    list_display = ['category_id', 'original_name']
 
 
 @admin.register(models.CategoryMetadata)
@@ -32,7 +36,7 @@ class ChannelAdmin(admin.ModelAdmin):
 
 @admin.register(models.Asset)
 class AssetAdmin(admin.ModelAdmin):
-    list_display = ['asset_id', 'asset_type', 'creation_date', 'publish_date', 'publish_status']
+    list_display = ['asset_id', 'asset_type', 'creation_date']
 
 
 @admin.register(models.Girl)
@@ -42,7 +46,7 @@ class GirlAdmin(admin.ModelAdmin):
 
 @admin.register(models.GirlMetadata)
 class GirlMetadataAdmin(admin.ModelAdmin):
-    list_display = ['girl', 'language']
+    list_display = ['girl', 'language', 'modification_date']
 
 
 @admin.register(models.Serie)

@@ -32,7 +32,133 @@ LOG_FILE = './log/publisher.log'
 ERR_FILE = './log/publisher.err'
 PID_FILE = './pid/publisher.pid'
 
-URLs = {'API':'http://www.zolechamedia.net:80002', 'BL':'/v1/blocks/', 'SL':'/v1/sliders/'}
+URLs = {'BL':'/v1/blocks/', 'SL':'/v1/sliders/', 'AS':'/v1/assets/'}
+
+
+class PublisherException(Exception):
+    def __init__(self, value):
+        self.value = value
+
+    def __repr__(self):
+        return repr(self.value)
+
+
+def publish_movie(asset, lang):
+    try:
+        movie = Movie.objects.get(asset=asset)
+    except ObjectDoesNotExist:
+        msg = "Movie with asset ID %s does not exist" % asset.asset_id
+        raise PublisherException(msg)
+    try:
+        metadata = MovieMetadata.objects.get(movie=movie, language=lang)
+    except ObjectDoesNotExist:
+        msg = "Movie with asset ID %s has not %s metadata" % (asset.asset_id, lang.name)
+        raise PublisherException(msg)
+    return metadata
+
+
+def publish_episode(asset, lang):
+    try:
+        episode = Episode.objects.get(asset=asset)
+    except ObjectDoesNotExist:
+        msg = "Episode with asset ID %s does not exist" % asset.asset_id
+        raise PublisherException(msg)
+    try:
+        metadata = EpisodeMetadata.objects.get(episode=episode, language=lang)
+    except ObjectDoesNotExist:
+        msg = "Episode with asset ID %s has not %s metadata" % (asset.asset_id, lang.name)
+        raise PublisherException(msg)
+    return metadata
+
+
+def publish_serie(asset, lang):
+    try:
+        serie = Serie.objects.get(asset=asset)
+    except ObjectDoesNotExist:
+        msg = "Serie with asset ID %s does not exist" % asset.asset_id
+        raise PublisherException(msg)
+    try:
+        metadata = SerieMetadata.objects.get(serie=serie, language=lang)
+    except ObjectDoesNotExist:
+        msg = "Serie with asset ID %s has not %s metadata" % (asset.asset_id, lang.name)
+        raise PublisherException(msg)
+    return metadata
+
+
+def publish_girl(asset, lang):
+    try:
+        girl = Girl.objects.get(asset=asset)
+    except ObjectDoesNotExist:
+        msg = "Girl with asset ID %s does not exist" % asset.asset_id
+        raise PublisherException(msg)
+    try:
+        metadata = GirlMetadata.objects.get(girl=girl, language=lang)
+    except ObjectDoesNotExist:
+        msg = "Girl with asset ID %s has not %s metadata" % (asset.asset_id, lang.name)
+        raise PublisherException(msg)
+    return metadata
+
+
+def publish_asset(job):
+    try:
+        asset = Asset.objects.get(asset_id=job.item_id)
+    except ObjectDoesNotExist:
+        msg = "Asset with ID %s does not exist" % job.item_id
+        raise PublisherException(msg)
+    if asset.asset_type == 'movie':
+        return publish_movie(asset, job.item_lang)
+    elif asset.asset_type == 'episode':
+        return publish_episode(asset, job.item_lang)
+    elif asset.asset_type == 'serie':
+        return publish_serie(asset, job.item_lang)
+    elif asset.asset_type == 'girl':
+        return publish_girl(asset, job.item_lang)
+
+
+def publish_slider(job):
+    try:
+        slider = Slider.objects.get(slider_id=job.item_id)
+    except ObjectDoesNotExist:
+        msg = "Slider with ID %s does not exist" % job.item_id
+        raise PublisherException(msg)
+    try:
+        metadata = SliderMetadata.objects.get(slider=slider, language=job.item_lang)
+    except ObjectDoesNotExist:
+        msg = "Slider with ID %s has not %s metadata" % (job.item_id, job.item_lang.name)
+        raise PublisherException(msg)
+    return metadata
+
+
+def publish_block(job):
+    try:
+        block = Block.objects.get(block_id=job.item_id, language=job.item_lang)
+    except ObjectDoesNotExist:
+        msg = "Block with ID %s and language %s does not exist" % (job.item_id, job.item_lang.name)
+        raise PublisherException(msg)
+    return block
+
+
+def publish_category(job):
+    try:
+        category = Category.objects.get(category_id=job.item_id)
+    except ObjectDoesNotExist:
+        msg = "Category with ID %s does not exist" % job.item_id
+        raise PublisherException(msg)
+    try:
+        metadata = CategoryMetadata.objects.get(category=category, language=job.item_lang)
+    except ObjectDoesNotExist:
+        msg = "Category with ID %s has not %s metadata" % (job.item_id, job.item_lang.name)
+        raise PublisherException(msg)
+    return metadata
+
+
+def publish_channel(job):
+    try:
+        channel = Channel.objects.get(name=job.item_id, language=job.item_lang)
+    except ObjectDoesNotExist:
+        msg = "Channel with ID %s and language %s does not exist" % (job.item_id, job.item_lang.name)
+        raise PublisherException(msg)
+    return channel
 
 
 def publish_items():
@@ -43,10 +169,10 @@ def publish_items():
         if job.schedule_date < timezone.now():
             if job.item_type == 'AS':
                 try:
-                    obj = Asset.objects.get(asset_id=job.item_id)
-                except ObjectDoesNotExist:
+                    obj = publish_asset(job)
+                except PublisherException as err:
                     job.status = 'E'
-                    job.message = "Asset with ID %s does not exist" % job.item_id
+                    job.message = err.value
                     job.save()
                 try:
                     item = asset_serializer(job.item_id, job.item_lang)
@@ -57,10 +183,10 @@ def publish_items():
 
             elif job.item_type == 'BL':
                 try:
-                    obj = Block.objects.get(block_id=job.item_id)
-                except ObjectDoesNotExist:
-                    job.status = 'E'
-                    job.message = "Block with ID %s does not exist" % job.item_id
+                    obj = publish_block(job)
+                except SerializerException as err:
+                    job.status  = 'E'
+                    job.message = err.value
                     job.save()
                 try:
                     item = block_serializer(job.item_id)
@@ -71,10 +197,10 @@ def publish_items():
 
             elif job.item_type == 'SL':
                 try:
-                    obj = Slider.objects.get(slider_id=job.item_id)
-                except ObjectDoesNotExist:
+                    obj = publish_slider(job)
+                except PublisherException as err:
                     job.status = 'E'
-                    job.message = "Slider with ID %s does not exist" % job.item_id
+                    job.message = err.value
                     job.save()
                 try:
                     item = slider_serializer(job.item_id, job.item_lang)
@@ -85,10 +211,10 @@ def publish_items():
 
             elif job.item_type == 'CA':
                 try:
-                    obj = Category.objects.get(category_id=job.item_id)
-                except ObjectDoesNotExist:
+                    obj = publish_category(job)
+                except SerializerException as err:
                     job.status = 'E'
-                    job.message = "Category with ID %s does not exist" % job.item_id
+                    job.message = err.value
                     job.save()
                 try:
                     item = category_serializer(job.item_id, job.item_lang)
@@ -99,10 +225,10 @@ def publish_items():
 
             elif job.item_type == 'CH':
                 try:
-                    obj = Channel.objects.get(name=job.item_id)
-                except ObjectDoesNotExist:
+                    obj = publish_channel(job)
+                except PublisherException as err:
                     job.status = 'E'
-                    job.message = "Channel with name %s does not exist" % job.item_id
+                    job.message = err.value
                     job.save()
                 try:
                     item = channel_serializer(job.item_id)
@@ -118,6 +244,8 @@ def publish_items():
             if job.status != 'E':
                 ep = ApiBackendResource(job.endpoint, URLs[str(job.item_type)])
                 try:
+                    print item
+                    item[0]['publish_date'] = timezone.now().strftime('%s')
                     ep.add(item[0])
                     job.status = 'D'
                     job.save()
