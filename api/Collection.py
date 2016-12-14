@@ -20,6 +20,13 @@ class DynamoException(Exception):
         return repr(self.value)
 
 
+class CloudSearchException(Exception):
+    def __init__(self, value):
+        self.value = value
+    def __str__(self):
+        return repr(self.value)
+
+
 class dynamodbCollection(object):
     def __init__(self, config):
         db = config['database']
@@ -44,8 +51,6 @@ class dynamodbCollection(object):
         except Exception, e:
             DynamoException(str(e))
 
-    
-    
     def _check_query_return(self, ret):
         doc = {}
         n   = 0
@@ -117,7 +122,6 @@ class dynamodbCollection(object):
         return self._check_get_return(ret)
 
 
-
     def add(self, Item ={}):
 
         if self.pk not in Item:
@@ -166,7 +170,7 @@ class dynamodbCollection(object):
 
         if 'ResponseMetadata' in ret:
             if 'HTTPStatusCode' not in ret['ResponseMetadata'] or ret['ResponseMetadata']['HTTPStatusCode'] != 200:
-                raise DynamoException(str(e))
+                raise DynamoException(str(ret))
 
         return toDel
 
@@ -189,7 +193,7 @@ class cloudsearchCollection(object):
 	self.client       = boto3.client('cloudsearch')
 
         if not 'domain' in config:
-            pass # Raise
+            raise CollectionException('(__init__) Domain not found in config')
 
         domain = config['domain']
 
@@ -202,7 +206,7 @@ class cloudsearchCollection(object):
             not 'id_field'      in domain or
             not 'schema'        in domain or
             not 'return_fields' in domain):
-            pass # Raise
+            raise CollectionException('(__init__) Mandatory value not found in config')
 
 
         self.id_field           = domain['id_field']
@@ -218,11 +222,14 @@ class cloudsearchCollection(object):
 
         self.__init_domain()
 
+
+        self.h = httplib2.Http()
+
     def __get_domain(self):
 	try:
 	    response = self.client.describe_domains(DomainNames=[self.domain_name])
-	except:
-	    pass
+	except Exception, e:
+	    raise CloudSearchException('(__get_domain) ' + e)
 	if 'DomainStatusList' in response and len(response['DomainStatusList']) == 1:
 	    domain = response['DomainStatusList'][0]
 	    return domain
@@ -241,7 +248,7 @@ class cloudsearchCollection(object):
 	    search_ep   = base + search_domain['SearchService']['Endpoint']
 	    self.__endpoint_init(document_ep,search_ep)
 	else:
-	    pass # Raise
+	    raise CloudSearchException('(__init_domain) Unable to found Domain')
 
     def __endpoint_init(self, document_ep, search_ep):
 	self.document_endpoint 	= document_ep
@@ -256,12 +263,12 @@ class cloudsearchCollection(object):
 	header = { 'Content-type': 'application/json' }
 
 	uri = urlparse.urlparse(self.document_endpoint + self.document_url) 
-	h = httplib2.Http()
+#	h = httplib2.Http()
 
 	try:
-    	    response, content = h.request(uri.geturl(), method, body, header)
+    	    response, content = self.h.request(uri.geturl(), method, body, header)
 	except socket.error as err:
-	    return False, err
+	    raise CloudSearchException('(doPost) ' + err)
 
     	return response, content
 
@@ -271,14 +278,14 @@ class cloudsearchCollection(object):
 	qString = qString.replace(' ', '%20')
 	qString = qString.replace('\'', '%27')
 
-        print self.search_endpoint + self.search_url + '?' + qString
+#        print self.search_endpoint + self.search_url + '?' + qString
 	uri = urlparse.urlparse(self.search_endpoint + self.search_url + '?' + qString)
-	h = httplib2.Http()
+#	h = httplib2.Http()
 
 	try:
-	    response, content = h.request(uri.geturl(), method)
+	    response, content = self.h.request(uri.geturl(), method)
 	except socket.error as err:
-    	    return False, err
+    	    raise CloudSearchException('(doGet) ' + err)
 
 	return response, content
 
@@ -289,18 +296,18 @@ class cloudsearchCollection(object):
 
 	response, content = self.doPost(json.dumps([doc]))
 	if response and 'status' in response:
-	    if response['status'] == '200':
-		return True, content
-	    else:
-		return False, content
-    
-	return False, content
+	    if response['status'] != '200':
+		raise CloudSearchException(str(content))
+	else:
+            raise CloudSearchException('(Delete) Unable to found return status code')
+
+        return did
 
 
     def add(self, Item={}):
 
         if self.id_field not in Item:
-            pass # error
+            raise CollectionException('(Add) Id field not found in item (%s)' % self.id_field )
 
         did = Item[self.id_field]
         doc = dataStringDict(self.schema).String(Item)
@@ -314,12 +321,14 @@ class cloudsearchCollection(object):
 	doc['fields'] = fields
 
 	response, content = self.doPost(json.dumps([doc]))
-	if response and 'status' in response:
-	    if response['status'] == '200':
-		return True, content
-	    else:
-		return False, content
-	return False, content
+        if response and 'status' in response:
+	    if response['status'] != '200':
+		raise CloudSearchException(str(content))
+	else:
+            raise CloudSearchException('(Delete) Unable to found return status code')
+
+	return did
+
 
     def get(self, did):
         pass
@@ -347,14 +356,17 @@ class cloudsearchCollection(object):
         return doc
 
 
-    def query(self, querylist=[], start=0, size=10, order=None):
+    def query(self, querylist=[], exclude=None, start=0, size=10, order=None):
         p = self.parser_class()
-
-        p.start = start
-        p.size  = size
-        qString = p.make()
+        for ql in querylist:
+#            print ql
+            p.fq_add(ql)
+        p.exclude = exclude
+        p.start   = start
+        p.size    = size
+        qString   = p.make()
+#        print qString
         ret = self.doGet(qString)
-
         return self._check_query_return(ret)
 
     def search(self):

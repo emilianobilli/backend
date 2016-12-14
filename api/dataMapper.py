@@ -44,11 +44,12 @@ class dataStringDict(object):
                 if (type(Item[k]).__name__ == 'list' or
                     type(Item[k]).__name__ == 'str'):
                     ret[k] = Item[k]
-                if (type(Item[k]).__name__ == 'int' or 
+                elif (type(Item[k]).__name__ == 'int' or 
                     type(Item[k]).__name__ == 'float' or 
-                    type(Item[k]).__name__ == 'boolean' or
-                    type(Item[k]).__name__ == 'unicode'):
+                    type(Item[k]).__name__ == 'boolean'):
                     ret[k] = str(Item[k])
+                elif type(Item[k]).__name__ == 'unicode':
+                    ret[k] = str(Item[k].encode('utf-8'))
             else:
                 ''' 
                 Don't map the keys that not exist in self.keys 
