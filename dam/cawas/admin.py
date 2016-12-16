@@ -14,6 +14,7 @@ class LanguageAdmin(admin.ModelAdmin):
 @admin.register(models.PublishQueue)
 class PublishQueueAdmin(admin.ModelAdmin):
     list_display = ['item_id', 'item_type', 'status', 'schedule_date', 'message']
+    search_fields = ['item_id']
 
 @admin.register(models.Image)
 class ImageAdmin(admin.ModelAdmin):
@@ -37,6 +38,7 @@ class ChannelAdmin(admin.ModelAdmin):
 @admin.register(models.Asset)
 class AssetAdmin(admin.ModelAdmin):
     list_display = ['asset_id', 'asset_type', 'creation_date']
+    search_fields = ['asset_id']
 
 
 @admin.register(models.Girl)
@@ -72,6 +74,7 @@ class EpisodeMetadataAdmin(admin.ModelAdmin):
 @admin.register(models.Movie)
 class MovieAdmin(admin.ModelAdmin):
     list_display = ['asset', 'original_title']
+    search_fields = ['asset__asset_id']
 
 
 @admin.register(models.MovieMetadata)

@@ -15,6 +15,22 @@ class SerializerException(Exception):
         return repr(self.value)
 
 
+def girls_to_list(girl_list):
+    girls_id = []
+    girls_name = []
+    girls_display = []
+
+    for girl in girl_list:
+        girls_id.append(girl.asset.asset_id)
+        girls_name.append(girl.name)
+        js = {}
+        js["name"] = girl.name
+        js["id"] = girl.asset.asset_id
+        girls_display.append(json.dumps(js))
+
+    return girls_id, girls_name, girls_display
+
+
 def block_serializer(block_id):
     ret = []
     try:
@@ -147,6 +163,13 @@ def movie_serializer(asset, lang):
 
     movie_dict = movie.toDict()
 
+    girls_list = movie.girls.all()
+    if len(girls_list) > 0:
+        girls_id, girls_name, girls_display = girls_to_list(girls_list)
+        movie_dict["girls_id"] = girls_id
+        movie_dict["girls_name"] = girls_name
+        movie_dict["girls_display"] = girls_display
+
     if lang == '':
         metadata_list = MovieMetadata.objects.filter(movie=movie)
     else:
@@ -177,6 +200,13 @@ def serie_serializer(asset, lang):
 
     serie_dict = serie.toDict()
 
+    girls_list = serie.girls.all()
+    if len(girls_list) > 0:
+        girls_id, girls_name, girls_display = girls_to_list(girls_list)
+        serie_dict["girls_id"]      = girls_id
+        serie_dict["girls_name"]    = girls_name
+        serie_dict["girls_display"] = girls_display
+
     if lang == '':
         metadata_list = SerieMetadata.objects.filter(serie=serie)
     else:
@@ -206,6 +236,13 @@ def episode_serializer(asset, lang):
         raise SerializerException(msg)
 
     episode_dict = episode.toDict()
+
+    girls_list = episode.girls.all()
+    if len(girls_list) > 0:
+        girls_id, girls_name, girls_display = girls_to_list(girls_list)
+        episode_dict["girls_id"]      = girls_id
+        episode_dict["girls_name"]    = girls_name
+        episode_dict["girls_display"] = girls_display
 
     if lang == '':
         metadata_list = EpisodeMetadata.objects.filter(episode=episode)

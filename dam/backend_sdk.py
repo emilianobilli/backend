@@ -77,7 +77,7 @@ class ApiBackendServer(object):
             response, content = http.request(uri.geturl(), method, json.dumps(body), header)
         except socket.error as err:
             raise ApiBackendException(err)
-
+        print response, content
         if response['status'] == '204':
             return content
         else:

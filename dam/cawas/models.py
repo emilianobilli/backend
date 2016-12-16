@@ -5,6 +5,7 @@ from django.utils import timezone
 from django.core.exceptions import *
 
 # Create your models here.
+import json
 
 
 class Setting(models.Model):
@@ -385,14 +386,12 @@ class GirlMetadata(models.Model):
 class Serie(models.Model):
     asset           = models.ForeignKey(Asset)
     original_title  = models.CharField(max_length=128, help_text="Titulo original")
-    channel         = models.ForeignKey(Channel)
+    channel         = models.ForeignKey(Channel, null=True)
     year            = models.IntegerField(default=2000, help_text="Fecha de produccion")
     girls           = models.ManyToManyField(Girl)
     cast            = models.CharField(max_length=1024, blank=True, help_text="Listado de actores separados por coma")
     directors       = models.CharField(max_length=1024, blank=True, help_text="Listado de directores separados por coma")
     image           = models.ForeignKey(Image, blank=True, null=True)
-    seasons         = models.IntegerField(default=0, help_text="Cantidad de temporadas")
-    episodes        = models.IntegerField(default=0, help_text="Cantidad de episodios")
     category        = models.ManyToManyField(Category)
 
     def __unicode__(self):
@@ -409,22 +408,22 @@ class Serie(models.Model):
     def toDict(self):
         dict = {}
 
-        cast = self.cast.replace(", ", ",").split(",")
-        directors = self.directors.replace(", ", ",").split(",")
-
-        dict["show_type"]       = "serie"
-        dict["channel"]         = self.channel.name
-        dict["year"]            = self.year
-        dict["cast"]            = cast
-        dict["directors"]       = directors
+        dict["show_type"] = "serie"
+        if self.channel is not None:
+            dict["channel"] = self.channel.name
+        dict["year"] = self.year
+        if self.cast != '':
+            dict["cast"] = self.cast
+        if self.directors != '':
+            dict["directors"] = self.directors
         if self.image.portrait.name != '':
             dict["image_portrait"] = self.image.portrait.name
         if self.image.landscape.name != '':
             dict["image_landscape"] = self.image.landscape.name
         if self.image.big.name != '':
             dict["image_big"] = self.image.big.name
-        dict["seasons"]         = self.seasons
-        dict["episodes"]        = self.episodes
+        dict["seasons"]         = Episode.objects.filter(serie=self).values_list('season', flat=True).distinct().count()
+        dict["episodes"]        = len(Episode.objects.filter(serie=self))
 
         return dict
 
@@ -435,7 +434,6 @@ class SerieMetadata(models.Model):
     title             = models.CharField(max_length=128, help_text="Titulo en el idioma correspondiente")
     summary_short     = models.CharField(max_length=256, blank=True, help_text="Descripcion corta")
     summary_long      = models.CharField(max_length=4096, blank=True, help_text="Descripcion larga")
-    subtitle          = models.BooleanField(default=False)
     modification_date = models.DateTimeField(auto_now=True)
     publish_date      = models.DateTimeField(auto_now=False, auto_now_add=False, blank=True, null=True)
     publish_status    = models.BooleanField(default=False)
@@ -460,10 +458,12 @@ class SerieMetadata(models.Model):
 
         dict["lang"]           = self.language.code
         dict["title"]          = self.title
-        dict["summary_short"]  = self.summary_short
-        dict["summary_long"]   = self.summary_long
-        dict["categories"]     = categories
-        dict["subtitle"]       = self.subtitle
+        if self.summary_short != '':
+            dict["summary_short"]  = self.summary_short
+        if self.summary_long != '':
+            dict["summary_long"]   = self.summary_long
+        if len(categories) > 0:
+            dict["categories"]     = categories
 
         return dict
 
@@ -493,29 +493,17 @@ class Episode(models.Model):
         for m in metadata:
             m.modification_date = timezone.now()
             m.save()
-        self.serie.episodes += 1
-        if self.season > self.serie.seasons:
-            self.serie.seasons = self.season
-        self.serie.save()
         super(Episode, self).save(*args, **kwargs)
-
-    def delete(self, *args, **kwargs):
-        self.serie.episodes -= 1
-        self.serie.save()
-        super(Episode, self).delete(*args, **kwargs)
 
     # Convierte el episode en un diccionario
     def toDict(self):
         dict = {}
 
-        cast = self.cast.replace(", ", ",").split(",")
-        directors = self.directors.replace(", ", ",").split(",")
-
         dict["show_type"]       = "episode"
         dict["channel"]         = self.channel.name
         dict["year"]            = self.year
-        dict["cast"]            = cast
-        dict["directors"]       = directors
+        dict["cast"]            = self.cast
+        dict["directors"]       = self.directors
         if self.image.portrait.name != '':
             dict["image_portrait"] = self.image.portrait.name
         if self.image.landscape.name != '':
@@ -563,10 +551,13 @@ class EpisodeMetadata(models.Model):
 
         dict["lang"]           = self.language.code
         dict["title"]          = self.title
-        dict["summary_short"]  = self.summary_short
-        dict["summary_long"]   = self.summary_long
+        if self.summary_short != '':
+            dict["summary_short"]  = self.summary_short
+        if self.summary_long != '':
+            dict["summary_long"]   = self.summary_long
         dict["subtitle"]       = self.subtitle
-        dict["categories"]     = categories
+        if len(categories) > 0:
+            dict["categories"] = categories
 
         return dict
 
@@ -599,14 +590,14 @@ class Movie(models.Model):
     def toDict(self):
         dict = {}
 
-        cast = self.cast.replace(", ", ",").split(",")
-        directors = self.directors.replace(", ", ",").split(",")
-
-        dict["show_type"]       = "movie"
-        dict["channel"]         = self.channel.name
-        dict["year"]            = self.year
-        dict["cast"]            = cast
-        dict["directors"]       = directors
+        dict["show_type"] = "movie"
+        if self.channel is not None:
+            dict["channel"] = self.channel.name
+        dict["year"] = self.year
+        if self.cast != '':
+            dict["cast"] = self.cast
+        if self.directors != '':
+            dict["directors"] = self.directors
         if self.image.portrait.name != '':
             dict["image_portrait"] = self.image.portrait.name
         if self.image.landscape.name != '':
@@ -651,9 +642,12 @@ class MovieMetadata(models.Model):
 
         dict["lang"]           = self.language.code
         dict["title"]          = self.title
-        dict["summary_short"]  = self.summary_short
-        dict["summary_long"]   = self.summary_long
+        if self.summary_short != '':
+            dict["summary_short"]  = self.summary_short
+        if self.summary_long != '':
+            dict["summary_long"]   = self.summary_long
         dict["subtitle"]       = self.subtitle
-        dict["categories"]     = categories
+        if len(categories) > 0:
+            dict["categories"]     = categories
 
         return dict

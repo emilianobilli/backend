@@ -175,7 +175,7 @@ def publish_items():
                     job.message = err.value
                     job.save()
                 try:
-                    item = asset_serializer(job.item_id, job.item_lang)
+                    item = asset_serializer(job.item_id, job.item_lang.code)
                 except SerializerException as err:
                     job.status  = 'E'
                     job.message = err.value
@@ -203,7 +203,7 @@ def publish_items():
                     job.message = err.value
                     job.save()
                 try:
-                    item = slider_serializer(job.item_id, job.item_lang)
+                    item = slider_serializer(job.item_id, job.item_lang.code)
                 except SerializerException as err:
                     job.status = 'E'
                     job.message = err.value
@@ -217,7 +217,7 @@ def publish_items():
                     job.message = err.value
                     job.save()
                 try:
-                    item = category_serializer(job.item_id, job.item_lang)
+                    item = category_serializer(job.item_id, job.item_lang.code)
                 except SerializerException as err:
                     job.status = 'E'
                     job.message = err.value
