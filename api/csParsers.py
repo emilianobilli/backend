@@ -89,17 +89,21 @@ class Structured(object):
         ret = self._make_q(self.fq)
         return ('&fq=%s' % ret) if ret != '' else ''
 
+    def _make_return(self):
+        if self.return_fields != []:    
+            return '&return=%s' % ','.join(self.return_fields)
+        return ''
     def _make_query(self):
         ret = self._make_q(self.q)
         return ('q=%s' % ret) if ret != '' else 'q=matchall'
         
     def make(self):
-#        print self.fq
-        return '%s%s%s%s%s%s' % (self._make_query(),
+        return '%s%s%s%s%s%s%s' % (self._make_query(),
                                  self._make_filter_query(),
                                  self._make_size(),
                                  self._make_start(),
                                  self._make_sort(),
+                                 self._make_return(),
                                 '&q.parser=structured')
 
 

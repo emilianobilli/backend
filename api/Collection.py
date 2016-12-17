@@ -136,7 +136,6 @@ class dynamodbCollection(object):
         '''
         dsd = dataStringDict(Item.keys()).String(Item)
         doc = self.data_mapper.Map(dsd)
-
         try:
             ret = self.client.put_item(TableName=self.table, Item=doc)
         except Exception, e:
@@ -264,6 +263,8 @@ class cloudsearchCollection(object):
 
 	uri = urlparse.urlparse(self.document_endpoint + self.document_url) 
 #	h = httplib2.Http()
+        
+        print body
 
 	try:
     	    response, content = self.h.request(uri.geturl(), method, body, header)
@@ -289,7 +290,7 @@ class cloudsearchCollection(object):
 
 	return response, content
 
-    def delete(self, did):
+    def _delete(self, did):
 	doc = {}
 	doc['id']   = did
 	doc['type'] = 'delete'
@@ -303,6 +304,11 @@ class cloudsearchCollection(object):
 
         return did
 
+    def delete(self, Item={}):
+        if self.id_field not in Item:
+            raise CollectionException('(Add) Id field not found in item (%s)' % self.id_field )
+        did = Item[self.id_field]
+        return self._delete(did)
 
     def add(self, Item={}):
 
@@ -361,6 +367,7 @@ class cloudsearchCollection(object):
         for ql in querylist:
 #            print ql
             p.fq_add(ql)
+        p.return_fields = self.return_fields
         p.exclude = exclude
         p.start   = start
         p.size    = size

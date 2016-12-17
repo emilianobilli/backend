@@ -76,6 +76,8 @@ class Backend(object):
                     for k in inmutable_fields:
                         item[k]   = Item[k]
 
+                item['enabled'] = True
+
                 self.domain.add(item)
                 ret = where.add(item)
                 status = 201
@@ -99,7 +101,33 @@ class Backend(object):
         return {'status': status, 'body': ret}
 
     def __del_search_domain(self,where,item):
-        pass
+        if 'lang' in item:
+            lang = item['lang']
+            try:
+                doc  = where.get(item)
+                Item = doc['item']
+                if Item == {}:
+                    status = 422
+                    ret = {'status': 'failure', 'message': 'Unable to find item to delete'}
+                else:
+                    Item['enabled'] = False
+                    self.domain.delete(item)
+                    ret    = where.add(Item)
+                    status = 204
+            except CollectionException as e:
+                status = 422
+                ret    = {'status': 'failure', 'message': str(e)}
+            except DynamoException as e:
+                ret    = {'status': 'failure', 'message': str(e)}
+                status = 500
+            except Exception as e:
+                status = 500
+                ret    = {'status': 'failure', 'message': str(e)}
+        else:
+            status = 422
+            ret    = {'status': 'failure', 'message': 'Mandatory parameter not found in item (lang)'}
+
+        return {'status': status, 'body': ret}
 
     def __add(self, where, item):
         try:
@@ -146,9 +174,6 @@ class Backend(object):
 
     def add_category(self, Item={}):
         return self.__add(self.categories, Item)
-
-    def add_show(self, Item={}):
-        return self.__add_search_domain(self.shows,Item)
 
     def add_girl(self, Item={}):
         inmutable_fields = ['views', 'ranking']
@@ -244,7 +269,38 @@ class Backend(object):
 
         return self._cs_query(args,qArgs,fq,exclude)
 
-    def _get(self, where, args):
+
+    def complete_asset(self, item, asset_type):
+        if item != {} and item['asset_type'] == asset_type:
+
+            if asset_type == 'girl':
+        
+                return item
+
+            elif asset_type == 'show':
+                if item['show_type'] == 'episode' or item['show_type'] == 'movie':
+                    '''
+                        Hacer query a video auth
+                    '''
+                elif item['show_type'] == 'serie':
+                    '''
+                        Hacer query de episodios
+                    '''
+                    lang = item['lang']
+                    try:
+                        episodes = self.domain.query([{'show_type': 'episode'},{'serie_id':item['asset_id']}], None,0, item['episodes'])
+                        item['episodes'] == episodes['items']
+                    except CloudSearchException:
+                        item = {}
+            else:
+                item = {}
+        else:
+            item = {}
+
+        return item
+
+
+    def _get(self, where, args, asset_type):
         try:
             item = {}
             if 'lang' in args:
@@ -254,10 +310,17 @@ class Backend(object):
                 item['asset_id'] = args['asset_id']
                 
             ret =  where.get(item)
+
+            ret['item'] = self.complete_asset(ret['item'], asset_type)
+
             if ret['item'] == {}:
                 status = 404
             else:
-                status = 200
+                if ret['item']['enabled']:
+                    status = 200
+                else:
+                    status = 404
+                    ret['item'] = {}
 
         except CollectionException as e:
             status = 422
@@ -277,10 +340,6 @@ class Backend(object):
     def get_show(self, args):
         item = self._get(self.shows, args)
             
-    
-    def _query_episodes(self, serie_id):
-        fq      = {'show_type' :'episode'}
-        
 
     def query_show(self, args):
         exclude = {'show_type' :'episode'}
