@@ -108,9 +108,3 @@ class Structured(object):
 
 
 
-#flens = Structured()
-#flens.fq_add({'channel':'Venus'})
-#flens.fq_add({'category':'mamadas'})
-#flens.exclude = {'category':'anal'}
-#flens.fq_add({'year': '[,201a]'})
-#print flens.make()
