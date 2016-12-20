@@ -156,7 +156,7 @@ class Backend(object):
         return fset
 
 
-    def __cloudsearch_query(self, lang, fqset, exclude, start, size):
+    def __cloudsearch_query(self, lang, fqset, exclude, start, size, sort):
         '''
             Hace el query definitivo a Cloud Search cuando se 
             solicita un listado.
@@ -164,7 +164,7 @@ class Backend(object):
             en una respuesta http
         '''
         try:
-            ret    = self.domain.query(fqset,exclude,start,size)
+            ret    = self.domain.query(fqset,exclude,start,size, sort)
             status = 200
         except CollectionException as  e:
             ret    = {'status': 'failure', 'message': str(e)}
@@ -179,7 +179,53 @@ class Backend(object):
         return {'status': status, 'body': ret}
 
 
+    def __cloudsearch_search(self, lang, q, exclude, start, size):
+        '''
+            Hace el query definitivo a Cloud Search cuando se 
+            solicita un listado.
+            Retorna un diccionatio con los valores para ser mapeados
+            en una respuesta http
+        '''
+        try:
+            ret    = self.domain.search(q,exclude,start,size)
+            status = 200
+        except CollectionException as  e:
+            ret    = {'status': 'failure', 'message': str(e)}
+            status = 422
+        except CloudSearchException as e:
+            ret    = {'status': 'failure', 'message': str(e)}
+            status = 500
+        except Exception, e:
+            ret    = {'status': 'failure', 'message': str(e)}
+            status = 500
+
+        return {'status': status, 'body': ret}
+
+    def _cs_search(self, args, exclude):
+        if 'lang' not in args:
+            ret    = {'status': 'failure', 'message': 'Mandatory parameter not found (lang)'}
+            status = 422
+            return {'status': status, 'body': ret}    
         
+        if 'q' not in args:
+            ret    = {'status': 'failure', 'message': 'Mandatory parameter not found (q)'}
+            status = 422
+            return {'status': status, 'body': ret}
+
+        lang = args['lang']
+        q    = args['q']
+        if 'start' in args:
+            start = args['start']
+        else:
+            start = 0
+        if 'size' in args:
+            size  = args['size']
+        else:
+            size  = 10
+
+        return self.__cloudsearch_search(lang,q,exclude,start,size)
+
+
     def _cs_query(self, args, qArgs, fq, exclude):
         '''
             args:  Received Arguments
@@ -201,15 +247,18 @@ class Backend(object):
                 size  = args['size']
             else:
                 size  = 10
+            if 'sort' in args:
+                sort  = args['sort']
+            else:
+                sort  = None
 
-            return self.__cloudsearch_query(lang, fqset, exclude, start, size)
+            return self.__cloudsearch_query(lang, fqset, exclude, start, size, sort)
         else:
             ret    = {'status': 'failure', 'message': 'Mandatory parameter not found (lang)'}
             status = 422
 
         return {'status': status, 'body': ret}
  
-
         
     def add_asset(self, Item={}):
         inmutable_fields = ['views', 'ranking']
@@ -349,4 +398,7 @@ class Backend(object):
 
         return self._cs_query(args,qArgs,None,exclude)
 
+    def search(self, args):
+        exclude = {'show_type':'episode'}
 
+        return self._cs_search(args,exclude)

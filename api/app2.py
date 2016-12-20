@@ -78,11 +78,33 @@ backend = Backend({"girls":
                                         "id_field": "asset_id",
                                         "filter_query" : '',
                                         "schema": ["channel","asset_id", "title","summary_short","display_runtime","seasons","season","episode","categories","show_type","year","serie_id","girls_id","name", "image_big", "image_landscape", "image_portrait", "views", "ranking", "asset_type", "blocks", "publish_date", "class", "summary_long", "nationality"],
-                                        "return_fields": ["asset_id"],
+                                        "return_fields": ["asset_id", "name", "title", "categories", "image_landscape"],
                                         "name" : "eshotgodomain",
                                     }}
                     })
 
+
+@api.route('/v1/search/', methods=['GET'])
+@cross_origin()
+def urlSearch():
+    args = {}
+    for k in request.args.keys():
+        args[k] = request.args.get(k)
+    ret  = backend.search(args)
+    return Response(response=dumps(ret['body']), status=ret['status'])
+
+#@api.route('/v1/suggest/', methods=['GET'])
+@api.route('/v1/episodes/', methods=['GET'])
+@cross_origin()
+def urlEpisode():
+    if request.method == 'GET':
+        args  = {}
+        for k in request.args.keys():
+            args[k] = request.args.get(k)
+        ret = backend.query_episode(args)
+        return Response(response=dumps(ret['body']), status=ret['status'])
+
+#@api.route('/v1/episodes/<string:asset_id>/', methods=['GET'])
 
 @api.route('/v1/shows/', methods=['GET'])
 @cross_origin()
@@ -128,7 +150,6 @@ def urlGetGirl(asset_id):
     return Response(response=dumps(ret['body']), status=ret['status'])
 
 
-
 @api.route('/v1/assets/', methods=['POST'])
 @cross_origin()
 def urlAsset():
@@ -141,9 +162,6 @@ def urlAsset():
             ret  = backend.disable_asset(body['item'])
         return Response(response=dumps(ret['body']), status=ret['status'])
     
-
-
-
 
 if __name__ == "__main__":
 #    api.run("0.0.0.0", 8000)

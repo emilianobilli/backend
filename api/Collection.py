@@ -362,22 +362,33 @@ class cloudsearchCollection(object):
         return doc
 
 
-    def query(self, querylist=[], exclude=None, start=0, size=10, order=None):
+    def query(self, querylist=[], exclude=None, start=0, size=10, sort=None):
         p = self.parser_class()
         for ql in querylist:
-#            print ql
             p.fq_add(ql)
         p.return_fields = self.return_fields
         p.exclude = exclude
         p.start   = start
         p.size    = size
+        p.sort    = sort
+
         qString   = p.make()
-#        print qString
+
         ret = self.doGet(qString)
         return self._check_query_return(ret)
 
-    def search(self):
-        pass
+    def search(self, q=None, exclude=None, start=0, size=10):
+        p = self.parser_class()
+        p.q = q
+        p.exclude = exclude
+        p.start   = start
+        p.return_fields = self.return_fields
+        p.size    = size
+
+        qString   = p.make()
+
+        ret = self.doGet(qString)
+        return self._check_query_return(ret)
 
 
 

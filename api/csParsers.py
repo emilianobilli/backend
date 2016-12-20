@@ -3,7 +3,7 @@ import re
 
 class Structured(object):
     def __init__(self):
-        self.q             = []
+        self.q             = None
         self.fq            = []
         self.exclude       = None
         self.size          = None
@@ -14,11 +14,6 @@ class Structured(object):
     def fq_add (self, kv={}):
         if len(kv.keys()) > 0:
             self.fq.append(kv)
-
-    def q_add(self, kv={}):
-        if len(kv.keys()) > 0:
-            self.q.append(kv)
-    
 
     def _exclude(self):
         if self.exclude is not None and type(self.exclude).__name__ == 'dict':
@@ -93,18 +88,25 @@ class Structured(object):
         if self.return_fields != []:    
             return '&return=%s' % ','.join(self.return_fields)
         return ''
+
+    def _make_search(self):
+        if self.q is not None:
+            return "\'" + self.q + "\'"
+        else:
+            return ''
+
     def _make_query(self):
-        ret = self._make_q(self.q)
+        ret = self._make_search()
         return ('q=%s' % ret) if ret != '' else 'q=matchall'
         
     def make(self):
         return '%s%s%s%s%s%s%s' % (self._make_query(),
-                                 self._make_filter_query(),
-                                 self._make_size(),
-                                 self._make_start(),
-                                 self._make_sort(),
-                                 self._make_return(),
-                                '&q.parser=structured')
+                                   self._make_filter_query(),
+                                   self._make_size(),
+                                   self._make_start(),
+                                   self._make_sort(),
+                                   self._make_return(),
+                                   '&q.parser=structured')
 
 
 
