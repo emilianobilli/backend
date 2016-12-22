@@ -3,6 +3,7 @@ from Collection import cloudsearchCollection
 from Collection import CollectionException
 from Collection import DynamoException
 from Collection import CloudSearchException
+from cdnimg     import CdnImg
 import json
 import socket
 import httplib2
@@ -59,6 +60,11 @@ class Backend(object):
 
 
         self.videoauth = VideoAuth("https://videoauth.zolechamedia.net/video/", "7a407d4ae99b7c1a1655daddf218ef05")
+        
+        self.images    = {}
+        self.images['image_landscape'] = CdnImg(['http://cdnimages.zolechamedia.net/','http://cdnimages1.zolechamedia.net/','http://cdnimages2.zolechamedia.net/','http://cdnimages3.zolechamedia.net/','http://cdnimages4.zolechamedia.net/','http://cdnimages5.zolechamedia.net/'], 'landscape/')
+        self.images['image_portrait']  = CdnImg(['http://cdnimages.zolechamedia.net/'], 'portrait/')
+
 
     def del_asset():     # borra asset
         pass
@@ -78,6 +84,15 @@ class Backend(object):
                 if asset['item'] != {} and asset['item']['enabled'] == "1":
                     if asset['item']['show_type'] == 'movie' or asset['item']['show_type'] == 'episode':
                         asset['item']['video'] = self.videoauth.get_hls_url(asset['item']['asset_id'])
+                        if 'img' in args:
+                            img = args['img']
+                        else:
+                            img = None
+
+                        for k in self.images.keys():
+                            if k in asset['item']:
+                                asset['item'][k] = self.images[k].getUrl(asset['item'][k], self.parse_img_arg(k,img))
+
                     status = 200
                 else:
                     asset['item'] = {} 
@@ -99,6 +114,15 @@ class Backend(object):
 
         return {'status': status, 'body': ret}
 
+
+    def parse_img_arg(self, field, img):
+        try:
+            i = json.loads(img)
+            return i[field]
+        except:
+            return None
+        return None
+
     def get_girl(self, args):
         if 'lang' not in args or 'asset_id' not in args:
             status = 422
@@ -110,9 +134,17 @@ class Backend(object):
 
             try:
                 asset = self.girls.get(item)
-                print asset
                 if asset['item'] != {} and asset['item']['enabled'] == "1":
                     status = 200
+                    if 'img' in args:
+                        img = args['img']
+                    else:
+                        img = None
+
+                    for k in self.images.keys():
+                        if k in asset['item']:
+                            asset['item'][k] = self.images[k].getUrl(asset['item'][k], self.parse_img_arg(k,img))
+
                 else:
                     asset['item'] = {} 
                     status = 404
@@ -156,7 +188,18 @@ class Backend(object):
         return fset
 
 
-    def __cloudsearch_query(self, lang, fqset, exclude, start, size, sort):
+    def __add_cdn_images(self, response, imgArgs):
+        items = response['items']
+        ni = []
+        for item in items:
+            for k in self.images.keys():
+                if k in item:
+                    item[k] = self.images[k].getUrl(item[k], self.parse_img_arg(k,imgArgs))
+            ni.append(item)
+        response['items'] = ni
+        return response
+
+    def __cloudsearch_query(self, lang, fqset, exclude, start, size, sort, img):
         '''
             Hace el query definitivo a Cloud Search cuando se 
             solicita un listado.
@@ -165,6 +208,7 @@ class Backend(object):
         '''
         try:
             ret    = self.domain.query(fqset,exclude,start,size, sort)
+            ret    = self.__add_cdn_images(ret, img)
             status = 200
         except CollectionException as  e:
             ret    = {'status': 'failure', 'message': str(e)}
@@ -179,7 +223,7 @@ class Backend(object):
         return {'status': status, 'body': ret}
 
 
-    def __cloudsearch_search(self, lang, q, exclude, start, size):
+    def __cloudsearch_search(self, lang, q, exclude, start, size, img):
         '''
             Hace el query definitivo a Cloud Search cuando se 
             solicita un listado.
@@ -188,6 +232,7 @@ class Backend(object):
         '''
         try:
             ret    = self.domain.search(q,exclude,start,size)
+            ret    = self.__add_cdn_images(ret, img)
             status = 200
         except CollectionException as  e:
             ret    = {'status': 'failure', 'message': str(e)}
@@ -223,7 +268,12 @@ class Backend(object):
         else:
             size  = 10
 
-        return self.__cloudsearch_search(lang,q,exclude,start,size)
+        if 'img' in args:
+            img = args['img']
+        else:
+            img = None
+
+        return self.__cloudsearch_search(lang,q,exclude,start,size,img)
 
 
     def _cs_query(self, args, qArgs, fq, exclude):
@@ -252,7 +302,13 @@ class Backend(object):
             else:
                 sort  = None
 
-            return self.__cloudsearch_query(lang, fqset, exclude, start, size, sort)
+
+            if 'img' in args:
+                img = args['img']
+            else:
+                img = None
+
+            return self.__cloudsearch_query(lang, fqset, exclude, start, size, sort,img)
         else:
             ret    = {'status': 'failure', 'message': 'Mandatory parameter not found (lang)'}
             status = 422

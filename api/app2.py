@@ -21,7 +21,6 @@ backend = Backend({"girls":
                                     "name": "S",
                                     "image_portrait": "S",
                                     "image_landscape": "S",
-                                    "image_big": "S",
                                     "views": "N",
                                     "ranking": "N",
                                     "asset_type": "S",
@@ -56,7 +55,6 @@ backend = Backend({"girls":
                                     "year": "N",
                                     "image_portrait": "S",
                                     "image_landscape": "S",
-                                    "image_big": "S",
                                     "views": "N",
                                     "ranking": "N",
                                     "show_type": "S",
@@ -78,7 +76,7 @@ backend = Backend({"girls":
                                         "id_field": "asset_id",
                                         "filter_query" : '',
                                         "schema": ["channel","asset_id", "title","summary_short","display_runtime","seasons","season","episode","categories","show_type","year","serie_id","girls_id","name", "image_big", "image_landscape", "image_portrait", "views", "ranking", "asset_type", "blocks", "publish_date", "class", "summary_long", "nationality"],
-                                        "return_fields": ["asset_id", "name", "title", "categories", "image_landscape"],
+                                        "return_fields": ["asset_id", "name", "title", "categories", "image_landscape", "image_portrait", "channel", "show_type"],
                                         "name" : "eshotgodomain",
                                     }}
                     })

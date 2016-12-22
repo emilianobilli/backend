@@ -71,7 +71,7 @@ class dynamodbCollection(object):
 
         return doc
 
-    def _check_get_return(self, ret):
+    def _check_get_return(self, ret, ppArg=None):
         doc = {}
         if 'ResponseMetadata' in ret:
             if 'HTTPStatusCode' in ret['ResponseMetadata']:
@@ -221,7 +221,6 @@ class cloudsearchCollection(object):
 
         self.__init_domain()
 
-
         self.h = httplib2.Http()
 
     def __get_domain(self):
@@ -358,7 +357,6 @@ class cloudsearchCollection(object):
                             for d in hit:
                                 doc['count'] = doc['count'] + 1
                                 doc['items'].append(d['fields'])
-                
         return doc
 
 
@@ -371,10 +369,10 @@ class cloudsearchCollection(object):
         p.start   = start
         p.size    = size
         p.sort    = sort
-
         qString   = p.make()
 
         ret = self.doGet(qString)
+
         return self._check_query_return(ret)
 
     def search(self, q=None, exclude=None, start=0, size=10):
