@@ -19,6 +19,7 @@ class PublishQueueAdmin(admin.ModelAdmin):
 @admin.register(models.Image)
 class ImageAdmin(admin.ModelAdmin):
     list_display = ['name', 'portrait', 'landscape']
+    search_fields = ['name']
 
 @admin.register(models.Category)
 class CategoryAdmin(admin.ModelAdmin):
@@ -28,7 +29,7 @@ class CategoryAdmin(admin.ModelAdmin):
 @admin.register(models.CategoryMetadata)
 class CategoryMetadataAdmin(admin.ModelAdmin):
     list_display = ['category', 'language', 'name']
-
+    search_fields = ['category__category_id']
 
 @admin.register(models.Channel)
 class ChannelAdmin(admin.ModelAdmin):
@@ -44,32 +45,33 @@ class AssetAdmin(admin.ModelAdmin):
 @admin.register(models.Girl)
 class GirlAdmin(admin.ModelAdmin):
     list_display = ['asset', 'name', 'type' ]
-
+    search_fields = ['asset__asset_id']
 
 @admin.register(models.GirlMetadata)
 class GirlMetadataAdmin(admin.ModelAdmin):
     list_display = ['girl', 'language', 'modification_date']
-
+    search_fields = ['girl__asset__asset_id']
 
 @admin.register(models.Serie)
 class SerieAdmin(admin.ModelAdmin):
     list_display = ['asset', 'original_title', ]
-
+    search_fields = ['asset__asset_id']
 
 @admin.register(models.SerieMetadata)
 class SerieMetadataAdmin(admin.ModelAdmin):
     list_display = ['serie', 'title', 'language']
-
+    search_fields = ['serie__asset__asset_id']
 
 @admin.register(models.Episode)
 class EpisodeAdmin(admin.ModelAdmin):
     list_display = ['asset', 'original_title', 'serie', 'chapter', 'season']
+    search_fields = ['asset__asset_id']
 
 
 @admin.register(models.EpisodeMetadata)
 class EpisodeMetadataAdmin(admin.ModelAdmin):
     list_display = ['episode', 'title', 'language']
-
+    search_fields = ['episode__asset__asset_id']
 
 @admin.register(models.Movie)
 class MovieAdmin(admin.ModelAdmin):
@@ -80,6 +82,7 @@ class MovieAdmin(admin.ModelAdmin):
 @admin.register(models.MovieMetadata)
 class MovieMetadataAdmin(admin.ModelAdmin):
     list_display = ['movie', 'title', 'language']
+    search_fields = ['episode__asset__asset_id']
 
 
 @admin.register(models.Block)

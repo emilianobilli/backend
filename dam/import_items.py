@@ -78,76 +78,6 @@ def chech_subtitle(asset_id, lang):
         return False
 
 
-def import_girl(file):
-    with open(file) as f:
-        buf = f.read()
-    f.close()
-
-    girl_list = json.loads(buf)
-
-    for girl in girl_list:
-        try:
-            g = Girl.objects.get(name=girl["name"])
-        except ObjectDoesNotExist:
-            a            = Asset()
-            a.asset_type = "girl"
-            a.save()
-
-            i          = Image()
-            i.name     = a.asset_id
-            i.portrait = girl["image_portrait"]
-            i.save()
-
-            g            = Girl()
-            g.asset      = a
-            g.name       = girl["name"]
-            g.type       = girl["type"]
-            g.image      = i
-            if girl["birth_date"] != '':
-                g.birth_date = girl["birth_date"]
-            g.save()
-
-        m             = GirlMetadata()
-        m.girl        = g
-        lang = Language.objects.get(code=girl["lang"])
-        m.language    = lang
-        m.description = girl["summary_long"].replace("<p>", "").replace("</p>", "").rstrip()
-        m.nationality = girl["nationality"]
-        m.save()
-
-
-def import_category(file):
-    with open(file) as f:
-        buf = f.read()
-    f.close()
-
-    category_list = json.loads(buf)
-
-    for category in category_list:
-        try:
-            i = Image.objects.get(name=category["name_es"])
-        except ObjectDoesNotExist:
-            i          = Image()
-            i.name     = category["name_es"]
-            i.portrait = category["image_portrait"]
-            i.save()
-
-        cat = Category()
-        cat.original_name = category["name_es"]
-        cat.image = i
-        cat.save()
-
-        languages = Language.objects.all()
-        for lang in languages:
-            key = "name_%s" % lang.code
-            metadata          = CategoryMetadata()
-            metadata.category = cat
-            lang              = Language.objects.get(code=lang.code)
-            metadata.language = lang
-            metadata.name     = category[key]
-            metadata.save()
-
-
 def __get_language(language):
     try:
         lang = Language.objects.get(code=language)
@@ -199,11 +129,168 @@ def __get_categories(cat):
             raise ImporterException(msg)
     return categories
 
+
+"""
+IMPORTACION DE CATEGORIAS
+"""
+
+def __update_category(category, c_json):
+    try:
+        i = Image.objects.get(name=category.category_id)
+    except ObjectDoesNotExist:
+        i = Image()
+    i.name     = category.category_id
+    i.portrait = c_json["image_portrait"]
+    i.save()
+
+    category.image = i
+    category.save()
+
+    return category
+
+
+def __create_category(c_json):
+    category = Category()
+    category.original_name = c_json["name_es"]
+
+    ret = __update_category(category, c_json)
+
+    return ret
+
+
+def __create_category_metadata(data, category, lang):
+    metadata = CategoryMetadata()
+    metadata.category = category
+    metadata.language = lang
+    m = __update_category_metadata(data, metadata)
+
+    return m
+
+
+def __update_category_metadata(data, metadata):
+    name_key = "name_%s" % metadata.language.code
+    metadata.name = data[name_key]
+    metadata.save()
+
+    return metadata
+
+
+def import_category(file):
+    with open(file) as f:
+        buf = f.read()
+    f.close()
+
+    json_list = json.loads(buf)
+
+    languages = []
+
+    for c_json in json_list:
+        if "name_es" in c_json:
+            lang = __get_language("es")
+            languages.append(lang)
+        if "name_pt" in c_json:
+            lang = __get_language("pt")
+            languages.append(lang)
+
+        try:
+            category = Category.objects.get(original_name=c_json["name_es"])
+            c = __update_category(category, c_json)
+        except ObjectDoesNotExist:
+            c = __create_category(c_json)
+
+        for lang in languages:
+            try:
+                met = CategoryMetadata.objects.get(category=c, language=lang)
+                __update_category_metadata(c_json, met)
+            except:
+                __create_category_metadata(c_json, c, lang)
+
+
+"""
+IMPORTACION DE GIRLS
+"""
+
+def __update_girl(girl, g_json, up_img=False):
+    if up_img:
+        a = girl.asset
+
+        try:
+            i = Image.objects.get(name=a.asset_id)
+        except ObjectDoesNotExist:
+            i = Image()
+        i.name = a.asset_id
+        i.portrait = g_json["image_portrait"]
+        i.save()
+
+        girl.image = i
+
+    girl.name = g_json["name"]
+    girl.type = g_json["type"]
+    if g_json["birth_date"] != '':
+        girl.birth_date = g_json["birth_date"]
+    girl.save()
+
+    return girl
+
+
+def __create_girl(g_json, up_img):
+    asset = Asset()
+    asset.asset_type = "girl"
+    asset.save()
+
+    girl = Girl()
+    girl.asset = asset
+    ret = __update_girl(girl, g_json, up_img)
+
+    return ret
+
+
+def __create_girl_metadata(data, girl, lang):
+    metadata = GirlMetadata()
+    metadata.girl = girl
+    metadata.language = lang
+    m = __update_girl_metadata(data, metadata)
+
+    return m
+
+
+def __update_girl_metadata(data, metadata):
+    metadata.description = data["summary_long"]
+    metadata.nationality = data["nationality"]
+    metadata.save()
+
+    return metadata
+
+
+def import_girl(file, up_img=False):
+    with open(file) as f:
+        buf = f.read()
+    f.close()
+
+    json_list = json.loads(buf)
+
+    for g_json in json_list:
+        # Verifico que el lenguage exista
+        lang = __get_language(g_json["language"])
+
+        try:
+            girl = Girl.objects.get(name=g_json["name"])
+            g = __update_girl(girl, g_json, up_img)
+        except ObjectDoesNotExist:
+            g = __create_girl(g_json, up_img)
+
+        try:
+            met = GirlMetadata.objects.get(girl=g, language=lang)
+            __update_girl_metadata(g_json, met)
+        except ObjectDoesNotExist:
+            __create_girl_metadata(g_json, g, lang)
+
+
 """
 IMPORTACION DE SERIES
 """
 
-def __update_serie(serie, s_json):
+def __update_serie(serie, s_json, up_img):
     # Verifico que el canal exista
     if "channel" in s_json:
         channel = __get_channel(s_json["channel"])
@@ -219,17 +306,19 @@ def __update_serie(serie, s_json):
     else:
         categories = []
 
-    a = serie.asset
+    if up_img:
+        a = serie.asset
 
-    try:
-        i = Image.objects.get(name=a.asset_id)
-    except ObjectDoesNotExist:
-        i = Image()
-    i.name = a.asset_id
-    i.landscape = s_json["image_lanscape"]
-    i.save()
+        try:
+            i = Image.objects.get(name=a.asset_id)
+        except ObjectDoesNotExist:
+            i = Image()
+        i.name = a.asset_id
+        i.landscape = s_json["image_lanscape"]
+        i.save()
 
-    serie.image = i
+        serie.image = i
+
     serie.original_title = s_json["original_title"]
     if channel is not None:
         serie.channel = channel
@@ -250,14 +339,14 @@ def __update_serie(serie, s_json):
     return serie
 
 
-def __create_serie(s_json):
+def __create_serie(s_json, up_img):
     asset = Asset()
     asset.asset_type = "serie"
     asset.save()
 
     serie = Serie()
     serie.asset = asset
-    ret = __update_serie(serie, s_json)
+    ret = __update_serie(serie, s_json, up_img)
 
     return ret
 
@@ -279,7 +368,7 @@ def __update_serie_metadata(data, metadata):
     return metadata
 
 
-def import_serie(file):
+def import_serie(file, up_img=False):
     with open(file) as f:
         buf = f.read()
     f.close()
@@ -292,9 +381,9 @@ def import_serie(file):
 
         try:
             serie = Serie.objects.get(original_title=s_json["original_title"])
-            s = __update_serie(serie, s_json)
+            s = __update_serie(serie, s_json, up_img)
         except ObjectDoesNotExist:
-            s = __create_serie(s_json)
+            s = __create_serie(s_json, up_img)
 
         try:
             met = SerieMetadata.objects.get(serie=s, language=lang)
@@ -307,7 +396,7 @@ def import_serie(file):
 IMPORTACION DE EPISODE
 """
 
-def __update_episode(episode, e_json):
+def __update_episode(episode, e_json, up_img):
     # Verifico que el canal exista
     if "channel" in e_json:
         channel = __get_channel(e_json["channel"])
@@ -323,30 +412,29 @@ def __update_episode(episode, e_json):
     else:
         categories = []
 
-    a = episode.asset
+    if up_img:
+        a = episode.asset
 
-    try:
-        i = Image.objects.get(name=a.asset_id)
-    except ObjectDoesNotExist:
-        i = Image()
-    i.name = a.asset_id
-    i.portrait = e_json["image_portrait"]
-    i.big = e_json["image_big"]
-    i.save()
+        try:
+            i = Image.objects.get(name=a.asset_id)
+        except ObjectDoesNotExist:
+            i = Image()
+        i.name = a.asset_id
+        i.portrait = e_json["image_portrait"]
+        i.landscape = e_json["image_big"]
+        i.save()
+        episode.image = i
 
     if e_json["serie"] != '':
         try:
             serie = Serie.objects.get(original_title=e_json["serie"])
         except ObjectDoesNotExist:
-            msg = "La serie %s no existe" % ejson["serie"]
+            msg = "La serie %s no existe" % e_json["serie"]
             raise ImporterException(msg)
     else:
         msg = "La key serie es vacia"
         raise ImporterException(msg)
 
-
-
-    episode.image = i
     episode.original_title = e_json["original_title"]
     episode.channel = channel
     episode.year = int(e_json["year"])
@@ -354,7 +442,7 @@ def __update_episode(episode, e_json):
     episode.directors = e_json["directors"]
     episode.runtime = int(e_json["runtime"])
     episode.display_runtime = str(datetime.timedelta(seconds=episode.runtime))[:4]
-    episode.thumbnails = check_thumbnail(a.asset_id)
+    #episode.thumbnails = check_thumbnail(a.asset_id)
     if e_json["chapter"] != '':
         episode.chapter = int(e_json["chapter"])
     if e_json["season"] != '':
@@ -371,7 +459,7 @@ def __update_episode(episode, e_json):
     return episode
 
 
-def __create_episode(e_json):
+def __create_episode(e_json, up_img):
     asset = Asset()
     asset.asset_id = e_json["asset_id"]
     asset.asset_type = "episode"
@@ -379,7 +467,7 @@ def __create_episode(e_json):
 
     episode = Episode()
     episode.asset = asset
-    ret = __update_episode(episode, e_json)
+    ret = __update_episode(episode, e_json, up_img)
 
     return ret
 
@@ -397,13 +485,13 @@ def __update_episode_metadata(data, metadata, lang):
     metadata.title = data["title"]
     metadata.summary_short = data["summary_short"].replace("<p>", "").replace("</p>", "").rstrip()
     metadata.summary_long = data["summary_long"].replace("<p>", "").replace("</p>", "").rstrip()
-    metadata.subtitle = chech_subtitle(metadata.episode.asset.asset_id, lang.code)
+    #metadata.subtitle = chech_subtitle(metadata.episode.asset.asset_id, lang.code)
     metadata.save()
 
     return metadata
 
 
-def import_episode(file):
+def import_episode(file, up_img=False):
     with open(file) as f:
         buf = f.read()
     f.close()
@@ -428,13 +516,13 @@ def import_episode(file):
                 msg = "No existe una episodio asociado al asset ID %s" % e_json["asset_id"]
                 raise ImporterException(msg)
             try:
-                ep = __update_episode(episode, e_json)
+                ep = __update_episode(episode, e_json, up_img)
             except ImporterException as err:
                 print err.value
                 continue
         except ObjectDoesNotExist:
             try:
-                ep = __create_episode(e_json)
+                ep = __create_episode(e_json, up_img)
             except ImporterException as err:
                 print err.value
                 continue
@@ -459,7 +547,7 @@ def import_episode(file):
 IMPORTACION DE MOVIES
 """
 
-def __update_movie(movie, m_json):
+def __update_movie(movie, m_json, up_img):
     # Verifico que el canal exista
     if "channel" in m_json:
         channel = __get_channel(m_json["channel"])
@@ -475,18 +563,18 @@ def __update_movie(movie, m_json):
     else:
         categories = []
 
-    a = movie.asset
+    if up_img:
+        a = movie.asset
+        try:
+            i = Image.objects.get(name=a.asset_id)
+        except ObjectDoesNotExist:
+            i = Image()
+        i.name = a.asset_id
+        i.portrait = m_json["image_portrait"]
+        i.landscape = m_json["image_big"]
+        i.save()
+        movie.image = i
 
-    try:
-        i = Image.objects.get(name=a.asset_id)
-    except ObjectDoesNotExist:
-        i = Image()
-    i.name = a.asset_id
-    i.portrait = m_json["image_portrait"]
-    i.big = m_json["image_big"]
-    i.save()
-
-    movie.image = i
     movie.original_title = m_json["original_title"]
     movie.channel = channel
     movie.year = int(m_json["year"])
@@ -494,7 +582,7 @@ def __update_movie(movie, m_json):
     movie.directors = m_json["directors"]
     movie.runtime = int(m_json["runtime"])
     movie.display_runtime = str(datetime.timedelta(seconds=movie.runtime))[:4]
-    movie.thumbnails = check_thumbnail(a.asset_id)
+    #movie.thumbnails = check_thumbnail(a.asset_id)
     movie.save()
 
     for girl in girls:
@@ -506,7 +594,7 @@ def __update_movie(movie, m_json):
     return movie
 
 
-def __create_movie(m_json):
+def __create_movie(m_json, up_img):
     asset = Asset()
     asset.asset_id = m_json["asset_id"]
     asset.asset_type = "movie"
@@ -514,7 +602,7 @@ def __create_movie(m_json):
 
     movie = Movie()
     movie.asset = asset
-    ret = __update_movie(movie, m_json)
+    ret = __update_movie(movie, m_json, up_img)
 
     return ret
 
@@ -532,13 +620,13 @@ def __update_movie_metadata(data, metadata, lang):
     metadata.title = data["title"]
     metadata.summary_short = data["summary_short"].replace("<p>", "").replace("</p>", "").rstrip()
     metadata.summary_long = data["summary_long"].replace("<p>", "").replace("</p>", "").rstrip()
-    metadata.subtitle = chech_subtitle(metadata.movie.asset.asset_id, lang.code)
+    #metadata.subtitle = chech_subtitle(metadata.movie.asset.asset_id, lang.code)
     metadata.save()
 
     return metadata
 
 
-def import_movie(file):
+def import_movie(file, up_img=False):
     with open(file) as f:
         buf = f.read()
     f.close()
@@ -563,13 +651,13 @@ def import_movie(file):
                 msg = "No existe una movie asociada al asset ID %s" % m_json["asset_id"]
                 raise ImporterException(msg)
             try:
-                mov = __update_movie(movie, m_json)
+                mov = __update_movie(movie, m_json, up_img)
             except ImporterException as err:
                 print err.value
                 continue
         except ObjectDoesNotExist:
             try:
-                mov = __create_movie(m_json)
+                mov = __create_movie(m_json, up_img)
             except ImporterException as err:
                 print err.value
                 continue
@@ -589,112 +677,131 @@ def import_movie(file):
                 continue
 
 
-def enqueue_girl(girl, lang=''):
-    if lang == '':
+def enqueue_girl(girl, endpoint, language=''):
+    if language == '':
         metadata_list = GirlMetadata.objects.filter(girl=girl)
         for metadata in metadata_list:
-            q = PublishQueue()
-            q.item_id       = girl.asset.asset_id
-            print metadata.language.code
-            q.item_lang     = metadata.language
-            q.item_type     = 'AS'
-            q.endpoint      = ENDPOINT
-            q.schedule_date = timezone.now()
-            q.save()
+            enqueue_item(girl.asset.asset_id, metadata.language, 'AS', endpoint)
     else:
+        # Verifico que el lenguage exista
+        try:
+            lang = __get_language(language)
+        except ImporterException as e:
+            raise EnqueuerException(e.value)
         try:
             GirlMetadata.objects.get(girl=girl, language=lang)
         except ObjectDoesNotExist:
             msg = "Metadata in %s does not exist for girl %s" % (lang, girl.name)
             raise EnqueuerException(msg)
-        q = PublishQueue()
-        q.item_id = girl.asset.asset_id
-        q.item_lang = lang
-        q.item_type = 'AS'
-        q.endpoint = ENDPOINT
-        q.schedule_date = timezone.now()
-        q.save()
+        enqueue_item(girl.asset.asset_id, lang, 'AS', endpoint)
 
 
-def enqueue_movie(movie, lang=''):
-    if lang == '':
+def enqueue_movie(movie, endpoint, language=''):
+    if language == '':
         metadata_list = MovieMetadata.objects.filter(movie=movie)
         for metadata in metadata_list:
-            q = PublishQueue()
-            q.item_id = movie.asset.asset_id
-            q.item_lang = metadata.language
-            q.item_type = 'AS'
-            q.endpoint = ENDPOINT
-            q.schedule_date = timezone.now()
-            q.save()
+            enqueue_item(movie.asset.asset_id, metadata.language, 'AS', endpoint)
     else:
+        # Verifico que el lenguage exista
+        try:
+            lang = __get_language(language)
+        except ImporterException as e:
+            raise EnqueuerException(e.value)
         try:
             MovieMetadata.objects.get(movie=movie, language=lang)
         except ObjectDoesNotExist:
             msg = "Metadata in %s does not exist for movie %s" % (lang, movie.asset.asset_id)
             raise EnqueuerException(msg)
-        q = PublishQueue()
-        q.item_id = movie.asset.asset_id
-        q.item_lang = lang
-        q.item_type = 'AS'
-        q.endpoint = ENDPOINT
-        q.schedule_date = timezone.now()
-        q.save()
+        enqueue_item(movie.asset.asset_id, lang, 'AS', endpoint)
 
 
-def enqueue_serie(serie, lang=''):
-    if lang == '':
+def enqueue_serie(serie, endpoint, language=''):
+    if language == '':
         metadata_list = SerieMetadata.objects.filter(serie=serie)
         for metadata in metadata_list:
-            q = PublishQueue()
-            q.item_id = serie.asset.asset_id
-            q.item_lang = metadata.language
-            q.item_type = 'AS'
-            q.endpoint = ENDPOINT
-            q.schedule_date = timezone.now()
-            q.save()
+            enqueue_item(serie.asset.asset_id, metadata.language, 'AS', endpoint)
     else:
+        # Verifico que el lenguage exista
         try:
-            SerieMetadata.objects.get(serie=movie, language=lang)
+            lang = __get_language(language)
+        except ImporterException as e:
+            raise EnqueuerException(e.value)
+        try:
+            SerieMetadata.objects.get(serie=serie, language=lang)
         except ObjectDoesNotExist:
             msg = "Metadata in %s does not exist for serie %s" % (lang, serie.asset.asset_id)
             raise EnqueuerException(msg)
-        q = PublishQueue()
-        q.item_id = serie.asset.asset_id
-        q.item_lang = lang
-        q.item_type = 'AS'
-        q.endpoint = ENDPOINT
-        q.schedule_date = timezone.now()
-        q.save()
+        enqueue_item(serie.asset.asset_id, lang, 'AS', endpoint)
 
 
-#import_girl('girl.json.pt')
-#import_category('category.json')
-#import_serie('serie.json.es')
+def enqueue_episode(episode, endpoint, language=''):
+    if language == '':
+        metadata_list = EpisodeMetadata.objects.filter(episode=episode)
+        for metadata in metadata_list:
+            enqueue_item(episode.asset.asset_id, metadata.language, 'AS', endpoint)
+    else:
+        # Verifico que el lenguage exista
+        try:
+            lang = __get_language(language)
+        except ImporterException as e:
+            raise EnqueuerException(e.value)
+        try:
+            EpisodeMetadata.objects.get(episode=episode, language=lang)
+        except ObjectDoesNotExist:
+            msg = "Metadata in %s does not exist for episode %s" % (lang, episode.asset.asset_id)
+            raise EnqueuerException(msg)
+        enqueue_item(episode.asset.asset_id, lang, 'AS', endpoint)
+
+
+def enqueue_item(id, lang, type, endpoint):
+    q = PublishQueue()
+    q.item_id = id
+    q.item_lang = lang
+    q.item_type = type
+    q.endpoint = endpoint
+    q.schedule_date = timezone.now()
+    q.save()
+
 """
 try:
-    import_movie('movie.json')
+    import_girl('girl.json.es')
+    import_girl('girl.json.pt')
+except ImporterException as err:
+    print err.value
+"""
+"""
+try:
+    import_category('category.json')
+except ImporterException as err:
+    print err.value
+"""
+"""
+try:
+    import_serie('serie.json.es')
+    import_serie('serie.json.pt')
+except ImporterException as err:
+    print err.value
+"""
+"""
+try:
+    import_movie('movie.json.es')
+    import_movie('movie.json.pt')
 except ImporterException as err:
     print err.value
 """
 """
 try:
     import_episode('episode.json.es')
+    import_episode('episode.json.pt')
 except ImporterException as err:
     print err.value
 """
 
 """
-try:
-    import_movie('movie.json')
-except ImporterException as e:
-    print e.value
-"""
-"""
 girls_list = Girl.objects.all()
 for girl in girls_list:
     try:
-        #enqueue_girl(girl, 'pt')
+        enqueue_girl(girl, ENDPOINT,'es')
         #enqueue_girl(girl)
     except EnqueuerException as err:
         print err.value
@@ -703,8 +810,8 @@ for girl in girls_list:
 movies_list = Movie.objects.all()
 for movie in movies_list:
     try:
-        #enqueue_movie(movie 'pt')
-        enqueue_movie(movie)
+        enqueue_movie(movie, ENDPOINT, 'es')
+        #enqueue_movie(movie)
     except EnqueuerException as err:
         print err.value
 """
@@ -712,11 +819,30 @@ for movie in movies_list:
 serie_list = Serie.objects.all()
 for serie in serie_list:
     try:
-        #enqueue_movie(movie 'pt')
-        enqueue_serie(serie)
+        enqueue_serie(serie, ENDPOINT, 'es')
+        #enqueue_serie(serie)
     except EnqueuerException as err:
         print err.value
 """
+"""
+episode_list = Episode.objects.all()
+for episode in episode_list:
+    try:
+        enqueue_episode(episode, ENDPOINT, 'es')
+        #enqueue_episode(episode, ENDPOINT)
+    except EnqueuerException as err:
+        print err.value
+"""
+"""
+for item in PublishQueue.objects.filter(status='E'):
+    item.status  = 'Q'
+    item.message = ''
+    item.save()
+"""
+for item in PublishQueue.objects.all():
+    item.status  = 'Q'
+    item.message = ''
+    item.save()
 
 #q = Movie.objects.filter(year=0).annotate(Count('runtime'))
 #print q.runtime__count
@@ -728,4 +854,13 @@ for serie in serie_list:
 #asset = Asset.obje
 #girl = Girl.objects.get(asset=)
 
+"""
+images = Image.objects.all()
+for image in images:
+    if image.portrait:
+        image.portrait  = "%s.jpg" % image.name
+    if image.landscape:
+        image.landscape = "%s.jpg" % image.name
+    image.save()
+"""
 

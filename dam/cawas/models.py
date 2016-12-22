@@ -62,7 +62,6 @@ class Image(models.Model):
     name      = models.CharField(max_length=128, unique=True, help_text="Nombre de la imagen")
     portrait  = models.FileField(help_text="Portrait image", null=True, blank=True)
     landscape = models.FileField(help_text="Landscape image", null=True, blank=True)
-    big       = models.FileField(help_text="Big image", null=True, blank=True)
 
     def __unicode__(self):
         return self.name
@@ -91,10 +90,10 @@ class Category(models.Model):
 
             id = str(self.id)
 
-            while len(id) < 6:
+            while len(id) < 5:
                 id = "0" + id
 
-            self.category_id = "CA%s" % (id)
+            self.category_id = "C%s" % (id)
         metadata = CategoryMetadata.objects.filter(category=self)
         for m in metadata:
             m.modification_date = timezone.now()
@@ -113,8 +112,6 @@ class Category(models.Model):
                 dict["image_portrait"] = self.image.portrait
             if self.image.landscape is not None:
                 dict["image_landscape"] = self.image.landscape
-            if self.image.big is not None:
-                dict["image_big"] = self.image.big
 
         return dict
 
@@ -181,13 +178,13 @@ class Asset(models.Model):
             if self.asset_id == '':
                 id = str(self.id)
 
-                while len(id) < 6:
+                while len(id) < 5:
                     id = "0" + id
 
                 if self.asset_type == "girl":
-                    self.asset_id = "GL%s" % id
+                    self.asset_id = "G%s" % id
                 elif self.asset_type == "serie":
-                    self.asset_id = "SE%s" % id
+                    self.asset_id = "S%s" % id
 
                 super(Asset, self).save(*args, **kwargs)
 
@@ -222,10 +219,10 @@ class Block(models.Model):
 
             id = str(self.id)
 
-            while len(id) < 4:
+            while len(id) < 5:
                 id = "0" + id
 
-            self.block_id = "BK%s%s" % (self.language.upper(), id)
+            self.block_id = "B%s" % (id)
         super(Block, self).save(*args, **kwargs)
 
     def __unicode__(self):
@@ -263,10 +260,10 @@ class Slider(models.Model):
 
             id = str(self.id)
 
-            while len(id) < 6:
+            while len(id) < 4:
                 id = "0" + id
 
-            self.slider_id = "SL%s" % (id)
+            self.slider_id = "L%s" % (id)
         metadata = SliderMetadata.objects.filter(slider=self)
         for m in metadata:
             m.modification_date = timezone.now()
@@ -346,8 +343,6 @@ class Girl(models.Model):
                 dict["image_portrait"] = self.image.portrait.name
             if self.image.landscape.name != '':
                 dict["image_landscape"] = self.image.landscape.name
-            if self.image.big.name != '':
-                dict["image_big"] = self.image.big.name
         if self.birth_date is not None:
             dict["birth_date"] = self.birth_date.strftime("%Y-%m-%d")
         if self.height is not None:
@@ -420,8 +415,6 @@ class Serie(models.Model):
             dict["image_portrait"] = self.image.portrait.name
         if self.image.landscape.name != '':
             dict["image_landscape"] = self.image.landscape.name
-        if self.image.big.name != '':
-            dict["image_big"] = self.image.big.name
         dict["seasons"]         = Episode.objects.filter(serie=self).values_list('season', flat=True).distinct().count()
         dict["episodes"]        = len(Episode.objects.filter(serie=self))
 
@@ -500,22 +493,25 @@ class Episode(models.Model):
         dict = {}
 
         dict["show_type"]       = "episode"
-        dict["channel"]         = self.channel.name
+        if self.channel is not None:
+            dict["channel"]         = self.channel.name
         dict["year"]            = self.year
-        dict["cast"]            = self.cast
-        dict["directors"]       = self.directors
+        if self.cast != '':
+            dict["cast"]            = self.cast
+        if self.directors != '':
+            dict["directors"]       = self.directors
         if self.image.portrait.name != '':
             dict["image_portrait"] = self.image.portrait.name
         if self.image.landscape.name != '':
             dict["image_landscape"] = self.image.landscape.name
-        if self.image.big.name != '':
-            dict["image_big"] = self.image.big.name
         dict["runtime"]         = self.runtime
         dict["display_runtime"] = self.display_runtime
-        dict["chapter"]         = self.chapter
-        dict["season"]          = self.season
+        if self.chapter > 0:
+            dict["chapter"]         = self.chapter
+        if self.season > 0:
+            dict["season"]          = self.season
         dict["thumbnails"]      = self.thumbnails
-        dict["serie"]           = self.serie.asset.asset_id
+        dict["serie_id"]        = self.serie.asset.asset_id
 
         return dict
 
@@ -602,8 +598,6 @@ class Movie(models.Model):
             dict["image_portrait"] = self.image.portrait.name
         if self.image.landscape.name != '':
             dict["image_landscape"] = self.image.landscape.name
-        if self.image.big.name != '':
-            dict["image_big"] = self.image.big.name
         dict["runtime"]         = self.runtime
         dict["display_runtime"] = self.display_runtime
         dict["thumbnails"]      = self.thumbnails

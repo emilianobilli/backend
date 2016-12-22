@@ -59,6 +59,7 @@ class ApiBackendServer(object):
             return content
         else:
             cont = json.loads(content)
+            print cont
             raise ApiBackendException(cont['message'])
 
 
