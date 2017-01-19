@@ -4,6 +4,7 @@ from flask import redirect
 from flask import Response
 from flask_cors import CORS, cross_origin
 from backend import Backend
+from backend import Components
 from json   import dumps 
 from json   import loads
 
@@ -75,51 +76,137 @@ backend = Backend({"girls":
                        "search_domain": {"domain": {
                                         "id_field": "asset_id",
                                         "filter_query" : '',
-                                        "schema": ["channel","asset_id", "title","summary_short","display_runtime","seasons","season","episode","categories","show_type","year","serie_id","girls_id","name", "image_big", "image_landscape", "image_portrait", "views", "ranking", "asset_type", "blocks", "publish_date", "class", "summary_long", "nationality"],
-                                        "return_fields": ["asset_id", "name", "title", "ranking", "views","display_runtime", "summary_short" ,"categories", "image_landscape", "image_portrait", "channel", "show_type", "year", "seasons", "episodes", "class"],
+                                        "schema": ["channel","asset_id", "title","summary_short","display_runtime","seasons","season","episode","episodes","categories","show_type","year","serie_id","girls_id","name", "image_big", "image_landscape", "image_portrait", "views", "ranking", "asset_type", "blocks", "publish_date", "class", "summary_long", "nationality"],
+                                        "return_fields": ["asset_id", "name", "title", "ranking", "views","display_runtime", "summary_short" ,"categories", "image_landscape", "image_portrait", "channel", "show_type", "year", "seasons", "class","episodes"],
                                         "name" : "eshotgodomain",
                                     }}
                     })
 
 
+components = Components({
+                "channels": {
+                    "database": {
+                        "table": "Channels",
+                        "pk": "lang",
+                        "sk": "channel_name",
+                        "schema": {},
+                    }
+                },
+                "categories": {
+                    "database": {
+                        "table": "Categories",
+                        "pk": "lang",
+                        "sk": "category_name",
+                        "schema": {
+                            "lang": "S",
+                            "category_name": "S",
+                            "image_portrait": "S",
+                            "image_landscape": "S",
+                            "order": "N"
+                        },
+                    }
+                },
+                "sliders": {
+                    "database": {
+                        "table": "Sliders",
+                        "pk": "lang",
+                        "sk": "slider_id",
+                        "schema": {
+                            "lang": "S",
+                            "slider_id": "S",
+                            "media_url": "S",
+                            "media_type": "S",
+                            "linked_asset_id": "S",
+                            "linked_asset_type": "S"
+                        },
+                    }
+                },
+                "blocks": {
+                    "database": {
+                        "table": "Blocks",
+                        "pk": "lang",
+                        "sk": "block_id",
+                        "schema": {
+                            "lang": "S",
+                            "block_id": "S",
+                            "block_name": "S",
+                            "channel": "S",
+                        },
+                    }
+                }
+            })
+
 #------------------------------------------------------------------------------------------------------------------------
 #       Pages Components: Channels, Categories, Sliders, Blocks
 #------------------------------------------------------------------------------------------------------------------------
 @api.route('/v1/channels/',   methods=['GET', 'POST'])
-@cross_origin
+@cross_origin()
 def urlChannels():
-    args = {}
-    for k in request.args.keys():
-        args[k] = request.args.get(k)
-    ret = components.query_channels(args)
-    return Response(response=dumps(ret['body'], status=ret['status'])
+    if request.method == 'GET':
+        args = {}
+        for k in request.args.keys():
+            args[k] = request.args.get(k)
+        ret = components.query_channels(args)
+        return Response(response=dumps(ret['body']), status=ret['status'])
+    elif request.method == 'POST':
+        body = loads(request.data)
+        if body['action'] == 'add':
+            ret  = components.add_channel(body['item'])
+        elif body['action'] == 'del':
+            ret  = components.del_channel(body['item'])
+        return Response(response=dumps(ret['body']), status=ret['status'])
+    
 
 @api.route('/v1/categories/', methods=['GET', 'POST'])
-@cross_origin
+@cross_origin()
 def urlCategories():
-    args = {}
-    for k in request.args.keys():
-        args[k] = request.args.get(k)
-    ret = components.query_categories(args)
-    return Response(response=dumps(ret['body'], status=ret['status'])
+    if request.method == 'GET':
+        args = {}
+        for k in request.args.keys():
+            args[k] = request.args.get(k)
+        ret = components.query_categories(args)
+        return Response(response=dumps(ret['body']), status=ret['status'])
+    elif request.method == 'POST':
+        body = loads(request.data)
+        if body['action'] == 'add':
+            ret  = components.add_category(body['item'])
+        elif body['action'] == 'del':
+            ret  = components.del_category(body['item'])
+        return Response(response=dumps(ret['body']), status=ret['status'])
 
 @api.route('/v1/sliders/',    methods=['GET', 'POST'])
-@cross_origin
+@cross_origin()
 def urlSliders():
-    args = {}
-    for k in request.args.keys():
-        args[k] = request.args.get(k)
-    ret = components.query_sliders(args)
-    return Response(response=dumps(ret['body'], status=ret['status'])
+    if request.method == 'GET':
+        args = {}
+        for k in request.args.keys():
+            args[k] = request.args.get(k)
+        ret = components.query_sliders(args)
+        return Response(response=dumps(ret['body']), status=ret['status'])
+    elif request.method == 'POST':
+        body = loads(request.data)
+        if body['action'] == 'add':
+            ret  = components.add_slider(body['item'])
+        elif body['action'] == 'del':
+            ret  = components.del_slider(body['item'])
+        return Response(response=dumps(ret['body']), status=ret['status'])
 
 @api.route('/v1/blocks/',     methods=['GET', 'POST'])
-@crosS_origin
+@cross_origin()
 def urlBlocks():
-    args = {}
-    for k in request.args.keys():
-        args[k] = request.args.get(k)
-    ret = components.query_blocks(args)
-    return Response(response=dumps(ret['body'], status=ret['status'])
+    if request.method == 'GET':
+        args = {}
+        for k in request.args.keys():
+            args[k] = request.args.get(k)
+        ret = components.query_blocks(args)
+        return Response(response=dumps(ret['body']), status=ret['status'])
+    elif request.method == 'POST':
+        body = loads(request.data)
+        if body['action'] == 'add':
+            ret  = components.add_block(body['item'])
+        elif body['action'] == 'del':
+            ret  = components.del_block(body['item'])
+        return Response(response=dumps(ret['body']), status=ret['status'])
 
 #------------------------------------------------------------------------------------------------------------------------
 #       Assets: Shows (Movies, Seires) and Girls
@@ -204,5 +291,5 @@ def urlAsset():
     
 
 if __name__ == "__main__":
-#    api.run("0.0.0.0", 8000)
-    api.run()
+    api.run("0.0.0.0", 8000)
+#    api.run()

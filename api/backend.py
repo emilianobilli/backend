@@ -133,10 +133,10 @@ class Components(object):
     '''
         Query Methods for Slider, Block and Category
     '''
-    def query_block(self, arg):
+    def query_blocks(self, arg):
         return self.__query(self.blocks,arg)
 
-    def query_slider(self, arg):
+    def query_sliders(self, arg):
         return self.__query(self.sliders,arg)
 
     def query_categories(self, arg):

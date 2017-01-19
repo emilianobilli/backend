@@ -357,6 +357,9 @@ class cloudsearchCollection(object):
                             for d in hit:
                                 doc['count'] = doc['count'] + 1
                                 doc['items'].append(d['fields'])
+                return doc
+            else:
+                raise CloudSearchException(str(content))
         return doc
 
 
@@ -372,7 +375,7 @@ class cloudsearchCollection(object):
         qString   = p.make()
 
         ret = self.doGet(qString)
-
+        print ret
         return self._check_query_return(ret)
 
     def search(self, q=None, exclude=None, start=0, size=10):
