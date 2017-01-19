@@ -76,12 +76,54 @@ backend = Backend({"girls":
                                         "id_field": "asset_id",
                                         "filter_query" : '',
                                         "schema": ["channel","asset_id", "title","summary_short","display_runtime","seasons","season","episode","categories","show_type","year","serie_id","girls_id","name", "image_big", "image_landscape", "image_portrait", "views", "ranking", "asset_type", "blocks", "publish_date", "class", "summary_long", "nationality"],
-                                        "return_fields": ["asset_id", "name", "title", "categories", "image_landscape", "image_portrait", "channel", "show_type"],
+                                        "return_fields": ["asset_id", "name", "title", "ranking", "views","display_runtime", "summary_short" ,"categories", "image_landscape", "image_portrait", "channel", "show_type", "year", "seasons", "episodes", "class"],
                                         "name" : "eshotgodomain",
                                     }}
                     })
 
 
+#------------------------------------------------------------------------------------------------------------------------
+#       Pages Components: Channels, Categories, Sliders, Blocks
+#------------------------------------------------------------------------------------------------------------------------
+@api.route('/v1/channels/',   methods=['GET', 'POST'])
+@cross_origin
+def urlChannels():
+    args = {}
+    for k in request.args.keys():
+        args[k] = request.args.get(k)
+    ret = components.query_channels(args)
+    return Response(response=dumps(ret['body'], status=ret['status'])
+
+@api.route('/v1/categories/', methods=['GET', 'POST'])
+@cross_origin
+def urlCategories():
+    args = {}
+    for k in request.args.keys():
+        args[k] = request.args.get(k)
+    ret = components.query_categories(args)
+    return Response(response=dumps(ret['body'], status=ret['status'])
+
+@api.route('/v1/sliders/',    methods=['GET', 'POST'])
+@cross_origin
+def urlSliders():
+    args = {}
+    for k in request.args.keys():
+        args[k] = request.args.get(k)
+    ret = components.query_sliders(args)
+    return Response(response=dumps(ret['body'], status=ret['status'])
+
+@api.route('/v1/blocks/',     methods=['GET', 'POST'])
+@crosS_origin
+def urlBlocks():
+    args = {}
+    for k in request.args.keys():
+        args[k] = request.args.get(k)
+    ret = components.query_blocks(args)
+    return Response(response=dumps(ret['body'], status=ret['status'])
+
+#------------------------------------------------------------------------------------------------------------------------
+#       Assets: Shows (Movies, Seires) and Girls
+#------------------------------------------------------------------------------------------------------------------------
 @api.route('/v1/search/', methods=['GET'])
 @cross_origin()
 def urlSearch():
