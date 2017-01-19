@@ -106,12 +106,13 @@ class Category(models.Model):
     def toDict(self):
         dict = {}
 
-        dict["order"] = self.order
+        if self.order is not None:
+            dict["order"] = self.order
         if self.image is not None:
-            if self.image.portrait is not None:
-                dict["image_portrait"] = self.image.portrait
-            if self.image.landscape is not None:
-                dict["image_landscape"] = self.image.landscape
+            if self.image.portrait.name != '':
+                dict["image_portrait"] = self.image.portrait.name
+            if self.image.landscape.name != '':
+                dict["image_landscape"] = self.image.landscape.name
 
         return dict
 
@@ -134,7 +135,7 @@ class CategoryMetadata(models.Model):
         dict = {}
 
         dict["lang"] = self.language.code
-        dict["name"] = self.name
+        dict["category_name"] = self.name
 
         return dict
 
@@ -152,9 +153,9 @@ class Channel(models.Model):
     def toDict(self):
         dict = {}
 
-        dict["name"] = self.name
+        dict["channel_name"] = self.name
         if self.logo is not None:
-            dict["logo"] = self.logo
+            dict["logo_url"] = self.logo
 
         return dict
 
@@ -250,9 +251,7 @@ class Slider(models.Model):
     media_type        = models.CharField(max_length=10, choices=TYPE, help_text="Tipo de Slider")
     media_url         = models.CharField(max_length=256, help_text="Media url")
     asset             = models.ForeignKey(Asset, blank=True, null=True)
-    modification_date = models.DateTimeField(auto_now=True)
-    publish_date      = models.DateTimeField(auto_now=False, auto_now_add=False, blank=True, null=True)
-    publish_status    = models.BooleanField(default=False)
+    
 
     def save(self, *args, **kwargs):
         super(Slider, self).save(*args, **kwargs)
@@ -260,7 +259,7 @@ class Slider(models.Model):
 
             id = str(self.id)
 
-            while len(id) < 4:
+            while len(id) < 5:
                 id = "0" + id
 
             self.slider_id = "L%s" % (id)
@@ -303,7 +302,7 @@ class SliderMetadata(models.Model):
     def toDict(self):
         dict = {}
 
-        dict["lang"] = self.language
+        dict["lang"] = self.language.code
         dict["text"] = self.text
 
         return dict

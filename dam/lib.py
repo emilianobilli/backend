@@ -73,12 +73,12 @@ def slider_serializer(slider_id, lang=''):
     return ret
 
 
-def category_serializer(cat_name, lang=''):
+def category_serializer(cat_id, lang=''):
     ret = []
     try:
-        category = Category.objects.get(name=cat_name)
+        category = Category.objects.get(category_id=cat_id)
     except ObjectDoesNotExist:
-        msg = "Category with name %s does not exist" % cat_name
+        msg = "Category with ID %s does not exist" % cat_id
         raise SerializerException(msg)
 
     category_dict = category.toDict()
@@ -89,9 +89,9 @@ def category_serializer(cat_name, lang=''):
         try:
             language = Language.objects.get(code=lang)
         except ObjectDoesNotExist:
-            msg = "Language code %s does not exist for category %s" % (lang, cat_name)
+            msg = "Language code %s does not exist for category %s" % (lang, cat_id)
             raise SerializerException(msg)
-        metadata_list = CategoryMetadata.objects.filter(category=category, lang=language)
+        metadata_list = CategoryMetadata.objects.filter(category=category, language=language)
 
     if len(metadata_list) == 0:
         ret.append(category_dict)

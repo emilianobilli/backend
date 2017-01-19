@@ -14,7 +14,9 @@ from urlparse import urlparse
 import httplib2
 
 
-ENDPOINT = "http://backend.zolechamedia.net"
+#ENDPOINT = "http://backend.zolechamedia.net"
+ENDPOINT = "http://www.zolechamedia.net:8000"
+
 
 class EnqueuerException(Exception):
     def __init__(self, value):
@@ -691,7 +693,7 @@ def enqueue_girl(girl, endpoint, language=''):
         try:
             GirlMetadata.objects.get(girl=girl, language=lang)
         except ObjectDoesNotExist:
-            msg = "Metadata in %s does not exist for girl %s" % (lang, girl.name)
+            msg = "Metadata in %s does not exist for girl %s" % (language, girl.name)
             raise EnqueuerException(msg)
         enqueue_item(girl.asset.asset_id, lang, 'AS', endpoint)
 
@@ -710,7 +712,7 @@ def enqueue_movie(movie, endpoint, language=''):
         try:
             MovieMetadata.objects.get(movie=movie, language=lang)
         except ObjectDoesNotExist:
-            msg = "Metadata in %s does not exist for movie %s" % (lang, movie.asset.asset_id)
+            msg = "Metadata in %s does not exist for movie %s" % (language, movie.asset.asset_id)
             raise EnqueuerException(msg)
         enqueue_item(movie.asset.asset_id, lang, 'AS', endpoint)
 
@@ -729,7 +731,7 @@ def enqueue_serie(serie, endpoint, language=''):
         try:
             SerieMetadata.objects.get(serie=serie, language=lang)
         except ObjectDoesNotExist:
-            msg = "Metadata in %s does not exist for serie %s" % (lang, serie.asset.asset_id)
+            msg = "Metadata in %s does not exist for serie %s" % (language, serie.asset.asset_id)
             raise EnqueuerException(msg)
         enqueue_item(serie.asset.asset_id, lang, 'AS', endpoint)
 
@@ -748,9 +750,51 @@ def enqueue_episode(episode, endpoint, language=''):
         try:
             EpisodeMetadata.objects.get(episode=episode, language=lang)
         except ObjectDoesNotExist:
-            msg = "Metadata in %s does not exist for episode %s" % (lang, episode.asset.asset_id)
+            msg = "Metadata in %s does not exist for episode %s" % (language, episode.asset.asset_id)
             raise EnqueuerException(msg)
         enqueue_item(episode.asset.asset_id, lang, 'AS', endpoint)
+
+
+def enqueue_category(category, endpoint, language=''):
+    if language == '':
+        metadata_list = CategoryMetadata.objects.filter(category=category)
+        for metadata in metadata_list:
+            enqueue_item(category.category_id, metadata.language, 'CA', endpoint)
+    else:
+        # Verifico que el lenguage exista
+        try:
+            lang = __get_language(language)
+        except ImporterException as e:
+            raise EnqueuerException(e.value)
+        try:
+            CategoryMetadata.objects.get(category=category, language=lang)
+        except ObjectDoesNotExist:
+            msg = "Metadata in %s does not exist for category ID %s" % (language, category.category_id)
+            raise EnqueuerException(msg)
+        enqueue_item(category.category_id, lang, 'CA', endpoint)
+
+
+def enqueue_slider(slider, endpoint, language=''):
+    if language == '':
+        metadata_list = SliderMetadata.objects.filter(slider=slider)
+        for metadata in metadata_list:
+            enqueue_item(slider.slider_id, metadata.language, 'SL', endpoint)
+    else:
+        # Verifico que el lenguage exista
+        try:
+            lang = __get_language(language)
+        except ImporterException as e:
+            raise EnqueuerException(e.value)
+        try:
+            SliderMetadata.objects.get(slider=slider, language=lang)
+        except ObjectDoesNotExist:
+            msg = "Metadata in %s does not exist for slider ID %s" % (language, slider.slider_id)
+            raise EnqueuerException(msg)
+        enqueue_item(slider.slider_id, lang, 'SL', endpoint)
+
+
+def enqueue_block(block, endpoint):
+    enqueue_item(block.block_id, block.language, 'BL', endpoint)
 
 
 def enqueue_item(id, lang, type, endpoint):
@@ -833,17 +877,46 @@ for episode in episode_list:
     except EnqueuerException as err:
         print err.value
 """
+
+"""
+category_list = Category.objects.all()
+for category in category_list:
+    try:
+        enqueue_category(category, ENDPOINT, 'es')
+        #enqueue_category(category)
+    except EnqueuerException as err:
+        print err.value
+"""
+"""
+slider_list = Slider.objects.all()
+for slider in slider_list:
+    try:
+        enqueue_slider(slider, ENDPOINT, 'es')
+        #enqueue_slider(slider)
+    except EnqueuerException as err:
+        print err.value
+"""
+
+block_list = Block.objects.all()
+for block in block_list:
+    try:
+        enqueue_block(block, ENDPOINT)
+    except EnqueuerException as err:
+        print err.value
+
+
 """
 for item in PublishQueue.objects.filter(status='E'):
     item.status  = 'Q'
     item.message = ''
     item.save()
 """
+"""
 for item in PublishQueue.objects.all():
     item.status  = 'Q'
     item.message = ''
     item.save()
-
+"""
 #q = Movie.objects.filter(year=0).annotate(Count('runtime'))
 #print q.runtime__count
 #print Movie.objects.filter(year=0).distinct('original_title')
