@@ -90,7 +90,10 @@ components = Components({
                         "table": "Channels",
                         "pk": "lang",
                         "sk": "channel_name",
-                        "schema": {},
+                        "schema": {
+                            "lang": "S",
+                            "channel_name": "S"
+                        },
                     }
                 },
                 "categories": {
@@ -156,23 +159,6 @@ authorization = Auth({
 #------------------------------------------------------------------------------------------------------------------------
 #       Pages Components: Channels, Categories, Sliders, Blocks
 #------------------------------------------------------------------------------------------------------------------------
-@api.route('/v1/channels/',   methods=['GET', 'POST'])
-@cross_origin()
-def urlChannels():
-    if request.method == 'GET':
-        args = {}
-        for k in request.args.keys():
-            args[k] = request.args.get(k)
-        ret = components.query_channels(args)
-        return Response(response=dumps(ret['body']), status=ret['status'])
-    elif request.method == 'POST':
-        body = loads(request.data)
-        if body['action'] == 'add':
-            ret  = components.add_channel(body['item'])
-        elif body['action'] == 'del':
-            ret  = components.del_channel(body['item'])
-        return Response(response=dumps(ret['body']), status=ret['status'])
-    
 
 @api.route('/v1/categories/', methods=['GET', 'POST'])
 @cross_origin()
@@ -224,6 +210,26 @@ def urlBlocks():
         elif body['action'] == 'del':
             ret  = components.del_block(body['item'])
         return Response(response=dumps(ret['body']), status=ret['status'])
+
+
+@api.route('/v1/channels/',     methods=['GET', 'POST'])
+@cross_origin()
+def urlChannels():
+    if request.method == 'GET':
+        args = {}
+        args['lang'] = 'none'   # Hardcoding
+        ret = components.query_channels(args)
+        return Response(response=dumps(ret['body']), status=ret['status'])
+    elif request.method == 'POST':
+        body = loads(request.data)
+        if body['action'] == 'add':
+            body['item']['lang'] = 'none'
+            ret  = components.add_channel(body['item'])
+        elif body['action'] == 'del':
+            body['item']['lang'] = 'none'
+            ret  = components.del_channel(body['item'])
+        return Response(response=dumps(ret['body']), status=ret['status'])
+
 
 #------------------------------------------------------------------------------------------------------------------------
 #       Assets: Shows (Movies, Series) and Girls
