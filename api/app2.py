@@ -5,6 +5,7 @@ from flask import Response
 from flask_cors import CORS, cross_origin
 from backend import Backend
 from backend import Components
+from Auth    import Auth
 from json   import dumps 
 from json   import loads
 
@@ -136,6 +137,22 @@ components = Components({
                 }
             })
 
+
+authorization = Auth({
+                "database":
+                    { "table" : "Auth",
+                        "pk":   "apikey",
+                        "schema": {
+                            "apikey": "S",
+                            "enabled": "N",
+                            "expiration": "N",
+                        "username": "S"
+                        }
+                    }
+                })
+
+
+
 #------------------------------------------------------------------------------------------------------------------------
 #       Pages Components: Channels, Categories, Sliders, Blocks
 #------------------------------------------------------------------------------------------------------------------------
@@ -209,7 +226,7 @@ def urlBlocks():
         return Response(response=dumps(ret['body']), status=ret['status'])
 
 #------------------------------------------------------------------------------------------------------------------------
-#       Assets: Shows (Movies, Seires) and Girls
+#       Assets: Shows (Movies, Series) and Girls
 #------------------------------------------------------------------------------------------------------------------------
 @api.route('/v1/search/', methods=['GET'])
 @cross_origin()
@@ -247,11 +264,20 @@ def urlShow():
 @api.route('/v1/shows/<string:asset_id>/', methods=['GET'])
 @cross_origin()
 def urlGetShow(asset_id):
-    args = {}
-    args['asset_id'] = asset_id
-    for k in request.args.keys():
-        args[k] = request.args.get(k)
-    ret = backend.get_show(args)
+    ret = {}
+    if 'X-API-KEY' in request.headers:
+        x_api_key = request.headers.get('X-API-KEY')
+        ret       = authorization.check_api_key(x_api_key)
+        if ret['status'] == 200:
+            args = {}
+            args['asset_id'] = asset_id
+            for k in request.args.keys():
+                args[k] = request.args.get(k)
+            ret = backend.get_show(args)
+    else:
+        ret['body']     = {'status': 'failure', 'message': 'Missing header'}
+        ret['status']   = 401
+
     return Response(response=dumps(ret['body']), status=ret['status'])
 
 
@@ -276,6 +302,14 @@ def urlGetGirl(asset_id):
     ret = backend.get_girl(args)
     return Response(response=dumps(ret['body']), status=ret['status'])
 
+@api.route('/v1/private/authorize/', methods=['POST'])
+@cross_origin()
+def urlAuthorize():
+    #
+    # Falta mecanismo de validacion
+    user_data = loads(request.data)
+    ret = authorization.authorize(user_data)
+    return Response(response=dumps(ret['body']), status=ret['status'])
 
 @api.route('/v1/assets/', methods=['POST'])
 @cross_origin()

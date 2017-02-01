@@ -92,7 +92,7 @@ class Components(object):
     def __del(self, where, item):
         try:
             ret    = where.delete(item)
-            print ret
+        #    print ret
             status = 204
         except CollectionException as e:
             status = 422
