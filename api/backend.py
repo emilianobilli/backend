@@ -92,7 +92,7 @@ class Components(object):
     def __del(self, where, item):
         try:
             ret    = where.delete(item)
-            print ret
+        #    print ret
             status = 204
         except CollectionException as e:
             status = 422
@@ -112,6 +112,9 @@ class Components(object):
     def add_slider(self, Item={}):
         return self.__add(self.sliders, Item)
 
+    def add_channel(self, Item={}):
+        return self.__add(self.channels, Item)
+
     def add_block(self, Item={}):
         return self.__add(self.blocks, Item)
 
@@ -123,6 +126,9 @@ class Components(object):
     '''
     def del_block(self, Item={}):
         return self.__del(self.blocks, Item)
+
+    def del_channel(self, Item={}):
+        return self.__del(self.channels, Item)
 
     def del_category(self, Item={}):
         return self.__del(self.categories, Item)
@@ -142,6 +148,8 @@ class Components(object):
     def query_categories(self, arg):
         return self.__query(self.categories,arg)
 
+    def query_channels(self, arg):
+        return self.__query(self.channels, arg)
 
 class Backend(object):
     def __init__(self, config):

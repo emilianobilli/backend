@@ -263,7 +263,7 @@ class cloudsearchCollection(object):
 	uri = urlparse.urlparse(self.document_endpoint + self.document_url) 
 #	h = httplib2.Http()
         
-        print body
+#        print body
 
 	try:
     	    response, content = self.h.request(uri.geturl(), method, body, header)
@@ -375,7 +375,7 @@ class cloudsearchCollection(object):
         qString   = p.make()
 
         ret = self.doGet(qString)
-        print ret
+#        print ret
         return self._check_query_return(ret)
 
     def search(self, q=None, exclude=None, start=0, size=10):
