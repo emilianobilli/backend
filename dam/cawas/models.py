@@ -7,7 +7,6 @@ from django.core.exceptions import *
 # Create your models here.
 import json
 
-
 class Setting(models.Model):
     TYPE = (
         ("bl", "Block"),
@@ -165,7 +164,8 @@ class Asset(models.Model):
         ("movie", "Movie"),
         ("serie", "Serie"),
         ("episode", "Episode"),
-        ("girl", "Girl")
+        ("girl", "Girl"),
+        ("unknown", "Unknown")
     )
 
     asset_id          = models.CharField(max_length=8, unique=True, help_text="ID del Asset")
