@@ -14,7 +14,6 @@ class Setting(models.Model):
         ("ca", "Category"),
         ("ch", "Channel")
     )
-
     name             = models.CharField(max_length=128, help_text="Nombre del Setting")
     type             = models.CharField(max_length=2, choices=TYPE, help_text="Tipo de Configuracion")
     publish_settings = models.TextField(max_length=2048, blank=True, help_text="Configuracion de publicacion")

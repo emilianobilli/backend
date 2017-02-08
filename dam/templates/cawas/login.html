@@ -1,0 +1,54 @@
+{% extends "cawas/base.html" %}
+
+
+{% block subheader %}
+ <div class="col-xs-12 col-md-12 col-lg-12 unpad">
+    <div class="subHeader">
+        <div class="notifications">
+            {% if message %}
+                <span class="glyphicon glyphicon-exclamation-sign GLY-med"></span>  {{ message }}
+            {% endif  %}
+
+            {% if user.is_authenticated %}
+
+                 <button class="btn btn-lg btn-primary btn-block logOFF" type="button" id="exitBtn" data-toggle="modal" data-target="#myModal">LOG-OUT</button>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-xs-2 col-md-4"></div>
+    <div class="col-xs-8 col-md-4">
+       <div class="login">
+           <h1>LOGIN {{title}}</h1>
+       </div>
+       <div class="formulario">
+           <form name="logMe" method="post" class="">
+               {% csrf_token %}
+
+               <div class="form-group">
+                   <label for="exampleInputEmail1">Usuario:</label>
+                   <input type="text" class="form-control" id="InputUser" placeholder="Ingresar Usuario" name="InputUser" required autofocus>
+
+                   <label for="exampleInputEmail1">Contraseña:</label>
+                   <input type="password" class="form-control" id="InputPassword" name="InputPassword" required>
+
+                    <div class="checkbox">
+                      <label>
+                        <input type="checkbox" value="remember-me">Recordarme
+                      </label>
+                    </div>
+                   <button class="btn btn-lg btn-primary btn-block sepTOP" type="submit">INGRESAR</button>
+
+
+               </div>
+           </form>
+       </div>
+    </div>
+    <div class="col-xs-2 col-md-4"></div>
+</div>
+{% endblock content %}
+

@@ -1,0 +1,267 @@
+{% extends "cawas/base.html" %}
+
+{% block subheader %}
+<div class="col-xs-12 col-md-12 col-lg-12 unpad">
+    <div class="subHeader">
+        <div class="notifications">
+            {% if user.is_authenticated %}
+                  <a href="{% url 'menu_view' %}"><span class="glyphicon glyphicon-home GLY-med">
+                               </span> &nbsp;volver al menú</a>
+                 <button class="btn btn-lg btn-primary btn-block logOFF" type="button" id="exitBtn" data-toggle="modal" data-target="#myModal">LOG-OUT</button>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock subheader %}
+
+{% block content %}
+<div class="row">
+   <!-- left col -->
+   <div class="col-xs-12 col-md-6 col-lg-6 sepTOP-big">
+
+        <h1>Nueva MOVIE</h1>
+        <div>
+            <h3>Selecciona ID del video *</h3>
+        </div>
+        <div>
+
+               {% for item in vgirls %}
+                {{ item.value}}
+               {% endfor %}
+               <!-- ------------------Reemplazar por listado de movies ----------------- -->
+                <select id="movie-select" class="form-control" size="6">
+                    {% for item in assets %}
+                        <option value="{{ item.asset_id }}">ID {{ item.asset_id }} </option>
+                    {% endfor %}
+                </select>
+
+              <!-- ---------------------- Fin de  listado de movies ------------------- -->
+        </div>
+
+
+        <div>
+            <form method="post" action="" name="movie-pickerForm"  class="content-picker movieChoose">
+               <div class="col-xs-12 col-md-1 col-lg-1">
+                    ID
+               </div>
+               <div class="col-xs-12 col-md-7 col-lg-7">
+                   <input type="text" class="form-control" name="selectedID" id="movieID" value="">
+               </div>
+               <div class="col-xs-12 col-md-4 col-lg-4">
+                   <button class="btn btn-primary btn-block form-control" type="button" id="IDBtn">Seleccionar</button>
+               </div>
+
+            </form>
+        </div>
+
+   </div>
+
+   <!-- right col -->
+   <div class="col-xs-12 col-md-6 col-lg-6 sepTOP-big"  id="repro1">
+       <h1></h1>
+       <video width="400" controls class="fRIGHT">
+          <source src=http://techslides.com/demos/sample-videos/small.mp4 type=video/mp4>
+       </video>
+   </div>
+
+
+        <!-- hidden form -->
+        <div class="container" id="hidden1">
+           <form method="post" action="" name="movie-completeForm"  class="content-picker movieChoose">
+
+            <!-- First Row : Title -->
+            <div class="row form-row">
+                <div class="col-xs-12 col-md-12 col-lg-12">
+                    <div class="form-group">
+                        <label for="orginalTitle" id="idTit">AGREGANDO ID:</label>
+                    </div>
+                    <div class="form-group">
+                        <label class="label-left" for="orginalTitle">Título original: *</label>
+                        <input type="text" class="form-control" name="orginalTitle" id="orginalTitle" required autofocus>
+                        <input type="hidden" class="form-control" id="selectedID2" name="selectedID2" >
+                    </div>
+                </div>
+            </div>
+
+            <!-- Second Row : Images -->
+            <div class="row form-row">
+                <div class="col-xs-4 col-md-4 col-lg-4 form-group imgUpload">
+                    <label class="label-left" for="ThumbHor" id="ThumbHorTit">Asociar Thumbnail horizontal: *</label>
+                    <input type="file" class="form-control" name="ThumbHor" id="ThumbHor" accept="image/*">
+                    <img id="imageH" />
+                </div>
+                <div class="col-xs-4 col-md-4 col-lg-4 form-group imgUpload" >
+                    <label for="ThumbVer" id="ThumbVerTit">Asociar Thumbnail vertical: *</label>
+                    <input type="file" class="form-control" name="ThumbVer" id="ThumbVer" accept="image/*">
+                    <img id="imageV" />
+                </div>
+                <div class="col-xs-4 col-md-4 col-lg-4">
+                </div>
+            </div>
+
+            <!-- Third Row : Palymates pick -->
+            <div class="row form-row">
+                <div class="col-xs-6 col-md-6 col-lg-6 form-group plyMatePick">
+                    <label class="label-left" for="pornstarPick" id="pornstarPickTit">Pornstar / Playmate: </label>
+                    <!--------------------Reemplazar por listado de pornstars ------------------->
+                    <select multiple="multiple" class="form-control js-example-basic-multiple" name="pornostart1" >
+                         {% for item in girls %}
+                                <option value="{{item.id}}">{{item.name}} </option>
+                         {% endfor %}
+                    </select>
+                    <!-- ---------------------- Fin de  listado de pornstars ------------------- -->
+
+                </div>
+                <!-- Fourth Row : Género pick -->
+                <div class="col-xs-6 col-md-6 col-lg-6 form-group categoryPick">
+                    <label class="label-left" for="generoPick" id="generoPickTit">Género / Categoría: </label>
+                    <!-- ------------------Reemplazar por listado de géneros ----------------- -->
+                    <select multiple class="form-control" name="categories" id="categories" >
+                         {% for item in categories %}
+                                <option value="{{item.id}}">{{item.original_name}} </option>
+                         {% endfor %}
+                    </select>
+                    <!-- ---------------------- Fin de  listado de géneros ------------------- -->
+                </div>
+
+
+            </div>
+
+
+
+
+
+            <!-- Fifth Row : Canal pick -->
+            <div class="row form-row">
+                <div class="col-xs-12 col-md-8 col-lg-8 form-group">
+                    <div class="form-group">
+                        <label class="label-left" for="elenco">Canal: *</label>
+                        <div class="helpright"><span class="glyphicon glyphicon-question-sign" data-toggle="tooltip" title="Selecciona el canal al que pertenece esta movie (ej: Venus)"></span></div>
+
+                        <!-- ------------------Reemplazar por listado de canales ----------------- -->
+                        <select type="text" class="form-control canal" name="canal" id="canal" placeholder="Elige un canal" required>
+                             {% for item in channels %}
+                                <option value="{{item.id}}">{{item.name}}</option>
+                             {% endfor %}
+                        </select>
+                        <!-- ------------------  Fin de listado de canales  ----------------- -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- Sixth Row : Género pick -->
+            <div class="row form-row">
+                <div class="col-xs-12 col-md-12 col-lg-12 form-group">
+                    <div class="form-group">
+                        <label class="label-left" for="elenco">Elenco: *</label>
+                        <div class="helpright"><span class="glyphicon glyphicon-question-sign" data-toggle="tooltip" title="Agregar los nombres del elenco completo separados por comas.La lista NO debe terminar con una coma"></span></div>
+                        <div class="itaright">(Nombres separados por comas).</div>
+                        <input type="text" class="form-control" name="elenco" id="elenco" required autofocus>
+                    </div>
+                </div>
+            </div>
+
+
+            <!-- Seventh Row : Idioma -->
+            <div class="row form-row">
+                <div class="col-xs-12 col-md-3 col-lg-3 form-group">
+                    <div class="form-group">
+                        <label class="label-left" for="elenco">Elija idioma: *</label>
+                        <div class="helpright"><span class="glyphicon glyphicon-question-sign" data-toggle="tooltip" title="Debe elejir al menos un idioma para dar de alta la movie."></span></div>
+                        <div class="form-group">
+                            <div class="form-group">
+                                <input type="checkbox" name="chk_es" value="false" id="spa"> Español<br>
+                                <input type="checkbox" name="chk_pt" value="false" id="por"> Portugués<br>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- LANGUAGE modules -->
+
+            <div class="row form-row hid" id="Module_spa">
+                <div class="col-xs-12 col-md-12 col-lg-12 form-group">
+                    <h2>Español</h2>
+                       <div class="col-xs-12 col-md-12 col-lg-12 form-group inlang">
+                            <label class="label-left" for="tit_spa">Título: *</label>
+                            <input type="text" class="form-control" name="tit_spa" id="tit_spa">
+                            <input type="hidden" class="form-control" name="id_es" id="id_es" value="es">
+                       </div>
+
+                       <div class="col-xs-12 col-md-12 col-lg-12 form-group inlang">
+                            <div class="helpright"><span class="glyphicon glyphicon-question-sign" data-toggle="tooltip" title="La descripción para los thumbnails mostrará los primeros 50 caracteres. Al ingresar en la movie se verá completa."></span></div>
+                            <label class="label-left" for="short_desc_spa">Descripción: *</label>
+                            <textarea class="form-control" name="short_desc_spa" id="short_desc_spa"></textarea>
+                       </div>
+
+                       <div class="col-xs-12 col-md-12 col-lg-12 form-group inlang">
+                            <div class="helpright"><span class="glyphicon glyphicon-question-sign" data-toggle="tooltip" title="Al ingresar una fecha, el sistema publicará la movie en español en esa fecha."></span></div>
+                            <label class="label-left" for="date_spa">Fecha de Publicación</label>
+                            <input type="text" class="form-control" name="date_spa" id="date_spa">
+                       </div>
+
+                </div>
+            </div>
+
+            <div class="row form-row hid" id="Module_por">
+                <div class="col-xs-12 col-md-12 col-lg-12 form-group">
+                    <h2>Portugués</h2>
+                       <div class="col-xs-12 col-md-12 col-lg-12 form-group inlang">
+                            <label class="label-left" for="tit_por">Título: *</label>
+                            <input type="text" class="form-control" name="tit_por" id="tit_por">
+                            <input type="hidden" class="form-control" name="id_pt" id="id_pt" value="pt">
+                       </div>
+
+                       <div class="col-xs-12 col-md-12 col-lg-12 form-group inlang">
+                            <div class="helpright"><span class="glyphicon glyphicon-question-sign" data-toggle="tooltip" title="La descripción para los thumbnails mostrará los primeros 50 caracteres. Al ingresar en la movie se verá completa."></span></div>
+                            <label class="label-left" for="short_desc_por">Descripción: *</label>
+                           <textarea class="form-control" name="short_desc_por" id="short_desc_por"></textarea>
+                       </div>
+
+                       <div class="col-xs-12 col-md-12 col-lg-12 form-group inlang">
+                            <div class="helpright"><span class="glyphicon glyphicon-question-sign" data-toggle="tooltip" title="Al ingresar una fecha, el sistema publicará la movie en portugués en esa fecha."></span></div>
+                            <label class="label-left" for="date_por">Fecha de Publicación</label>
+                            <input type="text" class="form-control" name="date_por" id="date_por">
+                       </div>
+                </div>
+            </div>
+
+            <div class="row form-row hid" id="Module_eng">
+                <div class="col-xs-12 col-md-12 col-lg-12 form-group">
+                    <h2>Inglés</h2>
+                       <div class="col-xs-12 col-md-12 col-lg-12 form-group inlang">
+                            <label class="label-left" for="tit_eng">Título: *</label>
+                            <input type="text" class="form-control" name="tit_eng" id="tit_eng">
+                            <input type="hidden" class="form-control" name="id_en" id="id_en">
+                       </div>
+
+                       <div class="col-xs-12 col-md-12 col-lg-12 form-group inlang">
+                            <div class="helpright"><span class="glyphicon glyphicon-question-sign" data-toggle="tooltip" title="La descripción para los thumbnails mostrará los primeros 50 caracteres. Al ingresar en la movie se verá completa."></span></div>
+                            <label class="label-left" for="short_desc_eng">Descripción: *</label>
+                           <textarea class="form-control" name="short_desc_eng" id="short_desc_eng"></textarea>
+                       </div>
+
+                       <div class="col-xs-12 col-md-12 col-lg-12 form-group inlang">
+                            <div class="helpright"><span class="glyphicon glyphicon-question-sign" data-toggle="tooltip" title="Al ingresar una fecha, el sistema publicará la movie en inglés en esa fecha."></span></div>
+                            <label class="label-left" for="date_eng">Fecha de Publicación</label>
+                            <input type="text" class="form-control" name="date_eng" id="date_eng">
+                       </div>
+                </div>
+            </div>
+
+            <!-- Last Row : Buttons -->
+            <div class="row form-row">
+               <div class="col-xs-4 col-md-4 col-lg-4">
+                </div>
+                <div class="col-xs-4 col-md-4 col-lg-4">
+                    <button class="btn btn-primary btn-block form-control" type="submit" id="sendBut">Grabar Movie</button>
+                </div>
+                <div class="col-xs-4 col-md-4 col-lg-4">
+                </div>
+            </div>
+            </form>
+        </div>
+
+</div><!-- EndRow-->
+{% endblock content %}

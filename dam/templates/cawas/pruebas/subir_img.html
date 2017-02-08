@@ -1,0 +1,12 @@
+{% extends "cawas/base.html" %}
+
+{% block content %}
+<form action="" method="post" enctype="multipart/form-data">{% csrf_token %}
+     <input type="textarea" class="form-control" name="strjson" id="strjson"  autofocus>
+     <input type="file" class="form-control" name="imagehor" id="ThumbHor" accept="image/*">
+    <input type="submit" value="Submit" />
+</form>
+
+{{ message }}
+
+{% endblock content %}

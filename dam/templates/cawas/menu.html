@@ -1,0 +1,145 @@
+{% extends "cawas/base.html" %}
+
+{% block subheader %}
+ <div class="col-xs-12 col-md-12 col-lg-12 unpad">
+    <div class="subHeader">
+        <div class="notifications">
+            {% if user.is_authenticated %}
+                 <span class="glyphicon glyphicon-exclamation-sign GLY-med"></span>{{ message }}
+                 <button class="btn btn-lg btn-primary btn-block logOFF" type="button" id="exitBtn" data-toggle="modal" data-target="#myModal">LOG-OUT</button>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}
+{% block content %}
+
+<div class="row">
+       <!-- left col -->
+
+        <div class="col-xs-12 col-md-6 col-lg-6 sepTOP-big">
+
+            <h1>Manejar contenido </h1>
+            <h3>Elige un contenido para editarlo, borrarlo o publicarlo.</h3>
+            <div class="search-block">
+                <h2>BUSCAR:</h2>
+                <hr>
+                <row>
+                   <form action="{% url 'index_movies' %}" method="post" id="searchForID" name="searchForId">
+                    <div class="col-xs-12 col-md-2 col-lg-2 ">
+                        Por <span class="boldIt">ID</span>
+                    </div>
+                    <div class="col-xs-11 col-md-9 col-lg-9 ">
+                        <div>
+                            <input type="text" class="form-control fLEFT" id="inputid" placeholder="Ingresa ID" name="inputid" required>
+                        </div>
+                    </div>
+                    <div class="col-xs-1 col-md-1 col-lg-1 ">
+                       <input type="submit" style="display:none;">
+                        <span class="glyphicon glyphicon-search GLY-search fRIGHT" id="glyID" ></span>
+                    </div>
+                    </form>
+                </row>
+                <div class="fNONE"><hr></div>
+                <row class="sepBOT">
+                    <div class="col-xs-12 col-md-3 col-lg-3 ">
+                        Por <span class="boldIt">STATUS</span>
+                    </div>
+                    <div id="STAT">
+                        <div class="col-xs-3 col-md-2 col-lg-2 ">
+                                <span class="glyphicon glyphicon-check GLY-big" id="glySTAT"></span>
+                        </div>
+                        <div class="col-xs-9 col-md-7 col-lg-7 sepBOT">
+                            <a href="{% url 'index_movies' %}?opcion=1">Ver todos los pendientes de publicación</a>
+
+                        </div>
+                    </div>
+                </row>
+                <div class="fNONE"><hr></div>
+                <row class="sepBOT">
+                    <div class="col-xs-12 col-md-3 col-lg-3 ">
+                        Por <span class="boldIt">TIPO</span>
+                    </div>
+                    <div id="TIPO">
+                        <div class="col-xs-3 col-md-2 col-lg-2 sepBOT">
+                               <span class="glyphicon glyphicon-film GLY-big" id="glyTIPO"></span>
+                        </div>
+                        <div class="col-xs-9 col-md-7 col-lg-7 sepBOT">
+                            <a href="{% url 'index_movies' %}?opcion=2">Ver todas las movies cargadas</a>
+                        </div>
+                    </div>
+                </row>
+                <div class="fNONE"></div>
+                <row>
+                    <div class="col-xs-12 col-md-3 col-lg-3 ">
+                        &nbsp;
+                    </div>
+                    <div id="SERIE">
+                        <div class="col-xs-3 col-md-2 col-lg-2 sepBOT">
+                              <span class="glyphicon glyphicon-list-alt GLY-big" id="glySERIE"></span>
+                        </div>
+                        <div class="col-xs-9 col-md-7 col-lg-7 sepBOT">
+                            <a href="{% url 'index_movies' %}?opcion=3">Ver todas las series/capítulos cargados</a>
+                        </div>
+                    </div>
+                </row>
+                <div class="fNONE"></div>
+                <row>
+                    <div class="col-xs-12 col-md-3 col-lg-3 ">
+                        &nbsp;
+                    </div>
+                    <div id="BLOQ">
+                        <div class="col-xs-3 col-md-2 col-lg-2 sepBOT">
+                              <span class="glyphicon glyphicon-align-justify GLY-big" id="glyBLOQ"></span>
+                        </div>
+                        <div class="col-xs-9 col-md-7 col-lg-7 sepBOT">
+                            <a href="{% url 'index_movies' %}?opcion=4"> Ver todos los bloques cargados</a>
+                        </div>
+                    </div>
+                </row>
+                <div class="fNONE"></div>
+                <row>
+                    <div class="col-xs-12 col-md-3 col-lg-3 ">
+                        &nbsp;
+                    </div>
+                    <div id="CHIC">
+                        <div class="col-xs-3 col-md-2 col-lg-2 sepBOT">
+                              <span class="glyphicon glyphicon-user GLY-big" id="glyCHIC"></span>
+                        </div>
+                        <div class="col-xs-9 col-md-7 col-lg-7 sepBOT">
+                            <a href="{% url 'index_movies' %}?opcion=5">Ver todas las chicas cargadas</a>
+                        </div>
+                    </div>
+                </row>
+                <div class="fNONE"></div>
+            </div>
+
+        </div>
+
+        <!-- right col -->
+        <div class="col-xs-12 col-md-6 col-lg-6 sepTOP-big">
+            <h1>Cargar contenido</h1>
+            <div class="helpICON fRIGHT">
+                <a href="#" data-toggle="tooltip" title="Selecciona el tipo de contenido que quieres dar de alta en HOT-GO. Ten en cuenta que para agregar un capítulo en una serie la misma debe estar dada de alta previamente.">
+                    <span class="glyphicon glyphicon-question-sign"></span>
+                </a>
+            </div>
+            <h3>Elige el tipo de contenido</h3>
+
+            <div class="content-picker">
+                <form method="post" action="" name="content-pickerForm"  class="content-picker">
+                    <select class="form-control" name="selassetstypes">>
+                        {% for item in assetstypes %}
+                           <option value="{{ item.0 }}">{{ item.1 }}</option>
+                        {% endfor %}
+                    </select>
+                    <div class="col-xs-5 col-lg-5 col-md-5">
+                        <button class="btn btn-lg btn-primary btn-block" type="submit" id="enviar" >Cargar Contenido</button>
+                    </div>
+                </form>
+            </div>
+
+        </div>
+</div>
+
+{% endblock content %}
