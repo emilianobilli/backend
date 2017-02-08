@@ -4,16 +4,15 @@ from django.shortcuts import render
 
 from django.contrib.auth import authenticate, login, logout
 from django.shortcuts import render, redirect
-
-from .models import Movie, Channel, Asset, Episode, Serie, MovieMetadata,Girl, Category, Language
-#from django.template import Template, Context
-#from django.http import HttpResponse
-import datetime
-#from django.template.loader import get_template
+from .models import Movie, Channel, Asset, Episode, Serie, MovieMetadata,Girl, Category, Language, GirlMetadata,Image
+import datetime, os
 from django.shortcuts import render_to_response
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
-
-
+import json
+from django.shortcuts import get_object_or_404, render
+from django.http import Http404
+from django.conf import settings
+from datetime import datetime
 
 
 
@@ -164,87 +163,86 @@ def index_movies_view(request, opcion = 0):
 
 
 
+
+
+
+
+def prueba_json_view(request):
+    if not request.user.is_authenticated:
+        return redirect(login_view)
+
+    context = {}
+    return render(request, 'cawas/pruebas/prueba_json.html', context)
+
+
 def add_movies_view(request):
     #AUTENTICACION DE USUARIO
     if not request.user.is_authenticated:
        return redirect(login_view)
+   # ALTA - MOVIE: en el GET debe cargar variables, y en POST debe leer JSON
+   # VARIABLES
 
-    vasset_id = '0'
-    vgirls = ''
-    #POST - Obtener datos del formulario y guardar la metadata
+    pathfiles = 'cawas/static/files/movies/'
     if request.method == 'POST':
-        #leer variables
-        vasset_id = request.POST['selectedID2']
-        vchannel_id = request.POST['canal']
-        vgirls = request.POST.getlist('pornostart1')
-        vcategorias = request.POST.getlist('categories')
+       # parsear JSON
+       strjson = request.POST['strjson']
+       decjson = json.loads(strjson)
 
-        #obtener objetos
-        asset = Asset.objects.get(asset_id=vasset_id)
-        vchannel = Channel.objects.get(id=vchannel_id)
+       # DECLARACION DE OBJECTOS
+       mv = Movie()
 
-        #Crear Movie
-        mv = Movie()
-        mv.asset = asset
-        mv.channel = vchannel
-        mv.original_title = request.POST['orginalTitle']
-        mv.cast = request.POST['elenco']
-        mv.save()
+       #TRATAMIENTO DE IMAGEN
+       img = Image()
+       img.portrait = request.FILES['imagehor']
+       img.name = img.portrait.name
+       varchivo = pathfiles + img.portrait.name
+       if os.path.isfile(varchivo):
+           os.remove(varchivo)
+       img.portrait.name = varchivo
+       img.save()
 
-        for item in vgirls:
-            mv.girls.add(Girl.objects.get(id=item))
-        for item in vcategorias:
-            mv.category.add(Category.objects.get(id=item))
+       # CARGAR MOVIE
+       vasset = get_object_or_404(Asset, asset_id=decjson['Movie']['asset_id'])
+       vchannel = get_object_or_404(Channel, pk=decjson['Movie']['channel_id'])
+       mv.image = img
+       mv.asset = vasset
+       mv.channel = vchannel
+       mv.original_title = decjson['Movie']['original_title']
+       mv.year = int(decjson['Movie']['year'])
+       mv.cast = decjson['Movie']['cast']
+       mv.directors = decjson['Movie']['directors']
+       mv.display_runtime = decjson['Movie']['display_runtime']
+       mv.save()
 
-        #Actualizar el tipo de Assets a Movie
-        asset.asset_type = "movie"
-        asset.save()
+       # CARGAR GIRLS
+       vgirls = decjson['Movie']['girls']
+       for item in vgirls:
+           girl = get_object_or_404(Girl, pk=item['girl_id'])
+           mv.girls.add(girl)
 
-        #Obtener los idiomas seleccionados, por cada idioma crear un metadatamovie
-        #mv.year = request.POST['year']
-        #mv.image = request.POST['ThumbHor']
-        #mv.image =
-        #mv.runtime =
-        #mv.display_runtime =
-        #mv.thumbnails =
+       # CARGAR CATEGORIES
+       vcategories = decjson['Movie']['categories']
+       for item in vcategories:
+           c = get_object_or_404(Category, pk=item['category_id'])
+           mv.category.add(c)
 
-        #CREAR  MovieMetadata
-        #Identificar el Idioma y luego guardar
+       # CARGAR METADATA
+       vmoviesmetadata = decjson['Movie']['Moviesmetadata']
+       for item in vmoviesmetadata:
+           mmd = MovieMetadata();
+           mmd.language = get_object_or_404(Language, code=item['Moviemetadata']['language'])
+           mmd.title = item['Moviemetadata']['title']
+           mmd.summary_short = item['Moviemetadata']['summary_short']
+           mmd.summary_long = item['Moviemetadata']['summary_long']
+           mmd.movie = mv
+           mmd.save()
 
-        # summary_long - falta
-        # subtitle - falta
-        # modification_dat - falta
-        # publish_date - falta
-        # publish_status - falta
-        lang = Language()
-        if (request.POST['chk_es'] is not None):
-            vtituto = request.POST['tit_spa']
-            vshort_desc = request.POST['short_desc_spa']
-            vdate = request.POST['date_spa']
-            vides = request.POST['id_es']
-            lang = Language.objects.get(pk=vides)
-            mmd = MovieMetadata(movie=mv, language=lang,title=vtituto,summary_short=vshort_desc,publish_date=vdate)
+       # ACTUALIZAR EL ASSET A MOVIE
+       vasset.asset_type = "movie"
+       vasset.save()
 
-        #PORTUGUES METADATA
-        if (request.POST['chk_pt'] is not None):
-            vtituto = request.POST['tit_por']
-            vshort_desc = request.POST['short_desc_por']
-            vdate = request.POST['date_por']
-            vidpt = request.POST['id_pt']
-            lang = Language.objects.get(pk=vidpt)
-            mmd = MovieMetadata(movie=mv, language=lang, title=vtituto, summary_short=vshort_desc, publish_date=vdate)
-
-        #INGLES METADATA
-        if (request.POST['chk_en'] is not None):
-            vtituto = request.POST['tit_eng']
-            vshort_desc = request.POST['short_desc_eng']
-            vdate = request.POST['date_eng']
-            viden = request.POST['id_en']
-            lang = Language.objects.get(pk=viden)
-            mmd = MovieMetadata(movie=mv, language=lang, title=vtituto, summary_short=vshort_desc, publish_date=vdate)
-    #FIN DE POST
-
-
+       message = 'archivo subido ok'
+       # FIN DE POST
 
     #CARGAR VARIABLES USADAS EN FRONT
     assets = Asset.objects.filter(asset_type="unknown")
@@ -252,11 +250,247 @@ def add_movies_view(request):
     girls = Girl.objects.all()
     categories = Category.objects.all()
     title = 'Nueva Movie'
-    context = {'title': title, 'assets':assets, 'vasset_id':vasset_id, 'channels':channels, 'girls':girls, 'vgirls': vgirls, 'categories':categories }
+    context = {'title': title, 'assets':assets, 'channels':channels, 'girls':girls,  'categories':categories }
+    return render(request, 'cawas/pruebas/subir_img.html', context)
+# Fin add_movies_view
 
-    return render(request, 'cawas/movies/add.html', context)
-    # Fin add_movies_view
+
+
+
+def edit_movies_view(request):
+    #AUTORIZACION DE USUARIO
+    if not request.user.is_authenticated:
+        return redirect(login_view)
+
+    #EDIT - MOVIE: en el GET debe cargar variables, y en POST debe leer JSON
+
+    #VARIABLES
+    pathfiles = 'cawas/static/files/movies/'
+
+    if request.method == 'POST':
+        #parsear JSON
+        strjson  = request.POST['strjson']
+        decjson = json.loads(strjson)
+
+        # DECLARACION DE OBJECTOS
+        img = Image()
+        # Leer Movie desde AssetID
+        vasset = get_object_or_404(Asset, asset_id=decjson['Movie']['asset_id'])
+        mv =  get_object_or_404(Movie, asset=vasset)
+        imgback = mv.image
+
+        img.portrait = request.FILES['imagehor']
+        img.name = img.portrait.name
+
+        #comparar imagen de BD con Imagen que subio el usuario
+        if imgback.name <> img.name:
+            varchivo = pathfiles + img.portrait.name
+            if os.path.isfile(varchivo):
+                os.remove(varchivo)
+            img.portrait.name = varchivo
+            img.save()
+
+
+        #CARGAR MOVIE
+        vchannel = get_object_or_404(Channel, pk=decjson['Movie']['channel_id'])
+        mv.image = img
+        mv.channel = vchannel
+        mv.original_title = decjson['Movie']['original_title']
+        mv.year = int(decjson['Movie']['year'])
+        mv.cast = decjson['Movie']['cast']
+        mv.directors = decjson['Movie']['directors']
+        mv.display_runtime = decjson['Movie']['display_runtime']
+        mv.save()
+
+        #CARGAR GIRLS
+        vgirls = decjson['Movie']['girls']
+        for item in vgirls:
+            girl = get_object_or_404(Girl, pk=item['girl_id'])
+            mv.girls.add(girl)
+
+        #CARGAR CATEGORIES
+        categories= []
+        mv.category = categories
+        vcategories = decjson['Movie']['categories']
+        for item in vcategories:
+            c = get_object_or_404(Category, pk=item['category_id'])
+            mv.category.add(c)
+
+        #CARGAR METADATA
+        vmoviesmetadata = decjson['Movie']['Moviesmetadata']
+        c = get_object_or_404(Category, pk=item['category_id'])
+
+        mmds = MovieMetadata.objects.filter(movie=mv)
+        mmds.delete()
+        for item in vmoviesmetadata:
+            mmd = MovieMetadata();
+            mmd.language = get_object_or_404(Language, code=item['Moviemetadata']['language'])
+            mmd.title = item['Moviemetadata']['title']
+            mmd.summary_short = item['Moviemetadata']['summary_short']
+            mmd.summary_long = item['Moviemetadata']['summary_long']
+            mmd.movie = mv
+            mmd.save()
+        #NO SE ACTUALIZA EL ASSET TYPE
+
+        message='archivo subido ok'
+        #FIN DE POST
+
+    # CARGAR VARIABLES USADAS EN FRONT
+    assets = Asset.objects.filter(asset_type="unknown")
+    channels = Channel.objects.all()
+    girls = Girl.objects.all()
+    categories = Category.objects.all()
+    title = 'Nueva Movie'
+
+    context = {'title': title, 'assets': assets, 'channels': channels, 'girls': girls, 'categories': categories}
+    #return render(request, 'cawas/movies/add.html', context)
+    return render(request, 'cawas/pruebas/subir_img.html', context)
+# Fin edit_movies_view
+
+
 
 
 #</CRUD MOVIES>
 
+
+
+
+#<CRUD GIRL>
+def add_girl_view(request):
+    #AUTENTICACION DE USUARIO
+    if not request.user.is_authenticated:
+        return redirect(login_view)
+
+    vg_pathfiles = 'cawas/static/files/girls/'
+    message = ''
+
+    #POST - Obtener datos del formulario y guardar la metadata
+    if request.method == 'POST':
+        # VARIABLES
+        vasset = Asset()
+        g = Girl()
+        vimg = Image()
+
+        #parsear JSON
+        strjson = request.POST['strjson']
+        decjson = json.loads(strjson)
+
+        #CREAR UN ASSET
+        vasset.asset_type = "girl"
+        vasset.save()
+
+        # TRATAMIENTO DE IMAGEN: nombre de imagen = a Asset_id
+        if request.FILES['imagehor'] :
+            vimg.portrait = request.FILES['imagehor']
+            vimg.name = vasset.asset_id
+            varchivo = vg_pathfiles + vimg.name + '.jpg'
+            if os.path.isfile(varchivo):
+                os.remove(varchivo)
+            vimg.portrait.name = varchivo
+            vimg.save()
+            g.image = vimg
+
+
+
+        #CREAR GIRL
+        g.asset = vasset
+        g.name  = decjson['Girl']['name']
+        g.type = decjson['Girl']['type']
+        #df = DateFormat(decjson['Girl']['birth_date'])
+        #g.birth_date = decjson['Girl']['birth_date']
+        g.height = decjson['Girl']['height']
+        g.weight = decjson['Girl']['weight']
+        g.save()
+
+
+        #CREAR METADATAGIRL
+        vgirlmetadata = decjson['Girl']['Girlmetadatas']
+        for item in vgirlmetadata:
+            gmd = GirlMetadata()
+            gmd.language = get_object_or_404(Language, code=item['Girlmetadata']['language'])
+            gmd.description = item['Girlmetadata']['description']
+            gmd.nationality = item['Girlmetadata']['nationality']
+            gmd.girl = g
+            gmd.save()
+
+        message ='Girl, generada'
+        # CARGAR METADATA
+
+    context = {'message':message}
+    #return render(request, 'cawas/girls/add.html', context)
+    return render(request, 'cawas/pruebas/subir_img.html', context)
+
+
+
+def edit_girl_view(request):
+    #AUTENTICACION DE USUARIO
+    if not request.user.is_authenticated:
+        return redirect(login_view)
+
+    #VARIABLES LOCALES
+    message= ''
+
+    vg_pathfiles = 'cawas/static/files/girls/'
+    if request.method == 'POST':
+        #VARIABLES
+        vasset = Asset()
+        vgirl = Girl()
+        vimg = Image()
+
+        # Parsear JSON
+        strjson = request.POST['strjson']
+        decjson = json.loads(strjson)
+
+        # Leer GIRL desde AssetID
+        try:
+            vasset = Asset.objects.get(asset_id=decjson['Girl']['asset_id'])
+        except Asset.DoesNotExist:
+            raise Http404("ASSET - No existe registro.")
+
+        try:
+            vgirl = Girl.objects.get(asset=vasset)
+        except Girl.DoesNotExist:
+            raise Http404("GIRL - No existe registro.")
+
+        # TRATAMIENTO DE IMAGEN: nombre de imagen = a Asset_id
+        if  not(request.FILES['imagehor'] is None):
+            vimg.portrait = request.FILES['imagehor']
+            vimg.name = vasset.asset_id
+            varchivo = vg_pathfiles + vimg.name + '.jpg'
+            if os.path.isfile(varchivo):
+                os.remove(varchivo)
+            vimg.portrait.name = varchivo
+            vimg.save()
+            vgirl.image = vimg
+
+        #Editar Girl
+        vgirl.name = decjson['Girl']['name']
+        vgirl.type = decjson['Girl']['type']
+        # df = DateFormat(decjson['Girl']['birth_date'])
+        # g.birth_date = decjson['Girl']['birth_date']
+        vgirl.height = decjson['Girl']['height']
+        vgirl.weight = decjson['Girl']['weight']
+        vgirl.save()
+
+        #BORRAR Y CREAR METADATA
+        vgirlmetadatas = decjson['Girl']['Girlmetadatas']
+        gmds = GirlMetadata.objects.filter(girl=vgirl)
+        gmds.delete()
+        for item in vgirlmetadatas:
+            gmd = GirlMetadata()
+            gmd.language = get_object_or_404(Language, code=item['Girlmetadata']['language'])
+            gmd.description = item['Girlmetadata']['description']
+            gmd.nationality = item['Girlmetadata']['nationality']
+            gmd.girl = vgirl
+            gmd.save()
+
+    context = {'message': message}
+    # return render(request, 'cawas/girls/add.html', context)
+    return render(request, 'cawas/pruebas/subir_img.html', context)
+
+
+#</CRUD GIRL>
+
+def notFoundObject(request, message):
+    context = {'message': message}
+    return render(request, 'cawas/pruebas/notfound.html', context)
