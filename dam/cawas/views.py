@@ -4,7 +4,7 @@ from django.shortcuts import render
 
 from django.contrib.auth import authenticate, login, logout
 from django.shortcuts import render, redirect
-from .models import Movie, Channel, Asset, Episode, Serie, MovieMetadata,Girl, Category, Language, GirlMetadata,Image
+from .models import  Channel, Asset, Episode, Block, Serie, SerieMetadata, Movie, MovieMetadata, Girl,GirlMetadata,  Category,CategoryMetadata, Language, Image
 import datetime, os
 from django.shortcuts import render_to_response
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
@@ -13,7 +13,7 @@ from django.shortcuts import get_object_or_404, render
 from django.http import Http404
 from django.conf import settings
 from datetime import datetime
-
+from django.db import IntegrityError
 
 
 #<PRUEBAS - QUITAR ESTO>
@@ -309,7 +309,7 @@ def edit_movies_view(request):
             mv.girls.add(girl)
 
         #CARGAR CATEGORIES
-        categories= []
+        categories = []
         mv.category = categories
         vcategories = decjson['Movie']['categories']
         for item in vcategories:
@@ -343,12 +343,8 @@ def edit_movies_view(request):
     title = 'Nueva Movie'
 
     context = {'title': title, 'assets': assets, 'channels': channels, 'girls': girls, 'categories': categories}
-    #return render(request, 'cawas/movies/add.html', context)
     return render(request, 'cawas/pruebas/subir_img.html', context)
 # Fin edit_movies_view
-
-
-
 
 #</CRUD MOVIES>
 
@@ -387,10 +383,11 @@ def add_girl_view(request):
             if os.path.isfile(varchivo):
                 os.remove(varchivo)
             vimg.portrait.name = varchivo
-            vimg.save()
+            try:
+                vimg.save()
+            except IntegrityError  as e:
+                raise Http404("IMANGE - Ya existe una imagen con el mismo nombre.")
             g.image = vimg
-
-
 
         #CREAR GIRL
         g.asset = vasset
@@ -401,7 +398,6 @@ def add_girl_view(request):
         g.height = decjson['Girl']['height']
         g.weight = decjson['Girl']['weight']
         g.save()
-
 
         #CREAR METADATAGIRL
         vgirlmetadata = decjson['Girl']['Girlmetadatas']
@@ -429,8 +425,8 @@ def edit_girl_view(request):
 
     #VARIABLES LOCALES
     message= ''
-
     vg_pathfiles = 'cawas/static/files/girls/'
+
     if request.method == 'POST':
         #VARIABLES
         vasset = Asset()
@@ -460,7 +456,10 @@ def edit_girl_view(request):
             if os.path.isfile(varchivo):
                 os.remove(varchivo)
             vimg.portrait.name = varchivo
-            vimg.save()
+            try:
+                vimg.save()
+            except IntegrityError  as e:
+                raise Http404("IMANGE - Ya existe una imagen con el mismo nombre.")
             vgirl.image = vimg
 
         #Editar Girl
@@ -485,12 +484,399 @@ def edit_girl_view(request):
             gmd.save()
 
     context = {'message': message}
-    # return render(request, 'cawas/girls/add.html', context)
+    return render(request, 'cawas/pruebas/subir_img.html', context)
+#</CRUD GIRL>
+
+
+
+#<CRUD CATEGORIES>
+def add_category_view(request):
+    # AUTENTICACION DE USUARIO
+    if not request.user.is_authenticated:
+        return redirect(login_view)
+
+    # VARIABLES LOCALES
+    message = ''
+    vg_pathfiles = 'cawas/static/files/categories/'
+
+    if request.method == 'POST':
+        #VARIABLES
+        vcategory = Category()
+        vimg = Image()
+
+        # Parsear JSON
+        strjson = request.POST['strjson']
+        decjson = json.loads(strjson)
+
+        # TRATAMIENTO DE IMAGEN: nombre de imagen = a Asset_id
+        if not (request.FILES['imagehor'] is None):
+            vimg.portrait = request.FILES['imagehor']
+            vimg.name = request.FILES['imagehor'].name
+            varchivo = vg_pathfiles + vimg.name + '.jpg'
+            vimg.portrait.name = varchivo
+            if os.path.isfile(varchivo):
+                os.remove(varchivo)
+            try:
+                if not (Image.objects.filter(name=vimg.name).exists()): #si no esta en la base de datos, se crea IMAGE
+                    #borra fisicamente imagen si existe
+                    vimg.save()
+                    vcategory.image = vimg
+                else:
+                    vcategory.image = Image.objects.get(name=vimg.name)  #se mantiene la imagen actual
+            except IntegrityError  as e:
+                message = "IMAGE - Ya existe una imagen con el mismo nombre. (" + e.message + ")"
+                return render(request, 'cawas/error.html', {"message": message})
+
+        # Datos de Category
+        vcategory.original_name = decjson['Category']['original_name']
+        vcategory.order = int(decjson['Category']['orden'])
+        vcategory.save()
+        message = 'Categoria - Registrado Correctamente'
+
+        # BORRAR Y CREAR METADATA
+        vcategorymetadatas = decjson['Category']['Categorymetadatas']
+        for item in vcategorymetadatas:
+            cmd = CategoryMetadata()
+            try:
+                vlanguage = Language.objects.get(code=item['Categorymetadata']['language'])
+            except Language.DoesNotExist as e:
+                return render(request, 'cawas/error.html', {"message": "No existe LANGUAGE. (" + e.message + ")"})
+            cmd.name = item['Categorymetadata']['name']
+            cmd.category = vcategory
+            cmd.language = vlanguage
+            cmd.save()
+
+    context = {'message': message}
     return render(request, 'cawas/pruebas/subir_img.html', context)
 
 
-#</CRUD GIRL>
+def edit_category_view(request):
+    # AUTENTICACION DE USUARIO
+    if not request.user.is_authenticated:
+        return redirect(login_view)
 
-def notFoundObject(request, message):
+    # VARIABLES LOCALES
+    message = ''
+    vg_pathfiles = 'cawas/static/files/categories/'
+
+    if request.method == 'POST':
+        # VARIABLES
+        vcategory = Category()
+        vimg = Image()
+
+        # Parsear JSON
+        strjson = request.POST['strjson']
+        decjson = json.loads(strjson)
+
+        # Leer CATEGORY desde category_id
+        try:
+            vcategory = Category.objects.get(category_id=decjson['Category']['category_id'])
+        except Category.DoesNotExist as e:
+            return render(request, 'cawas/error.html', {"message": "No existe Categoria. (" + e.message + ")"})
+
+        # TRATAMIENTO DE IMAGEN: nombre de imagen = a Asset_id
+        if not (request.FILES['imagehor'] is None):
+            vimg.portrait = request.FILES['imagehor']
+            vimg.name = request.FILES['imagehor'].name
+            varchivo = vg_pathfiles + vimg.name + '.jpg'
+            try:
+                if not (Image.objects.filter(name=vimg.name).exists()):
+                    #borra fisicamente imagen si existe
+                    if os.path.isfile(varchivo):
+                        os.remove(varchivo)
+                    vimg.save()
+                    vcategory.image = vimg
+            except IntegrityError  as e:
+                message = "IMAGE - Ya existe una imagen con el mismo nombre. (" + e.message + ")"
+                return render(request, 'cawas/error.html', {"message": message})
+
+        # Datos de Category
+        vcategory.original_name = decjson['Category']['original_name']
+        vcategory.order = int(decjson['Category']['orden'])
+        vcategory.save()
+        message = 'Categoria - Registrado Correctamente'
+
+        # BORRAR Y CREAR METADATA
+        vcategorymetadatas = decjson['Category']['Categorymetadatas']
+        cmds = CategoryMetadata.objects.filter(category=vcategory)
+        cmds.delete()
+        for item in vcategorymetadatas:
+            cmd = CategoryMetadata()
+            try:
+                vlanguage = Language.objects.get(code=item['Categorymetadata']['language'])
+            except Language.DoesNotExist as e:
+                message = "No existe LANGUAGE. (" + e.message + ")"
+                return render(request, 'cawas/error.html', {"message": message})
+            cmd.name = item['Categorymetadata']['name']
+            cmd.category = vcategory
+            cmd.language = vlanguage
+            cmd.save()
+
     context = {'message': message}
-    return render(request, 'cawas/pruebas/notfound.html', context)
+    return render(request, 'cawas/pruebas/subir_img.html', context)
+
+#</CRUD CATEGORIES>
+
+
+
+
+#<CRUD SERIE>
+def add_serie_view(request):
+    # AUTENTICACION DE USUARIO
+    if not request.user.is_authenticated:
+        return redirect(login_view)
+
+    # VARIABLES LOCALES
+    message = ''
+    vg_pathfiles = 'cawas/static/files/series/'
+
+    if request.method == 'POST':
+        #VARIABLES
+        vserie = Serie()
+        vimg = Image()
+        vasset = Asset()
+
+        # Parsear JSON
+        strjson = request.POST['strjson']
+        decjson = json.loads(strjson)
+
+        vasset.asset_type="serie"
+        vasset.save()
+
+        # TRATAMIENTO DE IMAGEN: nombre de imagen = a Asset_id
+        if not (request.FILES['imagehor'] is None):
+            vimg.portrait = request.FILES['imagehor']
+            vimg.name = request.FILES['imagehor'].name
+            varchivo = vg_pathfiles + vimg.name + '.jpg'
+            vimg.portrait.name = varchivo
+            if os.path.isfile(varchivo):
+                os.remove(varchivo)
+            try:
+                if not (Image.objects.filter(name=vimg.name).exists()): #si no esta en la base de datos, se crea IMAGE
+                    #borra fisicamente imagen si existe
+                    vimg.save()
+                    vserie.image = vimg
+                else:
+                    vserie.image = Image.objects.get(name=vimg.name)  #se mantiene la imagen actual
+            except IntegrityError  as e:
+                message = "SERIE - Ya existe una imagen con el mismo nombre. (" + e.message + ")"
+                return render(request, 'cawas/error.html', {"message": message})
+        #FIN IMAGEN
+
+        #Datos de Serie
+        vserie.asset = vasset
+        vserie.original_title = decjson['Serie']['original_title']
+        vserie.year = decjson['Serie']['year']
+        vserie.cast = decjson['Serie']['cast']
+        vserie.directors = decjson['Serie']['directors']
+        vserie.save()
+
+        # CARGAR GIRLS
+        vgirls = decjson['Serie']['girls']
+        for item in vgirls:
+            try:
+                g = Girl.objects.get(pk=item['girl_id'])
+                vserie.girls.add(g)
+            except Girl.DoesNotExist as e:
+                return render(request, 'cawas/error.html', {"message": "No existe Girl. (" + e.message + ")"})
+
+        # CARGAR CATEGORIES
+        vcategories = decjson['Serie']['categories']
+        for item in vcategories:
+            try:
+                vserie.category.add(Category.objects.get(pk=item['category_id']))
+            except Category.DoesNotExist as e:
+                return render(request, 'cawas/error.html', {"message": "No existe Category. (" + e.message + ")"})
+
+        #Channel
+        try:
+            vserie.channel = Channel.objects.get(pk=decjson['Serie']['channel_id'])
+        except Channel.DoesNotExist as e:
+            return render(request, 'cawas/error.html', {"message": "No existe Channel. (" + e.message + ")"})
+
+        vserie.save()
+        message = 'Categoria - Registrado Correctamente'
+        #Fin datos serie
+
+        # BORRAR Y CREAR METADATA
+        vseriemetadatas = decjson['Serie']['Seriemetadatas']
+        for item in vseriemetadatas:
+            smd = SerieMetadata()
+            try:
+                smd.language = Language.objects.get(code=item['Seriemetadata']['language'])
+            except Language.DoesNotExist as e:
+                return render(request, 'cawas/error.html', {"message": "No existe LANGUAGE. (" + e.message + ")"})
+            smd.title = item['Seriemetadata']['title']
+            smd.summary_short = item['Seriemetadata']['summary_short']
+            smd.summary_long = item['Seriemetadata']['summary_long']
+            smd.serie = vserie
+            smd.save()
+
+    context = {'message': message}
+    return render(request, 'cawas/pruebas/subir_img.html', context)
+
+
+
+def edit_serie_view(request):
+    # AUTENTICACION DE USUARIO
+    if not request.user.is_authenticated:
+        return redirect(login_view)
+
+    # VARIABLES LOCALES
+    message = ''
+    vg_pathfiles = 'cawas/static/files/series/'
+
+    if request.method == 'POST':
+        # VARIABLES
+        vserie = Serie()
+        vimg = Image()
+        vasset = Asset()
+
+        # Parsear JSON
+        strjson = request.POST['strjson']
+        decjson = json.loads(strjson)
+
+        # Leer GIRL desde AssetID
+        try:
+            vasset = Asset.objects.get(asset_id=decjson['Serie']['asset_id'])
+            vserie = Serie.objects.get(asset=vasset)
+        except Asset.DoesNotExist:
+            raise Http404("ASSET - No existe registro.")
+
+        # TRATAMIENTO DE IMAGEN: nombre de imagen = a Asset_id
+        if not (request.FILES['imagehor'] is None):
+            vimg.portrait = request.FILES['imagehor']
+            vimg.name = request.FILES['imagehor'].name
+            varchivo = vg_pathfiles + vimg.name + '.jpg'
+            vimg.portrait.name = varchivo
+            if os.path.isfile(varchivo):
+                os.remove(varchivo)
+            try:
+                if not (Image.objects.filter(name=vimg.name).exists()):  # si no esta en la base de datos, se crea IMAGE
+                    # borra fisicamente imagen si existe
+                    vimg.save()
+                    vserie.image = vimg
+                else:
+                    vserie.image = Image.objects.get(name=vimg.name)  # se mantiene la imagen actual
+            except IntegrityError  as e:
+                message = "SERIE - Ya existe una imagen con el mismo nombre. (" + e.message + ")"
+                return render(request, 'cawas/error.html', {"message": message})
+        # FIN IMAGEN
+
+        # Datos de Serie
+        vserie.asset = vasset
+        vserie.original_title = decjson['Serie']['original_title']
+        vserie.year = decjson['Serie']['year']
+        vserie.cast = decjson['Serie']['cast']
+        vserie.directors = decjson['Serie']['directors']
+        vserie.save()
+
+        # CARGAR GIRLS
+        vgirls = decjson['Serie']['girls']
+        for item in vgirls:
+            try:
+                g = Girl.objects.get(pk=item['girl_id'])
+                vserie.girls.add(g)
+            except Girl.DoesNotExist as e:
+                return render(request, 'cawas/error.html', {"message": "No existe Girl. (" + e.message + ")"})
+
+        # CARGAR CATEGORIES
+        vcategories = decjson['Serie']['categories']
+        for item in vcategories:
+            try:
+                vserie.category.add(Category.objects.get(pk=item['category_id']))
+            except Category.DoesNotExist as e:
+                return render(request, 'cawas/error.html', {"message": "No existe Category. (" + e.message + ")"})
+
+        # Channel
+        try:
+            vserie.channel = Channel.objects.get(pk=decjson['Serie']['channel_id'])
+        except Channel.DoesNotExist as e:
+            return render(request, 'cawas/error.html', {"message": "No existe Channel. (" + e.message + ")"})
+
+        vserie.save()
+        message = 'Categoria - Registrado Correctamente'
+        # Fin datos serie
+
+        # BORRAR Y CREAR METADATA
+        vseriemetadatas = decjson['Serie']['Seriemetadatas']
+        smds = SerieMetadata.objects.filter(serie=vserie)
+        smds.delete()
+        for item in vseriemetadatas:
+            smd = SerieMetadata()
+            try:
+                smd.language = Language.objects.get(code=item['Seriemetadata']['language'])
+            except Language.DoesNotExist as e:
+                return render(request, 'cawas/error.html', {"message": "No existe LANGUAGE. (" + e.message + ")"})
+            smd.title = item['Seriemetadata']['title']
+            smd.summary_short = item['Seriemetadata']['summary_short']
+            smd.summary_long = item['Seriemetadata']['summary_long']
+            smd.serie = vserie
+            smd.save()
+
+    context = {'message': message}
+    return render(request, 'cawas/pruebas/subir_img.html', context)
+
+#</CRUD SERIE>
+
+
+
+
+#<CRUD BLOCK>
+def add_block_view(request):
+    # AUTENTICACION DE USUARIO
+    if not request.user.is_authenticated:
+        return redirect(login_view)
+
+    # VARIABLES LOCALES
+    message = ''
+    vg_pathfiles = 'cawas/static/files/block/'
+
+    if request.method == 'POST':
+        # VARIABLES
+        vblock = Block()
+        vasset = Asset()
+        vchannel = Channel()
+
+        # Parsear JSON
+        strjson = request.POST['strjson']
+        decjson = json.loads(strjson)
+
+        # Datos de Serie
+        vblock.asset = vasset
+        vblock.name = decjson['Block']['name']
+        vblock.save()
+
+        # Lenguaje
+        try:
+            vasset.language = Language.objects.get(code=decjson['Serie']['language'])
+        except Language.DoesNotExist as e:
+            return render(request, 'cawas/error.html', {"message": "No existe LENGUAJE. (" + e.message + ")"})
+
+        # Channel
+        try:
+            vchannel.channel = Channel.objects.get(pk=decjson['Serie']['channel_id'])
+        except Channel.DoesNotExist as e:
+            return render(request, 'cawas/error.html', {"message": "No existe Channel. (" + e.message + ")"})
+
+
+
+        # CARGAR ASSETS
+        vassets = decjson['Serie']['assets']
+        for item in vassets:
+            try:
+                vasset = Asset.objects.get(pk=item['asset_id'])
+                vblock.assets.add(vasset)
+            except Asset.DoesNotExist as e:
+                return render(request, 'cawas/error.html', {"message": "No existe Asset. (" + e.message + ")"})
+
+
+
+        vblock.save()
+        message = 'Bloque - Registrado Correctamente'
+        # Fin datos Bloque
+
+
+    context = {'message': message}
+    return render(request, 'cawas/pruebas/subir_img.html', context)
+#<CRUD BLOCK>
