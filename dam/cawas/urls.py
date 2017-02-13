@@ -14,8 +14,8 @@ urlpatterns = [
     url(r'^login/$', views.login_view, name='login_view'),
     url(r'^logout/$', views.logout_view, name='logout_view'),
     url(r'^$', views.menu_view, name='menu_view'),
-    url(r'^movies/$', views.index_movies_view, name='index_movies'),
-    url(r'^movies/(?P<opcion>\d)/(?P<cat>\d)$', views.index_movies_view, name='index_movies_2'),
+    #url(r'^movies/$', views.index_movies_view, name='index_movies'),
+    #url(r'^movies/(?P<opcion>\d)/(?P<cat>\d)$', views.index_movies_view, name='index_movies_2'),
     #url(r'^movies/add/$', views.add_movies_view, name='add_movies'),
     #url(r'^girls/add/$', views.add_girls_view, name='add_girls'),
 
@@ -25,8 +25,12 @@ urlpatterns = [
     url(r'^time/plus/(\d{1,2})/$', hours_ahead),
     #</ QUITAR ESTO>
 
+
+    url(r'^add_movie/$', views.add_movies_view, name='add_movie'),
+    url(r'^edit_movie/$', views.edit_movies_view, name='edit_movie'),
+
     #<#POST Json CAWAS>
-    url(r'^add_movie_json/$', views.add_movies_view, name='add_movie_json'),
+    #url(r'^add_movie_json/$', views.add_movies_view, name='add_movie_json'),
     url(r'^edit_movie_json/$', views.edit_movies_view, name='edit_movie_json'),
     url(r'^add_girl_json/$', views.add_girl_view, name='add_girl_json'),
     url(r'^edit_girl_json/$', views.edit_girl_view, name='edit_girl_json'),

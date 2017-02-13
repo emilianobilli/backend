@@ -147,9 +147,10 @@ $( document ).ready(function() {
 //----------------> Helper functions
     
     function changeVideo(src, divId){// para cambiar lo que reproduce el player de acuerdo al ID de la lista.
-        path="video/";
+        path="http://cdnlevel3.zolechamedia.net/" + src + "/mp4/350/" + src +".mp4";
         var video = $(divId+' video')[0];
-        video.src = path+src+".mp4";
+        //http://cdnlevel3.zolechamedia.net/{asset_id}/mp4/350/{asset_id}.mp4
+        video.src = path;
         console.log(video.src);
         video.load();
         video.play();

@@ -6,45 +6,61 @@
         <meta name="viewport" content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
         <title>HotGo Backend</title>
         <!-- CSS files -->
-
         <link rel="stylesheet" href="{% static 'css/bootstrap.css' %}">
         <link rel="stylesheet" href="{% static 'css/bootstrap-hotGo.css' %}">
-        <link rel="stylesheet" href="{% static 'css/select2.css' %}">
+        <link rel="stylesheet" href="{% static 'css/dcalendar.picker.css' %}">
 
-
-        <!--[if lt IE 9]>
-        <script src="http://html5shiv.googlecode.com/svn/trunk/html5.js"></script>
-        <![endif]-->
         <!-- Javascript -->
 
         <!-- jQuery -->
         <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.2.4/jquery.min.js"></script>
+        <script src="{% static 'js/jquery-sortable.js' %}"></script>
         <script src="{% static 'js/bootstrap.min.js' %}"></script>
+         <script src="{% static 'js/dcalendar.picker.js' %}"></script>
+        <script src="{% static 'js/movie.js' %}"></script>
 
     </head>
     <body>
 
-        <!-- Modal -->
-        <div class="modal fade" id="myModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
-          <div class="modal-dialog" role="document">
-            <div class="modal-content">
-              <div class="modal-header">
-                <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
-                <h4 class="modal-title" id="myModalLabel">Confirmar salida</h4>
-              </div>
-              <div class="modal-body">
-                ¿Está seguro que desea salir de esta aplicación?
-              </div>
-              <div class="modal-footer">
-                <button type="button" class="btn btn-default" data-dismiss="modal">Cancelar</button>
 
-                <a href ="{% url 'logout_view' %}"  class="btn btn-primary" id="getOut" >Si, deseo salir</a>
-              </div>
-            </div>
-          </div>
-        </div>
-        <!-- Modal end -->
+<!-- Modal -->
+<div class="modal fade" id="myModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+        <h4 class="modal-title" id="myModalLabel">Confirmar salida</h4>
+      </div>
+      <div class="modal-body">
+        ¿Está seguro que desea salir de esta aplicación?
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-default" data-dismiss="modal">Cancelar</button>
+        <button type="button" class="btn btn-primary" id="getOut">Si, deseo salir</button>
+      </div>
+    </div>
+  </div>
+</div>
+<!-- Modal end -->
 
+<!-- Modal 2-->
+<div class="modal fade" id="myModal2" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+        <h4 class="modal-title" id="myModalLabel">ERROR</h4>
+      </div>
+      <div class="modal-body">
+        ¡Atención! El formulario no está completo, revise los campos marcados en rojo y vuelva a intentarlo.
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-default" data-dismiss="modal">OK</button>
+      </div>
+    </div>
+  </div>
+</div>
+<!-- Modal 2 end -->
 
         <!-- HEADER -->
         <div class="container-fluid unpad">
@@ -65,22 +81,15 @@
         <!-- HEADER END -->
 
 
-        <!-- CONTENT -->
-        <div class="container">
-            {% block content %}{% endblock %}
-        </div>
+
+        {% block content %}{% endblock %}
+
         <!-- CONTENT END -->
         <footer>
             Copyright 2017 ITCorp.
         </footer>
 
-    <!-- Javascript -->
-    <script src="{% static 'js/login.min.js' %}"></script>
-    <script src="{% static 'js/menu.js' %}"></script>
-    <script src="{% static 'js/movie.js' %}"></script>
-    <script src="{% static 'js/jquery-sortable.js' %}"></script>
-    <script src="{% static 'js/select2.full.js' %}"></script>
-    <script src="{% static 'js/select2.js' %}"></script>
-    <script src="{% static 'js/chicas-add.js' %}"></script>
+
+
     </body>
 </html>
