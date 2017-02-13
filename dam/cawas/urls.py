@@ -13,7 +13,7 @@ from .views import current_datetime, hours_ahead
 urlpatterns = [
     url(r'^login/$', views.login_view, name='login_view'),
     url(r'^logout/$', views.logout_view, name='logout_view'),
-    url(r'^inicio/$', views.menu_view, name='menu_view'),
+    url(r'^$', views.menu_view, name='menu_view'),
     url(r'^movies/$', views.index_movies_view, name='index_movies'),
     url(r'^movies/(?P<opcion>\d)/(?P<cat>\d)$', views.index_movies_view, name='index_movies_2'),
     #url(r'^movies/add/$', views.add_movies_view, name='add_movies'),
