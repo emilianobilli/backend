@@ -703,6 +703,14 @@ hr{
     margin:auto;
 }
 
+.alignLEFT{
+    text-align: left;
+}
+
+.alignRIGHT-lg{
+    text-align: right;
+}
+
 .helpICON{
     width:20px;
     font-size:20px;
@@ -1056,9 +1064,22 @@ ul.generoPick li.placeholder {
 }
 
 
+/* CHICAS */
+.btnOnly{
+    padding-top: 14px;
+}
+
+
+/* BLOQUES */
+
+
 /*media queries */
 @media (max-width: 767px) {
     .fRIGHT-lg{
         float:none;
     }
+    
+    .alignRIGHT-lg{
+    text-align: left;
+}
 }
