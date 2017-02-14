@@ -891,7 +891,7 @@ footer{
 }
 
 video{
-        margin-top: 86px;
+        /*margin-top: 86px;*/
         max-height:229px;
 }
 
@@ -917,6 +917,8 @@ video{
     max-height:100px;
     
 }
+
+
 
 /* draggables */
 body.dragging, body.dragging * {
@@ -1032,7 +1034,15 @@ ul.generoPick li.placeholder {
     display:none;
 }
 
+#lang-container.has-error label{    
+    margin-right: 30px;
+    color: #a94442!important;
+}
 
+#lang-container.has-success label{    
+    margin-right: 30px;
+    color: #3c763d!important;
+}
 /* GRID VIEW */
 .top6{
     margin-top:6px!important;
