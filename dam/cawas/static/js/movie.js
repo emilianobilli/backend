@@ -1,15 +1,32 @@
 $( document ).ready(function() {
     
     console.log( "ready!" );
+    
+    if(resultado=="success"){
+        $("#myModal-OK").modal();
+    }
+    if(resultado=="error"){
+        $("#myModal-ERROR").modal();
+    }
+    
+    
+    
     var checkedOnce = 0; //chequea si el formulario se ha intentado enviar alguna vez
     var checkVal=0; //chequea la cantidad de errores en el formulario
     var clickedToSubmit = 0; //chequea si el botón de submit se ha presionado
     var checkText="";
+    var langQ = 0; //Cuenta la cantidad de idiomas elegidos por el usuario
+    var langDesc = [] // recoge qué idiomas son los que se seleccionaron
     var clickedVal; // recoge el valor del ID seleccionado en la lista de movies;
     
     // simular exit con el botó de salir
     $("#getOut").click(function(){
            window.location.href = "index.html?logstatus=OFF";
+    })
+    
+    // simular exit con el botó de salir
+    $("#EDBtn").click(function(){
+           window.location.href = "movie-edit.html";
     })
     
     // Toma el ID de la movie seleccionada en la lista
@@ -137,20 +154,27 @@ $( document ).ready(function() {
         if (self.is(":checked")) {
             console.log("checkbox  id =" + self.attr("id") + "is checked ");
             $(showDiv).show('slow');
+            langQ++;
+            langDesc.push(self.attr("id"));
+            
         } else {
             console.log("Id = " + self.attr("id") + "is Unchecked ");
             $(showDiv).hide('fast');
+            langQ--;
+            langDesc.pop();
         }
-        
+        console.log("idiomas tildados:"+langQ+", y son:"+langDesc);// cantidad de idiomas
+        if(checkedOnce>0){
+            checkAll();
+        }
     });
     
 //----------------> Helper functions
     
     function changeVideo(src, divId){// para cambiar lo que reproduce el player de acuerdo al ID de la lista.
-        path="http://cdnlevel3.zolechamedia.net/" + src + "/mp4/350/" + src +".mp4";
+        path="video/";
         var video = $(divId+' video')[0];
-        //http://cdnlevel3.zolechamedia.net/{asset_id}/mp4/350/{asset_id}.mp4
-        video.src = path;
+        video.src = path+src+".mp4";
         console.log(video.src);
         video.load();
         video.play();
@@ -193,7 +217,9 @@ $( document ).ready(function() {
         checkVal = 0;
         var asset_Id = $('#movieID').val();
         var original_Title = $('#orginalTitle').val();
-        var canal_selected;
+        var canal_selected = $('#canalSelect option:selected');
+        var pornstars_selected = [];
+        var categories_selected = [];
         var director_selected = $('#director').val();
         var elenco_selected = $('#elenco').val();
         var year_selected = $('#releaseYear').val();
@@ -229,6 +255,11 @@ $( document ).ready(function() {
             checkVal++;
         }else{
             okMe("#pornstarDrop");
+            pornstars_selected = [];
+            $('#pornstarDrop li').each(function(){
+               pornstars_selected.push($(this).val());
+            })
+            //console.log("pornstars_selected:"+pornstars_selected)
         }
         
         // chequea categorías
@@ -238,6 +269,11 @@ $( document ).ready(function() {
             checkVal++;
         }else{
             okMe("#generoDrop");
+            categories_selected = [];
+            $('#generoDrop li').each(function(){
+              categories_selected.push($(this).val());
+            })
+            console.log("generoDrop:"+categories_selected)
         }
         
         // chequea canal
@@ -277,8 +313,16 @@ $( document ).ready(function() {
             okMe("#elenco");
         }
         
-        
+        // chequeo de idiomas (tit_; desc_; date_)
+        if(langQ==0){
+            errorMe("#pickLang");
+            checkVal++;
+        }else{
+            okMe("#pickLang");
+            checkLangs(langDesc);
+        }
                 
+        /* -----------  Sending Routine -----------*/
         
         if(checkVal>0){
             if(checkedOnce<1){// envía por primera vez y tiene error
@@ -298,20 +342,7 @@ $( document ).ready(function() {
         
         checkedOnce++;
         
-        // checkboxes
-        /*
-        $('.chkbx').each(function () {
-            var checkBox = $(this);
-            if (checked) {
-                checkBox.prop('checked', true);
-            } else {
-                checkBox.prop('checked', false);
-                alert("chequeame una maestro")
-            }
-        });
-        */
-        
-        
+                
         
         
         // helper subfunctions
@@ -343,29 +374,116 @@ $( document ).ready(function() {
                 
             }
         
+            function explodeArray(arr, indexname){
+                var lngth = arr.length;
+                var stringIt = '[';
+                for(i=0; i<lngth; i++){
+                    stringIt +='{"'+indexname+'":"'+arr[i]+'"}';
+                    if(i<lngth-1){
+                        stringIt += ',';
+                    }
+                }
+                stringIt += ']';
+                return(stringIt);
+            }
+        
+            function checkLangs(arr){ // itera sobre los lenguajes seleccionados buscando errores
+                var lngth = arr.length;
+                for(i=0; i<lngth; i++){
+                    var lang=arr[i];
+                    /* check title */
+                    var titCont = $("#tit_"+lang).val();
+                    if(titCont==""){
+                        errorMe("#tit_"+lang);
+                        checkVal++;
+                    }else{
+                        okMe("#tit_"+lang);
+                    }
+                    /* check desc */
+                    var descCont = $("#short_desc_"+lang).val().trim();
+                    if(descCont.length < 1){
+                        errorMe("#short_desc_"+lang);
+                        checkVal++;
+                    }else{
+                        okMe("#short_desc_"+lang);
+                    }
+                    /* check date */
+                    var dateCont = $("#date_"+lang).val();
+                    if(dateCont==""){
+                        errorMe("#date_"+lang);
+                        checkVal++;
+                    }else{
+                        okMe("#date_"+lang);
+                    }
+                }
+            }
+        
+            function addMovieMetadata(arr){
+                var lngth = arr.length;
+                var myLangs = "";
+                
+                for(i=0; i<lngth; i++){
+                    var lang=arr[i];
+                    switch (lang){
+                            case "spa":
+                            var lng="es";
+                            break;
+                            case "por":
+                            var lng="pt";
+                            break;
+                            case "eng":
+                            var lng="en";
+                            break;
+                    };
+                    var tit = $("#tit_"+lang).val();
+                    var short = $("#short_desc_"+lang).val().trim().substring(0,50)+"...";
+                    var long = $("#short_desc_"+lang).val().trim();
+                    myLangs += '{"Moviemetadata":';
+                    myLangs += '{"language": "'+lng+'",';
+                    myLangs += '"title": "'+tit+'",';
+                    myLangs += '"summary_short": "'+short+'",';
+                    myLangs += '"summary_long":"'+long+'"';
+                    myLangs += '}}';
+                    if(i<lngth-1){
+                        myLangs += ',';
+                    }
+                }
+                return(myLangs);
+            };
+        
         
             function submitJson(){
                 if(checkVal==0){
+                    var myGirls=explodeArray(pornstars_selected,"girl_id");
+                    var myCategories=explodeArray(categories_selected,"category_id");
                     var myJSON = '';
                     myJSON+='{"Movie":{';
                     myJSON+='"asset_id":"'+asset_Id+'",';
                     myJSON+='"original_title":"'+original_Title+'",';
-                    myJSON+='"channel_id":"2",';
+                    myJSON+='"channel_id":"'+canal_selected+'",';
                     myJSON+='"year":'+year_selected+',';
-                    myJSON+='"girls": [{"girl_id":"1"},{"girl_id":"2"}],';
+                    myJSON+='"girls":'+myGirls+',';
                     myJSON+='"cast":"'+elenco_selected+'",';
                     myJSON+='"directors":"'+director_selected+'",';
                     myJSON+='"display_runtime": "20:30",';
-                    myJSON+='"categories": [{"category_id":"1"},{"category_id":"2"}],';
-                    myJSON+='"Moviesmetadata": [{"Moviemetadata":';
+                    myJSON+='"categories":'+myCategories+',';
+                    myJSON+='"Moviesmetadata": [';
+                    myJSON+= addMovieMetadata(langDesc);
+                    /*
+                    myJSON+='{"Moviemetadata":';
                     myJSON+='{"language": "es",';
                     myJSON+='"title": "title 1 español",';
                     myJSON+='"summary_short": "summary_short 1 ",';
-                    myJSON+='"summary_long":"summary_long 1 "}},';
-                    myJSON+='{"Moviemetadata":{"language": "pt",';
+                    myJSON+='"summary_long":"summary_long 1 "';
+                    myJSON+='}}';
+                    myJSON+=',';
+                    myJSON+='{"Moviemetadata":';
+                    myJSON+='{"language": "pt",';
                     myJSON+='"title": "title 2 portugues",';
                     myJSON+='"summary_short": "summary_short 2 ",';
-                    myJSON+='"summary_long":"summary_long 2 "}}'; 
+                    myJSON+='"summary_long":"summary_long 2 "';
+                    myJSON+='}}'; 
+                    */
                     myJSON+=']}}';
                     console.log(myJSON);
                     $("#varsToJSON").val(myJSON);
