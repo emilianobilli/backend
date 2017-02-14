@@ -1,14 +1,14 @@
 $( document ).ready(function() {
     
     console.log( "ready!" );
-    /*
+    var resultado = ""
     if(resultado=="success"){
         $("#myModal-OK").modal();
     }
     if(resultado=="error"){
         $("#myModal-ERROR").modal();
     }
-    */
+
     
     
     var checkedOnce = 0; //chequea si el formulario se ha intentado enviar alguna vez
@@ -242,6 +242,7 @@ $( document ).ready(function() {
         }
         
         // chequea thumbnail vertical
+
         if(!$('#ThumbVer').val()){
             errorMe("#ThumbVer");
             checkVal++;

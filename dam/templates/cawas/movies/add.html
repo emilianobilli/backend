@@ -71,7 +71,6 @@
         <!-- hidden form -->
         <div class="container" id="hidden1">
 
-
                 <!-- 1 Row : Title -->
                 <div class="row form-row">
                     <div class="col-xs-12 col-md-12 col-lg-12">
@@ -87,27 +86,28 @@
                 </div>
 
                 <!-- Form manda imagenes y vars en un JSON hecho string -->
-                <form method="post" action="" name="movie-completeForm"  class="content-picker movieChoose" id="movieForm">
+                <form method="post" action="" name="movie-completeForm" enctype="multipart/form-data"  class="content-picker movieChoose" id="movieForm">
 
                 <!-- 2 Row : Images -->
                 <div class="row form-row">
                     <div class="col-xs-4 col-md-4 col-lg-4 form-group">
                        <div class="form-group has-feedback imgUpload">
                             <label class="label-left" for="ThumbHor" id="ThumbHorTit">Asociar Thumbnail horizontal: *</label>
-                            <input type="file" class="form-control" name="ThumbHor1" id="ThumbHor" accept="image/*">
+                            <input type="file" class="form-control" name="ThumbHor" id="ThumbHor" accept="image/*">
                             <span class="glyphicon form-control-feedback"></span>
                             <img id="imageH"/>
                         </div>
                     </div>
+
                     <div class="col-xs-4 col-md-4 col-lg-4 form-group" >
                        <div class="form-group has-feedback imgUpload">
                             <label for="ThumbVer" id="ThumbVerTit">Asociar Thumbnail vertical: *</label>
                             <input type="file" class="form-control" name="ThumbVer" id="ThumbVer" accept="image/*">
-
                             <span class="glyphicon form-control-feedback"></span>
                             <img id="imageV"/>
                         </div>
                     </div>
+
                     <div class="col-xs-4 col-md-4 col-lg-4">
                     </div>
                 </div>

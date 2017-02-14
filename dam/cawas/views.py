@@ -4,7 +4,7 @@ from django.shortcuts import render
 
 from django.contrib.auth import authenticate, login, logout
 from django.shortcuts import render, redirect
-from .models import  Channel, Asset, Episode, Block, Serie, SerieMetadata, Movie, MovieMetadata, Girl,GirlMetadata,  Category,CategoryMetadata, Language, Image
+from .models import  Channel, Asset, Episode, PublishQueue,  Block, Serie, SerieMetadata, Movie, MovieMetadata, Girl,GirlMetadata,  Category,CategoryMetadata, Language, Image
 import datetime, os
 from django.shortcuts import render_to_response
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
@@ -190,27 +190,40 @@ def add_movies_view(request):
        strjson = request.POST['varsToJSON']
        decjson = json.loads(strjson)
 
+
        # DECLARACION DE OBJECTOS
        mv = Movie()
+       vasset = Asset()
 
-       #TRATAMIENTO DE IMAGEN Horizontal
-
-       img = Image()
-       img.portrait = request.FILES['ThumbHor1']
-       img.name = img.portrait.name
-       varchivo = pathfiles + img.portrait.name
-       if os.path.isfile(varchivo):
-           os.remove(varchivo)
-       img.portrait.name = varchivo
-       img.save()
-       mv.image = img
-
-       print decjson['Movie']['asset_id']
-       #CARGAR MOVIE
+       # CARGAR MOVIE
        try:
            vasset = Asset.objects.get(asset_id=decjson['Movie']['asset_id'])
        except Asset.DoesNotExist as e:
            return render(request, 'cawas/error.html', {"message": "No existe Asset. (" + e.message + ")"})
+
+       #TRATAMIENTO DE IMAGEN Portrait
+       img = Image()
+       img.portrait =  request.FILES['ThumbHor']
+       img.name = 'M' + vasset.asset_id
+
+       varchivo = pathfiles + img.name + '-portrait.jpg'
+       #si existe archivo, lo borra
+       if os.path.isfile(varchivo):
+           os.remove(varchivo)
+       #si existe Image(), se borra
+       img.portrait.name = varchivo
+
+       #Landscape
+       img.landscape = request.FILES['ThumbVer']
+       varchivo = pathfiles + img.name + '-landscape.jpg'
+       # si existe archivo, lo borra
+       if os.path.isfile(varchivo):
+           os.remove(varchivo)
+       img.landscape.name = varchivo
+
+       img.save()
+       mv.image = img
+       print decjson['Movie']['asset_id']
 
        #Channel
        try:
@@ -246,10 +259,16 @@ def add_movies_view(request):
            except Category.DoesNotExist as e:
                return render(request, 'cawas/error.html', {"message": "No existe Categoria. (" + e.message + ")"})
 
+
+       # ACTUALIZAR EL ASSET A MOVIE
+       vasset.asset_type = "movie"
+       vasset.save()
+
        # CARGAR METADATA
        vmoviesmetadata = decjson['Movie']['Moviesmetadata']
        for item in vmoviesmetadata:
            try:
+               #CREAR METADATA POR IDIOMA
                mmd = MovieMetadata();
                vlanguage = Language.objects.get(code=item['Moviemetadata']['language'])
                mmd.language = vlanguage
@@ -258,12 +277,19 @@ def add_movies_view(request):
                mmd.summary_long = item['Moviemetadata']['summary_long']
                mmd.movie = mv
                mmd.save()
+
+               # CREAR COLA DE PUBLICACION
+               vpublish = PublishQueue()
+               vpublish.item_id = 1
+               vpublish.item_lang = vlanguage
+               vpublish.item_type = 'AS'
+               vpublish.status = 'Q'
+               vpublish.save()
+
+
            except Language.DoesNotExist as e:
                return render(request, 'cawas/error.html', {"message": "No existe Lenguaje. (" + e.message + ")"})
 
-       # ACTUALIZAR EL ASSET A MOVIE
-       vasset.asset_type = "movie"
-       vasset.save()
        message = 'archivo subido ok'
        # FIN DE POST
 
