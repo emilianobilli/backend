@@ -1,14 +1,14 @@
 $( document ).ready(function() {
     
     console.log( "ready!" );
-    
+    /*
     if(resultado=="success"){
         $("#myModal-OK").modal();
     }
     if(resultado=="error"){
         $("#myModal-ERROR").modal();
     }
-    
+    */
     
     
     var checkedOnce = 0; //chequea si el formulario se ha intentado enviar alguna vez

@@ -187,25 +187,28 @@ def add_movies_view(request):
     pathfiles = 'cawas/static/files/movies/'
     if request.method == 'POST':
        # parsear JSON
-       strjson = request.POST['strjson']
+       strjson = request.POST['varsToJSON']
        decjson = json.loads(strjson)
 
        # DECLARACION DE OBJECTOS
        mv = Movie()
 
-       #TRATAMIENTO DE IMAGEN
+       #TRATAMIENTO DE IMAGEN Horizontal
+
        img = Image()
-       img.portrait = request.FILES['imagehor']
+       img.portrait = request.FILES['ThumbHor1']
        img.name = img.portrait.name
        varchivo = pathfiles + img.portrait.name
        if os.path.isfile(varchivo):
            os.remove(varchivo)
        img.portrait.name = varchivo
        img.save()
+       mv.image = img
 
+       print decjson['Movie']['asset_id']
        #CARGAR MOVIE
        try:
-           vasset = Asset.objects.get(pk=decjson['Movie']['asset_id'])
+           vasset = Asset.objects.get(asset_id=decjson['Movie']['asset_id'])
        except Asset.DoesNotExist as e:
            return render(request, 'cawas/error.html', {"message": "No existe Asset. (" + e.message + ")"})
 
@@ -215,8 +218,6 @@ def add_movies_view(request):
        except Asset.DoesNotExist as e:
            return render(request, 'cawas/error.html', {"message": "No existe Asset. (" + e.message + ")"})
 
-
-       mv.image = img
        mv.asset = vasset
        mv.channel = vchannel
        mv.original_title = decjson['Movie']['original_title']
@@ -275,7 +276,6 @@ def add_movies_view(request):
     categories = Category.objects.all()
     title = 'Nueva Movie'
     context = {'title': title, 'assets':assets, 'channels':channels, 'girls':girls,  'categories':categories }
-    #return render(request, 'cawas/pruebas/subir_img.html', context)
     return render(request, 'cawas/movies/add.html', context)
 # Fin add_movies_view
 
