@@ -74,6 +74,7 @@ backend = Backend({"girls":
                                     "enabled": "N",
                             },
                          }},
+                        "views" : {'table_name': 'Views', 'commit_index':'lala'},
                        "search_domain": {"domain": {
                                         "id_field": "asset_id",
                                         "filter_query" : '',
@@ -329,6 +330,23 @@ def urlAsset():
             ret  = backend.disable_asset(body['item'])
         return Response(response=dumps(ret['body']), status=ret['status'])
     
+@api.route('/v1/assets/<string:block_id>/', methods=['GET'])
+@cross_origin()
+def urlAssetBlock(block_id):
+    args = {}
+    args['block_id'] = block_id
+    for k in request.args.keys():
+        args[k] = request.args.get(k)
+    ret = backend.query_block(args)
+    return Response(response=dumps(ret['body']), status=ret['status'])
+
+#--------------------------------------------------------------------------------------------
+# Hooks
+#--------------------------------------------------------------------------------------------
+@api.route('/v1/hooks/update_views/', methods=['UPDATE'])
+def urlHooksUpdateViews():
+    pass
+
 
 if __name__ == "__main__":
     api.run("0.0.0.0", 8000)

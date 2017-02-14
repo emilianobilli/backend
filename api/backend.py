@@ -3,6 +3,7 @@ from Collection import cloudsearchCollection
 from Collection import CollectionException
 from Collection import DynamoException
 from Collection import CloudSearchException
+from views      import Views
 from cdnimg     import CdnImg
 import json
 import socket
@@ -163,6 +164,10 @@ class Backend(object):
         if 'search_domain' in config:
             self.domain     = cloudsearchCollection(config['search_domain'])
 
+        if 'views' in config:
+            self.views      = Views(config['views']['table_name'],config['views']['commit_index'])
+        else:
+            self.views      = None
 
         self.videoauth = VideoAuth("https://videoauth.zolechamedia.net/video/", "7a407d4ae99b7c1a1655daddf218ef05")
         
@@ -183,12 +188,13 @@ class Backend(object):
             item = {}
             item['lang']     = args['lang']
             item['asset_id'] = args['asset_id']
-
+            asset_id         = None
             try:
                 asset = self.shows.get(item)
                 if asset['item'] != {} and asset['item']['enabled'] == "1":
                     if asset['item']['show_type'] == 'movie' or asset['item']['show_type'] == 'episode':
                         asset['item']['video'] = self.videoauth.get_hls_url(asset['item']['asset_id'])
+                        asset_id = asset['item']['asset_id']
                         if 'img' in args:
                             img = args['img']
                         else:
@@ -197,6 +203,9 @@ class Backend(object):
                         for k in self.images.keys():
                             if k in asset['item']:
                                 asset['item'][k] = self.images[k].getUrl(asset['item'][k], self.parse_img_arg(k,img))
+
+                    if asset_id is not None and self.views is not None:
+                        self.views.add_view(asset_id)
 
                     status = 200
                 else:
@@ -236,11 +245,12 @@ class Backend(object):
             item = {}
             item['lang']     = args['lang']
             item['asset_id'] = args['asset_id']
-
+            asset_id         = None
             try:
                 asset = self.girls.get(item)
                 if asset['item'] != {} and asset['item']['enabled'] == "1":
-                    status = 200
+                    asset_id = asset['item']['asset_id']
+                    status   = 200
                     if 'img' in args:
                         img = args['img']
                     else:
@@ -249,10 +259,14 @@ class Backend(object):
                     for k in self.images.keys():
                         if k in asset['item']:
                             asset['item'][k] = self.images[k].getUrl(asset['item'][k], self.parse_img_arg(k,img))
-
+            
                 else:
                     asset['item'] = {} 
                     status = 404
+    
+                if asset_id is not None and self.views is not None:
+                    self.views.add_view(asset_id)
+
                 ret    = asset
 
             except CollectionException as e:
