@@ -94,11 +94,9 @@
                     <div class="col-xs-4 col-md-4 col-lg-4 form-group">
                        <div class="form-group has-feedback imgUpload">
                             <label class="label-left" for="ThumbHor" id="ThumbHorTit">Asociar Thumbnail horizontal: *</label>
-                            <input type="file" class="form-control" name="ThumbHor" id="ThumbHor" accept="image/*">
+                            <input type="file" class="form-control" name="ThumbHor1" id="ThumbHor" accept="image/*">
                             <span class="glyphicon form-control-feedback"></span>
                             <img id="imageH"/>
-
-
                         </div>
                     </div>
                     <div class="col-xs-4 col-md-4 col-lg-4 form-group" >
@@ -185,12 +183,9 @@
                             <!-- ------------------Reemplazar por listado de canales ----------------- -->
 
                             <select type="text" class="form-control" name="canal" id="canalSelect" placeholder="Elige un canal">
-                                <option value=""> </option>
-                                <option value="playboyTv">Playboy TV</option>
-                                <option value="venus">Venus</option>
-                                <option value="sextreme">Sextreme</option>
-                                <option value="penthouse">Penthouse</option>
-                                <option value="brazzers">Brazzers</option>
+                                {% for item in channels %}
+                                     <option value="{{item.id}}">{{item.name}}</option>
+                                {% endfor %}
                             </select>
 
                             <!-- ------------------  Fin de listado de canales  ----------------- -->
