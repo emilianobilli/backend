@@ -176,13 +176,13 @@ def prueba_json_view(request):
 
 
 def add_movies_view(request):
-    # $('#pornstarDrop')[0].children[0].value
-
-    #AUTENTICACION DE USUARIO
+   #AUTENTICACION DE USUARIO
     if not request.user.is_authenticated:
        return redirect(login_view)
-   # ALTA - MOVIE: en el GET debe cargar variables, y en POST debe leer JSON
-   # VARIABLES
+    #ALTA - MOVIE: en el GET debe cargar variables, y en POST debe leer JSON
+    #VARIABLES
+
+
 
     pathfiles = 'cawas/static/files/movies/'
     if request.method == 'POST':
@@ -238,6 +238,8 @@ def add_movies_view(request):
        mv.cast = decjson['Movie']['cast']
        mv.directors = decjson['Movie']['directors']
        mv.display_runtime = decjson['Movie']['display_runtime']
+       #calcular runtime
+       #mv.runtime
        mv.save()
 
        # CARGAR GIRLS
@@ -280,7 +282,7 @@ def add_movies_view(request):
 
                # CREAR COLA DE PUBLICACION
                vpublish = PublishQueue()
-               vpublish.item_id = 1
+               vpublish.item_id = vasset.asset_id
                vpublish.item_lang = vlanguage
                vpublish.item_type = 'AS'
                vpublish.status = 'Q'
@@ -297,104 +299,164 @@ def add_movies_view(request):
     #VARIABLES PARA GET
     #CARGAR VARIABLES USADAS EN FRONT
     assets = Asset.objects.filter(asset_type="unknown")
+    vmovies = Movie.objects.all()
     channels = Channel.objects.all()
     girls = Girl.objects.all()
     categories = Category.objects.all()
     title = 'Nueva Movie'
-    context = {'title': title, 'assets':assets, 'channels':channels, 'girls':girls,  'categories':categories }
+    context = {'title': title, 'assets':assets, 'channels':channels, 'girls':girls,  'categories':categories, 'movies':vmovies }
     return render(request, 'cawas/movies/add.html', context)
 # Fin add_movies_view
 
 
 
-
-def edit_movies_view(request):
-    #AUTORIZACION DE USUARIO
+def edit_movies_view(request, asset_id):
+    #AUTENTICACION DE USUARIO
     if not request.user.is_authenticated:
-        return redirect(login_view)
+       return redirect(login_view)
+    # EDIT - MOVIE: en el GET debe cargar variables, y en POST debe leer JSON
 
-    #EDIT - MOVIE: en el GET debe cargar variables, y en POST debe leer JSON
-
-    #VARIABLES
     pathfiles = 'cawas/static/files/movies/'
 
+
+    #Post Movie - Graba datos
     if request.method == 'POST':
-        #parsear JSON
-        strjson  = request.POST['strjson']
-        decjson = json.loads(strjson)
+       # parsear JSON
+       strjson = request.POST['varsToJSON']
+       decjson = json.loads(strjson)
 
-        # DECLARACION DE OBJECTOS
-        img = Image()
-        # Leer Movie desde AssetID
-        vasset = get_object_or_404(Asset, asset_id=decjson['Movie']['asset_id'])
-        mv =  get_object_or_404(Movie, asset=vasset)
-        imgback = mv.image
+       # DECLARACION DE OBJECTOS
+       vmovie = Movie()
+       vasset = Asset()
 
-        img.portrait = request.FILES['imagehor']
-        img.name = img.portrait.name
+       # Leer Movie desde AssetID
+       vasset = get_object_or_404(Asset, asset_id=decjson['Movie']['asset_id'])
+       mv = get_object_or_404(Movie, asset=vasset)
 
-        #comparar imagen de BD con Imagen que subio el usuario
-        if imgback.name <> img.name:
-            varchivo = pathfiles + img.portrait.name
-            if os.path.isfile(varchivo):
-                os.remove(varchivo)
-            img.portrait.name = varchivo
-            img.save()
+       # CARGAR MOVIE
+       try:
+           vmovie = Movie.asset.objects.get(asset_id=asset_id)
+       except Asset.DoesNotExist as e:
+           return render(request, 'cawas/error.html', {"message": "No existe Movie. (" + e.message + ")"})
+
+       #TRATAMIENTO DE IMAGEN Portrait
+       img = Image()
+       img.portrait =  request.FILES['ThumbHor']
+       img.name = 'M' + vasset.asset_id
+
+       varchivo = pathfiles + img.name + '-portrait.jpg'
+       #si existe archivo, lo borra
+       if os.path.isfile(varchivo):
+           os.remove(varchivo)
+       #si existe Image(), se borra
+       img.portrait.name = varchivo
+
+       #Landscape
+       img.landscape = request.FILES['ThumbVer']
+       varchivo = pathfiles + img.name + '-landscape.jpg'
+       # si existe archivo, lo borra
+       if os.path.isfile(varchivo):
+           os.remove(varchivo)
+       img.landscape.name = varchivo
+
+       img.save()
+       mv.image = img
+       print decjson['Movie']['asset_id']
+
+       #Channel
+       try:
+           vchannel = Channel.objects.get(pk=decjson['Movie']['channel_id'])
+       except Asset.DoesNotExist as e:
+           return render(request, 'cawas/error.html', {"message": "No existe Asset. (" + e.message + ")"})
+
+       mv.asset = vasset
+       mv.channel = vchannel
+       mv.original_title = decjson['Movie']['original_title']
+       mv.year = int(decjson['Movie']['year'])
+       mv.cast = decjson['Movie']['cast']
+       mv.directors = decjson['Movie']['directors']
+       mv.display_runtime = decjson['Movie']['display_runtime']
+       #calcular runtime
+       #mv.runtime
+       mv.save()
+
+       # CARGAR GIRLS
+       vgirls = decjson['Movie']['girls']
+       for item in vgirls:
+           try:
+               vgirl = Girl.objects.get(pk=item['girl_id'])
+               mv.girls.add(vgirl)
+           except Girl.DoesNotExist as e:
+               return render(request, 'cawas/error.html', {"message": "No existe Girl. (" + e.message + ")"})
+
+       # CARGAR CATEGORIES
+       vcategories = decjson['Movie']['categories']
+       for item in vcategories:
+           try:
+               vcategory = Category.objects.get(pk=item['category_id'])
+               mv.category.add(vcategory)
+           except Category.DoesNotExist as e:
+               return render(request, 'cawas/error.html', {"message": "No existe Categoria. (" + e.message + ")"})
+
+       # ACTUALIZAR EL ASSET A MOVIE
+       vasset.asset_type = "movie"
+       vasset.save()
+
+       # CARGAR METADATA
+       vmoviesmetadata = decjson['Movie']['Moviesmetadata']
+       for item in vmoviesmetadata:
+           try:
+               #CREAR METADATA POR IDIOMA
+               mmd = MovieMetadata();
+               vlanguage = Language.objects.get(code=item['Moviemetadata']['language'])
+               mmd.language = vlanguage
+               mmd.title = item['Moviemetadata']['title']
+               mmd.summary_short = item['Moviemetadata']['summary_short']
+               mmd.summary_long = item['Moviemetadata']['summary_long']
+               mmd.movie = mv
+               mmd.save()
+
+               # CREAR COLA DE PUBLICACION
+               vpublish = PublishQueue()
+               vpublish.item_id = vasset.asset_id
+               vpublish.item_lang = vlanguage
+               vpublish.item_type = 'AS'
+               vpublish.status = 'Q'
+               vpublish.save()
 
 
-        #CARGAR MOVIE
-        vchannel = get_object_or_404(Channel, pk=decjson['Movie']['channel_id'])
-        mv.image = img
-        mv.channel = vchannel
-        mv.original_title = decjson['Movie']['original_title']
-        mv.year = int(decjson['Movie']['year'])
-        mv.cast = decjson['Movie']['cast']
-        mv.directors = decjson['Movie']['directors']
-        mv.display_runtime = decjson['Movie']['display_runtime']
-        mv.save()
+           except Language.DoesNotExist as e:
+               return render(request, 'cawas/error.html', {"message": "No existe Lenguaje. (" + e.message + ")"})
 
-        #CARGAR GIRLS
-        vgirls = decjson['Movie']['girls']
-        for item in vgirls:
-            girl = get_object_or_404(Girl, pk=item['girl_id'])
-            mv.girls.add(girl)
+       message = 'archivo subido ok'
+       # FIN DE POST
 
-        #CARGAR CATEGORIES
-        categories = []
-        mv.category = categories
-        vcategories = decjson['Movie']['categories']
-        for item in vcategories:
-            c = get_object_or_404(Category, pk=item['category_id'])
-            mv.category.add(c)
+    #VARIABLES PARA GET
+    if request.method == 'GET':
+        # CARGAR MOVIE
+        try:
+            vasset = Asset.objects.get(asset_id=asset_id)
+            vmovie = Movie.objects.get(asset=vasset)
+            vgirlselected = vmovie.girls.objects()
 
-        #CARGAR METADATA
-        vmoviesmetadata = decjson['Movie']['Moviesmetadata']
-        c = get_object_or_404(Category, pk=item['category_id'])
+        except Movie.DoesNotExist as e:
+            return render(request, 'cawas/error.html', {"message": "Asset no se encuentra Vinculado a Movie. (" + e.message + ")"})
+        except Asset.DoesNotExist as e:
+            return render(request, 'cawas/error.html',{"message": "Asset no Existe. (" + e.message + ")"})
 
-        mmds = MovieMetadata.objects.filter(movie=mv)
-        mmds.delete()
-        for item in vmoviesmetadata:
-            mmd = MovieMetadata();
-            mmd.language = get_object_or_404(Language, code=item['Moviemetadata']['language'])
-            mmd.title = item['Moviemetadata']['title']
-            mmd.summary_short = item['Moviemetadata']['summary_short']
-            mmd.summary_long = item['Moviemetadata']['summary_long']
-            mmd.movie = mv
-            mmd.save()
-        #NO SE ACTUALIZA EL ASSET TYPE
 
-        message='archivo subido ok'
-        #FIN DE POST
 
-    # CARGAR VARIABLES USADAS EN FRONT
+
+    #CARGAR VARIABLES USADAS EN FRONT
     assets = Asset.objects.filter(asset_type="unknown")
     channels = Channel.objects.all()
     girls = Girl.objects.all()
     categories = Category.objects.all()
-    title = 'Nueva Movie'
+    title = 'Editar Movie'
+    context = {'title': title, 'assets':assets, 'channels':channels, 'girls':girls, 'categories':categories,
+               'vmovie':vmovie, 'vgirlselected':vgirlselected }
 
-    context = {'title': title, 'assets': assets, 'channels': channels, 'girls': girls, 'categories': categories}
-    return render(request, 'cawas/pruebas/subir_img.html', context)
+    return render(request, 'cawas/movies/edit.html', context)
 # Fin edit_movies_view
 
 #</CRUD MOVIES>
@@ -931,3 +993,24 @@ def add_block_view(request):
     context = {'message': message}
     return render(request, 'cawas/pruebas/subir_img.html', context)
 #<CRUD BLOCK>
+
+
+
+def add_asset_view(request):
+    try:
+        strjson = request.POST['body']
+        decjson = json.loads(strjson)
+
+        vasset = Asset()
+        vasset.asset_id = decjson['asset_id']
+        vasset.asset_type = "unknown"
+        vasset.save()
+
+        message = "Asset Generado Correctamente"
+
+    except ValueError, e:
+        message = "Error al leer archivo JSON. (" + e.message + ")"
+        return render(request, 'cawas/error.html', {"message": message})
+
+    context = {'message': message}
+    return render(request, 'cawas/pruebas/blank.html', context)

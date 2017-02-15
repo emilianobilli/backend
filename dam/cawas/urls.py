@@ -18,16 +18,8 @@ urlpatterns = [
     #url(r'^movies/(?P<opcion>\d)/(?P<cat>\d)$', views.index_movies_view, name='index_movies_2'),
     #url(r'^movies/add/$', views.add_movies_view, name='add_movies'),
     #url(r'^girls/add/$', views.add_girls_view, name='add_girls'),
-
-    #< QUITAR ESTO>
-    url(r'^pruebas/$', views.pruebas, name='pruebas'),
-    url(r'^time/$', current_datetime),
-    url(r'^time/plus/(\d{1,2})/$', hours_ahead),
-    #</ QUITAR ESTO>
-
-
-    url(r'^add_movie/$', views.add_movies_view, name='add_movie'),
-    url(r'^edit_movie/$', views.edit_movies_view, name='edit_movie'),
+    url(r'^movies/add/$', views.add_movies_view, name='add_movie'),
+    url(r'^movies/edit/(?P<asset_id>\d*)/$', views.edit_movies_view, name='edit_movie'),
 
     #<#POST Json CAWAS>
     #url(r'^add_movie_json/$', views.add_movies_view, name='add_movie_json'),
@@ -38,8 +30,9 @@ urlpatterns = [
     url(r'^edit_category_json/$', views.edit_category_view, name='edit_category_json'),
     url(r'^add_serie_json/$', views.add_serie_view, name='add_serie_json'),
     url(r'^edit_serie_json/$', views.edit_serie_view, name='edit_serie_json'),
-    url(r'^add_block_json/$', views.add_block_view, name='add_block_json')
-    #url(r'^edit_block_json/$', views.edit_block_view, name='edit_block_json')
+    url(r'^add_block_json/$', views.add_block_view, name='add_block_json'),
+    url(r'^api/add_asset/$', views.add_asset_view, name='api_add_asset')
+
     #</ POST Json CAWAS>
 
 

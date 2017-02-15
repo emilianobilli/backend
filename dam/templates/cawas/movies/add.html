@@ -28,8 +28,6 @@
                 <h3>Selecciona ID del video *</h3>
             </div>
             <div>
-
-
                    <!-- ------------------Reemplazar por listado de movies ----------------- -->
                     <select id="movie-select" class="form-control" size="6">
                         {% for item in assets %}
@@ -55,16 +53,32 @@
                 </form>
             </div>
 
+           <!-- right col -->
+           <div  id="repro1">
+               <video width="400" controls class="fRIGHT">
+                  <source src="" type=video/mp4 id="videomp4">
+               </video>
+           </div>
        </div>
 
        <!-- right col -->
-       <div class="col-xs-12 col-md-6 col-lg-6 sepTOP-big"  id="repro1">
-           <h1></h1>
-           <video width="400" controls class="fRIGHT">
-              <source src="" type=video/mp4 id="videomp4">
-           </video>
-       </div>
-    </div>
+
+            <div class="col-xs-12 col-md-3 col-lg-3 btnOnly fRIGHT-lg">
+                <a href="#" class="btn btn-primary btn-block form-control" type="button" id="EDBtn">Editar una Movie existente</a>
+                <!-- ------------------Reemplazar por listado de movies ----------------- -->
+                <select id="assets-select" class="select2" size="6">
+                    {% for item in movies %}
+                        <option value="{{ item.asset_id }}">{{ item.asset.asset_id }} - {{ item.original_title }} </option>
+                    {% endfor %}
+                </select>
+               <!-- ---------------------- Fin de  listado de movies ------------------- -->
+           </div>
+
+           <button class="col-xs-12 col-md-6 col-lg-6 sepTOP-big alignRIGHT-lg">Editar MOVIE</button>
+
+
+
+    </div><!-- fin Row -->
 
 </div>
 
@@ -92,7 +106,7 @@
                 <div class="row form-row">
                     <div class="col-xs-4 col-md-4 col-lg-4 form-group">
                        <div class="form-group has-feedback imgUpload">
-                            <label class="label-left" for="ThumbHor" id="ThumbHorTit">Asociar Thumbnail horizontal: *</label>
+                            <label class="label-left" for="ThumbHor" id="ThumbHorTit">Imagen Landscape: *</label>
                             <input type="file" class="form-control" name="ThumbHor" id="ThumbHor" accept="image/*">
                             <span class="glyphicon form-control-feedback"></span>
                             <img id="imageH"/>
@@ -101,7 +115,7 @@
 
                     <div class="col-xs-4 col-md-4 col-lg-4 form-group" >
                        <div class="form-group has-feedback imgUpload">
-                            <label for="ThumbVer" id="ThumbVerTit">Asociar Thumbnail vertical: *</label>
+                            <label for="ThumbVer" id="ThumbVerTit">Imagen Portrait: *</label>
                             <input type="file" class="form-control" name="ThumbVer" id="ThumbVer" accept="image/*">
                             <span class="glyphicon form-control-feedback"></span>
                             <img id="imageV"/>
@@ -198,7 +212,7 @@
                 <div class="row form-row">
                     <div class="col-xs-12 col-md-12 col-lg-12 form-group">
                         <div class="form-group has-feedback">
-                            <label class="label-left" for="elenco">Director: </label>
+                            <label class="label-left" for="director">Director: </label>
                             <input type="text" class="form-control" name="director" id="director" autofocus>
                             <span class="glyphicon form-control-feedback"></span>
                         </div>
@@ -209,7 +223,7 @@
                 <div class="row form-row">
                     <div class="col-xs-12 col-md-12 col-lg-12 form-group">
                         <div class="form-group has-feedback">
-                            <label class="label-left" for="elenco">Año de estreno (AAAA): </label>
+                            <label class="label-left" for="releaseYear">Año de estreno (AAAA): </label>
                             <input type="text" class="form-control" name="releaseYear" id="releaseYear" autofocus>
                             <span class="glyphicon form-control-feedback"></span>
                         </div>
@@ -233,7 +247,7 @@
                 <div class="row form-row">
                     <div class="col-xs-12 col-md-3 col-lg-3 form-group">
                         <div class="form-group has-feedback">
-                            <label class="label-left" for="elenco">Elija idioma: *</label>
+                            <label class="label-left" for="idioms">Elija idioma: *</label>
                             <div class="helpright"><span class="glyphicon glyphicon-question-sign" data-toggle="tooltip" title="Debe elejir al menos un idioma para dar de alta la movie."></span></div>
 
                             <div class="form-group">
