@@ -41,6 +41,14 @@ class Views(object):
                                           })
         return self._check_ret(ret)
 
+    def get_views(self, asset_id):
+        ret = self.client.get_item(TableName=self.table_name,
+                                   Key={'asset_id': {'S': asset_id}})
+        if self._check_ret(ret):
+            if 'Item' in ret:
+                return ret['Item']['asset_views']['N']
+        return 0
+
     def query_uncommited(self):
         assets = []
         ret = self.client.query(TableName=self.table_name,
@@ -50,6 +58,6 @@ class Views(object):
         if self._check_ret(ret):
             if ret['Count'] != 0:
                 for item in ret['Items']:
-                    assets.append(item['asset_id']['S'])
+                    assets.append({'asset_id':item['asset_id']['S'], 'asset_views': item['asset_views']['N']})
         return assets
 

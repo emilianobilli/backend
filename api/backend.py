@@ -169,6 +169,10 @@ class Backend(object):
         else:
             self.views      = None
 
+        if 'asset_type' in config:
+            self.asset_type = dynamodbCollection(config['asset_type'])
+
+
         self.videoauth = VideoAuth("https://videoauth.zolechamedia.net/video/", "7a407d4ae99b7c1a1655daddf218ef05")
         
         self.images    = {}
@@ -287,6 +291,46 @@ class Backend(object):
     def get_asset():     # Trae chica, episodio, movie, serie (lang) -> Si es movie o episodio trae el video
         pass
 
+    def add_view(self,asset_id):
+        try:
+            self.views.add_view(asset_id)
+            status = 200
+            ret    = {'message': 'OK'}
+        except Exception as e:
+            status = 500
+            ret    = {'status': 'failure', 'message': str(e)}
+        return {'status': status, 'body': ret}
+
+
+    def update_view(self,asset_id):
+        lang = ['es'] # OJO QUE ESTA HARDCODEADA LA LISTA DE LENGUAJES
+        try:
+            asset_type = self.__get_asset_type(asset_id)
+            if asset_type is not None:
+                item = {}
+                item['asset_id']   = asset_id
+                item['asset_type'] = asset_type
+                views = self.views.get_views(asset_id)
+                if views != 0:
+                    item['views']  = views
+                for l in lang:
+                    item['lang']   = l
+                    ret            = self.update_asset(item)
+                    if ret['status'] != 201:
+                        return ret
+
+                self.views.set_commited(asset_id)
+                status = 200
+                ret    = {'message': 'Asset updated'}
+            else:
+                status = 422
+                ret    = {'status': 'failure', 'message': 'Invalid Asset Type'}
+
+        except Exception as e:
+            status = 500
+            ret    = {'status': 'failure', 'message': str(e) }
+        
+        return {'status': status, 'body': ret}
 
     def _load_valid_fq_from_args(self, args, qArgs):
         '''
@@ -441,13 +485,23 @@ class Backend(object):
             status = 422
             ret    = {'status': 'failure', 'message': 'Mandatory parameter not found in item(lang)'}
 
-        if Item['asset_type'] == 'girl':
-            return self.__add_asset(self.girls,Item, inmutable_fields)
-        if Item['asset_type'] == 'show':
-            return self.__add_asset(self.shows,Item, inmutable_fields)
-        else:
-            status = 422
-            ret    = {'status': 'failure', 'message': 'Invalid show type: %s' % Item['asset_type']}
+        at = {}
+        at['asset_id']   = Item['asset_id']
+        at['asset_type'] = Item['asset_type']
+        try:
+            if Item['asset_type'] == 'girl':
+                self.asset_type.add(at)
+                return self.__add_asset(self.girls,Item, inmutable_fields)
+            if Item['asset_type'] == 'show':
+                self.asset_type.add(at)
+                return self.__add_asset(self.shows,Item, inmutable_fields)
+            else:
+                status = 422
+                ret    = {'status': 'failure', 'message': 'Invalid show type: %s' % Item['asset_type']}
+
+        except Exception as e:
+            status = 500
+            ret    = {'status': 'failure', 'message': str(e)}
 
         return {'status': status, 'body': ret}
 
@@ -462,10 +516,74 @@ class Backend(object):
                 return self.__disable_asset(self.shows,Item)
             else:
                 status = 422
-                ret    = {'status': 'failure', 'message': 'Invalid show type: %s' % Item['asset_type']}
+                ret    = {'status': 'failure', 'message': 'Invalid asset_type: %s' % Item['asset_type']}
 
         return {'status': status, 'body': ret}
 
+    def update_asset(self, Item={}):
+        if not 'asset_type' in Item:
+            asset_type = self.__get_asset_type(Item['asset_id'])
+            if asset_type is None:
+                status = 422
+                ret    = {'status': 'failure', 'message': 'Invalid asset_type: %s' % Item['asset_type']}
+
+        else:
+            asset_type = Item['asset_type']
+
+        if asset_type == 'girls':
+            return self.__update_asset_field(self.girls, Item)
+        elif asset_type == 'shows':
+            return self.__update_asset_field(self.shows, Item)
+        else:
+            status = 422
+            ret    = {'status': 'failure', 'message': 'Invalid asset_type: %s' % Item['asset_type']}
+
+        return {'status': status, 'body': ret}
+
+    def __get_asset_type(self, asset_id):
+        # El asset puede ser una "girl" o un "show"
+        at = {}
+        at['asset_id'] = asset_id
+        try:
+            ret = self.asset_type.get(at)
+            return ret['item']['asset_type']
+        except:
+            return None
+
+    def __update_asset_field(self,where,item):
+        if 'lang' in item:
+            lang = item['lang']
+            try:
+                doc  = where.get(item)
+                Item = doc['item']
+                if Item != {}:
+                    for k in item.keys():
+                        if k != 'lang' or k != 'asset_id':
+                            Item[k] = item[k]
+                    
+                    self.domain.add(Item)
+                    ret = where.add(Item)
+                    status = 201
+                else:
+                    status = 404
+                    ret    = {'status': 'failure', 'message': 'Item not found %s' % str(Item)}
+            except CollectionException as e:
+                status = 422
+                ret    = {'status': 'failure', 'message': str(e)}
+            except DynamoException as e:
+                ret    = {'status': 'failure', 'message': str(e)}
+                status = 500
+            except CloudSearchException as e:
+                ret    = {'status': 'failure', 'message': str(e)}
+                status = 500    
+            except Exception as e:
+                ret    = {'status': 'failure', 'message': str(e)}
+                status = 500
+        else:
+            status = 422
+            ret    = {'status': 'failure', 'message': 'Mandatory parameter not found in item (lang)'}
+
+        return {'status': status, 'body': ret}
 
     def __add_asset(self,where,item,inmutable_fields=[]):
         if 'lang' in item:
@@ -564,9 +682,9 @@ class Backend(object):
 
     def query_block(self, args):
         exclude = {'show_type': 'episode'}
-        qArgs   = ['block_id']
+        qArgs   = ['blocks']
 
-        if 'block_id' not in args:
+        if 'blocks' not in args:
             status = 404
             ret    = {'count': 0, 'items': [], 'total': 0}
             return {'status': status, 'body': ret}

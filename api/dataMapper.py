@@ -13,6 +13,8 @@ class dataMapper(object):
         keys = Item.keys()
         for k in keys:
             if k in self.schema:
+                if self.schema[k] == 'SS' and Item[k] ==[]:
+                    continue
                 ret[k] = {self.schema[k]: Item[k]}
             else:
                 ''' 
