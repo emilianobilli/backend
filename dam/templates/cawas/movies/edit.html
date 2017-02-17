@@ -52,20 +52,21 @@
                 <div class="row form-row">
                     <div class="col-xs-4 col-md-4 col-lg-4 form-group">
                        <div class="form-group has-feedback imgUpload">
-                            <label class="label-left" for="ThumbHor" id="ThumbHorTit">Asociar Thumbnail horizontal: *</label>
-                            <input type="file" class="form-control" name="ThumbHor" id="ThumbHor" accept="image/*">
+                            <label class="label-left" for="ThumbHor" id="ThumbHorTit">Imagen Portrait: *</label>
+                            <input type="file" value="/static/files/movies/{{ vmovie.image.portrait }}"
+                                   class="form-control" name="ThumbHor" id="ThumbHor" accept="image/*">
                             <span class="glyphicon form-control-feedback"></span>
-                           {{ vmovie.img.portrait.name}}
-                           <img id="imageH" src=""/>
+                           <img id="imageH" src="/static/files/movies/{{ vmovie.image.portrait }}"/>
                         </div>
                     </div>
 
                     <div class="col-xs-4 col-md-4 col-lg-4 form-group" >
                        <div class="form-group has-feedback imgUpload">
-                            <label for="ThumbVer" id="ThumbVerTit">Asociar Thumbnail vertical: *</label>
-                            <input type="file" class="form-control" name="ThumbVer" id="ThumbVer" accept="image/*">
+                            <label for="ThumbVer" id="ThumbVerTit">Imagen Landscape: *</label>
+                            <input type="file" value="/static/files/movies/M011824-portrait.jpg"
+                                   class="form-control" name="ThumbVer" id="ThumbVer" accept="image/*">
                             <span class="glyphicon form-control-feedback"></span>
-                            <img id="imageV"/>
+                            <img id="imageV" src="/static/files/movies/{{ vmovie.image.landscape }}" />
                         </div>
                     </div>
 
@@ -84,7 +85,7 @@
 
                         <!-- ------------------Reemplazar por listado de pornstars ----------------- -->
                         <ul class="form-control pornstarPick" id="pornstarPick">
-                             {% for item in girls %}
+                             {% for item in vgirlnotselected %}
                                  <li value="{{item.id}}">{{item.name}} </li>
                              {% endfor %}
                          </ul>
@@ -115,7 +116,7 @@
                         <!-- ------------------Reemplazar por listado de géneros ----------------- -->
 
                         <ul class="form-control generoPick" id="generoPick">
-                         {% for item in categories %}
+                         {% for item in vcategorynotselected %}
                              <li value="{{item.id}}">{{item.original_name}}</li>
                          {% endfor %}
                        </ul>
@@ -126,6 +127,9 @@
                        <div class="form-group has-feedback">
                             <label for="ThumbVer" id="ThumbVerTit">Arrastrar hasta aquí para agregar *</label>
                             <ul class="form-control generoPick" id="generoDrop">
+                                 {% for item in vcategoryselected %}
+                                     <li value="{{item.id}}">{{item.original_name}}</li>
+                                 {% endfor %}
                             </ul>
                             <span class="glyphicon form-control-feedback"></span>
                         </div>
@@ -195,19 +199,22 @@
                     </div>
                 </div>
 
-              <!--  9 : Idioma -->
+                <!--  9 : Idioma -->
                 <div class="row form-row">
                     <div class="col-xs-12 col-md-3 col-lg-3 form-group">
                         <div class="form-group has-feedback">
                             <label class="label-left" for="idioms">Elija idioma: *</label>
                             <div class="helpright"><span class="glyphicon glyphicon-question-sign" data-toggle="tooltip" title="Debe elejir al menos un idioma para dar de alta la movie."></span></div>
-
                             <div class="form-group">
-
-                                <input type="checkbox" name="idioma" value="spa" id="spa" class="chkbx"> Español<br>
-                                <input type="checkbox" name="idioma" value="por" id="por" class="chkbx"> Portugués<br>
-                                <input type="checkbox" name="idioma" value="eng" id="eng" class="chkbx"> Inglés<br>
-
+                                {% for item in vlangmetadata %}
+                                    {% if item.checked == True %}
+                                         <input type="checkbox" checked name="idioma" value="{{item.code}}" id="{{item.code}}"
+                                               class="chkbx"> {{item.name}}<br>
+                                    {% else %}
+                                        <input type="checkbox"  name="idioma" value="{{item.code}}" id="{{item.code}}"
+                                               class="chkbx"> {{item.name}}<br>
+                                    {% endif %}
+                                {% endfor %}
                             </div>
                             <span class="glyphicon form-control-feedback"></span>
                         </div>
@@ -215,14 +222,19 @@
                 </div>
 
                 <!-- LANGUAGE modules -->
-
-                <div class="row form-row hid" id="Module_spa">
+               {% for item in vlangmetadata %}
+               {% if item.checked == True %}
+                     <div class="row form-row" id="Module_{{item.code}}">
+               {% else %}
+                     <div class="row form-row hid" id="Module_{{item.code}}">
+               {% endif %}
                     <div class="col-xs-12 col-md-12 col-lg-12 form-group">
-                        <h2>Español</h2>
+                        <h2>{{ item.name }}</h2>
                            <div class="col-xs-12 col-md-12 col-lg-12 form-group inlang">
                                <div class="form-group has-feedback">
-                                <label class="label-left" for="tit_spa">Título: *</label>
-                                <input type="text" class="form-control" name="tit_spa" id="tit_spa">
+                                <label class="label-left" for="tit_{{item.code}}" >Título: *</label>
+                                <input type="text" class="form-control" name="tit_{{item.code}}" id="tit_{{item.code}}"
+                                       value="{{ item.title }}">
                                 <span class="glyphicon form-control-feedback"></span>
                                </div>
                            </div>
@@ -230,88 +242,29 @@
                            <div class="col-xs-12 col-md-12 col-lg-12 form-group inlang">
                                <div class="form-group has-feedback">
                                     <div class="helpright"><span class="glyphicon glyphicon-question-sign" data-toggle="tooltip" title="La descripción para los thumbnails mostrará los primeros 50 caracteres. Al ingresar en la movie se verá completa."></span></div>
-                                    <label class="label-left" for="short_desc_spa">Descripción: *</label>
-                                   <textarea class="form-control" name="short_desc_spa" id="short_desc_spa"></textarea>
-                                   <span class="glyphicon form-control-feedback"></span>
+                                    <label class="label-left" for="short_desc_{{item.code }}">Descripción: *</label>
+                                    <textarea class="form-control" name="short_desc_{{item.code}}" id="short_desc_{{item.code}}"
+                                    value="{{item.summary_long}}"></textarea>
+                                    <span class="glyphicon form-control-feedback"></span>
                                </div>
                            </div>
 
                            <div class="col-xs-12 col-md-12 col-lg-12 form-group inlang">
                                <div class="form-group has-feedback">
                                     <div class="helpright"><span class="glyphicon glyphicon-question-sign" data-toggle="tooltip" title="Al ingresar una fecha, el sistema publicará la movie en español en esa fecha."></span></div>
-                                    <label class="label-left" for="date_spa">Fecha de Publicación</label>
-                                    <input type="text" class="form-control datePick" name="date_spa" id="date_spa">
+                                    <label class="label-left" for="date_{{item.code}}">Fecha de Publicación</label>
+                                    <input type="text" class="form-control datePick"
+                                           name="date_{{item.code}}" id="date_{{item.code}}"
+                                           value="10/10/2016">
                                     <span class="glyphicon form-control-feedback"></span>
                                </div>
-
                            </div>
 
                     </div>
                 </div>
-
-                <div class="row form-row hid" id="Module_por">
-                    <div class="col-xs-12 col-md-12 col-lg-12 form-group">
-                        <h2>Portugués</h2>
-                           <div class="col-xs-12 col-md-12 col-lg-12 form-group inlang">
-                               <div class="form-group has-feedback">
-                                    <label class="label-left" for="tit_por">Título: *</label>
-                                    <input type="text" class="form-control" name="tit_por" id="tit_por">
-                                    <span class="glyphicon form-control-feedback"></span>
-                               </div>
-                           </div>
-
-                           <div class="col-xs-12 col-md-12 col-lg-12 form-group inlang">
-                               <div class="form-group has-feedback">
-                                    <div class="helpright"><span class="glyphicon glyphicon-question-sign" data-toggle="tooltip" title="La descripción para los thumbnails mostrará los primeros 50 caracteres. Al ingresar en la movie se verá completa."></span></div>
-                                    <label class="label-left" for="short_desc_por">Descripción: *</label>
-                                   <textarea class="form-control" name="short_desc_por" id="short_desc_por"></textarea>
-                                   <span class="glyphicon form-control-feedback"></span>
-                               </div>
-                           </div>
-
-                           <div class="col-xs-12 col-md-12 col-lg-12 form-group inlang">
-                               <div class="form-group has-feedback">
-                                    <div class="helpright"><span class="glyphicon glyphicon-question-sign" data-toggle="tooltip" title="Al ingresar una fecha, el sistema publicará la movie en portugués en esa fecha."></span></div>
-                                    <label class="label-left" for="date_por">Fecha de Publicación</label>
-                                    <input type="text" class="form-control datePick" name="date_por" id="date_por">
-                                    <span class="glyphicon form-control-feedback"></span>
-                               </div>
-                           </div>
-                    </div>
-                </div>
-
-                <div class="row form-row hid" id="Module_eng">
-                    <div class="col-xs-12 col-md-12 col-lg-12 form-group">
-                        <h2>Inglés</h2>
-                           <div class="col-xs-12 col-md-12 col-lg-12 form-group inlang">
-                               <div class="form-group has-feedback">
-                                    <label class="label-left" for="tit_eng">Título: *</label>
-                                    <input type="text" class="form-control" name="tit_eng" id="tit_eng">
-                                    <span class="glyphicon form-control-feedback"></span>
-                               </div>
-                           </div>
-
-                           <div class="col-xs-12 col-md-12 col-lg-12 form-group inlang">
-                               <div class="form-group has-feedback">
-                                    <div class="helpright"><span class="glyphicon glyphicon-question-sign" data-toggle="tooltip" title="La descripción para los thumbnails mostrará los primeros 50 caracteres. Al ingresar en la movie se verá completa."></span></div>
-                                    <label class="label-left" for="short_desc_eng">Descripción: *</label>
-                                   <textarea class="form-control" name="short_desc_eng" id="short_desc_eng"></textarea>
-                                   <span class="glyphicon form-control-feedback"></span>
-                               </div>
-                           </div>
-
-                           <div class="col-xs-12 col-md-12 col-lg-12 form-group inlang">
-                               <div class="form-group has-feedback">
-                                    <div class="helpright"><span class="glyphicon glyphicon-question-sign" data-toggle="tooltip" title="Al ingresar una fecha, el sistema publicará la movie en inglés en esa fecha."></span></div>
-                                    <label class="label-left" for="date_eng">Fecha de Publicación</label>
-                                    <input type="text" class="form-control datePick" name="date_eng" id="date_eng">
-                                    <span class="glyphicon form-control-feedback"></span>
-                               </div>
-                           </div>
+                {% endfor %}
 
 
-                    </div>
-                </div>
 
                 <!-- Last Row : Buttons -->
                 <div class="row form-row">

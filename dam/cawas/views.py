@@ -1,14 +1,12 @@
 from django.shortcuts import render
 
 # Create your views here.
-
+import datetime, os, json
 from django.contrib.auth import authenticate, login, logout
 from django.shortcuts import render, redirect
-from .models import  Channel, Asset, Episode, PublishQueue,  Block, Serie, SerieMetadata, Movie, MovieMetadata, Girl,GirlMetadata,  Category,CategoryMetadata, Language, Image
-import datetime, os
+from .models import Channel, Asset, Episode, PublishQueue,  Block, Serie, SerieMetadata, Movie, MovieMetadata, Girl,GirlMetadata,  Category,CategoryMetadata, Language, Image
 from django.shortcuts import render_to_response
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
-import json
 from django.shortcuts import get_object_or_404, render
 from django.http import Http404
 from django.conf import settings
@@ -16,43 +14,6 @@ from datetime import datetime
 from django.db import IntegrityError
 
 
-#<PRUEBAS - QUITAR ESTO>
-
-
-def pruebas(request):
-    registros = Movie.objects.get(pk=1)
-    context = {'registros': registros}
-    return render(request, 'cawas/pruebas/prueba.html', context)
-
-
-def current_datetime(request):
-    #now = datetime.datetime.now()
-    #html = "<html><body>It is now%s.</body></html>" % now
-    #return HttpResponse(html)
-    now = datetime.datetime.now
-    #t = Template("<html><body>It is now asdfasdf {{ current_date }}.</body></html>")
-    #html = t.render(Context({'current_date': now}))
-    #return HttpResponse(html)
-
-    #t = get_template('cawas/pruebas/current_datetime.html')
-    #html = t.render(Context({'current_date': now}))
-    #return HttpResponse(html)
-    current_date = datetime.datetime.now
-
-    return render_to_response('cawas/pruebas/current_datetime.html', locals())
-    #return render_to_response('cawas/pruebas/current_datetime.html', {'current_date': current_date})
-
-
-
-
-def hours_ahead(request, offset):
-    offset = int(offset)
-    dt = datetime.datetime.now() + datetime.timedelta(hours=offset)
-    html = "<html><body>In%s hour(s), it will be%s.</body></html>"% (offset, dt)
-    #return HttpResponse(html)
-
-
-#</PRUEBAS - QUITAR ESTO >
 
 
 """
@@ -184,7 +145,7 @@ def add_movies_view(request):
 
 
 
-    pathfiles = 'cawas/static/files/movies/'
+    #pathfiles = 'cawas/static/files/movies/'
     if request.method == 'POST':
        # parsear JSON
        strjson = request.POST['varsToJSON']
@@ -206,7 +167,7 @@ def add_movies_view(request):
        img.portrait =  request.FILES['ThumbHor']
        img.name = 'M' + vasset.asset_id
 
-       varchivo = pathfiles + img.name + '-portrait.jpg'
+       varchivo = img.name + '-portrait.jpg'
        #si existe archivo, lo borra
        if os.path.isfile(varchivo):
            os.remove(varchivo)
@@ -215,7 +176,7 @@ def add_movies_view(request):
 
        #Landscape
        img.landscape = request.FILES['ThumbVer']
-       varchivo = pathfiles + img.name + '-landscape.jpg'
+       varchivo = img.name + '-landscape.jpg'
        # si existe archivo, lo borra
        if os.path.isfile(varchivo):
            os.remove(varchivo)
@@ -223,7 +184,8 @@ def add_movies_view(request):
 
        img.save()
        mv.image = img
-       print decjson['Movie']['asset_id']
+
+       print varchivo
 
        #Channel
        try:
@@ -318,7 +280,6 @@ def edit_movies_view(request, asset_id):
 
     pathfiles = 'cawas/static/files/movies/'
 
-
     #Post Movie - Graba datos
     if request.method == 'POST':
        # parsear JSON
@@ -326,18 +287,22 @@ def edit_movies_view(request, asset_id):
        decjson = json.loads(strjson)
 
        # DECLARACION DE OBJECTOS
-       vmovie = Movie()
+       mv = Movie()
        vasset = Asset()
 
        # Leer Movie desde AssetID
-       vasset = get_object_or_404(Asset, asset_id=decjson['Movie']['asset_id'])
-       mv = get_object_or_404(Movie, asset=vasset)
+       #vasset = get_object_or_404(Asset, asset_id=decjson['Movie']['asset_id'])
+       #vasset = get_object_or_404(Asset, asset_id=asset_id)
+       #vmovie = get_object_or_404(Movie, asset=vasset)
 
        # CARGAR MOVIE
        try:
-           vmovie = Movie.asset.objects.get(asset_id=asset_id)
+           vasset = Asset.objects.get(asset_id=asset_id)
+           mv = Movie.objects.get(asset=vasset)
        except Asset.DoesNotExist as e:
-           return render(request, 'cawas/error.html', {"message": "No existe Movie. (" + e.message + ")"})
+           return render(request, 'cawas/error.html', {"message": "No existe Asset. (" + e.message + ")"})
+       except Movie.DoesNotExist as e:
+           return render(request, 'cawas/error.html', {"message": "No existe Movie asociado al Asset. (" + e.message + ")"})
 
        #TRATAMIENTO DE IMAGEN Portrait
        img = Image()
@@ -437,14 +402,35 @@ def edit_movies_view(request, asset_id):
         try:
             vasset = Asset.objects.get(asset_id=asset_id)
             vmovie = Movie.objects.get(asset=vasset)
-            vgirlselected = vmovie.girls.objects()
+            vgirlselected = vmovie.girls.all()
+            vgirlnotselected = Girl.objects.exclude(id__in=vgirlselected)
+            vgirlselected = vmovie.girls.all()
+            vmoviemetadata = MovieMetadata.objects.filter(movie=vmovie)
+            vcategoryselected = vmovie.category.all()
+            vcategorynotselected = Category.objects.exclude(id__in=vcategoryselected)
+            languages = Language.objects.all()
+
+            #nuevo diccionario para completar lenguages y metadata
+            vlangmetadata=[]
+            for itemleng in languages:
+                vmoviemetadata = None
+                try:
+                    vmoviemetadata = MovieMetadata.objects.get(movie=vmovie, language=itemleng)
+                    vlangmetadata.append({'checked':True, 'code':itemleng.code, 'name':itemleng.name, 'title': vmoviemetadata.title,
+                                          'summary_short': vmoviemetadata.summary_short, 'summary_long': vmoviemetadata.summary_long,
+                                          'publish_date': vmoviemetadata.publish_date})
+                except:
+                    vlangmetadata.append({'code':itemleng.code, 'name':itemleng.name,'titulo':'', 'descripcion':'', 'fechapub':''})
+
 
         except Movie.DoesNotExist as e:
             return render(request, 'cawas/error.html', {"message": "Asset no se encuentra Vinculado a Movie. (" + e.message + ")"})
         except Asset.DoesNotExist as e:
             return render(request, 'cawas/error.html',{"message": "Asset no Existe. (" + e.message + ")"})
-
-
+        except Category.DoesNotExist as e:
+            return render(request, 'cawas/error.html',{"message": "Categoria no Existe. (" + e.message + ")"})
+        except MovieMetadata.DoesNotExist as e:
+            return render(request, 'cawas/error.html',{"message": "MovieMetaData No Existe . (" + e.message + ")"})
 
 
     #CARGAR VARIABLES USADAS EN FRONT
@@ -452,9 +438,14 @@ def edit_movies_view(request, asset_id):
     channels = Channel.objects.all()
     girls = Girl.objects.all()
     categories = Category.objects.all()
+    languages = Language.objects.all()
     title = 'Editar Movie'
+
+
     context = {'title': title, 'assets':assets, 'channels':channels, 'girls':girls, 'categories':categories,
-               'vmovie':vmovie, 'vgirlselected':vgirlselected }
+               'vmovie':vmovie, 'vgirlselected':vgirlselected, 'vgirlnotselected':vgirlnotselected,
+               'vcategoryselected':vcategoryselected, 'vcategorynotselected':vcategorynotselected,
+               'languages':languages, 'vmoviemetadata':vmoviemetadata, 'vlangmetadata':vlangmetadata}
 
     return render(request, 'cawas/movies/edit.html', context)
 # Fin edit_movies_view
@@ -553,13 +544,12 @@ def edit_girl_view(request):
         # Leer GIRL desde AssetID
         try:
             vasset = Asset.objects.get(asset_id=decjson['Girl']['asset_id'])
+            vgirl = Girl.objects.get(asset=vasset)
         except Asset.DoesNotExist:
             raise Http404("ASSET - No existe registro.")
-
-        try:
-            vgirl = Girl.objects.get(asset=vasset)
         except Girl.DoesNotExist:
             raise Http404("GIRL - No existe registro.")
+
 
         # TRATAMIENTO DE IMAGEN: nombre de imagen = a Asset_id
         if  not(request.FILES['imagehor'] is None):
@@ -998,7 +988,8 @@ def add_block_view(request):
 
 def add_asset_view(request):
     try:
-        strjson = request.POST['body']
+        print request.POST
+        strjson = request.body
         decjson = json.loads(strjson)
 
         vasset = Asset()

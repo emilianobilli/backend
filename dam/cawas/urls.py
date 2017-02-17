@@ -3,12 +3,6 @@ from django.conf.urls import url
 from . import views
 from django.contrib.auth.views import logout
 
-#<QUITAR ESTO>
-from .views import current_datetime
-from django.conf.urls import *
-from .views import current_datetime, hours_ahead
-
-#</ QUITAR ESTO>
 
 urlpatterns = [
     url(r'^login/$', views.login_view, name='login_view'),
