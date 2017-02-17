@@ -245,7 +245,17 @@ def urlSearch():
     ret  = backend.search(args)
     return Response(response=dumps(ret['body']), status=ret['status'])
 
-#@api.route('/v1/suggest/', methods=['GET'])
+@api.route('/v1/suggest/<string:asset_id>', methods=['GET'])
+@cross_origin()
+def urlSuggest(asset_id):
+    if request.method == 'GET':
+        args = {}
+        args['asset_id'] = asset_id
+        for k in request.args.keys():
+            args[k] = request.args.get(k)
+        ret = backend.suggest(args)
+        return Response(response=dumps(ret['body']), status=ret['status'])
+
 @api.route('/v1/episodes/', methods=['GET'])
 @cross_origin()
 def urlEpisode():

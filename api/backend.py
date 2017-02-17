@@ -5,6 +5,7 @@ from Collection import DynamoException
 from Collection import CloudSearchException
 from views      import Views
 from cdnimg     import CdnImg
+from random     import randrange
 import json
 import socket
 import httplib2
@@ -652,6 +653,65 @@ class Backend(object):
 
         return {'status': status, 'body': ret}
 
+
+    def __commit_suggest(self,qReply):
+        ret = {}
+        ret['count'] = 0
+        ret['items'] = []
+        ret['total'] = 0
+
+        Items = qReply['body']
+        if 'count' in Items and Items['count'] > 4:
+            rnd =  randrange(0, Items['count'] -4 )
+            i = 4
+            while i > 0:
+                ret['items'].append(Items['items'][rnd+i])
+                ret['count'] = ret['count'] + 1
+                ret['total'] = ret['total'] + 1
+                i = i - 1
+        return ret
+
+    def suggest(self, args):
+        if 'lang' in args:
+            if 'asset_id' in args:
+                lang     = args['lang']
+                asset_id = args['asset_id']
+                asset_type = self.__get_asset_type(asset_id)
+                if asset_type is not None:
+                    item = {}
+                    item['lang']     = lang
+                    item['asset_id'] = asset_id
+                    if asset_type   == 'girls':
+                        ret = self.girls.get(item)
+                        if ret['item'] != {}:
+                            girl = ret['item']
+                            if 'img' in args:
+                                qret  = self.query_girl({'lang':lang,'class': girl['class'], 'img': args['img'], 'size': 1000})
+                            else:
+                                qret  = self.query_girl({'lang':lang,'class': girl['class'], 'size':1000})
+                    elif asset_type == 'shows':
+                        ret = self.shows.get(item)
+                        if ret['item'] != {}:
+                            show = ret['item']
+                            if 'img' in args:
+                                qret  = self.query_show({'lang':lang,'channel': show['channel'], 'img': args['img'], 'size':1000})
+                            else:
+                                qret  = self.query_show({'lang':lang,'channel': show['channel'], 'size': 1000})
+                    
+                    status = 200
+                    ret = self.__commit_suggest(qret)
+                else:
+                    status = 500
+                    ret    = {'status': 'failure', 'message': 'Asset type not found'}
+            else:
+                status = 422
+                ret    = {'status': 'failure', 'message': 'Mandatory parameter not found (asset_id)'}
+        else:
+            status = 422
+            ret    = {'status': 'failure', 'message': 'Mandatory parameter not found in item (lang)'}
+
+
+        return {'status': status, 'body': ret}
 
 
     def query_show(self, args):
