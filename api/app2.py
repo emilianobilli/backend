@@ -75,6 +75,7 @@ backend = Backend({"girls":
                             },
                          }},
                         "views" : {'table_name': 'Views', 'commit_index':'lala'},
+                        "asset_type": {'database': {'table': 'AssetType', 'pk': 'asset_id', 'schema': {'asset_id': 'S', 'asset_type':'S'}}},
                        "search_domain": {"domain": {
                                         "id_field": "asset_id",
                                         "filter_query" : '',
@@ -244,7 +245,17 @@ def urlSearch():
     ret  = backend.search(args)
     return Response(response=dumps(ret['body']), status=ret['status'])
 
-#@api.route('/v1/suggest/', methods=['GET'])
+@api.route('/v1/suggest/<string:asset_id>', methods=['GET'])
+@cross_origin()
+def urlSuggest(asset_id):
+    if request.method == 'GET':
+        args = {}
+        args['asset_id'] = asset_id
+        for k in request.args.keys():
+            args[k] = request.args.get(k)
+        ret = backend.suggest(args)
+        return Response(response=dumps(ret['body']), status=ret['status'])
+
 @api.route('/v1/episodes/', methods=['GET'])
 @cross_origin()
 def urlEpisode():
@@ -309,6 +320,19 @@ def urlGetGirl(asset_id):
     ret = backend.get_girl(args)
     return Response(response=dumps(ret['body']), status=ret['status'])
 
+@api.route('/v1/assets/<string:block_id>/', methods=['GET'])
+@cross_origin()
+def urlAssetBlock(block_id):
+    args = {}
+    args['blocks'] = block_id
+    for k in request.args.keys():
+        args[k] = request.args.get(k)
+    ret = backend.query_block(args)
+    return Response(response=dumps(ret['body']), status=ret['status'])
+
+#--------------------------------------------------------------------------------------------
+# Private Methods
+#--------------------------------------------------------------------------------------------
 @api.route('/v1/private/authorize/', methods=['POST'])
 @cross_origin()
 def urlAuthorize():
@@ -318,28 +342,29 @@ def urlAuthorize():
     ret = authorization.authorize(user_data)
     return Response(response=dumps(ret['body']), status=ret['status'])
 
-@api.route('/v1/assets/', methods=['POST'])
+@api.route('/v1/private/assets/', methods=['POST'])
 @cross_origin()
 def urlAsset():
     print request.method
     if request.method == 'POST':
         body = loads(request.data)
-        if body['action'] == 'add':
+        if body['action']   == 'add':
             ret  = backend.add_asset(body['item'])
         elif body['action'] == 'del':
             ret  = backend.disable_asset(body['item'])
+        elif body['action'] == 'update':
+            ret  = backend.update_asset(body['item'])
         return Response(response=dumps(ret['body']), status=ret['status'])
     
-@api.route('/v1/assets/<string:block_id>/', methods=['GET'])
-@cross_origin()
-def urlAssetBlock(block_id):
-    args = {}
-    args['block_id'] = block_id
-    for k in request.args.keys():
-        args[k] = request.args.get(k)
-    ret = backend.query_block(args)
+@api.route('/v1/private/addview/<string:asset_id>', methods=['PUT'])
+def urlAddView(asset_id):
+    ret = backend.add_view(asset_id)
     return Response(response=dumps(ret['body']), status=ret['status'])
 
+@api.route('/v1/private/updateview/<string:asset_id>', methods=['GET'])
+def urlUpdateView(asset_id):
+    ret = backend.update_view(asset_id)
+    return Response(response=dumps(ret['body']), status=ret['status'])
 #--------------------------------------------------------------------------------------------
 # Hooks
 #--------------------------------------------------------------------------------------------
