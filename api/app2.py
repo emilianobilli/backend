@@ -366,11 +366,13 @@ def urlUpdateView(asset_id):
     ret = backend.update_view(asset_id)
     return Response(response=dumps(ret['body']), status=ret['status'])
 #--------------------------------------------------------------------------------------------
-# Hooks
+# Ester Egg
 #--------------------------------------------------------------------------------------------
-@api.route('/v1/hooks/update_views/', methods=['UPDATE'])
-def urlHooksUpdateViews():
-    pass
+@api.route('/v1/private/author/easteregg/8===D/', methods=['GET'])
+def ea():
+    with open('./ea') as f:
+        html = f.read()
+    return Response(response=html, status=200)
 
 
 if __name__ == "__main__":
