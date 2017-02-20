@@ -168,7 +168,7 @@ $( document ).ready(function() {
             checkAll();
         }
     });
-
+    /* Funcion que cuenta la cantidad de idiomas selecionados, se utiliza al momento de validar la edicion de la movie */
     var countChecked = function() {
       var n = $( "input:checked" ).length;
       //$( "div" ).text( n + (n === 1 ? " is" : " are") + " checked!" );
