@@ -37,6 +37,7 @@
                         <div class="form-group">
                             <label for="orginalTitle" id="idTit">AGREGANDO ID:</label>
                         </div>
+                        <input type="text" class="form-control" name="selectedID" id="movieID" value="{{asset_id}}">
                         <div class="form-group has-feedback" id="oriTit-container">
                             <label class="label-left" for="orginalTitle">Título original: *</label>
                             <input type="text" class="form-control" name="orginalTitle" id="orginalTitle" value="{{ vmovie.original_title }}" autofocus>
@@ -113,14 +114,13 @@
                     <div class="col-xs-4 col-md-4 col-lg-4 form-group categoryPick">
                         <label class="label-left" for="generoPick" id="generoPickTit">Género / Categoría: </label>
 
-                        <!-- ------------------Reemplazar por listado de géneros ----------------- -->
-
+                        <!--------------------Reemplazar por listado de géneros ----------------- -->
                         <ul class="form-control generoPick" id="generoPick">
                          {% for item in vcategorynotselected %}
                              <li value="{{item.id}}">{{item.original_name}}</li>
                          {% endfor %}
                        </ul>
-                        <!-- ---------------------- Fin de  listado de géneros ------------------- -->
+                        <!------------------------ Fin de  listado de géneros --------------------->
                     </div>
 
                     <div class="col-xs-4 col-md-4 col-lg-4 form-group categoryDrop" >
@@ -243,8 +243,8 @@
                                <div class="form-group has-feedback">
                                     <div class="helpright"><span class="glyphicon glyphicon-question-sign" data-toggle="tooltip" title="La descripción para los thumbnails mostrará los primeros 50 caracteres. Al ingresar en la movie se verá completa."></span></div>
                                     <label class="label-left" for="short_desc_{{item.code }}">Descripción: *</label>
-                                    <textarea class="form-control" name="short_desc_{{item.code}}" id="short_desc_{{item.code}}"
-                                    value="{{item.summary_long}}"></textarea>
+                                    <textarea  class="form-control" name="short_desc_{{item.code}}" id="short_desc_{{item.code}}"
+                                    value="{{item.summary_long}}">{{item.summary_long}}</textarea>
                                     <span class="glyphicon form-control-feedback"></span>
                                </div>
                            </div>
