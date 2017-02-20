@@ -505,7 +505,7 @@ class Episode(models.Model):
         dict["runtime"]         = self.runtime
         dict["display_runtime"] = self.display_runtime
         if self.chapter > 0:
-            dict["chapter"]         = self.chapter
+            dict["episode"]         = self.chapter
         if self.season > 0:
             dict["season"]          = self.season
         dict["thumbnails"]      = self.thumbnails
