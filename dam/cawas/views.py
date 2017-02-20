@@ -291,10 +291,6 @@ def edit_movies_view(request, asset_id):
        vasset = Asset()
 
        # Leer Movie desde AssetID
-       #vasset = get_object_or_404(Asset, asset_id=decjson['Movie']['asset_id'])
-       #vasset = get_object_or_404(Asset, asset_id=asset_id)
-       #vmovie = get_object_or_404(Movie, asset=vasset)
-
        # CARGAR MOVIE
        try:
            vasset = Asset.objects.get(asset_id=asset_id)
@@ -305,27 +301,24 @@ def edit_movies_view(request, asset_id):
            return render(request, 'cawas/error.html', {"message": "No existe Movie asociado al Asset. (" + e.message + ")"})
 
        #TRATAMIENTO DE IMAGEN Portrait
-       img = Image()
-       img.portrait =  request.FILES['ThumbHor']
-       img.name = 'M' + vasset.asset_id
-
-       varchivo = pathfiles + img.name + '-portrait.jpg'
+       mv.image.portrait = request.FILES['ThumbHor']
+       varchivo = pathfiles + mv.image.name + '-portrait.jpg'
+       mv.image.portrait.name = varchivo
        #si existe archivo, lo borra
        if os.path.isfile(varchivo):
            os.remove(varchivo)
-       #si existe Image(), se borra
-       img.portrait.name = varchivo
+
 
        #Landscape
-       img.landscape = request.FILES['ThumbVer']
-       varchivo = pathfiles + img.name + '-landscape.jpg'
+       mv.image.landscape = request.FILES['ThumbVer']
+       varchivo = pathfiles + mv.image.name + '-landscape.jpg'
+       mv.image.landscape.name = varchivo
        # si existe archivo, lo borra
        if os.path.isfile(varchivo):
            os.remove(varchivo)
-       img.landscape.name = varchivo
+       mv.image.save()
 
-       img.save()
-       mv.image = img
+       #mv.image = img
        print decjson['Movie']['asset_id']
 
        #Channel
@@ -396,41 +389,39 @@ def edit_movies_view(request, asset_id):
        message = 'archivo subido ok'
        # FIN DE POST
 
-    #VARIABLES PARA GET
-    if request.method == 'GET':
-        # CARGAR MOVIE
-        try:
-            vasset = Asset.objects.get(asset_id=asset_id)
-            vmovie = Movie.objects.get(asset=vasset)
-            vgirlselected = vmovie.girls.all()
-            vgirlnotselected = Girl.objects.exclude(id__in=vgirlselected)
-            vgirlselected = vmovie.girls.all()
-            vmoviemetadata = MovieMetadata.objects.filter(movie=vmovie)
-            vcategoryselected = vmovie.category.all()
-            vcategorynotselected = Category.objects.exclude(id__in=vcategoryselected)
-            languages = Language.objects.all()
+    #VARIABLES PARA GET - CARGAR MOVIE
+    try:
+        vasset = Asset.objects.get(asset_id=asset_id)
+        vmovie = Movie.objects.get(asset=vasset)
+        vgirlselected = vmovie.girls.all()
+        vgirlnotselected = Girl.objects.exclude(id__in=vgirlselected)
+        vgirlselected = vmovie.girls.all()
+        vmoviemetadata = MovieMetadata.objects.filter(movie=vmovie)
+        vcategoryselected = vmovie.category.all()
+        vcategorynotselected = Category.objects.exclude(id__in=vcategoryselected)
+        languages = Language.objects.all()
 
-            #nuevo diccionario para completar lenguages y metadata
-            vlangmetadata=[]
-            for itemleng in languages:
-                vmoviemetadata = None
-                try:
-                    vmoviemetadata = MovieMetadata.objects.get(movie=vmovie, language=itemleng)
-                    vlangmetadata.append({'checked':True, 'code':itemleng.code, 'name':itemleng.name, 'title': vmoviemetadata.title,
-                                          'summary_short': vmoviemetadata.summary_short, 'summary_long': vmoviemetadata.summary_long,
-                                          'publish_date': vmoviemetadata.publish_date})
-                except:
-                    vlangmetadata.append({'code':itemleng.code, 'name':itemleng.name,'titulo':'', 'descripcion':'', 'fechapub':''})
+        #nuevo diccionario para completar lenguages y metadata
+        vlangmetadata=[]
+        for itemleng in languages:
+            vmoviemetadata = None
+            try:
+                vmoviemetadata = MovieMetadata.objects.get(movie=vmovie, language=itemleng)
+                vlangmetadata.append({'checked':True, 'code':itemleng.code, 'name':itemleng.name, 'title': vmoviemetadata.title,
+                                      'summary_short': vmoviemetadata.summary_short, 'summary_long': vmoviemetadata.summary_long,
+                                      'publish_date': vmoviemetadata.publish_date})
+            except:
+                vlangmetadata.append({'code':itemleng.code, 'name':itemleng.name,'titulo':'', 'descripcion':'', 'fechapub':''})
 
 
-        except Movie.DoesNotExist as e:
-            return render(request, 'cawas/error.html', {"message": "Asset no se encuentra Vinculado a Movie. (" + e.message + ")"})
-        except Asset.DoesNotExist as e:
-            return render(request, 'cawas/error.html',{"message": "Asset no Existe. (" + e.message + ")"})
-        except Category.DoesNotExist as e:
-            return render(request, 'cawas/error.html',{"message": "Categoria no Existe. (" + e.message + ")"})
-        except MovieMetadata.DoesNotExist as e:
-            return render(request, 'cawas/error.html',{"message": "MovieMetaData No Existe . (" + e.message + ")"})
+    except Movie.DoesNotExist as e:
+        return render(request, 'cawas/error.html', {"message": "Asset no se encuentra Vinculado a Movie. (" + e.message + ")"})
+    except Asset.DoesNotExist as e:
+        return render(request, 'cawas/error.html',{"message": "Asset no Existe. (" + e.message + ")"})
+    except Category.DoesNotExist as e:
+        return render(request, 'cawas/error.html',{"message": "Categoria no Existe. (" + e.message + ")"})
+    except MovieMetadata.DoesNotExist as e:
+        return render(request, 'cawas/error.html',{"message": "MovieMetaData No Existe . (" + e.message + ")"})
 
 
     #CARGAR VARIABLES USADAS EN FRONT
@@ -445,7 +436,8 @@ def edit_movies_view(request, asset_id):
     context = {'title': title, 'assets':assets, 'channels':channels, 'girls':girls, 'categories':categories,
                'vmovie':vmovie, 'vgirlselected':vgirlselected, 'vgirlnotselected':vgirlnotselected,
                'vcategoryselected':vcategoryselected, 'vcategorynotselected':vcategorynotselected,
-               'languages':languages, 'vmoviemetadata':vmoviemetadata, 'vlangmetadata':vlangmetadata}
+               'languages':languages, 'vmoviemetadata':vmoviemetadata, 'vlangmetadata':vlangmetadata,
+               'asset_id':asset_id}
 
     return render(request, 'cawas/movies/edit.html', context)
 # Fin edit_movies_view
