@@ -531,9 +531,9 @@ class Backend(object):
         else:
             asset_type = Item['asset_type']
 
-        if asset_type == 'girls':
+        if asset_type == 'girl':
             return self.__update_asset_field(self.girls, Item)
-        elif asset_type == 'shows':
+        elif asset_type == 'show':
             return self.__update_asset_field(self.shows, Item)
         else:
             status = 422
@@ -681,7 +681,7 @@ class Backend(object):
                     item = {}
                     item['lang']     = lang
                     item['asset_id'] = asset_id
-                    if asset_type   == 'girls':
+                    if asset_type   == 'girl':
                         ret = self.girls.get(item)
                         if ret['item'] != {}:
                             girl = ret['item']
@@ -689,7 +689,7 @@ class Backend(object):
                                 qret  = self.query_girl({'lang':lang,'class': girl['class'], 'img': args['img'], 'size': 1000})
                             else:
                                 qret  = self.query_girl({'lang':lang,'class': girl['class'], 'size':1000})
-                    elif asset_type == 'shows':
+                    elif asset_type == 'show':
                         ret = self.shows.get(item)
                         if ret['item'] != {}:
                             show = ret['item']
@@ -731,7 +731,7 @@ class Backend(object):
 
     def query_episode(self, args):
         fq      = {'show_type': 'episode'}
-        qArgs   = ['serie_id']
+        qArgs   = ['serie_id', 'season']
 
         if 'serie_id' not in args:
             status = 404

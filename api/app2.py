@@ -72,6 +72,7 @@ backend = Backend({"girls":
                                     "cast":"S",
                                     "directors":"S",
                                     "enabled": "N",
+                                    "subtitle": "S",
                             },
                          }},
                         "views" : {'table_name': 'Views', 'commit_index':'lala'},
@@ -155,7 +156,6 @@ authorization = Auth({
                         }
                     }
                 })
-
 
 
 #------------------------------------------------------------------------------------------------------------------------
