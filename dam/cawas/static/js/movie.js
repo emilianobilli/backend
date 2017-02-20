@@ -168,7 +168,14 @@ $( document ).ready(function() {
             checkAll();
         }
     });
-    
+
+    var countChecked = function() {
+      var n = $( "input:checked" ).length;
+      //$( "div" ).text( n + (n === 1 ? " is" : " are") + " checked!" );
+      langQ++;
+    };
+
+
 //----------------> Helper functions
     
     function changeVideo(src, divId){// para cambiar lo que reproduce el player de acuerdo al ID de la lista.
@@ -224,7 +231,7 @@ $( document ).ready(function() {
         var director_selected = $('#director').val();
         var elenco_selected = $('#elenco').val();
         var year_selected = $('#releaseYear').val();
-        
+        countChecked();
         // chequea original Title
         if(original_Title=="" || original_Title==" ")
         {
