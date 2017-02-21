@@ -1,33 +1,65 @@
 $( document ).ready(function() {
     
     console.log( "ready!" );
-    var resultado = ""
+    
     if(resultado=="success"){
         $("#myModal-OK").modal();
     }
     if(resultado=="error"){
         $("#myModal-ERROR").modal();
     }
-
     
+     /* Funcion que cuenta la cantidad de idiomas selecionados, se utiliza al momento de validar la edicion de la movie */
+    var countChecked = function() {
+      var n = $( "input:checked" ).length;
+      langQ++;
+    };
+
+
     
     var checkedOnce = 0; //chequea si el formulario se ha intentado enviar alguna vez
     var checkVal=0; //chequea la cantidad de errores en el formulario
     var clickedToSubmit = 0; //chequea si el botón de submit se ha presionado
     var checkText="";
+    var display_runtimeJSON; //necesaria para armar el valor final que debe ir en el JSON
     var langQ = 0; //Cuenta la cantidad de idiomas elegidos por el usuario
     var langDesc = [] // recoge qué idiomas son los que se seleccionaron
     var clickedVal; // recoge el valor del ID seleccionado en la lista de movies;
+    var clickedText; // recoge el nombre seleccionado en la lista de edición de movies;
+    var clickedTextID; // recoge el ID nombre seleccionado en la lista de edición de movies;
     
-    // simular exit con el botó de salir
+    // activar los selects con filtro
+    $("#movie-select").select2({placeholder: "Despliega la lista"});
+    $("#movie-edit").select2({placeholder: "Despliega la lista"});
+    var $myVerifSelect = $("#canalSelect").select2();
+    
+    // activar timepicker
+    $("#runtime").durationPicker({
+      /*hours: {
+        label: "h",
+        min: 0,
+        max: 24
+      },*/
+      minutes: {
+        label: ":",
+        min: 0,
+        max: 120
+      },
+      seconds: {
+        label: "",
+        min: 0,
+        max: 59
+      },
+      classname: 'form-control',
+      responsive: true
+    });
+    
+    // simular exit con el botón de salir
     $("#getOut").click(function(){
            window.location.href = "index.html?logstatus=OFF";
     })
     
-    // simular exit con el botó de salir
-    $("#EDBtn").click(function(){
-           window.location.href = "movie-edit.html";
-    })
+    
     
     // Toma el ID de la movie seleccionada en la lista
     $( "#movie-select" ).change(function() {
@@ -44,6 +76,25 @@ $( document ).ready(function() {
         });
         
     });
+    
+    // Toma el nombre de la movie seleccionada en la lista
+    $( "#movie-edit" ).change(function() {
+        
+        $( "#movie-edit option:selected" ).each(function() {
+            clickedText = $(this).html();
+            clickedTextID = $(this).val();
+            if(clickedText!="")
+            {
+                $( "#movieName" ).val(clickedText);// Agrega el ID en el input field
+            }
+        });
+        
+    });
+    
+    // simular exit con el botó de salir
+    $("#EDBtn").click(function(){
+           window.location.href = "/movies/edit/"+clickedTextID;
+    })
     
     // interacción del usuario al hacer click en el botón debajo de la lista de selección
     $( "#IDBtn" ).click(function(){ 
@@ -168,14 +219,7 @@ $( document ).ready(function() {
             checkAll();
         }
     });
-    /* Funcion que cuenta la cantidad de idiomas selecionados, se utiliza al momento de validar la edicion de la movie */
-    var countChecked = function() {
-      var n = $( "input:checked" ).length;
-      //$( "div" ).text( n + (n === 1 ? " is" : " are") + " checked!" );
-      langQ++;
-    };
-
-
+    
 //----------------> Helper functions
     
     function changeVideo(src, divId){// para cambiar lo que reproduce el player de acuerdo al ID de la lista.
@@ -205,6 +249,13 @@ $( document ).ready(function() {
     }
     
     
+    //year check
+    function maxLengthCheck(object)
+      {
+        if (object.value.length > 4)
+          object.value = object.value.slice(0, 4)
+      }
+    
     /* triggers for checkALL function */
     $("#sendBut").click(function(){
         clickedToSubmit=1;
@@ -230,6 +281,7 @@ $( document ).ready(function() {
         var categories_selected = [];
         var director_selected = $('#director').val();
         var elenco_selected = $('#elenco').val();
+        var display_runtime = $('#runtime').val();
         var year_selected = $('#releaseYear').val();
         countChecked();
         // chequea original Title
@@ -249,7 +301,6 @@ $( document ).ready(function() {
         }
         
         // chequea thumbnail vertical
-
         if(!$('#ThumbVer').val()){
             errorMe("#ThumbVer");
             checkVal++;
@@ -286,12 +337,15 @@ $( document ).ready(function() {
         }
         
         // chequea canal
-        if ( $('#canalSelect').val()=="")
+        console.log("#canalSelect"+$('#canalSelect').val());
+        if ( $('#canalSelect').val()=="0" || $('#canalSelect').val()==0)
         {
             errorMe("#canalSelect");
+            $(".select2-selection--single").css("border","1px #a94442 solid");
             checkVal++;
         }else{
             okMe("#canalSelect");
+             $(".select2-selection--single").css("border","1px #3c763d solid");
             canal_selected=$('#canalSelect').val();
         }
         
@@ -311,6 +365,21 @@ $( document ).ready(function() {
             checkVal++;
         }else{
             okMe("#releaseYear");
+        }
+        
+         // chequea display runtime
+        if(display_runtime=="" || display_runtime=="0:,0")
+        {
+            errorMe("#runtime");
+            $(".durationpicker-container").css("border","1px #a94442 solid");
+            checkVal++;
+        }else{
+            console.log("display:runtime"+display_runtime);
+            $(".durationpicker-container").css("border","1px #3c763d solid");
+            var myStrRuntime = display_runtime;
+            var myDirtyRuntime = myStrRuntime.split(",");
+            display_runtimeJSON=myDirtyRuntime[0]+myDirtyRuntime[1];
+            okMe("#runtime");
         }
         
         // chequea elenco
@@ -367,6 +436,11 @@ $( document ).ready(function() {
                 }
                 $(theField).parent().addClass('has-error');
                 $(theField).next(".glyphicon").addClass('glyphicon-remove');
+                if(theField=="#canalSelect"){
+                    console.log("canalSelect selected");
+                    $("#channelSelect").children(".select2-selection--single").css("display","none");
+                        //.css("border","1px #ff0000 solid!important");
+                }
                 
             }
         
@@ -433,6 +507,7 @@ $( document ).ready(function() {
                 
                 for(i=0; i<lngth; i++){
                     var lang=arr[i];
+                    /*
                     switch (lang){
                             case "spa":
                             var lng="es";
@@ -443,15 +518,17 @@ $( document ).ready(function() {
                             case "eng":
                             var lng="en";
                             break;
-                    };
+                    };*/
                     var tit = $("#tit_"+lang).val();
                     var short = $("#short_desc_"+lang).val().trim().substring(0,50)+"...";
                     var long = $("#short_desc_"+lang).val().trim();
+                    var fechapub = $("#date_"+lang).val().trim();
                     myLangs += '{"Moviemetadata":';
-                    myLangs += '{"language": "'+lng+'",';
+                    myLangs += '{"language": "'+lang+'",';
                     myLangs += '"title": "'+tit+'",';
                     myLangs += '"summary_short": "'+short+'",';
-                    myLangs += '"summary_long":"'+long+'"';
+                    myLangs += '"summary_long":"'+long+'",';
+					myLangs += '"schedule_date":"'+fechapub+'"';
                     myLangs += '}}';
                     if(i<lngth-1){
                         myLangs += ',';
@@ -474,25 +551,10 @@ $( document ).ready(function() {
                     myJSON+='"girls":'+myGirls+',';
                     myJSON+='"cast":"'+elenco_selected+'",';
                     myJSON+='"directors":"'+director_selected+'",';
-                    myJSON+='"display_runtime": "20:30",';
+                    myJSON+='"display_runtime": "'+display_runtimeJSON+'",';
                     myJSON+='"categories":'+myCategories+',';
                     myJSON+='"Moviesmetadata": [';
                     myJSON+= addMovieMetadata(langDesc);
-                    /*
-                    myJSON+='{"Moviemetadata":';
-                    myJSON+='{"language": "es",';
-                    myJSON+='"title": "title 1 español",';
-                    myJSON+='"summary_short": "summary_short 1 ",';
-                    myJSON+='"summary_long":"summary_long 1 "';
-                    myJSON+='}}';
-                    myJSON+=',';
-                    myJSON+='{"Moviemetadata":';
-                    myJSON+='{"language": "pt",';
-                    myJSON+='"title": "title 2 portugues",';
-                    myJSON+='"summary_short": "summary_short 2 ",';
-                    myJSON+='"summary_long":"summary_long 2 "';
-                    myJSON+='}}'; 
-                    */
                     myJSON+=']}}';
                     console.log(myJSON);
                     $("#varsToJSON").val(myJSON);

@@ -883,7 +883,7 @@ footer{
     font-size: 11px;
 }
 .movieChoose{
-    margin-top:40px;
+    margin-top:10px;
 }
 
 .btn-primary:hover, .btn-primary:focus {
@@ -891,8 +891,17 @@ footer{
 }
 
 video{
-        /*margin-top: 86px;*/
+        margin-top: 16px;
         max-height:229px;
+}
+
+#movie-edit{
+    /*width:90%!important;*/
+}
+
+#movieName{
+    width:84%;
+    float:right;
 }
 
 #repro1{
@@ -1029,9 +1038,19 @@ ul.generoPick li.placeholder {
     cursor:help;
 }
 
+.select2-container{
+    min-width: 280px!important;
+}
+
 /*lenguajes*/
 .hid{
     display:none;
+}
+
+.has-error{
+    border: 1px dashed rgba(256,0,0,0.3);
+    padding: 0px;
+    border-radius: 8px;
 }
 
 #lang-container.has-error label{    

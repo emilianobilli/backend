@@ -1,0 +1,27 @@
+.durationpicker-container {
+    border: none;
+    display: inline-block;
+    width: 100%;
+    height:33px!important;
+}
+
+.durationpicker-innercontainer {
+    display: inline-block!important;
+    background-color: transparent;
+    width: auto;
+    padding-right: 5px;
+    height:23px!important;
+}
+
+.durationpicker-duration {
+    background-color: transparent;
+    width: 50px;
+    display: inline-block;
+    border: none;
+    padding-left: 10%;
+    text-align: center;
+}
+
+.durationpicker-label {
+    display: inline-block;
+}

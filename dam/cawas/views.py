@@ -236,20 +236,24 @@ def add_movies_view(request):
                mmd.movie = mv
                mmd.save()
 
+               #recorrer el publicZone y genera un PublicQueue por cada idioma
+               #vzones = PublishZone.objects.all()
+               #for zone in vzones:
+
                # CREAR COLA DE PUBLICACION
                vpublish = PublishQueue()
                vpublish.item_id = vasset.asset_id
                vpublish.item_lang = vlanguage
                vpublish.item_type = 'AS'
                vpublish.status = 'Q'
+               #vpublish.zone = zone
                vpublish.schedule_date = datetime.datetime.strptime(item['Moviemetadata']['schedule_date'], '%d-%m-%Y').strftime('%Y-%m-%d')
                vpublish.save()
-
 
            except Language.DoesNotExist as e:
                return render(request, 'cawas/error.html', {"message": "No existe Lenguaje. (" + e.message + ")"})
 
-       message = 'archivo subido ok'
+       message = 'Registrado correctamente'
        # FIN DE POST
 
 
