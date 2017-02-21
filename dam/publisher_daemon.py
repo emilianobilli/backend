@@ -242,7 +242,8 @@ def publish_items():
                 job.save()
 
             if job.status != 'E':
-                ep = ApiBackendResource(job.endpoint, URLs[str(job.item_type)])
+                endpoint = job.publish_zone.backend_url
+                ep = ApiBackendResource(endpoint, URLs[str(job.item_type)])
                 try:
                     print item
                     item[0]['publish_date'] = timezone.now().strftime('%s')

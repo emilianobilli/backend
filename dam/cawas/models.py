@@ -20,6 +20,19 @@ class Setting(models.Model):
     enabled          = models.BooleanField(default=False)
 
 
+class PublishZone(models.Model):
+    name              = models.CharField(max_length=128, help_text="Nombre de la zona")
+    backend_url       = models.CharField(max_length=512, help_text="URL de publicacion del backend")
+    backend_key       = models.CharField(max_length=128, blank=True, help_text="API key del backend")
+    s3_path           = models.CharField(max_length=128, help_text="S3 Bucket name")
+    s3_aws_secret_key = models.CharField(max_length=128, help_text="S3 AWS Secret Key")
+    s3_aws_access_key = models.CharField(max_length=128, help_text="S3 AWS Access Key")
+    enabled           = models.BooleanField(default=False)
+
+    def __unicode__(self):
+        return self.name
+
+
 class Language(models.Model):
     name = models.CharField(max_length= 20, help_text="Lenguage")
     code = models.CharField(max_length=2, help_text="Lenguage code")
@@ -40,14 +53,14 @@ class PublishQueue(models.Model):
         ('AS', 'Asset'),
         ('SL', 'Slider'),
         ('CA', 'Category'),
-        ('CH', 'Channel')
+        ('CH', 'Channel'),
     )
 
     item_id       = models.CharField(max_length=8, help_text="ID del item")
     item_lang     = models.ForeignKey(Language)
     item_type     = models.CharField(max_length=2, choices=TYPE, default='', help_text='Tipo de item')
     creation_date = models.DateTimeField(auto_now=False, auto_now_add=True)
-    endpoint      = models.CharField(max_length=256, help_text="Endpoint url")
+    publish_zone  = models.ForeignKey(PublishZone)
     status        = models.CharField(max_length=1, choices=STATUS, default='Q', help_text='Job Status')
     schedule_date = models.DateTimeField(auto_now=False, auto_now_add=False, blank=True, null=True)
     message       = models.CharField(max_length=510, blank=True, help_text="Error or Warning message")
@@ -63,6 +76,26 @@ class Image(models.Model):
 
     def __unicode__(self):
         return self.name
+
+
+class ImageQueue(models.Model):
+    STATUS = (
+        ('Q', 'Queued'),
+        ('U', 'Uploading'),
+        ('D', 'Done'),
+        ('E', 'Error')
+    )
+
+    image         = models.ForeignKey(Image)
+    publish_zone  = models.ForeignKey(PublishZone)
+    creation_date = models.DateTimeField(auto_now=False, auto_now_add=True)
+    status        = models.CharField(max_length=1, choices=STATUS, default='Q', help_text='Job Status')
+    schedule_date = models.DateTimeField(auto_now=False, auto_now_add=False, blank=True, null=True)
+    priority      = models.IntegerField(default=5, help_text="Prioridad. Menor valor, mayor prioridad")
+    message       = models.CharField(max_length=510, blank=True, help_text="Error or Warning message")
+
+    def __unicode__(self):
+        return self.image.name
 
 
 class Tag(models.Model):
@@ -413,7 +446,11 @@ class Serie(models.Model):
             dict["image_portrait"] = self.image.portrait.name
         if self.image.landscape.name != '':
             dict["image_landscape"] = self.image.landscape.name
-        dict["seasons"]         = Episode.objects.filter(serie=self).values_list('season', flat=True).distinct().count()
+        available_seasons = Episode.objects.filter(serie=self).values_list('season', flat=True).distinct()
+        dict["available_seasons"] = []
+        for aseasons in available_seasons:
+            dict["available_seasons"].append(str(aseasons))
+        dict["seasons"]         = len(available_seasons)
         dict["episodes"]        = len(Episode.objects.filter(serie=self))
 
         return dict

@@ -16,6 +16,18 @@ class PublishQueueAdmin(admin.ModelAdmin):
     list_display = ['item_id', 'item_type', 'status', 'schedule_date', 'message']
     search_fields = ['item_id']
 
+
+@admin.register(models.PublishZone)
+class PublishZoneAdmin(admin.ModelAdmin):
+    list_display = ['name', 'enabled']
+
+
+@admin.register(models.ImageQueue)
+class ImageQueueAdmin(admin.ModelAdmin):
+    list_display = ['image', 'status', 'schedule_date', 'message']
+    search_fields = ['image__name']
+
+
 @admin.register(models.Image)
 class ImageAdmin(admin.ModelAdmin):
     list_display = ['name', 'portrait', 'landscape']
@@ -72,6 +84,7 @@ class EpisodeAdmin(admin.ModelAdmin):
 class EpisodeMetadataAdmin(admin.ModelAdmin):
     list_display = ['episode', 'title', 'language']
     search_fields = ['episode__asset__asset_id']
+
 
 @admin.register(models.Movie)
 class MovieAdmin(admin.ModelAdmin):
