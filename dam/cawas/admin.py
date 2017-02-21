@@ -3,13 +3,16 @@ import models
 
 # Register your models here.
 
+
 @admin.register(models.Setting)
 class SettingAdmin(admin.ModelAdmin):
-    list_display = ['name', 'enabled']
+    list_display = ['code', 'value', 'value_aux']
+
 
 @admin.register(models.Language)
 class LanguageAdmin(admin.ModelAdmin):
     list_display = ['name', 'code']
+
 
 @admin.register(models.PublishQueue)
 class PublishQueueAdmin(admin.ModelAdmin):

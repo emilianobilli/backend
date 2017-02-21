@@ -7,17 +7,14 @@ from django.core.exceptions import *
 # Create your models here.
 import json
 
+
 class Setting(models.Model):
-    TYPE = (
-        ("bl", "Block"),
-        ("as", "Asset"),
-        ("ca", "Category"),
-        ("ch", "Channel")
-    )
-    name             = models.CharField(max_length=128, help_text="Nombre del Setting")
-    type             = models.CharField(max_length=2, choices=TYPE, help_text="Tipo de Configuracion")
-    publish_settings = models.TextField(max_length=2048, blank=True, help_text="Configuracion de publicacion")
-    enabled          = models.BooleanField(default=False)
+    code             = models.CharField(max_length=32, help_text="Codigo del parametro")
+    value            = models.CharField(max_length=128, help_text="Valor del parametro")
+    value_aux        = models.CharField(max_length=128, blank=True, help_text="Valor adicional del parametro")
+
+    def __unicode__(self):
+        return self.code
 
 
 class PublishZone(models.Model):
