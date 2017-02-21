@@ -32,7 +32,7 @@ LOG_FILE = './log/publisher.log'
 ERR_FILE = './log/publisher.err'
 PID_FILE = './pid/publisher.pid'
 
-URLs = {'BL':'/v1/blocks/', 'SL':'/v1/sliders/', 'AS':'/v1/assets/', 'CH':'/v1/channels/', 'CA':'/v1/categories/'}
+URLs = {'BL':'/v1/blocks/', 'SL':'/v1/sliders/', 'AS':'/v1/private/assets/', 'CH':'/v1/channels/', 'CA':'/v1/categories/'}
 
 
 class PublisherException(Exception):

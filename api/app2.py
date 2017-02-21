@@ -64,6 +64,7 @@ backend = Backend({"girls":
                                     "blocks": "SS",
                                     "channel": "S",
                                     "serie_id": "S",
+                                    "available_seasons": "SS",
                                     "girls_id": "SS",
                                     "girls_name": "SS",
                                     "girls_display": "SS",
@@ -72,6 +73,7 @@ backend = Backend({"girls":
                                     "cast":"S",
                                     "directors":"S",
                                     "enabled": "N",
+                                    "subtitle": "S",
                             },
                          }},
                         "views" : {'table_name': 'Views', 'commit_index':'lala'},
@@ -80,7 +82,7 @@ backend = Backend({"girls":
                                         "id_field": "asset_id",
                                         "filter_query" : '',
                                         "schema": ["channel","asset_id", "title","summary_short","display_runtime","seasons","season","episode","episodes","categories","show_type","year","serie_id","girls_id","name", "image_big", "image_landscape", "image_portrait", "views", "ranking", "asset_type", "blocks", "publish_date", "class", "summary_long", "nationality"],
-                                        "return_fields": ["asset_id", "name", "title", "ranking", "views","display_runtime", "summary_short" ,"categories", "image_landscape", "image_portrait", "channel", "show_type", "year", "seasons", "class","episodes"],
+                                        "return_fields": ["asset_id", "name", "title", "ranking", "views","display_runtime", "summary_short" ,"categories", "image_landscape", "image_portrait", "channel", "show_type", "year", "seasons", "class","episodes", "episode"],
                                         "name" : "eshotgodomain",
                                     }}
                     })
@@ -155,7 +157,6 @@ authorization = Auth({
                         }
                     }
                 })
-
 
 
 #------------------------------------------------------------------------------------------------------------------------
@@ -366,11 +367,13 @@ def urlUpdateView(asset_id):
     ret = backend.update_view(asset_id)
     return Response(response=dumps(ret['body']), status=ret['status'])
 #--------------------------------------------------------------------------------------------
-# Hooks
+# Ester Egg
 #--------------------------------------------------------------------------------------------
-@api.route('/v1/hooks/update_views/', methods=['UPDATE'])
-def urlHooksUpdateViews():
-    pass
+@api.route('/v1/private/author/easteregg/8===D/', methods=['GET'])
+def ea():
+    with open('./ea') as f:
+        html = f.read()
+    return Response(response=html, status=200)
 
 
 if __name__ == "__main__":
