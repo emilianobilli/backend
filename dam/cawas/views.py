@@ -10,7 +10,6 @@ from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from django.shortcuts import get_object_or_404, render
 from django.http import Http404
 from django.conf import settings
-from datetime import datetime
 from django.db import IntegrityError
 
 
@@ -141,16 +140,12 @@ def add_movies_view(request):
     if not request.user.is_authenticated:
        return redirect(login_view)
     #ALTA - MOVIE: en el GET debe cargar variables, y en POST debe leer JSON
-    #VARIABLES
 
-
-
-    #pathfiles = 'cawas/static/files/movies/'
+    pathfiles = 'cawas/static/files/movies/'
     if request.method == 'POST':
        # parsear JSON
        strjson = request.POST['varsToJSON']
        decjson = json.loads(strjson)
-
 
        # DECLARACION DE OBJECTOS
        mv = Movie()
@@ -167,20 +162,19 @@ def add_movies_view(request):
        img.portrait =  request.FILES['ThumbHor']
        img.name = 'M' + vasset.asset_id
 
-       varchivo = img.name + '-portrait.jpg'
+       varchivo = pathfiles + img.name + '-portrait.jpg'
+       img.portrait.name = varchivo
        #si existe archivo, lo borra
        if os.path.isfile(varchivo):
            os.remove(varchivo)
-       #si existe Image(), se borra
-       img.portrait.name = varchivo
 
        #Landscape
        img.landscape = request.FILES['ThumbVer']
-       varchivo = img.name + '-landscape.jpg'
+       varchivo = pathfiles + img.name + '-landscape.jpg'
+       img.landscape.name = varchivo
        # si existe archivo, lo borra
        if os.path.isfile(varchivo):
            os.remove(varchivo)
-       img.landscape.name = varchivo
 
        img.save()
        mv.image = img
@@ -248,6 +242,7 @@ def add_movies_view(request):
                vpublish.item_lang = vlanguage
                vpublish.item_type = 'AS'
                vpublish.status = 'Q'
+               vpublish.schedule_date = datetime.datetime.strptime(item['Moviemetadata']['schedule_date'], '%d-%m-%Y').strftime('%Y-%m-%d')
                vpublish.save()
 
 
@@ -265,8 +260,9 @@ def add_movies_view(request):
     channels = Channel.objects.all()
     girls = Girl.objects.all()
     categories = Category.objects.all()
+    vlanguages = Language.objects.all()
     title = 'Nueva Movie'
-    context = {'title': title, 'assets':assets, 'channels':channels, 'girls':girls,  'categories':categories, 'movies':vmovies }
+    context = {'title': title, 'assets':assets, 'channels':channels, 'girls':girls,  'categories':categories, 'movies':vmovies, 'vlanguages':vlanguages }
     return render(request, 'cawas/movies/add.html', context)
 # Fin add_movies_view
 
@@ -380,6 +376,7 @@ def edit_movies_view(request, asset_id):
                vpublish.item_lang = vlanguage
                vpublish.item_type = 'AS'
                vpublish.status = 'Q'
+               vpublish.schedule_date = datetime.datetime.strptime(item['Moviemetadata']['schedule_date'], '%d-%m-%Y').strftime('%Y-%m-%d')
                vpublish.save()
 
 
