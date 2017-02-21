@@ -10,16 +10,35 @@
         <link rel="stylesheet" href="{% static 'css/bootstrap-hotGo.css' %}">
         <link rel="stylesheet" href="{% static 'css/dcalendar.picker.css' %}">
         <link rel="stylesheet" href="{% static 'css/select2.min.css' %}">
+        <link rel="stylesheet" href="{% static 'css/duration-picker.css' %}">
 
         <!-- Javascript -->
         <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.2.4/jquery.min.js"></script>
         <script src="{% static 'js/jquery-sortable.js' %}"></script>
         <script src="{% static 'js/bootstrap.min.js' %}"></script>
         <script src="{% static 'js/dcalendar.picker.js' %}"></script>
-        <script src="{% static 'js/movie.js' %}"></script>
+        <script src="{% static 'js/duration-picker.min.js' %}"></script>
         <script src="{% static 'js/select2.min.js' %}"></script>
         <script src="{% static 'js/script.js' %}"></script>
+        <script src="{% static 'js/movie.js' %}"></script>
         <!--/Javascript -->
+
+         <script>
+            /*---------------------------------------
+            REEMPLAZAR EL VALOR DE ESTA VARIABLE PARA
+            DAR UN STATUS AL USUARIO LUEGO DEL POST
+            ---------------------------------------*/
+
+            var resultado = ""; // cambiar por "error" si hubo algún problema o por "success" en caso de éxito
+
+
+             //year check
+            function maxLengthCheck(object)
+              {
+                if (object.value.length > 4)
+                  object.value = object.value.slice(0, 4)
+              }
+        </script>
     </head>
     <body>
 
