@@ -8,10 +8,6 @@ urlpatterns = [
     url(r'^login/$', views.login_view, name='login_view'),
     url(r'^logout/$', views.logout_view, name='logout_view'),
     url(r'^$', views.menu_view, name='menu_view'),
-    #url(r'^movies/$', views.index_movies_view, name='index_movies'),
-    #url(r'^movies/(?P<opcion>\d)/(?P<cat>\d)$', views.index_movies_view, name='index_movies_2'),
-    #url(r'^movies/add/$', views.add_movies_view, name='add_movies'),
-    #url(r'^girls/add/$', views.add_girls_view, name='add_girls'),
     url(r'^movies/add/$', views.add_movies_view, name='add_movie'),
     url(r'^movies/edit/(?P<asset_id>\d*)/$', views.edit_movies_view, name='edit_movie'),
 
