@@ -3,18 +3,33 @@ import models
 
 # Register your models here.
 
+
 @admin.register(models.Setting)
 class SettingAdmin(admin.ModelAdmin):
-    list_display = ['name', 'enabled']
+    list_display = ['code', 'value', 'value_aux']
+
 
 @admin.register(models.Language)
 class LanguageAdmin(admin.ModelAdmin):
     list_display = ['name', 'code']
 
+
 @admin.register(models.PublishQueue)
 class PublishQueueAdmin(admin.ModelAdmin):
     list_display = ['item_id', 'item_type', 'status', 'schedule_date', 'message']
     search_fields = ['item_id']
+
+
+@admin.register(models.PublishZone)
+class PublishZoneAdmin(admin.ModelAdmin):
+    list_display = ['name', 'enabled']
+
+
+@admin.register(models.ImageQueue)
+class ImageQueueAdmin(admin.ModelAdmin):
+    list_display = ['image', 'status', 'schedule_date', 'message']
+    search_fields = ['image__name']
+
 
 @admin.register(models.Image)
 class ImageAdmin(admin.ModelAdmin):
@@ -72,6 +87,7 @@ class EpisodeAdmin(admin.ModelAdmin):
 class EpisodeMetadataAdmin(admin.ModelAdmin):
     list_display = ['episode', 'title', 'language']
     search_fields = ['episode__asset__asset_id']
+
 
 @admin.register(models.Movie)
 class MovieAdmin(admin.ModelAdmin):

@@ -14,10 +14,6 @@ from urlparse import urlparse
 import httplib2
 
 
-#ENDPOINT = "http://backend.zolechamedia.net"
-ENDPOINT = "http://www.zolechamedia.net:8000"
-
-
 class EnqueuerException(Exception):
     def __init__(self, value):
         self.value = value
@@ -679,11 +675,17 @@ def import_movie(file, up_img=False):
                 continue
 
 
-def enqueue_girl(girl, endpoint, language=''):
+def enqueue_girl(girl, pzone, language=''):
+    try:
+        publish_zone = PublishZone.objects.get(name=pzone)
+    except ObjectDoesNotExist:
+        msg = "Publish Zone %s does not exist" % pzone
+        raise EnqueuerException(msg)
+
     if language == '':
         metadata_list = GirlMetadata.objects.filter(girl=girl)
         for metadata in metadata_list:
-            enqueue_item(girl.asset.asset_id, metadata.language, 'AS', endpoint)
+            enqueue_item(girl.asset.asset_id, metadata.language, 'AS', publish_zone)
     else:
         # Verifico que el lenguage exista
         try:
@@ -695,14 +697,20 @@ def enqueue_girl(girl, endpoint, language=''):
         except ObjectDoesNotExist:
             msg = "Metadata in %s does not exist for girl %s" % (language, girl.name)
             raise EnqueuerException(msg)
-        enqueue_item(girl.asset.asset_id, lang, 'AS', endpoint)
+        enqueue_item(girl.asset.asset_id, lang, 'AS', publish_zone)
 
 
-def enqueue_movie(movie, endpoint, language=''):
+def enqueue_movie(movie, pzone, language=''):
+    try:
+        publish_zone = PublishZone.objects.get(name=pzone)
+    except ObjectDoesNotExist:
+        msg = "Publish Zone %s does not exist" % pzone
+        raise EnqueuerException(msg)
+
     if language == '':
         metadata_list = MovieMetadata.objects.filter(movie=movie)
         for metadata in metadata_list:
-            enqueue_item(movie.asset.asset_id, metadata.language, 'AS', endpoint)
+            enqueue_item(movie.asset.asset_id, metadata.language, 'AS', publish_zone)
     else:
         # Verifico que el lenguage exista
         try:
@@ -714,14 +722,20 @@ def enqueue_movie(movie, endpoint, language=''):
         except ObjectDoesNotExist:
             msg = "Metadata in %s does not exist for movie %s" % (language, movie.asset.asset_id)
             raise EnqueuerException(msg)
-        enqueue_item(movie.asset.asset_id, lang, 'AS', endpoint)
+        enqueue_item(movie.asset.asset_id, lang, 'AS', publish_zone)
 
 
-def enqueue_serie(serie, endpoint, language=''):
+def enqueue_serie(serie, pzone, language=''):
+    try:
+        publish_zone = PublishZone.objects.get(name=pzone)
+    except ObjectDoesNotExist:
+        msg = "Publish Zone %s does not exist" % pzone
+        raise EnqueuerException(msg)
+
     if language == '':
         metadata_list = SerieMetadata.objects.filter(serie=serie)
         for metadata in metadata_list:
-            enqueue_item(serie.asset.asset_id, metadata.language, 'AS', endpoint)
+            enqueue_item(serie.asset.asset_id, metadata.language, 'AS', publish_zone)
     else:
         # Verifico que el lenguage exista
         try:
@@ -733,14 +747,20 @@ def enqueue_serie(serie, endpoint, language=''):
         except ObjectDoesNotExist:
             msg = "Metadata in %s does not exist for serie %s" % (language, serie.asset.asset_id)
             raise EnqueuerException(msg)
-        enqueue_item(serie.asset.asset_id, lang, 'AS', endpoint)
+        enqueue_item(serie.asset.asset_id, lang, 'AS', publish_zone)
 
 
-def enqueue_episode(episode, endpoint, language=''):
+def enqueue_episode(episode, pzone, language=''):
+    try:
+        publish_zone = PublishZone.objects.get(name=pzone)
+    except ObjectDoesNotExist:
+        msg = "Publish Zone %s does not exist" % pzone
+        raise EnqueuerException(msg)
+
     if language == '':
         metadata_list = EpisodeMetadata.objects.filter(episode=episode)
         for metadata in metadata_list:
-            enqueue_item(episode.asset.asset_id, metadata.language, 'AS', endpoint)
+            enqueue_item(episode.asset.asset_id, metadata.language, 'AS', publish_zone)
     else:
         # Verifico que el lenguage exista
         try:
@@ -752,14 +772,20 @@ def enqueue_episode(episode, endpoint, language=''):
         except ObjectDoesNotExist:
             msg = "Metadata in %s does not exist for episode %s" % (language, episode.asset.asset_id)
             raise EnqueuerException(msg)
-        enqueue_item(episode.asset.asset_id, lang, 'AS', endpoint)
+        enqueue_item(episode.asset.asset_id, lang, 'AS', publish_zone)
 
 
-def enqueue_category(category, endpoint, language=''):
+def enqueue_category(category, pzone, language=''):
+    try:
+        publish_zone = PublishZone.objects.get(name=pzone)
+    except ObjectDoesNotExist:
+        msg = "Publish Zone %s does not exist" % pzone
+        raise EnqueuerException(msg)
+
     if language == '':
         metadata_list = CategoryMetadata.objects.filter(category=category)
         for metadata in metadata_list:
-            enqueue_item(category.category_id, metadata.language, 'CA', endpoint)
+            enqueue_item(category.category_id, metadata.language, 'CA', publish_zone)
     else:
         # Verifico que el lenguage exista
         try:
@@ -771,14 +797,20 @@ def enqueue_category(category, endpoint, language=''):
         except ObjectDoesNotExist:
             msg = "Metadata in %s does not exist for category ID %s" % (language, category.category_id)
             raise EnqueuerException(msg)
-        enqueue_item(category.category_id, lang, 'CA', endpoint)
+        enqueue_item(category.category_id, lang, 'CA', publish_zone)
 
 
-def enqueue_slider(slider, endpoint, language=''):
+def enqueue_slider(slider, pzone, language=''):
+    try:
+        publish_zone = PublishZone.objects.get(name=pzone)
+    except ObjectDoesNotExist:
+        msg = "Publish Zone %s does not exist" % pzone
+        raise EnqueuerException(msg)
+
     if language == '':
         metadata_list = SliderMetadata.objects.filter(slider=slider)
         for metadata in metadata_list:
-            enqueue_item(slider.slider_id, metadata.language, 'SL', endpoint)
+            enqueue_item(slider.slider_id, metadata.language, 'SL', publish_zone)
     else:
         # Verifico que el lenguage exista
         try:
@@ -790,19 +822,24 @@ def enqueue_slider(slider, endpoint, language=''):
         except ObjectDoesNotExist:
             msg = "Metadata in %s does not exist for slider ID %s" % (language, slider.slider_id)
             raise EnqueuerException(msg)
-        enqueue_item(slider.slider_id, lang, 'SL', endpoint)
+        enqueue_item(slider.slider_id, lang, 'SL', publish_zone)
 
 
-def enqueue_block(block, endpoint):
-    enqueue_item(block.block_id, block.language, 'BL', endpoint)
+def enqueue_block(block, pzone):
+    try:
+        publish_zone = PublishZone.objects.get(name=pzone)
+    except ObjectDoesNotExist:
+        msg = "Publish Zone %s does not exist" % pzone
+        raise EnqueuerException(msg)
+    enqueue_item(block.block_id, block.language, 'BL', publish_zone)
 
 
-def enqueue_item(id, lang, type, endpoint):
+def enqueue_item(id, lang, type, publish_zone):
     q = PublishQueue()
     q.item_id = id
     q.item_lang = lang
     q.item_type = type
-    q.endpoint = endpoint
+    q.publish_zone = publish_zone
     q.schedule_date = timezone.now()
     q.save()
 
@@ -859,15 +896,15 @@ for movie in movies_list:
     except EnqueuerException as err:
         print err.value
 """
-"""
+
 serie_list = Serie.objects.all()
 for serie in serie_list:
     try:
-        enqueue_serie(serie, ENDPOINT, 'es')
+        enqueue_serie(serie, "Virginia", 'es')
         #enqueue_serie(serie)
     except EnqueuerException as err:
         print err.value
-"""
+
 """
 episode_list = Episode.objects.all()
 for episode in episode_list:
@@ -896,14 +933,14 @@ for slider in slider_list:
     except EnqueuerException as err:
         print err.value
 """
-
+"""
 block_list = Block.objects.all()
 for block in block_list:
     try:
         enqueue_block(block, ENDPOINT)
     except EnqueuerException as err:
         print err.value
-
+"""
 
 """
 for item in PublishQueue.objects.filter(status='E'):
@@ -917,6 +954,7 @@ for item in PublishQueue.objects.all():
     item.message = ''
     item.save()
 """
+
 #q = Movie.objects.filter(year=0).annotate(Count('runtime'))
 #print q.runtime__count
 #print Movie.objects.filter(year=0).distinct('original_title')
