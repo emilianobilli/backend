@@ -4,7 +4,7 @@ from django.shortcuts import render
 import datetime, os, json
 from django.contrib.auth import authenticate, login, logout
 from django.shortcuts import render, redirect
-from .models import Channel, Asset, Episode, PublishQueue, Setting,  Block, Serie, SerieMetadata, Movie, MovieMetadata, Girl,GirlMetadata,  Category,CategoryMetadata, Language, Image, PublishZone
+from .models import Channel, Asset, Episode, ImageQueue, PublishQueue, Setting,  Block, Serie, SerieMetadata, Movie, MovieMetadata, Girl,GirlMetadata,  Category,CategoryMetadata, Language, Image, PublishZone
 from django.shortcuts import render_to_response
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from django.shortcuts import get_object_or_404, render
@@ -179,6 +179,8 @@ def add_movies_view(request):
        img.save()
        mv.image = img
 
+
+
        print varchivo
 
        #Channel
@@ -224,6 +226,7 @@ def add_movies_view(request):
 
        # CARGAR METADATA
        vmoviesmetadata = decjson['Movie']['Moviesmetadata']
+
        for item in vmoviesmetadata:
            try:
                #CREAR METADATA POR IDIOMA
@@ -254,6 +257,19 @@ def add_movies_view(request):
                return render(request, 'cawas/error.html', {"message": "No existe Lenguaje. (" + e.message + ")"})
            except Exception as e:
                return render(request, 'cawas/error.html', {"message": "Error al Guardar metadata. (" + e.message + ")"})
+
+
+       #COLA DE PUBLICACION PARA IMAGENES
+       try:
+           vzones = PublishZone.objects.filter(enabled=True)
+           for zone in vzones:
+               imgQueue = ImageQueue()
+               imgQueue.image = img
+               imgQueue.publish_zone = zone
+               imgQueue.schedule_date = datetime.datetime.now()
+               imgQueue.save()
+       except Exception as e:
+           return render(request, 'cawas/error.html', {"message": "Error al Generar Cola de Imagen. (" + e.message + ")"})
 
 
        message = 'Registrado correctamente'
