@@ -32,7 +32,16 @@ LOG_FILE = './log/publisher.log'
 ERR_FILE = './log/publisher.err'
 PID_FILE = './pid/publisher.pid'
 
-URLs = {'BL':'/v1/blocks/', 'SL':'/v1/sliders/', 'AS':'/v1/private/assets/', 'CH':'/v1/channels/', 'CA':'/v1/categories/'}
+
+#+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+# Load Settings
+#+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+URLs={}
+URLs['BL'] = Setting.objects.get(code="backend_block_url").value
+URLs['SL'] = Setting.objects.get(code="backend_slider_url").value
+URLs['AS'] = Setting.objects.get(code="backend_asset_url").value
+URLs['CH'] = Setting.objects.get(code="backend_channel_url").value
+URLs['CA'] = Setting.objects.get(code="backend_category_url").value
 
 
 class PublisherException(Exception):
@@ -270,6 +279,8 @@ def publisher_main():
             publish_items()
         except ApiBackendException as err:
             print err.value
+
+        time.sleep(30)
 
 
 class DaemonMain(Daemon):

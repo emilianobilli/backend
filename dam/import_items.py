@@ -825,12 +825,37 @@ def enqueue_slider(slider, pzone, language=''):
         enqueue_item(slider.slider_id, lang, 'SL', publish_zone)
 
 
+def enqueue_asset(asset, pzone, language=''):
+    if asset.asset_type == "movie":
+        movie = Movie.objects.get(asset=asset)
+        enqueue_movie(movie, pzone, language)
+    elif asset.asset_type == "episode":
+        episode = Episode.objects.get(asset=asset)
+        enqueue_episode(episode, pzone, language)
+    elif asset.asset_type == "serie":
+        serie = Serie.objects.get(asset=asset)
+        enqueue_serie(serie, pzone, language)
+    elif asset.asset_type == "girl":
+        girl = Girl.objects.get(asset=asset)
+        enqueue_girl(girl, pzone, language)
+
+
 def enqueue_block(block, pzone):
     try:
         publish_zone = PublishZone.objects.get(name=pzone)
     except ObjectDoesNotExist:
         msg = "Publish Zone %s does not exist" % pzone
         raise EnqueuerException(msg)
+
+    for asset in block.assets.all():
+        if asset.asset_type != 'episode':
+            try:
+                enqueue_asset(asset, pzone, block.language.code)
+            except:
+                print asset.asset_id
+                pass
+        else:
+            print asset.asset_id
     enqueue_item(block.block_id, block.language, 'BL', publish_zone)
 
 
@@ -896,7 +921,7 @@ for movie in movies_list:
     except EnqueuerException as err:
         print err.value
 """
-
+"""
 serie_list = Serie.objects.all()
 for serie in serie_list:
     try:
@@ -904,7 +929,7 @@ for serie in serie_list:
         #enqueue_serie(serie)
     except EnqueuerException as err:
         print err.value
-
+"""
 """
 episode_list = Episode.objects.all()
 for episode in episode_list:
@@ -933,14 +958,14 @@ for slider in slider_list:
     except EnqueuerException as err:
         print err.value
 """
-"""
+
 block_list = Block.objects.all()
 for block in block_list:
     try:
-        enqueue_block(block, ENDPOINT)
+        enqueue_block(block, "Virginia")
     except EnqueuerException as err:
         print err.value
-"""
+
 
 """
 for item in PublishQueue.objects.filter(status='E'):
