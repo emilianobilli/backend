@@ -20,7 +20,7 @@ class Setting(models.Model):
 class PublishZone(models.Model):
     name              = models.CharField(max_length=128, help_text="Nombre de la zona")
     backend_url       = models.CharField(max_length=512, help_text="URL de publicacion del backend")
-    backend_key       = models.CharField(max_length=128, blank=True, help_text="API key del backend")
+    backend_key       = models.CharField(max_length=128, help_text="API key del backend")
     s3_path           = models.CharField(max_length=128, help_text="S3 Bucket name")
     s3_aws_secret_key = models.CharField(max_length=128, help_text="S3 AWS Secret Key")
     s3_aws_access_key = models.CharField(max_length=128, help_text="S3 AWS Access Key")

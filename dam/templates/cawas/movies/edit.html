@@ -54,10 +54,11 @@
                     <div class="col-xs-4 col-md-4 col-lg-4 form-group">
                        <div class="form-group has-feedback imgUpload">
                             <label class="label-left" for="ThumbHor" id="ThumbHorTit">Imagen Portrait: *</label>
-                            <input type="file" value="/static/files/movies/{{ vmovie.image.portrait }}"
+                            <input type="file" value="/static/files/movies/M011824-portrait.jpg"
                                    class="form-control" name="ThumbHor" id="ThumbHor" accept="image/*">
                             <span class="glyphicon form-control-feedback"></span>
-                           <img id="imageH" src="/static/files/movies/{{ vmovie.image.portrait }}"/>
+                            <img id="imageH" src="/static/files/movies/{{}}"/>
+                           {{ vmovie.image.portrait }}
                         </div>
                     </div>
 
@@ -67,7 +68,8 @@
                             <input type="file" value="/static/files/movies/M011824-portrait.jpg"
                                    class="form-control" name="ThumbVer" id="ThumbVer" accept="image/*">
                             <span class="glyphicon form-control-feedback"></span>
-                            <img id="imageV" src="/static/files/movies/{{ vmovie.image.landscape }}" />
+                            <img id="imageV" src="/static/files/movies/M011824-portrait.jpg" />
+                           {{ vmovie.image.landscape }}
                         </div>
                     </div>
 
@@ -241,7 +243,8 @@
 
                            <div class="col-xs-12 col-md-12 col-lg-12 form-group inlang">
                                <div class="form-group has-feedback">
-                                    <div class="helpright"><span class="glyphicon glyphicon-question-sign" data-toggle="tooltip" title="La descripción para los thumbnails mostrará los primeros 50 caracteres. Al ingresar en la movie se verá completa."></span></div>
+                                    <div class="helpright"><span class="glyphicon glyphicon-question-sign" data-toggle="tooltip"
+                                    title="La descripción para los thumbnails mostrará los primeros 50 caracteres. Al ingresar en la movie se verá completa."></span></div>
                                     <label class="label-left" for="short_desc_{{item.code }}">Descripción: *</label>
                                     <textarea  class="form-control" name="short_desc_{{item.code}}" id="short_desc_{{item.code}}"
                                     value="{{item.summary_long}}">{{item.summary_long}}</textarea>
@@ -254,8 +257,7 @@
                                     <div class="helpright"><span class="glyphicon glyphicon-question-sign" data-toggle="tooltip" title="Al ingresar una fecha, el sistema publicará la movie en español en esa fecha."></span></div>
                                     <label class="label-left" for="date_{{item.code}}">Fecha de Publicación</label>
                                     <input type="text" class="form-control datePick"
-                                           name="date_{{item.code}}" id="date_{{item.code}}"
-                                           value="10/10/2016">
+                                           name="date_{{item.code}}" id="date_{{item.code}}">
                                     <span class="glyphicon form-control-feedback"></span>
                                </div>
                            </div>
