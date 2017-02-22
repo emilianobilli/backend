@@ -141,7 +141,9 @@ def add_movies_view(request):
        return redirect(login_view)
     #ALTA - MOVIE: en el GET debe cargar variables, y en POST debe leer JSON
 
-    pathfiles = 'cawas/static/files/movies/'
+    pathfilesland = '/static/files/movies/landscape/'
+    pathfilesport = '/static/files/movies/portreit/'
+
     if request.method == 'POST':
        # parsear JSON
        strjson = request.POST['varsToJSON']
@@ -160,9 +162,9 @@ def add_movies_view(request):
        #TRATAMIENTO DE IMAGEN Portrait
        img = Image()
        img.portrait =  request.FILES['ThumbHor']
-       img.name = 'M' + vasset.asset_id
+       img.name =  + vasset.asset_id
 
-       varchivo = pathfiles + img.name + '-portrait.jpg'
+       varchivo = pathfilesport + img.name
        img.portrait.name = varchivo
        #si existe archivo, lo borra
        if os.path.isfile(varchivo):
@@ -170,7 +172,7 @@ def add_movies_view(request):
 
        #Landscape
        img.landscape = request.FILES['ThumbVer']
-       varchivo = pathfiles + img.name + '-landscape.jpg'
+       varchivo = pathfilesland + img.name
        img.landscape.name = varchivo
        # si existe archivo, lo borra
        if os.path.isfile(varchivo):
@@ -239,6 +241,7 @@ def add_movies_view(request):
                #recorrer el publicZone y genera un PublicQueue por cada idioma
                #vzones = PublishZone.objects.all()
                #for zone in vzones:
+
 
                # CREAR COLA DE PUBLICACION
                vpublish = PublishQueue()
