@@ -4,27 +4,13 @@ from django.shortcuts import render
 import datetime, os, json
 from django.contrib.auth import authenticate, login, logout
 from django.shortcuts import render, redirect
-from .models import Channel, Asset, Episode, PublishQueue,  Block, Serie, SerieMetadata, Movie, MovieMetadata, Girl,GirlMetadata,  Category,CategoryMetadata, Language, Image
+from .models import Channel, Asset, Episode, PublishQueue, Setting,  Block, Serie, SerieMetadata, Movie, MovieMetadata, Girl,GirlMetadata,  Category,CategoryMetadata, Language, Image, PublishZone
 from django.shortcuts import render_to_response
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from django.shortcuts import get_object_or_404, render
 from django.http import Http404
 from django.conf import settings
 from django.db import IntegrityError
-
-
-
-
-"""
-def enqueue_item(item_id, item_type, sched_date):
-    job = PublishQueue()
-
-    job.item_id       = item_id
-    job.item_type     = item_type
-    job.schedule_date = sched_date
-    # Traer endpoint de la configuracion
-    job.endpoint      = "http://www.zolechamedia.net:8000"
-"""
 
 
 def login_view(request):
@@ -141,8 +127,13 @@ def add_movies_view(request):
        return redirect(login_view)
     #ALTA - MOVIE: en el GET debe cargar variables, y en POST debe leer JSON
 
-    pathfilesland = '/static/files/movies/landscape/'
-    pathfilesport = '/static/files/movies/portreit/'
+    try:
+        pathfiles = Setting.objects.get(code='image_repository_path')
+    except Setting.DoesNotExist as e:
+        return render(request, 'cawas/error.html', {"message": "No Setting. (" + e.message + ")"})
+
+    pathfilesland = pathfiles.value + 'landscape/'
+    pathfilesport = pathfiles.value + 'portrait/'
 
     if request.method == 'POST':
        # parsear JSON
@@ -159,12 +150,18 @@ def add_movies_view(request):
        except Asset.DoesNotExist as e:
            return render(request, 'cawas/error.html', {"message": "No existe Asset. (" + e.message + ")"})
 
+       #VALIDAR IMAGEN
+       try:
+           img = Image.objects.get(name=vasset.asset_id)
+       except Image.DoesNotExist as e:
+           img = Image()
        #TRATAMIENTO DE IMAGEN Portrait
-       img = Image()
-       img.portrait =  request.FILES['ThumbHor']
-       img.name =  + vasset.asset_id
 
-       varchivo = pathfilesport + img.name
+       img.portrait =  request.FILES['ThumbHor']
+       extension = os.path.splitext(img.portrait.name)[1]
+       img.name = vasset.asset_id
+
+       varchivo = pathfilesport + img.name + extension
        img.portrait.name = varchivo
        #si existe archivo, lo borra
        if os.path.isfile(varchivo):
@@ -172,7 +169,8 @@ def add_movies_view(request):
 
        #Landscape
        img.landscape = request.FILES['ThumbVer']
-       varchivo = pathfilesland + img.name
+       extension = os.path.splitext(img.landscape.name)[1]
+       varchivo = pathfilesland + img.name + extension
        img.landscape.name = varchivo
        # si existe archivo, lo borra
        if os.path.isfile(varchivo):
@@ -238,23 +236,25 @@ def add_movies_view(request):
                mmd.movie = mv
                mmd.save()
 
-               #recorrer el publicZone y genera un PublicQueue por cada idioma
-               #vzones = PublishZone.objects.all()
-               #for zone in vzones:
+               #Recorrer el publicZone y genera un PublicQueue por cada idioma
 
-
-               # CREAR COLA DE PUBLICACION
-               vpublish = PublishQueue()
-               vpublish.item_id = vasset.asset_id
-               vpublish.item_lang = vlanguage
-               vpublish.item_type = 'AS'
-               vpublish.status = 'Q'
-               #vpublish.zone = zone
-               vpublish.schedule_date = datetime.datetime.strptime(item['Moviemetadata']['schedule_date'], '%d-%m-%Y').strftime('%Y-%m-%d')
-               vpublish.save()
+               vzones = PublishZone.objects.filter(enabled=True)
+               for zone in vzones:
+                   # CREAR COLA DE PUBLICACION
+                   vpublish = PublishQueue()
+                   vpublish.item_id = vasset.asset_id
+                   vpublish.item_lang = vlanguage
+                   vpublish.item_type = 'AS'
+                   vpublish.status = 'Q'
+                   vpublish.publish_zone = zone
+                   vpublish.schedule_date = datetime.datetime.strptime(item['Moviemetadata']['schedule_date'], '%d-%m-%Y').strftime('%Y-%m-%d')
+                   vpublish.save()
 
            except Language.DoesNotExist as e:
                return render(request, 'cawas/error.html', {"message": "No existe Lenguaje. (" + e.message + ")"})
+           except Exception as e:
+               return render(request, 'cawas/error.html', {"message": "Error al Guardar metadata. (" + e.message + ")"})
+
 
        message = 'Registrado correctamente'
        # FIN DE POST
