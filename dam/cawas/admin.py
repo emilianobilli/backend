@@ -98,7 +98,7 @@ class MovieAdmin(admin.ModelAdmin):
 @admin.register(models.MovieMetadata)
 class MovieMetadataAdmin(admin.ModelAdmin):
     list_display = ['movie', 'title', 'language']
-    search_fields = ['episode__asset__asset_id']
+    search_fields = ['movie__asset__asset_id']
 
 
 @admin.register(models.Block)
