@@ -121,19 +121,14 @@ def prueba_json_view(request):
     return render(request, 'cawas/pruebas/prueba_json.html', context)
 
 
+
+
 def add_movies_view(request):
    #AUTENTICACION DE USUARIO
     if not request.user.is_authenticated:
        return redirect(login_view)
     #ALTA - MOVIE: en el GET debe cargar variables, y en POST debe leer JSON
-
-    try:
-        pathfiles = Setting.objects.get(code='image_repository_path')
-    except Setting.DoesNotExist as e:
-        return render(request, 'cawas/error.html', {"message": "No Setting. (" + e.message + ")"})
-
-    pathfilesland = pathfiles.value + 'landscape/'
-    pathfilesport = pathfiles.value + 'portrait/'
+    #cawas/static/images/landscape/  cawas/static/images/portrait/
 
     if request.method == 'POST':
        # parsear JSON
@@ -150,27 +145,36 @@ def add_movies_view(request):
        except Asset.DoesNotExist as e:
            return render(request, 'cawas/error.html', {"message": "No existe Asset. (" + e.message + ")"})
 
+
        #VALIDAR IMAGEN
        try:
            img = Image.objects.get(name=vasset.asset_id)
        except Image.DoesNotExist as e:
            img = Image()
-       #TRATAMIENTO DE IMAGEN Portrait
 
-       img.portrait =  request.FILES['ThumbHor']
+       try:
+           pathfilesport = Setting.objects.get(code='image_repository_path_portrait')
+           pathfilesland = Setting.objects.get(code='image_repository_path_landscape')
+       except Setting.DoesNotExist as e:
+           return render(request, 'cawas/error.html', {"message": "No Setting. (" + e.message + ")"})
+
+       #TRATAMIENTO DE IMAGEN Portrait
+       img.portrait = request.FILES['ThumbHor']
        extension = os.path.splitext(img.portrait.name)[1]
        img.name = vasset.asset_id
 
-       varchivo = pathfilesport + img.name + extension
+       varchivo = pathfilesport.value + img.name + extension
+       #varchivo = img.name + extension
        img.portrait.name = varchivo
-       #si existe archivo, lo borra
+
        if os.path.isfile(varchivo):
            os.remove(varchivo)
 
        #Landscape
        img.landscape = request.FILES['ThumbVer']
        extension = os.path.splitext(img.landscape.name)[1]
-       varchivo = pathfilesland + img.name + extension
+       varchivo = pathfilesland.value + img.name + extension
+       #varchivo = img.name + extension
        img.landscape.name = varchivo
        # si existe archivo, lo borra
        if os.path.isfile(varchivo):
@@ -298,6 +302,11 @@ def edit_movies_view(request, asset_id):
     # EDIT - MOVIE: en el GET debe cargar variables, y en POST debe leer JSON
 
     pathfiles = 'cawas/static/files/movies/'
+    try:
+        pathfilesport = Setting.objects.get(code='image_repository_path_portrait')
+        pathfilesland = Setting.objects.get(code='image_repository_path_landscape')
+    except Setting.DoesNotExist as e:
+        return render(request, 'cawas/error.html', {"message": "No Setting. (" + e.message + ")"})
 
     #Post Movie - Graba datos
     if request.method == 'POST':
@@ -452,12 +461,11 @@ def edit_movies_view(request, asset_id):
     languages = Language.objects.all()
     title = 'Editar Movie'
 
-
     context = {'title': title, 'assets':assets, 'channels':channels, 'girls':girls, 'categories':categories,
                'vmovie':vmovie, 'vgirlselected':vgirlselected, 'vgirlnotselected':vgirlnotselected,
                'vcategoryselected':vcategoryselected, 'vcategorynotselected':vcategorynotselected,
                'languages':languages, 'vmoviemetadata':vmoviemetadata, 'vlangmetadata':vlangmetadata,
-               'asset_id':asset_id}
+               'asset_id':asset_id, 'pathlandscape':pathfilesland , 'pathportrait':pathfilesport}
 
     return render(request, 'cawas/movies/edit.html', context)
 # Fin edit_movies_view
