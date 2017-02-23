@@ -17,6 +17,13 @@ class Setting(models.Model):
         return self.code
 
 
+class Device(models.Model):
+    name = models.CharField(max_length=32, help_text="Nombre del tipo de dipositivo")
+
+    def __unicode__(self):
+        return self.name
+
+
 class PublishZone(models.Model):
     name              = models.CharField(max_length=128, help_text="Nombre de la zona")
     backend_url       = models.CharField(max_length=512, help_text="URL de publicacion del backend")
@@ -239,6 +246,7 @@ class Block(models.Model):
     language          = models.ForeignKey(Language)
     channel           = models.ForeignKey(Channel, blank=True, null=True)
     assets            = models.ManyToManyField(Asset, blank=True)
+    target_device     = models.ForeignKey(Device)
     modification_date = models.DateTimeField(auto_now=True)
     publish_date      = models.DateTimeField(auto_now=False, auto_now_add=False, blank=True, null=True)
     publish_status    = models.BooleanField(default=False)
@@ -261,9 +269,10 @@ class Block(models.Model):
     def toDict(self):
         dict = {}
 
-        dict["block_id"]   = self.block_id
-        dict["block_name"] = self.name
-        dict["lang"]       = self.language.code
+        dict["block_id"]      = self.block_id
+        dict["block_name"]    = self.name
+        dict["lang"]          = self.language.code
+        dict["target_device"] = self.target_device.name
         if self.channel is not None:
             dict["channel"] = self.channel.name
 

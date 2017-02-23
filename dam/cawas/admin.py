@@ -116,3 +116,8 @@ class SliderAdmin(admin.ModelAdmin):
 @admin.register(models.SliderMetadata)
 class SliderMetadataAdmin(admin.ModelAdmin):
     list_display = ['slider', 'language']
+
+
+@admin.register(models.Device)
+class DeviceAdmin(admin.ModelAdmin):
+    list_display = ['name']
