@@ -868,6 +868,19 @@ def enqueue_item(id, lang, type, publish_zone):
     q.schedule_date = timezone.now()
     q.save()
 
+
+def enqueue_image(image):
+    p_zones = PublishZone.objects.filter(enabled=True)
+    for zone in p_zones:
+        q = ImageQueue()
+        q.image = image
+        q.publish_zone = zone
+        q.schedule_date = timezone.now()
+        q.save()
+
+
+
+
 """
 try:
     import_girl('girl.json.es')
@@ -877,7 +890,7 @@ except ImporterException as err:
 """
 """
 try:
-    import_category('category.json')
+    import_category('category_images.json')
 except ImporterException as err:
     print err.value
 """
@@ -907,7 +920,7 @@ except ImporterException as err:
 girls_list = Girl.objects.all()
 for girl in girls_list:
     try:
-        enqueue_girl(girl, ENDPOINT,'es')
+        enqueue_girl(girl, "Virginia",'es')
         #enqueue_girl(girl)
     except EnqueuerException as err:
         print err.value
@@ -916,12 +929,12 @@ for girl in girls_list:
 movies_list = Movie.objects.all()
 for movie in movies_list:
     try:
-        enqueue_movie(movie, ENDPOINT, 'es')
+        enqueue_movie(movie, "Virginia", 'es')
         #enqueue_movie(movie)
     except EnqueuerException as err:
         print err.value
-"""
-"""
+
+
 serie_list = Serie.objects.all()
 for serie in serie_list:
     try:
@@ -929,12 +942,12 @@ for serie in serie_list:
         #enqueue_serie(serie)
     except EnqueuerException as err:
         print err.value
-"""
-"""
+
+
 episode_list = Episode.objects.all()
 for episode in episode_list:
     try:
-        enqueue_episode(episode, ENDPOINT, 'es')
+        enqueue_episode(episode, "Virginia", 'es')
         #enqueue_episode(episode, ENDPOINT)
     except EnqueuerException as err:
         print err.value
@@ -944,7 +957,7 @@ for episode in episode_list:
 category_list = Category.objects.all()
 for category in category_list:
     try:
-        enqueue_category(category, ENDPOINT, 'es')
+        enqueue_category(category, "Virginia", 'es')
         #enqueue_category(category)
     except EnqueuerException as err:
         print err.value
@@ -958,14 +971,14 @@ for slider in slider_list:
     except EnqueuerException as err:
         print err.value
 """
-
+"""
 block_list = Block.objects.all()
 for block in block_list:
     try:
         enqueue_block(block, "Virginia")
     except EnqueuerException as err:
         print err.value
-
+"""
 
 """
 for item in PublishQueue.objects.filter(status='E'):
@@ -999,4 +1012,54 @@ for image in images:
         image.landscape = "%s.jpg" % image.name
     image.save()
 """
+"""
+categories = Category.objects.all()
+for cat in categories:
+    image = Image.objects.get(name=cat.category_id)
+    enqueue_image(image)
+"""
 
+
+girls = Girl.objects.all()
+for girl in girls:
+    image = Image.objects.get(name=girl.asset.asset_id)
+    enqueue_image(image)
+
+
+
+"""
+categories = Category.objects.all()
+for cat in categories:
+    image = Image.objects.get(name=cat.category_id)
+    image.landscape.name = image.landscape.name.replace("portrait", "landscape")
+    image.save()
+"""
+
+"""
+dir = "cawas/static/images/landscape"
+for file in os.listdir(dir):
+    if file.startswith("G0"):
+        asset_id = file.split(".")[0]
+        try:
+            image = Image.objects.get(name=asset_id)
+            image.landscape.name = file
+            image.save()
+        except ObjectDoesNotExist:
+            print asset_id
+"""
+"""
+landscape_path = Setting.objects.get(code="image_repository_path_landscape").value
+portrait_path  = Setting.objects.get(code="image_repository_path_portrait").value
+assets = Asset.objects.all()
+for asset in assets:
+    try:
+        image = Image.objects.get(name=asset.asset_id)
+        if image.portrait.name != '':
+            image.portrait.name = portrait_path + asset.asset_id + ".jpg"
+            image.save()
+        if image.landscape.name != '':
+            image.landscape.name = landscape_path + asset.asset_id + ".jpg"
+            image.save()
+    except ObjectDoesNotExist:
+        print asset.asset_id
+"""

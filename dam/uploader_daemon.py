@@ -61,36 +61,39 @@ def upload_images():
         if job.schedule_date < timezone.now():
             s3 = S3Upload(job.publish_zone.s3_aws_access_key, job.publish_zone.s3_aws_secret_key)
 
-            if job.image.portrait is not None:
+            if job.image.portrait.name != '':
                 try:
-                    if os.path.isfile(job.image.portrait.name):
-                        src_path = os.path.dirname(job.image.portrait.name)
-                        filename = os.path.basename(job.image.portrait.name)
+                    img = job.image.portrait.name
+                    print img
+                    if os.path.isfile(img):
+                        src_path = os.path.dirname(img)
+                        filename = os.path.basename(img)
                         dest_path = PORTRAIT_PATH
                         job.status = 'U'
                         job.save()
                         s3.upload(src_path, filename, job.publish_zone.s3_bucket, dest_path)
                     else:
                         job.status = 'E'
-                        job.message = "File does not exist: %s" % job.image.portrait.name
+                        job.message = "File does not exist: %s" % img
                         job.save()
                 except S3UploadException as err:
                     job.status = 'E'
                     job.message = str(err)
                     job.save()
 
-            if job.image.landscape is not None and job.status != 'E':
+            if job.image.landscape.name != '' and job.status != 'E':
                 try:
-                    if os.path.isfile(job.image.landscape.name):
-                        src_path = os.path.dirname(job.image.landscape.name)
-                        filename = os.path.basename(job.image.landscape.name)
+                    img = job.image.landscape.name
+                    if os.path.isfile(img):
+                        src_path = os.path.dirname(img)
+                        filename = os.path.basename(img)
                         dest_path = LANDSCAPE_PATH
                         job.status = 'U'
                         job.save()
                         s3.upload(src_path, filename, job.publish_zone.s3_bucket, dest_path)
                     else:
                         job.status = 'E'
-                        job.message = "File does not exist: %s" % job.image.portrait.name
+                        job.message = "File does not exist: %s" % img
                         job.save()
                 except S3UploadException as err:
                     job.status = 'E'

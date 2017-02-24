@@ -6,6 +6,7 @@ from django.core.exceptions import *
 
 # Create your models here.
 import json
+import os
 
 
 class Setting(models.Model):
@@ -145,9 +146,9 @@ class Category(models.Model):
             dict["order"] = self.order
         if self.image is not None:
             if self.image.portrait.name != '':
-                dict["image_portrait"] = self.image.portrait.name
+                dict["image_portrait"] = os.path.basename(self.image.portrait.name)
             if self.image.landscape.name != '':
-                dict["image_landscape"] = self.image.landscape.name
+                dict["image_landscape"] = os.path.basename(self.image.landscape.name)
 
         return dict
 
@@ -377,9 +378,9 @@ class Girl(models.Model):
         dict["class"]            = self.type
         if self.image is not None:
             if self.image.portrait.name != '':
-                dict["image_portrait"] = self.image.portrait.name
+                dict["image_portrait"] = os.path.basename(self.image.portrait.name)
             if self.image.landscape.name != '':
-                dict["image_landscape"] = self.image.landscape.name
+                dict["image_landscape"] = os.path.basename(self.image.landscape.name)
         if self.birth_date is not None:
             dict["birth_date"] = self.birth_date.strftime("%Y-%m-%d")
         if self.height is not None:
@@ -448,10 +449,11 @@ class Serie(models.Model):
             dict["cast"] = self.cast
         if self.directors != '':
             dict["directors"] = self.directors
-        if self.image.portrait.name != '':
-            dict["image_portrait"] = self.image.portrait.name
-        if self.image.landscape.name != '':
-            dict["image_landscape"] = self.image.landscape.name
+        if self.image is not None:
+            if self.image.portrait.name != '':
+                dict["image_portrait"] = os.path.basename(self.image.portrait.name)
+            if self.image.landscape.name != '':
+                dict["image_landscape"] = os.path.basename(self.image.landscape.name)
         available_seasons = Episode.objects.filter(serie=self).values_list('season', flat=True).distinct()
         dict["available_seasons"] = []
         for aseasons in available_seasons:
@@ -541,10 +543,11 @@ class Episode(models.Model):
             dict["cast"]            = self.cast
         if self.directors != '':
             dict["directors"]       = self.directors
-        if self.image.portrait.name != '':
-            dict["image_portrait"] = self.image.portrait.name
-        if self.image.landscape.name != '':
-            dict["image_landscape"] = self.image.landscape.name
+        if self.image is not None:
+            if self.image.portrait.name != '':
+                dict["image_portrait"] = os.path.basename(self.image.portrait.name)
+            if self.image.landscape.name != '':
+                dict["image_landscape"] = os.path.basename(self.image.landscape.name)
         dict["runtime"]         = self.runtime
         dict["display_runtime"] = self.display_runtime
         if self.chapter > 0:
@@ -635,10 +638,11 @@ class Movie(models.Model):
             dict["cast"] = self.cast
         if self.directors != '':
             dict["directors"] = self.directors
-        if self.image.portrait.name != '':
-            dict["image_portrait"] = self.image.portrait.name
-        if self.image.landscape.name != '':
-            dict["image_landscape"] = self.image.landscape.name
+        if self.image is not None:
+            if self.image.portrait.name != '':
+                dict["image_portrait"] = os.path.basename(self.image.portrait.name)
+            if self.image.landscape.name != '':
+                dict["image_landscape"] = os.path.basename(self.image.landscape.name)
         dict["runtime"]         = self.runtime
         dict["display_runtime"] = self.display_runtime
         dict["thumbnails"]      = self.thumbnails
