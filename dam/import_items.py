@@ -1019,12 +1019,12 @@ for cat in categories:
     enqueue_image(image)
 """
 
-
+"""
 girls = Girl.objects.all()
 for girl in girls:
     image = Image.objects.get(name=girl.asset.asset_id)
     enqueue_image(image)
-
+"""
 
 
 """
