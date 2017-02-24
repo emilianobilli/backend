@@ -3,9 +3,11 @@ from Collection import cloudsearchCollection
 from Collection import CollectionException
 from Collection import DynamoException
 from Collection import CloudSearchException
+from Sub        import Subtitle
 from views      import Views
 from cdnimg     import CdnImg
 from random     import randrange
+
 import json
 import socket
 import httplib2
@@ -46,6 +48,7 @@ class VideoAuth(object):
                 raise VideoAuthException(content)
         else:
             raise VideoAuthException('Flens')
+
 
 class Components(object):
     def __init__(self, config):
@@ -175,7 +178,8 @@ class Backend(object):
 
 
         self.videoauth = VideoAuth("https://videoauth.zolechamedia.net/video/", "7a407d4ae99b7c1a1655daddf218ef05")
-        
+        self.subtitle  = Subtitle("http://videoauth.zolechamedia.net/subtitle/")
+
         self.images    = {}
         self.images['image_landscape'] = CdnImg(['http://cdnimages.zolechamedia.net/','http://cdnimages1.zolechamedia.net/','http://cdnimages2.zolechamedia.net/','http://cdnimages3.zolechamedia.net/','http://cdnimages4.zolechamedia.net/','http://cdnimages5.zolechamedia.net/'], 'landscape/')
         self.images['image_portrait']  = CdnImg(['http://cdnimages.zolechamedia.net/'], 'portrait/')
@@ -491,10 +495,17 @@ class Backend(object):
         at['asset_type'] = Item['asset_type']
         try:
             if Item['asset_type'] == 'girl':
-                self.asset_type.add(at)
+                self.asset_type.add(at) # Ojo con las Excepciones
                 return self.__add_asset(self.girls,Item, inmutable_fields)
             if Item['asset_type'] == 'show':
-                self.asset_type.add(at)
+                self.asset_type.add(at) # Ojo con las Excepciones
+                if Item['show_type'] == 'movie' or Item['show_type'] == 'episode':
+                    #
+                    # Se agrega subtitluado para los assets que son de tipo Movie o Episode
+                    #
+                    if subtitle.check(Item['asset_id'], Item['lang']):
+                        Item['subtitle'] = subtitle.get_subtitle_url(Item['asset_id'], Item['lang'])
+
                 return self.__add_asset(self.shows,Item, inmutable_fields)
             else:
                 status = 422
