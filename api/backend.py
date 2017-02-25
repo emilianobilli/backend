@@ -61,9 +61,15 @@ class Components(object):
         if 'sliders' in config:
             self.sliders    = dynamodbCollection(config['sliders'])
 
+        self.images    = {}
+        self.images['image_landscape'] = CdnImg(['http://cdnimages.zolechamedia.net/','http://cdnimages1.zolechamedia.net/','http://cdnimages2.zolechamedia.net/','http://cdnimages3.zolechamedia.net/','http://cdnimages4.zolechamedia.net/','http://cdnimages5.zolechamedia.net/'], 'landscape/')
+        self.images['image_portrait']  = CdnImg(['http://cdnimages.zolechamedia.net/','http://cdnimages1.zolechamedia.net/','http://cdnimages2.zolechamedia.net/','http://cdnimages3.zolechamedia.net/','http://cdnimages4.zolechamedia.net/','http://cdnimages5.zolechamedia.net/'], 'landscape/')
+
+
     def __query(self, where, q):
         try:
             ret    = where.query(q)
+            ret    = self.__add_cdn_images(ret, None)
             status = 200
         except CollectionException as e:
             status = 422
@@ -110,6 +116,26 @@ class Components(object):
             ret    = {'status': 'failure', 'message': str(e)}
 
         return {'status': status, 'body': ret}
+
+    
+    def parse_img_arg(self, field, img):
+        try:
+            i = json.loads(img)
+            return i[field]
+        except:
+            return None
+        return None
+
+    def __add_cdn_images(self, response, imgArgs):
+        items = response['items']
+        ni = []
+        for item in items:
+            for k in self.images.keys():
+                if k in item:
+                    item[k] = self.images[k].getUrl(item[k], self.parse_img_arg(k,imgArgs))
+            ni.append(item)
+        response['items'] = ni
+        return response
 
     '''
         Add Methods for Slider, Block and Category
@@ -178,11 +204,11 @@ class Backend(object):
 
 
         self.videoauth = VideoAuth("https://videoauth.zolechamedia.net/video/", "7a407d4ae99b7c1a1655daddf218ef05")
-        self.subtitle  = Subtitle("http://videoauth.zolechamedia.net/subtitle/")
+        self.subtitle  = Subtitle("http://videoauth.zolechamedia.net/subtitle")
 
         self.images    = {}
         self.images['image_landscape'] = CdnImg(['http://cdnimages.zolechamedia.net/','http://cdnimages1.zolechamedia.net/','http://cdnimages2.zolechamedia.net/','http://cdnimages3.zolechamedia.net/','http://cdnimages4.zolechamedia.net/','http://cdnimages5.zolechamedia.net/'], 'landscape/')
-        self.images['image_portrait']  = CdnImg(['http://cdnimages.zolechamedia.net/'], 'portrait/')
+        self.images['image_portrait']  = CdnImg(['http://cdnimages.zolechamedia.net/','http://cdnimages1.zolechamedia.net/','http://cdnimages2.zolechamedia.net/','http://cdnimages3.zolechamedia.net/','http://cdnimages4.zolechamedia.net/','http://cdnimages5.zolechamedia.net/'], 'portrait/')
 
 
     def del_asset():     # borra asset
@@ -204,14 +230,15 @@ class Backend(object):
                     if asset['item']['show_type'] == 'movie' or asset['item']['show_type'] == 'episode':
                         asset['item']['video'] = self.videoauth.get_hls_url(asset['item']['asset_id'])
                         asset_id = asset['item']['asset_id']
-                        if 'img' in args:
-                            img = args['img']
-                        else:
-                            img = None
+                    
+                    if 'img' in args:
+                        img = args['img']
+                    else:
+                        img = None
 
-                        for k in self.images.keys():
-                            if k in asset['item']:
-                                asset['item'][k] = self.images[k].getUrl(asset['item'][k], self.parse_img_arg(k,img))
+                    for k in self.images.keys():
+                        if k in asset['item']:
+                            asset['item'][k] = self.images[k].getUrl(asset['item'][k], self.parse_img_arg(k,img))
 
                     if asset_id is not None and self.views is not None:
                         self.views.add_view(asset_id)
@@ -503,8 +530,8 @@ class Backend(object):
                     #
                     # Se agrega subtitluado para los assets que son de tipo Movie o Episode
                     #
-                    if subtitle.check(Item['asset_id'], Item['lang']):
-                        Item['subtitle'] = subtitle.get_subtitle_url(Item['asset_id'], Item['lang'])
+                    if self.subtitle.check(Item['asset_id'], Item['lang']):
+                        Item['subtitle'] = self.subtitle.get_subtitle_url(Item['asset_id'], Item['lang'])
 
                 return self.__add_asset(self.shows,Item, inmutable_fields)
             else:
