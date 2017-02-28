@@ -66,9 +66,10 @@ class Components(object):
         self.images['image_portrait']  = CdnImg(['http://cdnimages.zolechamedia.net/','http://cdnimages1.zolechamedia.net/','http://cdnimages2.zolechamedia.net/','http://cdnimages3.zolechamedia.net/','http://cdnimages4.zolechamedia.net/','http://cdnimages5.zolechamedia.net/'], 'landscape/')
 
 
-    def __query(self, where, q):
+    def __query(self, where, q, qfilter=None):
         try:
             ret    = where.query(q)
+            ret    = self.__post_filter(ret, qfilter)
             ret    = self.__add_cdn_images(ret, None)
             status = 200
         except CollectionException as e:
@@ -136,6 +137,27 @@ class Components(object):
             ni.append(item)
         response['items'] = ni
         return response
+
+    def __post_filter(self, response, qfilter=None):
+        #
+        # Revisar este codigo
+        # 
+        if qfilter is None:
+            return response
+
+        ret = {}
+        ret['items'] = []
+        n            = 0
+        key   = qfilter.keys()[0]
+        value = qfilter[key]
+
+        for item in response['items']:
+            if key in item:
+                if item[key] == value:
+                    ret['items'].append(item)
+                    n = n + 1
+        ret['count'] = n
+        return ret
 
     '''
         Add Methods for Slider, Block and Category
