@@ -150,7 +150,6 @@ class Components(object):
         n            = 0
         key   = qfilter.keys()[0]
         value = qfilter[key]
-
         for item in response['items']:
             if key in item:
                 if item[key] == value:
@@ -193,7 +192,12 @@ class Components(object):
         Query Methods for Slider, Block and Category
     '''
     def query_blocks(self, arg):
-        return self.__query(self.blocks,arg)
+        if 'target' in arg:
+            qfilter = {}
+            qfilter['target'] = arg['target']
+            return self.__query(self.blocks, arg, qfilter)
+        else:
+            return self.__query(self.blocks,arg)
 
     def query_sliders(self, arg):
         return self.__query(self.sliders,arg)

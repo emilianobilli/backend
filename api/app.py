@@ -139,6 +139,7 @@ components = Components({
                             "block_id": "S",
                             "block_name": "S",
                             "channel": "S",
+                            "target": "S",
                         },
                     }
                 }
