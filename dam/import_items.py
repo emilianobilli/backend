@@ -1063,3 +1063,18 @@ for asset in assets:
     except ObjectDoesNotExist:
         print asset.asset_id
 """
+
+
+
+series = Serie.objects.all()
+for serie in series:
+    categories = []
+    episodes = Episode.objects.filter(serie=serie)
+    for episode in episodes:
+        for cat in episode.category.all():
+            if cat not in categories:
+                categories.append(cat)
+    print "####### %s #######" % serie.original_title
+    for category in categories:
+        print category.original_name
+        serie.category.add(category)
