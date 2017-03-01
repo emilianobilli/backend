@@ -13,7 +13,6 @@ class Subtitle(object):
         return url
 
     def doGet(self, url):
-        print url
         method = 'GET'
         uri    = urlparse.urlparse(url)
         return self.h.request(uri.geturl(), method)

@@ -162,8 +162,8 @@ authorization = Auth({
 #------------------------------------------------------------------------------------------------------------------------
 #       Pages Components: Channels, Categories, Sliders, Blocks
 #------------------------------------------------------------------------------------------------------------------------
-
 @api.route('/v1/categories/', methods=['GET', 'POST'])
+@api.route('/v1/categories',  methods=['GET', 'POST'])
 @cross_origin()
 def urlCategories():
     if request.method == 'GET':
@@ -181,6 +181,7 @@ def urlCategories():
         return Response(response=dumps(ret['body']), status=ret['status'])
 
 @api.route('/v1/sliders/',    methods=['GET', 'POST'])
+@api.route('/v1/sliders',     methods=['GET', 'POST'])
 @cross_origin()
 def urlSliders():
     if request.method == 'GET':
@@ -198,6 +199,7 @@ def urlSliders():
         return Response(response=dumps(ret['body']), status=ret['status'])
 
 @api.route('/v1/blocks/',     methods=['GET', 'POST'])
+@api.route('/v1/blocks',      methods=['GET', 'POST'])
 @cross_origin()
 def urlBlocks():
     if request.method == 'GET':
@@ -216,6 +218,7 @@ def urlBlocks():
 
 
 @api.route('/v1/channels/',     methods=['GET', 'POST'])
+@api.route('/v1/channels',      methods=['GET', 'POST'])
 @cross_origin()
 def urlChannels():
     if request.method == 'GET':
@@ -238,6 +241,7 @@ def urlChannels():
 #       Assets: Shows (Movies, Series) and Girls
 #------------------------------------------------------------------------------------------------------------------------
 @api.route('/v1/search/', methods=['GET'])
+@api.route('/v1/search',  methods=['GET'])
 @cross_origin()
 def urlSearch():
     args = {}
@@ -246,7 +250,8 @@ def urlSearch():
     ret  = backend.search(args)
     return Response(response=dumps(ret['body']), status=ret['status'])
 
-@api.route('/v1/suggest/<string:asset_id>', methods=['GET'])
+@api.route('/v1/suggest/<string:asset_id>/', methods=['GET'])
+@api.route('/v1/suggest/<string:asset_id>',  methods=['GET'])
 @cross_origin()
 def urlSuggest(asset_id):
     if request.method == 'GET':
@@ -258,6 +263,7 @@ def urlSuggest(asset_id):
         return Response(response=dumps(ret['body']), status=ret['status'])
 
 @api.route('/v1/episodes/', methods=['GET'])
+@api.route('/v1/episodes',  methods=['GET'])
 @cross_origin()
 def urlEpisode():
     if request.method == 'GET':
@@ -268,8 +274,8 @@ def urlEpisode():
         return Response(response=dumps(ret['body']), status=ret['status'])
 
 #@api.route('/v1/episodes/<string:asset_id>/', methods=['GET'])
-
 @api.route('/v1/shows/', methods=['GET'])
+@api.route('/v1/shows',  methods=['GET'])
 @cross_origin()
 def urlShow():
     if request.method == 'GET':
@@ -279,8 +285,8 @@ def urlShow():
         ret = backend.query_show(args)
         return Response(response=dumps(ret['body']), status=ret['status'])
 
-
 @api.route('/v1/shows/<string:asset_id>/', methods=['GET'])
+@api.route('/v1/shows/<string:asset_id>',  methods=['GET'])
 @cross_origin()
 def urlGetShow(asset_id):
     ret = {}
@@ -299,8 +305,8 @@ def urlGetShow(asset_id):
 
     return Response(response=dumps(ret['body']), status=ret['status'])
 
-
 @api.route('/v1/girls/', methods=['GET'])
+@api.route('/v1/girls',  methods=['GET'])
 @cross_origin()
 def urlGirl():
     if request.method == 'GET':
@@ -310,8 +316,8 @@ def urlGirl():
         ret = backend.query_girl(args)
         return Response(response=dumps(ret['body']), status=ret['status'])
 
-
 @api.route('/v1/girls/<string:asset_id>/', methods=['GET'])
+@api.route('/v1/girls/<string:asset_id>',  methods=['GET'])
 @cross_origin()
 def urlGetGirl(asset_id):
     args = {}
@@ -322,6 +328,7 @@ def urlGetGirl(asset_id):
     return Response(response=dumps(ret['body']), status=ret['status'])
 
 @api.route('/v1/assets/<string:block_id>/', methods=['GET'])
+@api.route('/v1/assets/<string:block_id>',  methods=['GET'])
 @cross_origin()
 def urlAssetBlock(block_id):
     args = {}
