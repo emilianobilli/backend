@@ -1,4 +1,6 @@
+
 {% extends "cawas/base.html" %}
+
 
 {% block subheader %}
 <div class="col-xs-12 col-md-12 col-lg-12 unpad">
@@ -16,60 +18,66 @@
 {% block content %}
  <!-- CONTENT -->
 <div class="container">
-    <div class="row">
-       <!-- left col -->
-       <div class="col-xs-12 col-md-6 col-lg-6 sepTOP-big">
-           <h1>Editar MOVIE</h1>
-           <div  id="repro1">
-               <video width="400" controls class="fRIGHT">
-                  <source src="" type=video/mp4 id="videomp4">
-               </video>
-           </div>
-       </div>
-    </div><!-- fin Row -->
+
+      <div class="row">
+               <!-- left col -->
+               <div class="col-xs-12 col-md-6 col-lg-6 sepTOP-big">
+                    <h1>Editar MOVIE</h1>
+                    <div>
+                        <h3>Edita los campos necesarios y presiona el botón EDITAR</h3>
+                    </div>
+
+               </div>
+      </div>
 </div>
 
         <!-- hidden form -->
-        <div class="container" >
+        <div class="container">
+
                 <!-- 1 Row : Title -->
                 <div class="row form-row">
                     <div class="col-xs-12 col-md-12 col-lg-12">
                         <div class="form-group">
-                            <label for="orginalTitle" id="idTit">AGREGANDO ID:</label>
+                            <label for="orginalTitle" id="idTit" >ID: {{asset_id}}</label>
+                            <input type="hidden" name="asset_id" value="{{asset_id}}">
                         </div>
-                        <input type="text" class="form-control" name="selectedID" id="movieID" value="{{asset_id}}">
                         <div class="form-group has-feedback" id="oriTit-container">
                             <label class="label-left" for="orginalTitle">Título original: *</label>
-                            <input type="text" class="form-control" name="orginalTitle" id="orginalTitle" value="{{ vmovie.original_title }}" autofocus>
+                            <input type="text" class="form-control" name="orginalTitle" id="orginalTitle" autofocus
+                                value="{{vmovie.original_title}}">
                             <span class="glyphicon form-control-feedback"></span>
                         </div>
                     </div>
                 </div>
 
+
+
                 <!-- Form manda imagenes y vars en un JSON hecho string -->
-                <form method="post" action="" name="movie-completeForm" enctype="multipart/form-data"  class="content-picker movieChoose" id="movieForm">
+                <form method="post" action="" name="movie-completeForm"  class="content-picker movieChoose" id="movieForm" enctype="multipart/form-data">
 
                 <!-- 2 Row : Images -->
                 <div class="row form-row">
                     <div class="col-xs-4 col-md-4 col-lg-4 form-group">
                        <div class="form-group has-feedback imgUpload">
-                            <label class="label-left" for="ThumbHor" id="ThumbHorTit">Imagen Portrait: *</label>
-                            <input type="file" value="/static/files/movies/M011824-portrait.jpg"
-                                   class="form-control" name="ThumbHor" id="ThumbHor" accept="image/*">
+                            <label class="label-left" for="ThumbHor" id="ThumbHorTit">Asociar imagen landscape: *</label>
+                            <input id="imgantportrait" value="{{vmovie.image.portrait.name}}" disabled></input>
+                            <input type="file" class="form-control" name="ThumbHor" id="ThumbHor" accept="image/*"
+                                value="{{ vmovie.image.portrait.name }}">
                             <span class="glyphicon form-control-feedback"></span>
-                            <img id="imageH" src="/static/files/movies/{{}}"/>
-                           {{ vmovie.image.portrait }}
+                            <img id="imageH" src="{{ imgport }}"/>
                         </div>
                     </div>
 
                     <div class="col-xs-4 col-md-4 col-lg-4 form-group" >
                        <div class="form-group has-feedback imgUpload">
-                            <label for="ThumbVer" id="ThumbVerTit">Imagen Landscape: *</label>
-                            <input type="file" value="/static/files/movies/M011824-portrait.jpg"
-                                   class="form-control" name="ThumbVer" id="ThumbVer" accept="image/*">
+                            <label for="ThumbVer" id="ThumbVerTit">Asociar imagen portrait: *</label>
+                            <input id="imgantlandscape" value="{{vmovie.image.landscape.name}}" disabled></input>
+                            <input type="file" class="form-control" name="ThumbVer" id="ThumbVer" accept="image/*"
+                                value="{{ vmovie.image.landscape.name }}">
+
                             <span class="glyphicon form-control-feedback"></span>
-                            <img id="imageV" src="/static/files/movies/M011824-portrait.jpg" />
-                           {{ vmovie.image.landscape }}
+                            <img id="imageV" src="{{ imgland }}"/>
+
                         </div>
                     </div>
 
@@ -77,10 +85,9 @@
                     </div>
                 </div>
 
-                <input type="hidden" name="varsToJSON" id="varsToJSON" value="">
+               <input type="hidden" name="varsToJSON" id="varsToJSON" value="">
 
                </form>
-
                 <!-- 3 Row : Palymates pick -->
                 <div class="row form-row">
                     <div class="col-xs-4 col-md-4 col-lg-4 form-group plyMatePick">
@@ -143,9 +150,9 @@
 
             <!-- 5 Row : Canal pick -->
                 <div class="row form-row">
-                    <div class="col-xs-12 col-md-8 col-lg-8 form-group">
-                        <div class="form-group has-feedback">
-                            <label class="label-left" for="elenco">Canal: *</label>
+                    <div class="col-xs-12 col-md-4 col-lg-4 form-group">
+                        <div class="form-group has-feedback" id="channelSelect">
+                            <label class="label-left" for="canal">Canal: *</label>
                             <div class="helpright"><span class="glyphicon glyphicon-question-sign" data-toggle="tooltip" title="Selecciona el canal al que pertenece esta movie (ej: Venus)"></span></div>
 
                             <!-- ------------------Reemplazar por listado de canales ----------------- -->
@@ -160,29 +167,39 @@
                                 {% endfor %}
                             </select>
 
-                            <!-- ------------------  Fin de listado de canales  ----------------- -->
+                           <!-- ------------------  Fin de listado de canales  ----------------- -->
                             <span class="glyphicon form-control-feedback"></span>
                         </div>
                     </div>
-                </div>
 
-                <!-- 6 Row : Director pick -->
-                <div class="row form-row">
-                    <div class="col-xs-12 col-md-12 col-lg-12 form-group">
+                    <div class="col-xs-12 col-md-4 col-lg-4 form-group">
                         <div class="form-group has-feedback">
-                            <label class="label-left" for="director">Director: </label>
-                            <input type="text" class="form-control" name="director" id="director" value="{{ vmovie.directors }}" autofocus>
+                            <label class="label-left" for="releaseYear">Año de estreno (AAAA): *</label>
+                            <input type="number" class="form-control" name="releaseYear" id="releaseYear" min="1890" max="2300"
+                                   value="{{ vmovie.year }}"  oninput="maxLengthCheck(this)" >
                             <span class="glyphicon form-control-feedback"></span>
                         </div>
                     </div>
+
+                    <div class="col-xs-12 col-md-4 col-lg-4 form-group">
+                        <div class="form-group has-feedback">
+                            <label class="label-left" for="releaseYear">Display runtime (mm:ss): *</label>
+                            <input type="text" class="form-control" name="runtime" id="runtime" autofocus
+                                value="{{vmovie.display_runtime}}">
+
+                            <span class="glyphicon form-control-feedback"></span>
+                        </div>
+                    </div>
+
                 </div>
 
-                <!-- 7 Row : year pick -->
+                <!-- 7 Row : Director pick -->
                 <div class="row form-row">
                     <div class="col-xs-12 col-md-12 col-lg-12 form-group">
                         <div class="form-group has-feedback">
-                            <label class="label-left" for="releaseYear">Año de estreno (AAAA): </label>
-                            <input type="text" class="form-control" name="releaseYear" id="releaseYear" value="{{ vmovie.year }}" autofocus>
+                            <label class="label-left" for="director">Director: *</label>
+                            <input type="text" class="form-control" name="director" id="director"
+                                   value="{{ vmovie.directors }}" autofocus>
                             <span class="glyphicon form-control-feedback"></span>
                         </div>
                     </div>
@@ -201,14 +218,24 @@
                     </div>
                 </div>
 
+
+
+
+
                 <!--  9 : Idioma -->
                 <div class="row form-row">
                     <div class="col-xs-12 col-md-3 col-lg-3 form-group">
-                        <div class="form-group has-feedback">
-                            <label class="label-left" for="idioms">Elija idioma: *</label>
-                            <div class="helpright"><span class="glyphicon glyphicon-question-sign" data-toggle="tooltip" title="Debe elejir al menos un idioma para dar de alta la movie."></span></div>
-                            <div class="form-group">
+                        <div class="form-group has-feedback" id="lang-container">
+                            <div id="pickLang">
+                                <label class="label-left" for="idioms">Elija idioma: (al menos uno)*</label>
+
+                            </div>
+                            <span class="glyphicon form-control-feedback"></span>
+                            <div class="form-group has-feedback">
+
                                 {% for item in vlangmetadata %}
+
+
                                     {% if item.checked == True %}
                                          <input type="checkbox" checked name="idioma" value="{{item.code}}" id="{{item.code}}"
                                                class="chkbx"> {{item.name}}<br>
@@ -218,10 +245,12 @@
                                     {% endif %}
                                 {% endfor %}
                             </div>
-                            <span class="glyphicon form-control-feedback"></span>
+
                         </div>
                     </div>
                 </div>
+
+
 
                 <!-- LANGUAGE modules -->
                {% for item in vlangmetadata %}
@@ -257,7 +286,11 @@
                                     <div class="helpright"><span class="glyphicon glyphicon-question-sign" data-toggle="tooltip" title="Al ingresar una fecha, el sistema publicará la movie en español en esa fecha."></span></div>
                                     <label class="label-left" for="date_{{item.code}}">Fecha de Publicación</label>
                                     <input type="text" class="form-control datePick"
-                                           name="date_{{item.code}}" id="date_{{item.code}}">
+                                           name="date_{{item.code}}" id="date_{{item.code}}"
+                                        value="{{ item.publish_date|date:'d-m-Y' }}"
+                                        >
+
+
                                     <span class="glyphicon form-control-feedback"></span>
                                </div>
                            </div>

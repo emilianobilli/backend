@@ -10,12 +10,14 @@ urlpatterns = [
     url(r'^$', views.menu_view, name='menu_view'),
     url(r'^movies/add/$', views.add_movies_view, name='add_movie'),
     url(r'^movies/edit/(?P<asset_id>\d*)/$', views.edit_movies_view, name='edit_movie'),
+    url(r'^girls/add/$', views.add_girls_view, name='add_girls'),
+    url(r'^girls/edit/(?P<asset_id>\d*)/$', views.edit_girls_view, name='edit_girls'),
 
     #<#POST Json CAWAS>
-    #url(r'^add_movie_json/$', views.add_movies_view, name='add_movie_json'),
+    url(r'^add_movie_json/$', views.add_movies_view, name='add_movie_json'),
     url(r'^edit_movie_json/$', views.edit_movies_view, name='edit_movie_json'),
-    url(r'^add_girl_json/$', views.add_girl_view, name='add_girl_json'),
-    url(r'^edit_girl_json/$', views.edit_girl_view, name='edit_girl_json'),
+    #url(r'^add_girl_json/$', views.add_girls_view, name='add_girl_json'),
+    #url(r'^edit_girl_json/$', views.edit_girls_view, name='edit_girl_json'),
     url(r'^add_category_json/$', views.add_category_view, name='add_category_json'),
     url(r'^edit_category_json/$', views.edit_category_view, name='edit_category_json'),
     url(r'^add_serie_json/$', views.add_serie_view, name='add_serie_json'),

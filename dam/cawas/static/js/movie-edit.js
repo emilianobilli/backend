@@ -1,12 +1,157 @@
+// La anteúltima línea es la que invoca a la función para llenar el formulario.
+// la variable debajo de este texto (requestedData) es el JSON que sirve de datapool.
+// Los datos se envían por POST a movies.html... chequear eso!!!!
 /*
-var requestedData={""};
-function getJson(){
-   requestedData =  $("#varsToJSON").val();
-};
+var requestedData={"Movie":
+                   {"asset_id":"000001",
+                    "original_title":"Naughty schoolgirl Judgement Day",
+                    "channel_id":"2",
+                    "year":2016,
+                    "girls":[{"girl_id":"210002129"},{"girl_id":"210002126"}],
+                    "cast":"actor1, actor2",
+                    "directors":"director 1, director 2",
+                    "display_runtime":"20:30",
+                    "categories": [{"category_id":"210002128"},{"category_id":"210002127"}],
+                    "Moviesmetadata": [
+							{"Moviemetadata":{"language": "es","title": "Colegiala traviesa - Judgement Day", "summary_short": "Hay que reventar a Sarah Oconnor, acomodé el lugar...","summary_long":"Hay que reventar a Sarah Oconnor, a como de lugar. Para ello me tomo 5 minutos, me tomo un T1000. Termina que el mayordomo es el asesino. Spoiler alert, ups!"}}, 
+							{"Moviemetadata":{"language": "pt","title": "A Estudante impertinente no Doomsday.", "summary_short": "A garota Sarah O´connor vai ser arreventada...","summary_long":"A garota Sarah Oconnor vai ser arrebentada pelo monstro mecanico e nao pode ficar nada pra lo evitar. Porra!"}} 
+						]}};
 */
+// helper para populateForm(), dependiendo del tipo de tag, llena un valor en un input, un string, select o agrega texto.
+    function insertIt(id,valueSent,method){
+        switch(method){
+                case "html":
+                    $(id).html(valueSent);
+                break;
+                case "val":
+                    $(id).val(valueSent);
+                break;
+                case "append":
+                    $(id).append(valueSent);
+                break;
+                case "select":
+                    //id='"'+id+' option[value='+valueSent+']"';
+                    //console.log("id"+id);
+                    //$(id).attr('selected','selected');
+                    $(id).val(valueSent).change();
+                break;
+                default:
+                break;
+        }
+        
+    }
+
+    function insertIdiomas(cant){
+        var checkIdvar;
+        for(i=0; i<cant; i++){
+            var lang=requestedData.Movie.Moviesmetadata[i].Moviemetadata.language;
+                if(lang=="es"){
+                    checkIdvar="spa";
+                }else if(lang=="pt"){
+                    checkIdvar="por";
+                }else{
+                    checkIdvar="eng";
+                }
+            $("#"+checkIdvar).prop('checked', true);
+            $("#"+checkIdvar).change();
+            $("#Module_"+checkIdvar).show();
+            $("#tit_"+checkIdvar).val(requestedData.Movie.Moviesmetadata[i].Moviemetadata.title);
+            $("#short_desc_"+checkIdvar).val(requestedData.Movie.Moviesmetadata[i].Moviemetadata.summary_long);
+            
+            $("#date_"+checkIdvar).val(makeToday());
+        }
+        
+        
+    }
+
+    function searchList(theList,val){
+        console.log("estoy buscando esto:"+val+" en:"+theList);
+        var theAnswer;
+        $(theList).find('li').each(function(){
+         //console.log("ahora estoy en:"+$(this).val()+" y busco:"+val)  
+            if($(this).val()==val){
+                theAnswer=$(this).html();
+                console.log("and the winner is:"+theAnswer);
+                $(this).remove();//quita de la lista original el valor que viene el JSON
+            }
+        });
+        return(theAnswer);
+    }
+
+    function makelist(iddrop,idpick,valuesOf,theObject){
+        
+        var myArrayOfValues = valuesOf;
+        var ArrLngth = myArrayOfValues.length;        
+        var htmlContent = "";
+        for(i=0; i<ArrLngth; i++){
+            if(theObject==".girl_id"){
+             var theRealValue = myArrayOfValues[i].girl_id;
+            }
+            if(theObject==".category_id"){
+             var theRealValue = myArrayOfValues[i].category_id;
+            }
+            console.log("theRealValue"+theRealValue);
+            var listVal = searchList(idpick,theRealValue);
+            console.log("listVal after function is"+listVal);
+            htmlContent+= "<li value='"+theRealValue+"'>"+listVal+"</li>"
+        }
+        $(iddrop).html(htmlContent);
+    }
+
+    function makeToday(){
+        var today = new Date();
+        var dd = today.getDate();
+        var mm = today.getMonth()+1; //January is 0!
+
+        var yyyy = today.getFullYear();
+        if(dd<10){
+            dd='0'+dd;
+        } 
+        if(mm<10){
+            mm='0'+mm;
+        } 
+        var today = dd+'/'+mm+'/'+yyyy;
+        return(today);
+    }
+    
+    // rellena el formulario con los datos recogidos en la variable requestedData
+    function populateForm(){
+        
+        var qIdiomas = requestedData.Movie.Moviesmetadata.length;
+        var estreno = (requestedData.Movie.display_runtime);
+        var estrenoArr = estreno.split(":");
+        var estreno2 = Number(estrenoArr[0]+":,"+estrenoArr[1]);
+        //id
+        insertIt("#idTit", requestedData.Movie.asset_id, "append");
+        //title
+        insertIt("#orginalTitle", requestedData.Movie.original_title, "val");
+        //girls
+        makelist("#pornstarDrop","#pornstarPick",requestedData.Movie.girls,".girl_id");
+        //género
+        makelist("#generoDrop","#generoPick",requestedData.Movie.categories,".category_id");
+        //canales
+        insertIt("#canalSelect", requestedData.Movie.channel_id, "select");
+        //runtime
+        insertIt("#duration-minutes", Number(estrenoArr[0]), "val");
+        insertIt("#duration-seconds", estrenoArr[1], "val");
+        insertIt("#runtime", estreno2, "val");
+        
+        //año de estreno
+        insertIt("#releaseYear", requestedData.Movie.year, "val");
+        //Director
+        insertIt("#director", requestedData.Movie.directors, "val");
+        //Elenco
+        insertIt("#elenco", requestedData.Movie.cast, "val");
+        
+        //idiomas
+        insertIdiomas(qIdiomas)
+        //console.log("qIdiomas:"+qIdiomas);
+        
+    }
+
 
 $( document ).ready(function() {
-
+    
     console.log( "ready!" );
     
     if(resultado=="success"){
@@ -16,18 +161,7 @@ $( document ).ready(function() {
         $("#myModal-ERROR").modal();
     }
     
-     /* Funcion que cuenta la cantidad de idiomas selecionados, se utiliza al momento de validar la edicion de la movie */
-    var countChecked = function() {
-    langQ = $("input:checked" ).length;
-        $('input[type=checkbox]').each(function(){
-            if (this.checked) {
-                langDesc.push($(this).attr("id"));
-            }
-        });
-
-    };
-
-
+    
     
     var checkedOnce = 0; //chequea si el formulario se ha intentado enviar alguna vez
     var checkVal=0; //chequea la cantidad de errores en el formulario
@@ -98,6 +232,7 @@ $( document ).ready(function() {
             if(clickedText!="")
             {
                 $( "#movieName" ).val(clickedText);// Agrega el ID en el input field
+                               
             }
         });
         
@@ -105,7 +240,7 @@ $( document ).ready(function() {
     
     // simular exit con el botó de salir
     $("#EDBtn").click(function(){
-           window.location.href = "/movies/edit/"+clickedTextID;
+           window.location.href = "movies-edit.html?ID="+clickedTextID;
     })
     
     // interacción del usuario al hacer click en el botón debajo de la lista de selección
@@ -235,10 +370,9 @@ $( document ).ready(function() {
 //----------------> Helper functions
     
     function changeVideo(src, divId){// para cambiar lo que reproduce el player de acuerdo al ID de la lista.
-        path="http://cdnlevel3.zolechamedia.net/" + src + "/mp4/350/" + src +".mp4";
+        path="video/";
         var video = $(divId+' video')[0];
-        //http://cdnlevel3.zolechamedia.net/{asset_id}/mp4/350/{asset_id}.mp4
-        video.src = path;
+        video.src = path+src+".mp4";
         console.log(video.src);
         video.load();
         video.play();
@@ -295,7 +429,7 @@ $( document ).ready(function() {
         var elenco_selected = $('#elenco').val();
         var display_runtime = $('#runtime').val();
         var year_selected = $('#releaseYear').val();
-        countChecked();
+        
         // chequea original Title
         if(original_Title=="" || original_Title==" ")
         {
@@ -305,21 +439,23 @@ $( document ).ready(function() {
             okMe("#orginalTitle");
         }
         // chequea thumbnail horizaontal
-        if(!$('#ThumbHor').val() && !$('#imgantportrait').val()){
-
+        /*
+        if(!$('#ThumbHor').val()){
             errorMe("#ThumbHor");
             checkVal++;
         }else{
             okMe("#ThumbHor");
         }
-        
+        */
         // chequea thumbnail vertical
-        if(!$('#ThumbVer').val() && !$('#imgantlandscape').val()){
+        /*
+        if(!$('#ThumbVer').val()){
             errorMe("#ThumbVer");
             checkVal++;
         }else{
             okMe("#ThumbVer");
         }
+        */
         
         // chequea pornstar
         if ( $('#pornstarDrop li').length < 1 )
@@ -381,8 +517,6 @@ $( document ).ready(function() {
         }
         
          // chequea display runtime
-
-        /*
         if(display_runtime=="" || display_runtime=="0:,0")
         {
             errorMe("#runtime");
@@ -396,7 +530,6 @@ $( document ).ready(function() {
             display_runtimeJSON=myDirtyRuntime[0]+myDirtyRuntime[1];
             okMe("#runtime");
         }
-        */
         
         // chequea elenco
         if(elenco_selected=="" || elenco_selected==" ")
@@ -440,6 +573,8 @@ $( document ).ready(function() {
         
         
         // helper subfunctions
+        
+        
             function errorMe(theField){
                 if ($(theField).parent().hasClass('has-success')){
                     $(theField).parent().removeClass('has-success');
@@ -486,9 +621,6 @@ $( document ).ready(function() {
         
             function checkLangs(arr){ // itera sobre los lenguajes seleccionados buscando errores
                 var lngth = arr.length;
-                var lenguajescargados = 0;
-
-                var lengactualok = 1;
                 for(i=0; i<lngth; i++){
                     var lang=arr[i];
                     /* check title */
@@ -496,17 +628,14 @@ $( document ).ready(function() {
                     if(titCont==""){
                         errorMe("#tit_"+lang);
                         checkVal++;
-                        lengactualok = 0;
                     }else{
                         okMe("#tit_"+lang);
-
                     }
                     /* check desc */
                     var descCont = $("#short_desc_"+lang).val().trim();
                     if(descCont.length < 1){
                         errorMe("#short_desc_"+lang);
                         checkVal++;
-                        lengactualok = 0;
                     }else{
                         okMe("#short_desc_"+lang);
                     }
@@ -515,20 +644,9 @@ $( document ).ready(function() {
                     if(dateCont==""){
                         errorMe("#date_"+lang);
                         checkVal++;
-                        lengactualok = 0;
                     }else{
                         okMe("#date_"+lang);
                     }
-
-                    if (lengactualok == 1){
-                        lenguajescargados = lenguajescargados + 1 ;
-                    }
-
-
-                    if (lenguajescargados > 0 && lengactualok > 1){
-                        checkVal = 0;
-                    }
-
                 }
             }
         
@@ -538,17 +656,25 @@ $( document ).ready(function() {
                 
                 for(i=0; i<lngth; i++){
                     var lang=arr[i];
-
+                    switch (lang){
+                            case "spa":
+                            var lng="es";
+                            break;
+                            case "por":
+                            var lng="pt";
+                            break;
+                            case "eng":
+                            var lng="en";
+                            break;
+                    };
                     var tit = $("#tit_"+lang).val();
                     var short = $("#short_desc_"+lang).val().trim().substring(0,50)+"...";
                     var long = $("#short_desc_"+lang).val().trim();
-                    var fechapub = $("#date_"+lang).val().trim();
                     myLangs += '{"Moviemetadata":';
-                    myLangs += '{"language": "'+lang+'",';
+                    myLangs += '{"language": "'+lng+'",';
                     myLangs += '"title": "'+tit+'",';
                     myLangs += '"summary_short": "'+short+'",';
-                    myLangs += '"summary_long":"'+long+'",';
-					myLangs += '"schedule_date":"'+fechapub+'"';
+                    myLangs += '"summary_long":"'+long+'"';
                     myLangs += '}}';
                     if(i<lngth-1){
                         myLangs += ',';
@@ -584,4 +710,6 @@ $( document ).ready(function() {
         
     }
     
+    
+    populateForm();
 });

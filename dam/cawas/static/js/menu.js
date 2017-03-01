@@ -22,14 +22,35 @@ $( document ).ready(function() {
     
     
     // navega desde el selector de conenidos al value+".html" de cada option
-    $( "#content-select" ).change(function() {
+    $("#content-select").change(function() {
         var clickedVal;
         $( "#content-select option:selected" ).each(function() {
-          clickedVal= $(this).val();
+            clickedVal= $(this).val();
             if(clickedVal!="")
             {
+                var urlstring="";
+                switch(clickedVal){
+                    case "0":
+                         urlstring = "";
+                         break;
+                    case "1":
+                        urlstring = "/movies/add/";
+                        break;
+                    case "2":
+                        urlstring = "/serie/add/";
+                        break;
+                    case "3":
+                        urlstring = "/block/add/";
+                        break;
+                    case "4":
+                        urlstring = "/girl/add/";
+                        break;
+                     case "5":
+                        urlstring = "/category/add/";
+                        break;
+                }
                 console.log( "clickedVal="+clickedVal );
-                 window.location.href = clickedVal+".html";
+                window.location.href = urlstring;
             }
         });
         
