@@ -16,31 +16,78 @@
 </div>
 {% endblock subheader %}
 
+
 {% block content %}
 
-
-        <!-- CONTENT -->
-        <div class="container">
-
+               
               <div class="row">
                        <!-- left col -->
                        <div class="col-xs-12 col-md-6 col-lg-6 sepTOP-big">
+                           <div class="col-xs-12 col-md-12 col-lg-12 ">
+                               <h1>AGREGAR chica</h1>
+                           </div>
+                           <div class="col-xs-12 col-md-4 col-lg-4 btnOnly">       
+                                <button class="btn btn-primary btn-block form-control" type="button" id="ADBtn">Nueva chica</button>
+                           </div>
+                      </div>
+                        
+                       
+                      <!-- right col -->
+                      <div class="col-xs-12 col-md-6 col-lg-6 sepTOP-big">
+                           <div class="alignRIGHT-lg">
+                                <h1>EDITAR chica</h1>
+                                <div>
+                                    <h3>Selecciona una chica de la lista para editarla</h3>
+                                </div>
+                            </div>
+                            <div>
+                            
+                                   <!-- ------------------Reemplazar por listado de chicas ----------------- -->
+                                      
+                                    <select id="chica-select" class="form-control" size="6">
+                                        {% for item in vgirls %}
+                                            <option value="{{ item.asset.asset_id }}"> {{ item.name }} </option>
+                                        {% endfor %}
+                                    </select>
+                                    
+                                  <!-- ---------------------- Fin de  listado de chicas ------------------- -->
+                            </div>
+                            
+                            <div>
+                               <form method="get" action="" name="chica-pickerForm" id="chica-pickerForm" class="content-picker movieChoose">
+                                   
+                                   <div class="col-xs-12 col-md-8 col-lg-8">       
+                                       <input type="text" class="form-control" name="selectedName" id="chicaNAME" value="">
+                                       <input type="hidden" class="form-control" name="selectedID" id="chicaID" value="">
+                                   </div>
+                                   <div class="col-xs-12 col-md-4 col-lg-4">       
+                                       <button class="btn btn-primary btn-block form-control" type="button" id="EDBtn">Editar</button>
+                                   </div>
+                                   
+                                </form>
+                            </div>
+                       </div>
+                                        
+              </div>
+              
+        </div>
+        
+         <!-- hidden form -->
+        <div class="container" id="hidden1">
+        
+             <div class="row">
+                       <!-- left col -->
+                       <div class="col-xs-12 col-md-6 col-lg-6 sepTOP-big">
                            <div class="col-xs-12 col-md-12 col-lg-12">
-                            <h1>Agregar chica</h1>
+                            <h1>Nueva chica</h1>
                            </div>
                            <div class="col-xs-4 col-md-3 col-lg-3">
                                 <button class="btn btn-primary btn-block form-control" type="button" id="CancelBtn">Cancelar</button>
                            </div>
-                       </div>
-
+                       </div> 
+                                                               
               </div>
-
-        </div>
-
-        <!-- hidden form -->
-        <div class="container">
-           <form method="post" action="" name="chica-completeForm"  class="content-picker movieChoose">
-
+              
             <!-- First Row : Title -->
             <div class="row form-row">
                 <div class="col-xs-12 col-md-12 col-lg-12">
@@ -48,133 +95,204 @@
                         <label for="orginalTitle" id="idTit">NUEVO ID : </label>
                         <!-- pegar  acá -->
                         <span class="idLegend">
-
-
+                           
+                           
                            <!-- pegar  acá el ID nuevo -->
                            2121222
-
-
+                           
+                            
                         </span>
                     </div>
-                    <div class="form-group">
-
-
+                    <div class="form-group has-feedback">
+                      
+                      
                         <!-- pegar en "value" el ID nuevo -->
                         <input type="hidden" name="newID" vlaue="">
-
-
-                        <label class="label-left" for="orginalTitle">Nombre: *</label>
-                        <input type="text" class="form-control" name="orginalName" id="orginalTitle" required autofocus>
+                        <label class="label-left" for="orginalName">Nombre: *</label>
+                        <input type="text" class="form-control" name="orginalName" id="orginalName" required autofocus><span class="glyphicon form-control-feedback"></span>
                     </div>
                 </div>
             </div>
+            
+            <!-- Form manda imagenes y vars en un JSON hecho string -->
+                <form method="post" action="" name="girl-completeForm"  class="content-picker movieChoose" id="girlForm" enctype="multipart/form-data">
+                
+            <!-- 2 Row : Images -->
+                <div class="row form-row">
+                    <div class="col-xs-4 col-md-4 col-lg-4 form-group">
+                       <div class="form-group has-feedback imgUpload">
+                            <label class="label-left" for="ThumbHor" id="ThumbHorTit">Asociar imagen landscape: *</label>
+                            <input type="file" class="form-control" name="ThumbHor" id="ThumbHor" accept="image/*">
+                            <span class="glyphicon form-control-feedback"></span>
+                            <img id="imageH"/>
+                            
+                            
+                        </div>
+                    </div>
+                    <div class="col-xs-4 col-md-4 col-lg-4 form-group" >
+                       <div class="form-group has-feedback imgUpload">
+                            <label for="ThumbVer" id="ThumbVerTit">Asociar imagen portrait: *</label>
+                            <input type="file" class="form-control" name="ThumbVer" id="ThumbVer" accept="image/*">
+                            
+                            <span class="glyphicon form-control-feedback"></span>
+                            <img id="imageV"/>
+                        </div>
+                    </div>
+                    <div class="col-xs-4 col-md-4 col-lg-4">
+                    </div>
+                </div>
 
-            <!-- Second Row : Images -->
+                <input type="hidden" name="varsToJSON" id="varsToJSON" value="">
+              
+               </form>
+            
+            
+            <!-- Row 3: Fecha Nacimiento -->
             <div class="row form-row">
-                <div class="col-xs-4 col-md-4 col-lg-4 form-group imgUpload">
-                    <label class="label-left" for="ThumbHor" id="ThumbHorTit">Asociar Thumbnail horizontal: *</label>
-                    <input type="file" class="form-control" name="ThumbHor" id="ThumbHor" accept="image/*">
-                    <img id="imageH" />
-                </div>
-                <div class="col-xs-4 col-md-4 col-lg-4 form-group imgUpload" >
-                    <label for="ThumbVer" id="ThumbVerTit">Asociar Thumbnail vertical: *</label>
-                    <input type="file" class="form-control" name="ThumbVer" id="ThumbVer" accept="image/*">
-                    <img id="imageV" />
-                </div>
-                <div class="col-xs-4 col-md-4 col-lg-4">
+               <div class="col-xs-12 col-md-4 col-lg-4">
+                   <div class="form-group has-feedback">
+                    <label class="label-left" for="birthDate">Fecha de Nacimiento: *</label>
+                     <input type="text" class="form-control" name="birthDate" id="birthDate" required autofocus placeholder="dd-mm-aaaa">
+                     <span class="glyphicon form-control-feedback"></span>
+                   </div>
                 </div>
             </div>
-
-
-
-
-
-            <!-- Third Row : Idioma -->
+            
+            <!-- Row 4: Altura y peso -->
             <div class="row form-row">
-                <div class="col-xs-12 col-md-3 col-lg-3 form-group">
-                    <div class="form-group">
-                        <label class="label-left" for="idioma">Elija idioma: *</label>
-                        <div class="helpright"><span class="glyphicon glyphicon-question-sign" data-toggle="tooltip" title="Debe elejir al menos un idioma para dar de alta la movie."></span></div>
-
-                        <div class="form-group">
-                            <input type="checkbox" name="idioma" value="spa" id="spa"> Español<br>
-                            <input type="checkbox" name="idioma" value="por" id="por"> Portugués<br>
-                            <input type="checkbox" name="idioma" value="eng" id="eng"> Inglés<br>
+               <div class="col-xs-12 col-md-4 col-lg-4">
+                   <div class="form-group has-feedback">
+                    <label class="label-left" for="height">Altura (en mts. ej:1.60): *</label>
+                     <input type="number" class="form-control" name="height" id="height" min="0" max="3" oninput="maxLengthCheck(this)" required autofocus ><span class="glyphicon form-control-feedback"></span>
+                   </div>
+                </div>
+                
+                <div class="col-xs-12 col-md-4 col-lg-4">
+                   <div class="form-group has-feedback">
+                    <label class="label-left" for="weight">Peso (en kgs.): *</label>
+                     <input type="number" class="form-control" name="weight" id="weight" min="30" max="200" oninput="maxLengthCheck(this)" required autofocus><span class="glyphicon form-control-feedback"></span>
+                    </div>
+                </div>
+            </div>
+           
+            <!-- Row 5: Categoría -->
+            <div class="row form-row">
+               <div class="col-xs-12 col-md-4 col-lg-4">
+                   <div class="form-group has-feedback">
+                    <label class="label-left" for="category">Categoría: *</label>
+                     <select class="form-control" id="category">
+                            <option id="pornstar" value="pornstar">Pornstar</option>
+                            <option id="playmate" value="playmate">Playmate</option>
+                     </select>
+                     <span class="glyphicon form-control-feedback"></span>
+                   </div>
+                </div>
+            </div>
+            
+            <!--  9 : Idioma -->
+                <div class="row form-row">
+                    <div class="col-xs-12 col-md-3 col-lg-3 form-group">
+                        <div class="form-group has-feedback" id="lang-container">
+                            <div id="pickLang">
+                                <label class="label-left" for="idioms">Elija idioma: (al menos uno)*</label>
+                                
+                            </div>
+                            <span class="glyphicon form-control-feedback"></span>
+                            <div class="form-group has-feedback">
+                                {% for item in vlanguages %}
+                                    <input type="checkbox" name="idioma" value="{{ item.code }}" id="{{ item.code }}" class="chkbx"> {{ item.name }}<br>
+                                {% endfor %}
+                            </div>
+                            
                         </div>
                     </div>
                 </div>
-            </div>
-
+            
             <!-- LANGUAGE modules -->
-
-            <div class="row form-row hid" id="Module_spa">
+            
+            <div class="row form-row hid" id="Module_es">
                 <div class="col-xs-12 col-md-12 col-lg-12 form-group">
                     <h2>Español</h2>
-
+                                              
                        <div class="col-xs-12 col-md-12 col-lg-12 form-group inlang">
+                           <div class="form-group has-feedback">
                             <div class="helpright"><span class="glyphicon glyphicon-question-sign" data-toggle="tooltip" title="La descripción para los thumbnails mostrará los primeros 50 caracteres. Al ingresar en la chica se verá completa."></span></div>
                             <label class="label-left" for="short_desc_spa">Descripción corta: *</label>
-                           <textarea class="form-control" name="short_desc_spa" id="short_desc_spa"></textarea>
+                           <textarea class="form-control" name="short_desc_es" id="short_desc_es"></textarea>
+                           <span class="glyphicon form-control-feedback"></span>
+                           </div>
                        </div>
-
+                       
                        <div class="col-xs-12 col-md-12 col-lg-12 form-group inlang">
-                            <div class="helpright"><span class="glyphicon glyphicon-question-sign"></span></div>
-                            <label class="label-left" for="date_spa">Descripción completa:</label>
-                            <input type="text" class="form-control" name="desc_completa_spa" id="desc_completa_spa">
+                           <div class="form-group has-feedback">
+                            <label class="label-left" for="nacionalidad_es">Nacionalidad:</label>
+                            <input type="text" class="form-control" name="nacionalidad_es" id="nacionalidad_es">
+                            <span class="glyphicon form-control-feedback"></span>
+                           </div>
                        </div>
-
+                        
                 </div>
             </div>
-
-            <div class="row form-row hid" id="Module_por">
+            
+            <div class="row form-row hid" id="Module_pt">
                 <div class="col-xs-12 col-md-12 col-lg-12 form-group">
                     <h2>Portugués</h2>
-
+                                              
                        <div class="col-xs-12 col-md-12 col-lg-12 form-group inlang">
+                           <div class="form-group has-feedback">
                             <div class="helpright"><span class="glyphicon glyphicon-question-sign" data-toggle="tooltip" title="La descripción para los thumbnails mostrará los primeros 50 caracteres. Al ingresar en la chica se verá completa."></span></div>
-                            <label class="label-left" for="short_desc_por">Descripción corta: *</label>
-                           <textarea class="form-control" name="short_desc_por" id="short_desc_por"></textarea>
+                            <label class="label-left" for="short_desc_pt">Descripción corta: *</label>
+                           <textarea class="form-control" name="short_desc_pt" id="short_desc_pt"></textarea>
+                           <span class="glyphicon form-control-feedback"></span>
+                           </div>
                        </div>
-
+                       
                        <div class="col-xs-12 col-md-12 col-lg-12 form-group inlang">
-                            <div class="helpright"><span class="glyphicon glyphicon-question-sign"></span></div>
-                            <label class="label-left" for="date_por">Descripción completa:</label>
-                            <input type="text" class="form-control" name="desc_completa_por" id="desc_completa_por">
+                           <div class="form-group has-feedback">
+                            <label class="label-left" for="nacionalidad_pt">Nacionalidad:</label>
+                            <input type="text" class="form-control" name="nacionalidad_pt" id="nacionalidad_pt">
+                            <span class="glyphicon form-control-feedback"></span>
+                           </div>
                        </div>
                 </div>
             </div>
-
-            <div class="row form-row hid" id="Module_eng">
+            
+            <div class="row form-row hid" id="Module_en">
                 <div class="col-xs-12 col-md-12 col-lg-12 form-group">
                     <h2>Inglés</h2>
-
+                                              
                        <div class="col-xs-12 col-md-12 col-lg-12 form-group inlang">
+                           <div class="form-group has-feedback">
                             <div class="helpright"><span class="glyphicon glyphicon-question-sign" data-toggle="tooltip" title="La descripción para los thumbnails mostrará los primeros 50 caracteres. Al ingresar en la chica se verá completa."></span></div>
-                            <label class="label-left" for="short_desc_eng">Descripción: *</label>
-                           <textarea class="form-control" name="short_desc_eng" id="short_desc_eng"></textarea>
+                            <label class="label-left" for="short_desc_en">Descripción corta: *</label>
+                           <textarea class="form-control" name="short_desc_en" id="short_desc_en"></textarea>
+                           <span class="glyphicon form-control-feedback"></span>
+                           </div>
                        </div>
-
+                       
                        <div class="col-xs-12 col-md-12 col-lg-12 form-group inlang">
-                            <div class="helpright"><span class="glyphicon glyphicon-question-sign"></span></div>
-                            <label class="label-left" for="date_eng">Descripción completa:</label>
-                            <input type="text" class="form-control" name="desc_completa_eng" id="desc_completa_eng">
+                           <div class="form-group has-feedback">
+                            <label class="label-left" for="nacionalidad_en">Nacionalidad:</label>
+                            <input type="text" class="form-control" name="nacionalidad_en" id="nacionalidad_en">
+                            <span class="glyphicon form-control-feedback"></span>
+                           </div>
                        </div>
                 </div>
             </div>
-
+            
             <!-- Last Row : Buttons -->
             <div class="row form-row">
                <div class="col-xs-4 col-md-4 col-lg-4">
                 </div>
-                <div class="col-xs-4 col-md-4 col-lg-4">
+                <div class="col-xs-4 col-md-4 col-lg-4">      
                     <button class="btn btn-primary btn-block form-control" type="submit" id="sendBut">Grabar Chica</button>
                 </div>
                 <div class="col-xs-4 col-md-4 col-lg-4">
                 </div>
             </div>
             </form>
+        
         </div>
-
 
 
 {% endblock content %}

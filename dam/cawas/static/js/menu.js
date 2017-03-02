@@ -37,16 +37,16 @@ $( document ).ready(function() {
                         urlstring = "/movies/add/";
                         break;
                     case "2":
-                        urlstring = "/serie/add/";
+                        urlstring = "/series/add/";
                         break;
                     case "3":
-                        urlstring = "/block/add/";
+                        urlstring = "/blocks/add/";
                         break;
                     case "4":
-                        urlstring = "/girl/add/";
+                        urlstring = "/girls/add/";
                         break;
                      case "5":
-                        urlstring = "/category/add/";
+                        urlstring = "/categories/add/";
                         break;
                 }
                 console.log( "clickedVal="+clickedVal );
