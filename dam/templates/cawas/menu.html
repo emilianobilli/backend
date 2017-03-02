@@ -125,18 +125,18 @@
                 </a>
             </div>
             <h3>Elige el tipo de contenido</h3>
+                <div class="content-picker">
+                    <form method="post" action="" name="content-pickerForm"  class="content-picker">
 
-            <div class="content-picker">
-                <form method="post" action="" name="content-pickerForm"  class="content-picker">
-                    <select class="form-control" name="selassetstypes">>
-                        {% for item in assetstypes %}
-                           <option value="{{ item.0 }}">{{ item.1 }}</option>
-                        {% endfor %}
-                    </select>
-                    <div class="col-xs-5 col-lg-5 col-md-5">
-                        <button class="btn btn-lg btn-primary btn-block" type="submit" id="enviar" >Cargar Contenido</button>
-                    </div>
-                </form>
+                        <select id="content-select" class="form-control">
+                            <option value="0"></option>
+                            {% for item in assetstypes %}
+                               <option value="{{ item.0 }}">{{ item.1 }}</option>
+                            {% endfor %}
+                        </select>
+                    </form>
+                </div>
+
             </div>
 
         </div>

@@ -8,9 +8,43 @@ from .models import Channel, Asset, Episode, ImageQueue, PublishQueue, Setting, 
 from django.shortcuts import render_to_response
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from django.shortcuts import get_object_or_404, render
-from django.http import Http404
+from django.http import Http404, HttpResponse
 from django.conf import settings
 from django.db import IntegrityError
+
+#FUNCIONES GENERALES
+#Funcion para publicar Asset
+def func_publish_queue(passet, planguage, pitem_type, pstatus,  pschedule_date):
+    #fecha pschedule_date: ya tiene que estar parceada como strftime('%Y-%m-%d')
+
+    vzones = PublishZone.objects.filter(enabled=True)
+    for zone in vzones:
+        # CREAR COLA DE PUBLICACION
+        vpublish = PublishQueue()
+        vpublish.item_id = passet.asset_id
+        vpublish.item_lang = planguage
+        vpublish.item_type = pitem_type
+        vpublish.status = pstatus
+        vpublish.publish_zone = zone
+        vpublish.schedule_date = pschedule_date
+        vpublish.save()
+        #except Exception as e:
+        #    return render(request, 'cawas/error.html', {"message": "No existe Lenguaje. (" + e.message + ")"})
+
+
+def func_publish_image(pimg):
+    # COLA DE PUBLICACION PARA IMAGENES
+    #try:
+    vzones = PublishZone.objects.filter(enabled=True)
+    for zone in vzones:
+        imgQueue = ImageQueue()
+        imgQueue.image = pimg
+        imgQueue.publish_zone = zone
+        imgQueue.schedule_date = datetime.datetime.now()
+        imgQueue.save()
+    #except Exception as e:
+    #    return render(context , 'cawas/error.html',{"message": "Error al Generar Cola de Imagen. (" + e.message + ")"})
+#/FUNCIONES GENERALES
 
 
 def login_view(request):
@@ -162,9 +196,7 @@ def add_movies_view(request):
        img.portrait = request.FILES['ThumbHor']
        extension = os.path.splitext(img.portrait.name)[1]
        img.name = vasset.asset_id
-
        varchivo = pathfilesport.value + img.name + extension
-       #varchivo = img.name + extension
        img.portrait.name = varchivo
 
        if os.path.isfile(varchivo):
@@ -174,7 +206,6 @@ def add_movies_view(request):
        img.landscape = request.FILES['ThumbVer']
        extension = os.path.splitext(img.landscape.name)[1]
        varchivo = pathfilesland.value + img.name + extension
-       #varchivo = img.name + extension
        img.landscape.name = varchivo
        # si existe archivo, lo borra
        if os.path.isfile(varchivo):
@@ -182,8 +213,6 @@ def add_movies_view(request):
 
        img.save()
        mv.image = img
-
-
 
        print varchivo
 
@@ -234,8 +263,12 @@ def add_movies_view(request):
        for item in vmoviesmetadata:
            try:
                #CREAR METADATA POR IDIOMA
-               mmd = MovieMetadata();
+               # CREAR METADATA POR IDIOMA
                vlanguage = Language.objects.get(code=item['Moviemetadata']['language'])
+               try:
+                   mmd = MovieMetadata.objects.get(movie=mv, language=vlanguage)
+               except MovieMetadata.DoesNotExist as e:
+                   mmd = MovieMetadata();
                mmd.language = vlanguage
                mmd.title = item['Moviemetadata']['title']
                mmd.summary_short = item['Moviemetadata']['summary_short']
@@ -300,8 +333,8 @@ def edit_movies_view(request, asset_id):
     if not request.user.is_authenticated:
        return redirect(login_view)
     # EDIT - MOVIE: en el GET debe cargar variables, y en POST debe leer JSON
+    vlangmetadata = []
 
-    pathfiles = 'cawas/static/files/movies/'
     try:
         pathfilesport = Setting.objects.get(code='image_repository_path_portrait')
         pathfilesland = Setting.objects.get(code='image_repository_path_landscape')
@@ -323,38 +356,41 @@ def edit_movies_view(request, asset_id):
        try:
            vasset = Asset.objects.get(asset_id=asset_id)
            mv = Movie.objects.get(asset=vasset)
+           img = Image.objects.get(name=vasset.asset_id)
+
+           vchannel = Channel.objects.get(pk=decjson['Movie']['channel_id'])
        except Asset.DoesNotExist as e:
            return render(request, 'cawas/error.html', {"message": "No existe Asset. (" + e.message + ")"})
        except Movie.DoesNotExist as e:
            return render(request, 'cawas/error.html', {"message": "No existe Movie asociado al Asset. (" + e.message + ")"})
-
-       #TRATAMIENTO DE IMAGEN Portrait
-       mv.image.portrait = request.FILES['ThumbHor']
-       varchivo = pathfiles + mv.image.name + '-portrait.jpg'
-       mv.image.portrait.name = varchivo
-       #si existe archivo, lo borra
-       if os.path.isfile(varchivo):
-           os.remove(varchivo)
-
-
-       #Landscape
-       mv.image.landscape = request.FILES['ThumbVer']
-       varchivo = pathfiles + mv.image.name + '-landscape.jpg'
-       mv.image.landscape.name = varchivo
-       # si existe archivo, lo borra
-       if os.path.isfile(varchivo):
-           os.remove(varchivo)
-       mv.image.save()
-
-       #mv.image = img
-       print decjson['Movie']['asset_id']
-
-       #Channel
-       try:
-           vchannel = Channel.objects.get(pk=decjson['Movie']['channel_id'])
+       except Image.DoesNotExist as e:
+           img = Image()
        except Asset.DoesNotExist as e:
            return render(request, 'cawas/error.html', {"message": "No existe Asset. (" + e.message + ")"})
 
+       #IMAGEN Portrait
+       if (request.FILES.has_key('ThumbHor')):
+          if request.FILES['ThumbHor'].name != '':
+              img.portrait = request.FILES['ThumbHor']
+              extension = os.path.splitext(img.portrait.name)[1]
+              img.name = vasset.asset_id
+              varchivo = pathfilesport.value + img.name + extension
+              img.portrait.name = varchivo
+              if os.path.isfile(varchivo):
+                  os.remove(varchivo)
+
+       #IMAGEN Landscape
+       if (request.FILES.has_key('ThumbVer')):
+          if request.FILES['ThumbVer'].name != '':
+              img.landscape = request.FILES['ThumbVer']
+              extension = os.path.splitext(img.landscape.name)[1]
+              varchivo = pathfilesland.value + img.name + extension
+              img.landscape.name = varchivo
+              if os.path.isfile(varchivo):
+                  os.remove(varchivo)
+
+       img.save()
+       mv.image = img
        mv.asset = vasset
        mv.channel = vchannel
        mv.original_title = decjson['Movie']['original_title']
@@ -390,58 +426,105 @@ def edit_movies_view(request, asset_id):
 
        # CARGAR METADATA
        vmoviesmetadata = decjson['Movie']['Moviesmetadata']
+       #eliminar las movies metadata existentes
+
+
+       MovieMetadata.objects.filter(movie=mv).delete()
        for item in vmoviesmetadata:
+           print "mmdLanguaje:" + item['Moviemetadata']['language']
            try:
                #CREAR METADATA POR IDIOMA
-               mmd = MovieMetadata();
                vlanguage = Language.objects.get(code=item['Moviemetadata']['language'])
+               try:
+                   mmd = MovieMetadata.objects.get(movie=mv, language=vlanguage)
+               except MovieMetadata.DoesNotExist as e:
+                    mmd = MovieMetadata();
                mmd.language = vlanguage
+               mmd.movie = mv
                mmd.title = item['Moviemetadata']['title']
                mmd.summary_short = item['Moviemetadata']['summary_short']
                mmd.summary_long = item['Moviemetadata']['summary_long']
-               mmd.movie = mv
+
                mmd.save()
+               print "titulo title:" + mmd.title
+               #Recorrer el publicZone y genera un PublicQueue por cada idioma
 
-               # CREAR COLA DE PUBLICACION
-               vpublish = PublishQueue()
-               vpublish.item_id = vasset.asset_id
-               vpublish.item_lang = vlanguage
-               vpublish.item_type = 'AS'
-               vpublish.status = 'Q'
-               vpublish.schedule_date = datetime.datetime.strptime(item['Moviemetadata']['schedule_date'], '%d-%m-%Y').strftime('%Y-%m-%d')
-               vpublish.save()
-
+               vzones = PublishZone.objects.filter(enabled=True)
+               for zone in vzones:
+                   # CREAR COLA DE PUBLICACION
+                   vpublish = PublishQueue()
+                   vpublish.item_id = vasset.asset_id
+                   vpublish.item_lang = vlanguage
+                   vpublish.item_type = 'AS'
+                   vpublish.status = 'Q'
+                   vpublish.publish_zone = zone
+                   vpublish.schedule_date = datetime.datetime.strptime(item['Moviemetadata']['schedule_date'], '%d-%m-%Y').strftime('%Y-%m-%d')
+                   vpublish.save()
 
            except Language.DoesNotExist as e:
                return render(request, 'cawas/error.html', {"message": "No existe Lenguaje. (" + e.message + ")"})
+           except Exception as e:
+               return render(request, 'cawas/error.html', {"message": "Error al Guardar metadata. (" + e.message + ")"})
+
+       # COLA DE PUBLICACION PARA IMAGENES
+       try:
+           vzones = PublishZone.objects.filter(enabled=True)
+           for zone in vzones:
+               imgQueue = ImageQueue()
+               imgQueue.image = img
+               imgQueue.publish_zone = zone
+               imgQueue.schedule_date = datetime.datetime.now()
+               imgQueue.save()
+       except Exception as e:
+           return render(request, 'cawas/error.html',
+                         {"message": "Error al Generar Cola de Imagen. (" + e.message + ")"})
 
        message = 'archivo subido ok'
+       return redirect(menu_view)
        # FIN DE POST
+
+
 
     #VARIABLES PARA GET - CARGAR MOVIE
     try:
         vasset = Asset.objects.get(asset_id=asset_id)
         vmovie = Movie.objects.get(asset=vasset)
+
+        i = len(vmovie.image.portrait.name)
+        imgport = vmovie.image.portrait.name[5:i]
+
+        i = len(vmovie.image.landscape.name)
+        imgland = vmovie.image.landscape.name[5:i]
+
         vgirlselected = vmovie.girls.all()
         vgirlnotselected = Girl.objects.exclude(id__in=vgirlselected)
         vgirlselected = vmovie.girls.all()
+
+
         vmoviemetadata = MovieMetadata.objects.filter(movie=vmovie)
+        #print "getmoviemetadata: " + vmoviemetadata[0].title
         vcategoryselected = vmovie.category.all()
         vcategorynotselected = Category.objects.exclude(id__in=vcategoryselected)
         languages = Language.objects.all()
 
         #nuevo diccionario para completar lenguages y metadata
-        vlangmetadata=[]
-        for itemleng in languages:
+
+
+        for itemlang in languages:
             vmoviemetadata = None
             try:
-                vmoviemetadata = MovieMetadata.objects.get(movie=vmovie, language=itemleng)
-                vlangmetadata.append({'checked':True, 'code':itemleng.code, 'name':itemleng.name, 'title': vmoviemetadata.title,
-                                      'summary_short': vmoviemetadata.summary_short, 'summary_long': vmoviemetadata.summary_long,
-                                      'publish_date': vmoviemetadata.publish_date})
-            except:
-                vlangmetadata.append({'code':itemleng.code, 'name':itemleng.name,'titulo':'', 'descripcion':'', 'fechapub':''})
-
+                vmoviemetadata = MovieMetadata.objects.get(movie=vmovie, language=itemlang)
+                vpublishqueue = PublishQueue.objects.filter(item_id=vasset.asset_id, item_lang = itemlang)[:1]
+                if PublishQueue.objects.filter(item_id=vasset.asset_id, item_lang = itemlang).exists():
+                    vpublishqueue = ''
+                else:
+                    vpublishqueue = PublishQueue.objects.filter(item_id=vasset.asset_id, item_lang=itemlang)[:1].only('schedule_date')
+                vlangmetadata.append(
+                    {'checked': True, 'code': itemlang.code, 'name': itemlang.name, 'title': vmoviemetadata.title,
+                     'summary_short': vmoviemetadata.summary_short, 'summary_long': vmoviemetadata.summary_long,
+                     'publish_date': vpublishqueue})
+            except MovieMetadata.DoesNotExist as a:
+                vlangmetadata.append({'checked':False, 'code':itemlang.code, 'name':itemlang.name,'titulo':'', 'descripcion':'', 'fechapub':''})
 
     except Movie.DoesNotExist as e:
         return render(request, 'cawas/error.html', {"message": "Asset no se encuentra Vinculado a Movie. (" + e.message + ")"})
@@ -465,7 +548,7 @@ def edit_movies_view(request, asset_id):
                'vmovie':vmovie, 'vgirlselected':vgirlselected, 'vgirlnotselected':vgirlnotselected,
                'vcategoryselected':vcategoryselected, 'vcategorynotselected':vcategorynotselected,
                'languages':languages, 'vmoviemetadata':vmoviemetadata, 'vlangmetadata':vlangmetadata,
-               'asset_id':asset_id, 'pathlandscape':pathfilesland , 'pathportrait':pathfilesport}
+               'asset_id':asset_id,  'imgland':imgland, 'imgport':imgport}
 
     return render(request, 'cawas/movies/edit.html', context)
 # Fin edit_movies_view
@@ -475,74 +558,121 @@ def edit_movies_view(request, asset_id):
 
 
 
+
+
+
+
+
 #<CRUD GIRL>
-def add_girl_view(request):
+def add_girls_view(request):
     #AUTENTICACION DE USUARIO
     if not request.user.is_authenticated:
         return redirect(login_view)
-
-    vg_pathfiles = 'cawas/static/files/girls/'
     message = ''
+
+    try:
+        pathfilesport = Setting.objects.get(code='image_repository_path_portrait')
+        pathfilesland = Setting.objects.get(code='image_repository_path_landscape')
+    except Setting.DoesNotExist as e:
+        return render(request, 'cawas/error.html', {"message": "No Setting. (" + e.message + ")"})
 
     #POST - Obtener datos del formulario y guardar la metadata
     if request.method == 'POST':
-        # VARIABLES
-        vasset = Asset()
-        g = Girl()
-        vimg = Image()
-
-        #parsear JSON
-        strjson = request.POST['strjson']
+        # parsear JSON
+        strjson = request.POST['varsToJSON']
         decjson = json.loads(strjson)
 
-        #CREAR UN ASSET
+        # VARIABLES
+        vgirl = Girl()
+        vasset = Asset()
         vasset.asset_type = "girl"
         vasset.save()
 
-        # TRATAMIENTO DE IMAGEN: nombre de imagen = a Asset_id
-        if request.FILES['imagehor'] :
-            vimg.portrait = request.FILES['imagehor']
-            vimg.name = vasset.asset_id
-            varchivo = vg_pathfiles + vimg.name + '.jpg'
-            if os.path.isfile(varchivo):
-                os.remove(varchivo)
-            vimg.portrait.name = varchivo
-            try:
-                vimg.save()
-            except IntegrityError  as e:
-                raise Http404("IMANGE - Ya existe una imagen con el mismo nombre.")
-            g.image = vimg
+        try:
+            vimg = Image.objects.get(name=vasset.asset_id)
+        except Movie.DoesNotExist as e:
+            return render(request, 'cawas/error.html',{"message": "No existe Movie asociado al Asset. (" + e.message + ")"})
+        except Image.DoesNotExist as e:
+            vimg = Image()
 
-        #CREAR GIRL
-        g.asset = vasset
-        g.name  = decjson['Girl']['name']
-        g.type = decjson['Girl']['type']
-        #df = DateFormat(decjson['Girl']['birth_date'])
-        #g.birth_date = decjson['Girl']['birth_date']
-        g.height = decjson['Girl']['height']
-        g.weight = decjson['Girl']['weight']
-        g.save()
+        try:
+            vimg.name = vasset.asset_id
+            # IMAGEN Portrait
+            if (request.FILES.has_key('ThumbHor')):
+                if request.FILES['ThumbHor'].name != '':
+                    vimg.portrait = request.FILES['ThumbHor']
+                    extension = os.path.splitext(vimg.portrait.name)[1]
+                    varchivo = pathfilesport.value + vimg.name + extension
+                    vimg.portrait.name = varchivo
+                    if os.path.isfile(varchivo):
+                        os.remove(varchivo)
+
+            # IMAGEN Landscape
+            if (request.FILES.has_key('ThumbVer')):
+                if request.FILES['ThumbVer'].name != '':
+                    vimg.landscape = request.FILES['ThumbVer']
+                    extension = os.path.splitext(vimg.landscape.name)[1]
+                    varchivo = pathfilesland.value + vimg.name + extension
+                    vimg.landscape.name = varchivo
+                    if os.path.isfile(varchivo):
+                        os.remove(varchivo)
+            vimg.save()
+
+            #CREAR GIRL
+            vgirl.asset = vasset
+            vgirl.name  = decjson['Girl']['name']
+            vgirl.type = decjson['Girl']['type_girl']
+            vgirl.birth_date = datetime.datetime.strptime(decjson['Girl']['birth_date'],'%d-%m-%Y').strftime('%Y-%m-%d')
+            vgirl.height = decjson['Girl']['height']
+            vgirl.weight = decjson['Girl']['weight']
+            vgirl.image = vimg
+            vgirl.save()
+        except Exception as e:
+            return render(request, 'cawas/error.html', {"message": "Error al Guardar Girl. (" + str(e.message) + "). Line 617"})
 
         #CREAR METADATAGIRL
         vgirlmetadata = decjson['Girl']['Girlmetadatas']
         for item in vgirlmetadata:
-            gmd = GirlMetadata()
-            gmd.language = get_object_or_404(Language, code=item['Girlmetadata']['language'])
-            gmd.description = item['Girlmetadata']['description']
-            gmd.nationality = item['Girlmetadata']['nationality']
-            gmd.girl = g
-            gmd.save()
+            try:
+                gmd = GirlMetadata()
+                vlang = Language.objects.get(code=item['Girlmetadata']['language'])
+                gmd.language = vlang
+                gmd.description = item['Girlmetadata']['description']
+                gmd.nationality = item['Girlmetadata']['nationality']
+                gmd.publish_date = datetime.datetime.now().strftime('%Y-%m-%d')
+                gmd.girl = vgirl
+                gmd.save()
+                vschedule_date = datetime.datetime.now().strftime('%Y-%m-%d')
+                #Publica en PublishQueue
+                func_publish_queue(vasset, vlang, 'AS', 'Q',  vschedule_date)
+                #Publica en PublishImage
+                func_publish_image(vimg)
+
+            except Language.DoesNotExist as e:
+                return render(request, 'cawas/error.html', {"message": "Lenguaje no Existe. (" + e.message + ")"})
+            except Exception as e:
+                return render(request, 'cawas/error.html', {"message": "Error al Guardar MetadataGirl. (" + e.message + ")"})
 
         message ='Girl, generada'
         # CARGAR METADATA
 
-    context = {'message':message}
-    #return render(request, 'cawas/girls/add.html', context)
-    return render(request, 'cawas/pruebas/subir_img.html', context)
+    #Cargar variables para presentar en templates
+    vgirls = Girl.objects.all()
+    vcategories = Category.objects.all()
+    vlanguages = Language.objects.all()
+
+    context = {'message':message, 'vgirls':vgirls, 'vcategories':vcategories, 'vlanguages':vlanguages }
+    #checks:
+    #Imagenes - OK
+    #Girl - OK
+    #Girl metadata - OK
+    #Publishqueue - NO
+    #Publishimage - NO
+    return render(request, 'cawas/girls/add.html', context)
 
 
 
-def edit_girl_view(request):
+def edit_girls_view(request):
     #AUTENTICACION DE USUARIO
     if not request.user.is_authenticated:
         return redirect(login_view)
@@ -744,7 +874,7 @@ def edit_category_view(request):
 
 
 #<CRUD SERIE>
-def add_serie_view(request):
+def add_series_view(request):
     # AUTENTICACION DE USUARIO
     if not request.user.is_authenticated:
         return redirect(login_view)
@@ -840,7 +970,7 @@ def add_serie_view(request):
 
 
 
-def edit_serie_view(request):
+def edit_series_view(request):
     # AUTENTICACION DE USUARIO
     if not request.user.is_authenticated:
         return redirect(login_view)
@@ -982,8 +1112,6 @@ def add_block_view(request):
         except Channel.DoesNotExist as e:
             return render(request, 'cawas/error.html', {"message": "No existe Channel. (" + e.message + ")"})
 
-
-
         # CARGAR ASSETS
         vassets = decjson['Serie']['assets']
         for item in vassets:
@@ -1011,13 +1139,14 @@ def add_asset_view(request):
         print request.POST
         strjson = request.body
         decjson = json.loads(strjson)
-
-        vasset = Asset()
-        vasset.asset_id = decjson['asset_id']
-        vasset.asset_type = "unknown"
-        vasset.save()
-
-        message = "Asset Generado Correctamente"
+        if Asset.objects.filter(asset_id=decjson['asset_id']).exists():
+            return HttpResponse('Conflict', status=409)
+        else:
+            vasset = Asset()
+            vasset.asset_id = decjson['asset_id']
+            vasset.asset_type = "unknown"
+            vasset.save()
+            message = "Asset Generado Correctamente"
 
     except ValueError, e:
         message = "Error al leer archivo JSON. (" + e.message + ")"
