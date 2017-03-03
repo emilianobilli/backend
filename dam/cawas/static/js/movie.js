@@ -1,9 +1,4 @@
-/*
-var requestedData={""};
-function getJson(){
-   requestedData =  $("#varsToJSON").val();
-};
-*/
+
 
 $( document ).ready(function() {
 

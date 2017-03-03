@@ -13,7 +13,16 @@ $( document ).ready(function() {
     var langDesc = [] // recoge qué idiomas son los que se seleccionaron
     var clickedVal; // recoge el valor del ID seleccionado en la lista de chcas;
     var clickedName; // recoge el valor del Nombre seleccionado en la lista de chcas;
-    
+
+    var countChecked = function() {
+    langQ = $("input:checked" ).length;
+        $('input[type=checkbox]').each(function(){
+            if (this.checked) {
+                langDesc.push($(this).attr("id"));
+            }
+        });
+
+    };
     // activar los selects con filtro
     $("#chica-select").select2({placeholder: "Despliega la lista"});
     
@@ -131,13 +140,14 @@ $( document ).ready(function() {
         console.log("checking form...");
         checkVal = 0;
         var asset_Id = $('#movieID').val();
+        var edit_asset_id =$('#asset_id').val();
         var original_name = $('#orginalName').val();
         var category_selected = $('#category option:selected');
         var birth_date = $('#birthDate').val().trim();
         var girl_height = $('#height').val();
         var girl_weight = $('#weight').val();
         
-        
+        countChecked();
         // chequea original Name
         if(original_name=="" || original_name==" ")
         {
@@ -147,20 +157,23 @@ $( document ).ready(function() {
             okMe("#orginalName");
         }
         // chequea thumbnail horizaontal
-        if(!$('#ThumbHor').val()){
+        if(!$('#ThumbHor').val() && !$('#imgantlandscape').val()){
+
             errorMe("#ThumbHor");
             checkVal++;
         }else{
             okMe("#ThumbHor");
         }
-        
+
         // chequea thumbnail vertical
-        if(!$('#ThumbVer').val()){
+        if(!$('#ThumbVer').val() && !$('#imgantportrait').val()){
             errorMe("#ThumbVer");
             checkVal++;
         }else{
             okMe("#ThumbVer");
         }
+
+
         
         // chequea birthDate
         if(birth_date=="" || birth_date==" ")
@@ -332,6 +345,7 @@ $( document ).ready(function() {
                     
                     var myJSON = '';
                     myJSON+='{"Girl":{';
+                    myJSON+='"asset_id":"'+edit_asset_id+'",';
                     myJSON+='"type_girl":"'+category_selected+'",';
                     myJSON+='"name":"'+original_name+'",';
                     myJSON+='"birth_date":"'+birth_date+'",';
