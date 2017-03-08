@@ -20,7 +20,8 @@
 {% endblock subheader %}
 
 {% block content %}
-<div class="row">
+<div class="container">
+    <div class="row">
        <!-- left col -->
        <div class="col-xs-12 col-md-6 col-lg-6 sepTOP-big">
            <div class="col-xs-12 col-md-12 col-lg-12">
@@ -63,13 +64,14 @@
             
             <!-- Form manda imagenes y vars en un JSON hecho string -->
                 <form method="post" action="" name="girl-completeForm"  class="content-picker movieChoose" id="girlForm" enctype="multipart/form-data">
-                
+
+
             <!-- 2 Row : Images -->
                 <div class="row form-row">
                     <div class="col-xs-4 col-md-4 col-lg-4 form-group">
                        <div class="form-group has-feedback imgUpload">
                             <label class="label-left" for="ThumbHor" id="ThumbHorTit">Asociar imagen landscape: *</label>
-                            <input id="imgantlandscape" value="{{vgirl.image.landscape.name}}" disabled></input>
+                            <input type="hidden" id="imgantlandscape" value="{{vgirl.image.landscape.name}}" disabled></input>
                             <input type="file" class="form-control" name="ThumbHor" id="ThumbHor" accept="image/*">
                             <span class="glyphicon form-control-feedback"></span>
                             <img id="imageH" src="{{ imgland }}"/>
@@ -80,7 +82,7 @@
                     <div class="col-xs-4 col-md-4 col-lg-4 form-group" >
                        <div class="form-group has-feedback imgUpload">
                             <label for="ThumbVer" id="ThumbVerTit">Asociar imagen portrait: *</label>
-                            <input id="imgantportrait" value="{{vgirl.image.portrait.name}}" disabled></input>
+                            <input type="hidden" id="imgantportrait" value="{{vgirl.image.portrait.name}}" disabled></input>
                             <input type="file" class="form-control" name="ThumbVer" id="ThumbVer" accept="image/*">
                             <span class="glyphicon form-control-feedback"></span>
                              <img id="imageV" src="{{ imgport }}"/>

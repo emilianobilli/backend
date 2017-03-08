@@ -43,20 +43,13 @@
                                 </div>
                             </div>
                             <div>
-
-                                   <!-- ------------------Reemplazar por listado de bloques ----------------- -->
-
+                                    <!--------------------Reemplazar por listado de bloques ------------------->
                                     <select id="bloque-select" class="form-control" size="6">
-                                        <option value="122209">Negras</option>
-                                        <option value="122211">Lesbianas calientes</option>
-                                        <option value="122212">Lesbianas templadas</option>
-                                        <option value="122213">Especial día del niño</option>
-                                        <option value="122214">Negros intimidantes</option>
-                                        <option value="122215">Perras en ojotas</option>
-                                        <option value="122216">Gordas valijas</option>
+                                         {% for item in vblocks %}
+                                            <option value="{{ item.block_id }}"> {{ item.name }} </option>
+                                         {% endfor %}
                                     </select>
-
-                                  <!-- ---------------------- Fin de  listado de bloques ------------------- -->
+                                    <!-- ---------------------- Fin de  listado de bloques ------------------- -->
                             </div>
 
                             <div>
