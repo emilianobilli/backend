@@ -16,6 +16,8 @@ urlpatterns = [
     url(r'^categories/edit/(?P<asset_id>\d*)/$', views.edit_category_view, name='edit_categories'),
     url(r'^series/add/$', views.add_series_view, name='add_series'),
     url(r'^series/edit/(?P<asset_id>\w*)/$', views.edit_series_view, name='edit_series'),
+    url(r'^blocks/add/$', views.add_blocks_view, name='add_blocks'),
+    url(r'^blocks/edit/(?P<asset_id>\w*)/$', views.edit_blocks_view, name='edit_blocks'),
     #<#POST Json CAWAS>
     url(r'^add_movie_json/$', views.add_movies_view, name='add_movie_json'),
     url(r'^edit_movie_json/$', views.edit_movies_view, name='edit_movie_json'),

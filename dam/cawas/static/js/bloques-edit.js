@@ -1,3 +1,153 @@
+// La anteúltima línea es la que invoca a la función para llenar el formulario.
+// la variable debajo de este texto (requestedData) es el JSON que sirve de datapool.
+// Los datos se envían por POST a movies.html... chequear eso!!!!
+
+var requestedData={"Block":
+	{
+		"block_id":1,
+		"name":"Titulo de la serie 1",
+		"language":"pt",
+		"channel_id":"1",
+		"publish_date":"2017-01-01",
+		"target_device_id":"1",
+		"assets": [{"asset_id":"210002128"},{"asset_id":"110002125"},{"asset_id":"310002125"}]
+	}
+}
+
+// helper para populateForm(), dependiendo del tipo de tag, llena un valor en un input, un string, select o agrega texto.
+    function insertIt(id,valueSent,method){
+        switch(method){
+                case "html":
+                    $(id).html(valueSent);
+                break;
+                case "val":
+                    $(id).val(valueSent);
+                break;
+                case "append":
+                    $(id).append(valueSent);
+                break;
+                case "select":
+                    //id='"'+id+' option[value='+valueSent+']"';
+                    //console.log("id"+id);
+                    //$(id).attr('selected','selected');
+                    $(id).val(valueSent).change();
+                break;
+                default:
+                break;
+        }
+        
+    }
+
+    function insertIdiomas(cant){
+        var checkIdvar;
+        for(i=0; i<cant; i++){
+            var lang=requestedData.Movie.Moviesmetadata[i].Moviemetadata.language;
+                if(lang=="es"){
+                    checkIdvar="spa";
+                }else if(lang=="pt"){
+                    checkIdvar="por";
+                }else{
+                    checkIdvar="eng";
+                }
+            $("#"+checkIdvar).prop('checked', true);
+            $("#"+checkIdvar).change();
+            $("#Module_"+checkIdvar).show();
+            $("#tit_"+checkIdvar).val(requestedData.Movie.Moviesmetadata[i].Moviemetadata.title);
+            $("#short_desc_"+checkIdvar).val(requestedData.Movie.Moviesmetadata[i].Moviemetadata.summary_long);
+            
+            $("#date_"+checkIdvar).val(makeToday());
+        }
+        
+        
+    }
+
+    function searchList(theList,val){
+        console.log("estoy buscando esto:"+val+" en:"+theList);
+        var theAnswer="";
+        $(theList).find('li').each(function(){
+         //console.log("ahora estoy en:"+$(this).val()+" y busco:"+val)  
+            if($(this).val()==val){
+                theAnswer=$(this).html();
+                console.log("and the winner is:"+theAnswer);
+                $(this).remove();//quita de la lista original el valor que viene el JSON
+            }
+        });
+        if(theAnswer!==""){
+                return(theAnswer);
+        }else{
+                return("another");
+        }
+    }
+
+    function makelist(iddrop,idpick,valuesOf,theObject){
+        
+        var myArrayOfValues = valuesOf;
+        var ArrLngth = myArrayOfValues.length;        
+        var htmlContent = "";
+        for(i=0; i<ArrLngth; i++){
+            if(theObject==".asset_id"){
+             var theRealValue = myArrayOfValues[i].asset_id;
+            }
+            
+            console.log("theRealValue"+theRealValue);
+            var listVal = searchList(idpick,theRealValue);
+            console.log("listVal after function is"+listVal);
+            if(listVal=="another"){// pertenece a otra lista
+                var listVal = searchList("#MoviePick",theRealValue);
+                console.log("listVal after function is"+listVal);
+                if(listVal=="another"){// pertenece a otra lista
+                    var listVal = searchList("#SeriePick",theRealValue);
+                    console.log("listVal after function is"+listVal);
+                }
+            }
+            htmlContent+= "<li value='"+theRealValue+"'>"+listVal+"</li>"
+        }
+        $(iddrop).html(htmlContent);
+    }
+
+    function makeToday(){
+        var today = new Date();
+        var dd = today.getDate();
+        var mm = today.getMonth()+1; //January is 0!
+
+        var yyyy = today.getFullYear();
+        if(dd<10){
+            dd='0'+dd;
+        } 
+        if(mm<10){
+            mm='0'+mm;
+        } 
+        var today = dd+'/'+mm+'/'+yyyy;
+        return(today);
+    }
+    
+    // rellena el formulario con los datos recogidos en la variable requestedData
+    function populateForm(){
+        
+        var qAssets = requestedData.Block.assets.length;
+        var blockID = (requestedData.Block.block_id);
+        
+        //id
+        insertIt("#idTit", blockID, "append");
+        //name
+        insertIt("#orginalName", requestedData.Block.name, "val");
+        //idioma
+        insertIt("#idiomaSelect", requestedData.Block.language, "select");
+        //canal
+        insertIt("#canalSelect", requestedData.Block.channel_id, "select");
+        //target device
+        insertIt("#deviceSelect", requestedData.Block.target_device_id, "select");
+        //publish date
+        insertIt("#date_blq", makeToday, "val");
+        //assets
+        makelist("#assetDrop","#pornstarPick",requestedData.Block.assets,".asset_id");
+        //género
+       // makelist("#generoDrop","#generoPick",requestedData.Movie.categories,".category_id");
+            
+    }
+
+
+
 $( document ).ready(function() {
     
     console.log( "ready!" );
@@ -51,7 +201,7 @@ $( document ).ready(function() {
     
     // interacción del usuario al hacer click en el botón cancelar
     $( "#CancelBtn" ).click(function(){ 
-         $( "#hidden1" ).hide();
+         window.location.href = "bloques.html";
     }) 
     
     // drag and drop controles para las listas
@@ -333,5 +483,5 @@ $( document ).ready(function() {
             }
         
     }
-    
+    populateForm()
 });

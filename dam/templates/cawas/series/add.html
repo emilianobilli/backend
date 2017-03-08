@@ -1,14 +1,16 @@
-
 {% extends "cawas/base.html" %}
+
 {% block extra_head %}
-<script src="/static/js/movie.js"></script>
+    <script src="/static/js/series.js"></script>
 {% endblock %}
+
 
 {% block subheader %}
 <div class="col-xs-12 col-md-12 col-lg-12 unpad">
     <div class="subHeader">
         <div class="notifications">
             {% if user.is_authenticated %}
+
                   <a href="{% url 'menu_view' %}"><span class="glyphicon glyphicon-home GLY-med">
                                </span> &nbsp;volver al menú</a>
 
@@ -18,86 +20,54 @@
     </div>
 </div>
 {% endblock subheader %}
-
 {% block content %}
- <!-- CONTENT -->
 <div class="container">
-    <div class="row">
-       <!-- left col -->
-       <div class="col-xs-12 col-md-6 col-lg-6 sepTOP-big">
 
-            <h1>Nueva MOVIE</h1>
-            <div>
-                <h3>Selecciona ID del video *</h3>
-            </div>
-            <div>
-                   <!-- ------------------Reemplazar por listado de movies ----------------- -->
-                    <select id="movie-select" class="form-control" size="6">
-                        {% for item in assets %}
-                            <option value="{{ item.asset_id }}">ID {{ item.asset_id }} </option>
-                        {% endfor %}
-                    </select>
-                   <!-- ---------------------- Fin de  listado de movies ------------------- -->
-            </div>
+              <div class="row">
+                       <!-- left col -->
+                       <div class="col-xs-12 col-md-6 col-lg-6 sepTOP-big">
 
+                            <h1>AGREGAR serie</h1>
+                            <div>
+                                <h3>La serie debe estar dada de alta para poder agregar capítulos</h3>
+                            </div>
 
-            <div>
-                <form method="post" action="" name="movie-pickerForm"  class="content-picker movieChoose">
+                            <div class="col-xs-12 col-md-4 col-lg-4 unpad">
+                                <button class="btn btn-primary btn-block form-control " type="button" id="IDBtn">Nueva serie</button>
+                            </div>
 
-                   <div class="col-xs-12 col-md-7 col-lg-7">
-                       <input type="hidden" class="form-control" name="selectedID" id="movieID" value="">
-                   </div>
-                   <div class="col-xs-12 col-md-4 col-lg-4">
-                       <button class="btn btn-primary btn-block form-control" type="button" id="IDBtn">Seleccionar</button>
-                   </div>
+                       </div>
 
-                </form>
-            </div>
+                       <!-- right col -->
+                       <div class="col-xs-12 col-md-6 col-lg-6 sepTOP-big alignRIGHT-lg">
+                           <h1>EDITAR serie</h1>
+                           <div>
+                            <h3>Selecciona la serie que quieres editar</h3>
+                           </div>
+                           <div class="fRIGHT-lg">
 
-           <!-- right col -->
-           <div  id="repro1">
-               <video width="400" controls class="fRIGHT">
-                  <source src="" type=video/mp4 id="videomp4">
-               </video>
-           </div>
-       </div>
+                                       <!-- ------------------Reemplazar por listado de series ----------------- -->
+                                        <select id="serie-edit" class="form-control movie-edit fRIGHT-lg" size="6">
+                                              {% for item in vseries %}
+                                                <option value="{{ item.asset.asset_id }}">{{ item.asset.asset_id }} - {{ item.original_title }} </option>
+                                              {% endfor %}
+                                        </select>
 
-        <!-- right col -->
-       <div class="col-xs-12 col-md-6 col-lg-6 sepTOP-big alignRIGHT-lg">
-           <h1>Editar MOVIE</h1>
-           <div>
-            <h3>Selecciona la movie que quieres editar</h3>
-           </div>
-           <div class="fRIGHT-lg">
+                                      <!-- ---------------------- Fin de  listado de series ------------------- -->
+                           </div>
 
-                       <!-- ------------------Reemplazar por listado de movies ----------------- -->
+                           <div class="col-xs-12 col-md-4 col-lg-4 fRIGHT-lg unpad">
+                                <button class="btn btn-primary btn-block form-control movieChoose" type="button" id="EDBtn">Editar serie</button>
+                           </div>
+                           <div class="col-xs-12 col-md-7 col-lg-7 movieChoose fRIGHT">
+                                <input type="hidden" class="form-control" name="selectedEdit" id="serieName" value="">
+                           </div>
 
-                        <select id="movie-edit" class="form-control movie-edit fRIGHT-lg" size="6">
-                             {% for item in movies %}
-                                <option value="{{ item.asset.asset_id }}">{{ item.asset.asset_id }} - {{ item.original_title }} </option>
-                             {% endfor %}
-                        </select>
+                       </div>
 
-                      <!-- ---------------------- Fin de  listado de movies ------------------- -->
-           </div>
-           <div class="col-xs-12 col-md-8 col-lg-8 movieChoose">
-                <input type="hidden" class="form-control" name="selectedEdit" id="movieName" value="">
-           </div>
-           <div class="col-xs-12 col-md-4 col-lg-4 fRIGHT-lg unpad">
-                <button class="btn btn-primary btn-block form-control movieChoose" type="button" id="EDBtn">Editar Movie</button>
-           </div>
+              </div>
 
-       </div>
-       <!-- right col -->
-
-
-
-
-
-
-    </div><!-- fin Row -->
-
-</div>
+        </div>
 
         <!-- hidden form -->
         <div class="container" id="hidden1">
@@ -113,32 +83,35 @@
                             <input type="text" class="form-control" name="orginalTitle" id="orginalTitle" autofocus>
                             <span class="glyphicon form-control-feedback"></span>
                         </div>
+                        <!-- pegar en "value" el ID nuevo -->
+                        <input type="hidden" name="newID" vlaue="">
                     </div>
                 </div>
 
                 <!-- Form manda imagenes y vars en un JSON hecho string -->
-                <form method="post" action="" name="movie-completeForm" enctype="multipart/form-data"  class="content-picker movieChoose" id="movieForm">
+                <form method="post" action="" name="serie-completeForm"  class="content-picker movieChoose" id="serieForm" enctype="multipart/form-data">
 
                 <!-- 2 Row : Images -->
                 <div class="row form-row">
                     <div class="col-xs-4 col-md-4 col-lg-4 form-group">
                        <div class="form-group has-feedback imgUpload">
-                            <label class="label-left" for="ThumbHor" id="ThumbHorTit">Imagen Landscape: *</label>
+                            <label class="label-left" for="ThumbHor" id="ThumbHorTit">Asociar imagen landscape: *</label>
                             <input type="file" class="form-control" name="ThumbHor" id="ThumbHor" accept="image/*">
                             <span class="glyphicon form-control-feedback"></span>
                             <img id="imageH"/>
+
+
                         </div>
                     </div>
-
                     <div class="col-xs-4 col-md-4 col-lg-4 form-group" >
                        <div class="form-group has-feedback imgUpload">
-                            <label for="ThumbVer" id="ThumbVerTit">Imagen Portrait: *</label>
+                            <label for="ThumbVer" id="ThumbVerTit">Asociar imagen portrait: *</label>
                             <input type="file" class="form-control" name="ThumbVer" id="ThumbVer" accept="image/*">
+
                             <span class="glyphicon form-control-feedback"></span>
                             <img id="imageV"/>
                         </div>
                     </div>
-
                     <div class="col-xs-4 col-md-4 col-lg-4">
                     </div>
                 </div>
@@ -155,14 +128,15 @@
                         <!-- ------------------Reemplazar por listado de pornstars ----------------- -->
 
                         <ul class="form-control pornstarPick" id="pornstarPick">
-                             {% for item in girls %}
+                          {% for item in vgirls %}
                                  <li value="{{item.id}}">{{item.name}} </li>
-                             {% endfor %}
-                         </ul>
-                        <!-- ---------------------- Fin de  listado de pornstars ------------------- -->
-                    </div>
+                          {% endfor %}
+                        </ul>
 
-                     <div class="col-xs-4 col-md-4 col-lg-4 form-group plyMateDrop" >
+                        <!-- ---------------------- Fin de  listado de pornstars ------------------- -->
+
+                    </div>
+                    <div class="col-xs-4 col-md-4 col-lg-4 form-group plyMateDrop" >
                        <div class="form-group has-feedback">
                             <label for="ThumbVer" id="ThumbVerTit">Arrastrar hasta aquí para agregar *</label>
                             <ul class="form-control pornstarPick" id="pornstarDrop">
@@ -183,10 +157,10 @@
                         <!-- ------------------Reemplazar por listado de géneros ----------------- -->
 
                         <ul class="form-control generoPick" id="generoPick">
-                         {% for item in categories %}
-                             <li value="{{item.id}}">{{item.original_name}}</li>
-                         {% endfor %}
-                       </ul>
+                           {% for item in vcategories %}
+                                 <li value="{{item.id}}">{{item.original_name}} </li>
+                           {% endfor %}
+                        </ul>
 
                         <!-- ---------------------- Fin de  listado de géneros ------------------- -->
 
@@ -203,19 +177,16 @@
                     </div>
                 </div>
 
-
                 <!-- 5 Row : Canal pick -->
-                 <div class="row form-row">
-
+                <div class="row form-row">
                     <div class="col-xs-12 col-md-4 col-lg-4 form-group">
                         <div class="form-group has-feedback" id="channelSelect">
                             <label class="label-left" for="canal">Canal: *</label>
                             <div class="helpright"><span class="glyphicon glyphicon-question-sign" data-toggle="tooltip" title="Selecciona el canal al que pertenece esta movie (ej: Venus)"></span></div>
 
-                            <!-- ------------------Reemplazar por listado de canales ----------------- -->
-
+                            <!-- ------------------Reemplazar por listado de canales ------------------->
                             <select type="text" class="form-control" name="canal" id="canalSelect">
-                                {% for item in channels %}
+                                {% for item in vchannels %}
                                      <option value="{{item.id}}">{{item.name}}</option>
                                 {% endfor %}
                             </select>
@@ -225,7 +196,7 @@
                         </div>
                     </div>
 
-                     <div class="col-xs-12 col-md-4 col-lg-4 form-group">
+                    <div class="col-xs-12 col-md-4 col-lg-4 form-group">
                         <div class="form-group has-feedback">
                             <label class="label-left" for="releaseYear">Año de estreno (AAAA): *</label>
                             <input type="number" class="form-control" name="releaseYear" id="releaseYear" min="1890" max="2300" oninput="maxLengthCheck(this)" >
@@ -233,58 +204,59 @@
                         </div>
                     </div>
 
-                    <div class="col-xs-12 col-md-4 col-lg-4 form-group">
+
+                </div>
+
+
+                <!-- 7 Row : Director pick -->
+                <div class="row form-row">
+                    <div class="col-xs-12 col-md-12 col-lg-12 form-group">
                         <div class="form-group has-feedback">
-                            <label class="label-left" for="releaseYear">Display runtime (mm:ss): *</label>
-                            <input type="text" class="form-control" name="runtime" id="runtime" autofocus>
+                            <label class="label-left" for="director">Director: *</label>
+                            <input type="text" class="form-control" name="director" id="director" autofocus>
                             <span class="glyphicon form-control-feedback"></span>
                         </div>
                     </div>
+                </div>
 
-            </div>
 
-            <div class="row form-row">
-                <div class="col-xs-12 col-md-12 col-lg-12 form-group">
-                    <div class="form-group has-feedback">
-                        <label class="label-left" for="director">Director: </label>
-                        <input type="text" class="form-control" name="director" id="director" autofocus>
-                        <span class="glyphicon form-control-feedback"></span>
+
+                <!-- 8 Row : Elenco -->
+                <div class="row form-row">
+                    <div class="col-xs-12 col-md-12 col-lg-12 form-group">
+                        <div class="form-group has-feedback">
+                            <label class="label-left" for="elenco">Elenco: *</label>
+                            <div class="helpright"><span class="glyphicon glyphicon-question-sign" data-toggle="tooltip" title="Agregar los nombres del elenco completo separados por comas.La lista NO debe terminar con una coma"></span></div>
+                            <div class="itaright">(Nombres separados por comas). </div>
+                            <input type="text" class="form-control" name="elenco" id="elenco" autofocus>
+                            <span class="glyphicon form-control-feedback"></span>
+                        </div>
                     </div>
                 </div>
-            </div>
-            <!-- 8 Row : Elenco -->
-            <div class="row form-row">
-                <div class="col-xs-12 col-md-12 col-lg-12 form-group">
-                    <div class="form-group has-feedback">
-                        <label class="label-left" for="elenco">Elenco: *</label>
-                        <div class="helpright"><span class="glyphicon glyphicon-question-sign" data-toggle="tooltip" title="Agregar los nombres del elenco completo separados por comas.La lista NO debe terminar con una coma"></span></div>
-                        <div class="itaright">(Nombres separados por comas). </div>
-                        <input type="text" class="form-control" name="elenco" id="elenco" autofocus>
-                        <span class="glyphicon form-control-feedback"></span>
-                    </div>
-                </div>
-            </div>
 
-              <!--  9 : Idioma -->
+
+                <!--  9 : Idioma -->
                 <div class="row form-row">
                     <div class="col-xs-12 col-md-3 col-lg-3 form-group">
-                        <div class="form-group has-feedback">
-                            <label class="label-left" for="idioms">Elija idioma: *</label>
-                            <div class="helpright"><span class="glyphicon glyphicon-question-sign" data-toggle="tooltip" title="Debe elejir al menos un idioma para dar de alta la movie."></span></div>
+                        <div class="form-group has-feedback" id="lang-container">
+                            <div id="pickLang">
+                                <label class="label-left" for="idioms">Elija idioma: (al menos uno)*</label>
 
-                            <div class="form-group">
-                                {% for item in vlanguages %}
-                                <input type="checkbox" name="idioma" value="{{ item.code }}" id="{{ item.code }}" class="chkbx"> {{ item.name }}<br>
-                                {% endfor %}
                             </div>
                             <span class="glyphicon form-control-feedback"></span>
+                            <div class="form-group has-feedback">
+                                {% for item in vlanguages %}
+                                    <input type="checkbox" name="idioma" value="{{ item.code }}" id="{{ item.code }}" class="chkbx"> {{ item.name }}<br>
+                                {% endfor %}
+                            </div>
+
                         </div>
                     </div>
                 </div>
 
                 <!-- LANGUAGE modules -->
                 {% for item in vlanguages %}
-                <div class="row form-row hid" id="Module_{{item.code}}">
+                 <div class="row form-row hid" id="Module_{{item.code}}">
                     <div class="col-xs-12 col-md-12 col-lg-12 form-group">
                         <h2>{{ item.name }}</h2>
                            <div class="col-xs-12 col-md-12 col-lg-12 form-group inlang">
@@ -304,15 +276,6 @@
                                </div>
                            </div>
 
-                           <div class="col-xs-12 col-md-12 col-lg-12 form-group inlang">
-                               <div class="form-group has-feedback">
-                                    <div class="helpright"><span class="glyphicon glyphicon-question-sign" data-toggle="tooltip" title="Al ingresar una fecha, el sistema publicará la movie en español en esa fecha."></span></div>
-                                    <label class="label-left" for="date_{{item.code}}">Fecha de Publicación</label>
-                                    <input type="text" class="form-control datePick" name="date_{{item.code}}" id="date_{{item.code}}">
-                                    <span class="glyphicon form-control-feedback"></span>
-                               </div>
-                           </div>
-
                     </div>
                 </div>
                 {% endfor %}
@@ -325,11 +288,10 @@
                    <div class="col-xs-4 col-md-4 col-lg-4">
                     </div>
                     <div class="col-xs-4 col-md-4 col-lg-4">
-                        <button class="btn btn-primary btn-block form-control" type="button" id="sendBut">Grabar Movie</button>
+                        <button class="btn btn-primary btn-block form-control" type="button" id="sendBut">Grabar Serie</button>
                     </div>
                     <div class="col-xs-4 col-md-4 col-lg-4">
                     </div>
                 </div>
 
-        </div>
 {% endblock content %}

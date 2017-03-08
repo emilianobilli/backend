@@ -1,0 +1,306 @@
+{% extends "cawas/base.html" %}
+
+{% block extra_head %}
+    <script src="/static/js/bloques.js"></script>
+{% endblock %}
+
+{% block subheader %}
+<div class="col-xs-12 col-md-12 col-lg-12 unpad">
+    <div class="subHeader">
+        <div class="notifications">
+            {% if user.is_authenticated %}
+                  <a href="{% url 'menu_view' %}"><span class="glyphicon glyphicon-home GLY-med">
+                               </span> &nbsp;volver al menú</a>
+
+                 <button class="btn btn-lg btn-primary btn-block logOFF" type="button" id="exitBtn" data-toggle="modal" data-target="#myModal">LOG-OUT</button>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock subheader %}
+
+{% block content %}
+        <div class="container">
+
+              <div class="row">
+                       <!-- left col -->
+                       <div class="col-xs-12 col-md-6 col-lg-6 sepTOP-big">
+                           <div class="col-xs-12 col-md-12 col-lg-12 ">
+                               <h1>AGREGAR bloque</h1>
+                           </div>
+                           <div class="col-xs-12 col-md-4 col-lg-4 btnOnly">
+                                <button class="btn btn-primary btn-block form-control" type="button" id="ADBtn">Nuevo bloque</button>
+                           </div>
+                      </div>
+
+
+                      <!-- right col -->
+                      <div class="col-xs-12 col-md-6 col-lg-6 sepTOP-big">
+                           <div class="alignRIGHT-lg">
+                                <h1>EDITAR bloque</h1>
+                                <div>
+                                    <h3>Selecciona un bloque de la lista para editarlo</h3>
+                                </div>
+                            </div>
+                            <div>
+
+                                   <!-- ------------------Reemplazar por listado de bloques ----------------- -->
+
+                                    <select id="bloque-select" class="form-control" size="6">
+                                        <option value="122209">Negras</option>
+                                        <option value="122211">Lesbianas calientes</option>
+                                        <option value="122212">Lesbianas templadas</option>
+                                        <option value="122213">Especial día del niño</option>
+                                        <option value="122214">Negros intimidantes</option>
+                                        <option value="122215">Perras en ojotas</option>
+                                        <option value="122216">Gordas valijas</option>
+                                    </select>
+
+                                  <!-- ---------------------- Fin de  listado de bloques ------------------- -->
+                            </div>
+
+                            <div>
+                               <form method="get" action="bloques-edit.html" name="bloque-pickerForm" id="bloque-pickerForm" class="content-picker movieChoose">
+
+                                   <div class="col-xs-12 col-md-8 col-lg-8">
+                                       <input type="text" class="form-control" name="selectedName" id="bloqueNAME" value="">
+                                       <input type="hidden" class="form-control" name="selectedID" id="bloqueID" value="">
+
+                                   </div>
+                                   <div class="col-xs-12 col-md-4 col-lg-4">
+                                       <button class="btn btn-primary btn-block form-control" type="button" id="IDBtn">Editar</button>
+                                   </div>
+
+                                </form>
+                            </div>
+                       </div>
+
+              </div>
+
+        </div>
+
+         <!-- hidden form -->
+        <div class="container" id="hidden1">
+
+             <div class="row">
+                       <!-- left col -->
+                       <div class="col-xs-12 col-md-6 col-lg-6 sepTOP-big">
+                           <div class="col-xs-12 col-md-12 col-lg-12">
+                            <h1>Nuevo Bloque</h1>
+                           </div>
+                           <div class="col-xs-4 col-md-3 col-lg-3">
+                                <button class="btn btn-primary btn-block form-control" type="button" id="CancelBtn">Cancelar</button>
+                           </div>
+                       </div>
+
+              </div>
+
+            <!-- First Row : Title -->
+            <div class="row form-row">
+                <div class="col-xs-12 col-md-12 col-lg-12">
+                    <div class="form-group">
+                        <label for="orginalTitle" id="idTit">NUEVO ID : </label>
+                        <!-- pegar  acá -->
+                        <span class="idLegend">
+
+
+                           <!-- pegar  acá el ID nuevo -->
+                           2121222
+
+
+                        </span>
+                    </div>
+                    <div class="form-group has-feedback">
+
+
+                        <!-- pegar en "value" el ID nuevo -->
+                        <input type="hidden" name="newID" vlaue="" id="newID">
+                        <label class="label-left" for="orginalName">Nombre: *</label>
+                        <input type="text" class="form-control" name="orginalName" id="orginalName" required autofocus><span class="glyphicon form-control-feedback"></span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Form manda imagenes y vars en un JSON hecho string -->
+                <form method="post" action="" name="asset-completeForm"  class="content-picker movieChoose" id="assetForm" enctype="multipart/form-data">
+
+
+                <input type="hidden" name="varsToJSON" id="varsToJSON" value="">
+
+               </form>
+
+
+            <!-- Row 2: Canal & fecha publicación -->
+            <div class="row form-row">
+
+                   <div class="col-xs-12 col-md-4 col-lg-4 form-group">
+                        <div class="form-group has-feedback" id="langSelect">
+                            <label class="label-left" for="langS">Idioma: *</label>
+                            <div class="helpright"><span class="glyphicon glyphicon-question-sign" data-toggle="tooltip" title="Selecciona el idioma. Cada bloque debe darse de alta en su idioma aunque sea exactamente igual"></span></div>
+
+                            <select type="text" class="form-control" name="canal" id="idiomaSelect">
+                                <option value="0"> </option>
+                                <option value="es">Español</option>
+                                <option value="pt">Portugués</option>
+                                <option value="en">Inglés</option>
+                            </select>
+
+                            <span class="glyphicon form-control-feedback"></span>
+                        </div>
+                    </div>
+
+
+
+                    <div class="col-xs-12 col-md-4 col-lg-4 form-group">
+                        <div class="form-group has-feedback" id="channelSelect">
+                            <label for="canal">Canal: *</label>
+                            <div class="helpright"><span class="glyphicon glyphicon-question-sign" data-toggle="tooltip" title="Selecciona el canal al que pertenece esta movie (ej: Venus)"></span></div>
+
+                            <!-- ------------------Reemplazar por listado de canales ----------------- -->
+
+                            <select type="text" class="form-control" name="canal" id="canalSelect">
+                                <option value="0"> </option>
+                                <option value="1">Playboy TV</option>
+                                <option value="2">Venus</option>
+                                <option value="3">Sextreme</option>
+                                <option value="4">Penthouse</option>
+                                <option value="5">Brazzers</option>
+                            </select>
+
+                            <!-- ------------------  Fin de listado de canales  ----------------- -->
+                            <span class="glyphicon form-control-feedback"></span>
+                        </div>
+                    </div>
+
+                    <div class="col-xs-12 col-md-4 col-lg-4 form-group inlang">
+                               <div class="form-group has-feedback">
+                                    <div class="helpright"><span class="glyphicon glyphicon-question-sign" data-toggle="tooltip" title="Al ingresar una fecha, el sistema publicará el bloque en esa fecha."></span></div>
+                                    <label for="date_blq">Fecha de Publicación (dd-mm-aaaa)</label>
+                                    <input type="text" class="form-control datePick" name="date_blq" id="date_blq">
+                                    <span class="glyphicon form-control-feedback"></span>
+                               </div>
+
+                    </div>
+
+            </div>
+            <!--  Row 3 : Devices -->
+                <div class="row form-row">
+                    <div class="col-xs-12 col-md-6 col-lg-6 form-group">
+                        <div class="form-group has-feedback" id="channelSelect">
+                            <label class="label-left" for="device">Dispositivo: *</label>
+                            <div class="helpright"><span class="glyphicon glyphicon-question-sign" data-toggle="tooltip" title="Seleccione en qué dispositivo debe mostrarse el bloque"></span></div>
+
+                            <!-- ------------------Reemplazar por listado de dispositivos ----------------- -->
+
+                            <select type="text" class="form-control" name="device" id="deviceSelect">
+                                <option value="0"> </option>
+                                <option value="1">Desktop</option>
+                                <option value="2">Mobile/tablet</option>
+                                <option value="3">Tv</option>
+                                <option value="4">Otro</option>
+                            </select>
+
+                            <!-- ------------------  Fin de listado de dispositivos  ----------------- -->
+                            <span class="glyphicon form-control-feedback"></span>
+                        </div>
+                    </div>
+                </div>
+
+            <!-- Assets modules -->
+
+            <!-- 4 Row : Palymates pick -->
+                <div class="row form-row">
+                   <h3 class="sepBOT-big">Seleccione los assets que contiene el bloque</h3>
+                    <div class="col-xs-4 col-md-4 col-lg-4 form-group plyMatePick">
+                        <label class="label-left" for="pornstarPick" id="pornstarPickTit">Pornstars / Playmates: </label>
+
+                        <!-- ------------------Reemplazar por listado de pornstars ----------------- -->
+
+                        <ul class="form-control assetPick" id="pornstarPick">
+                           <li value="210002122">Carla Navarra Montoya</li>
+                           <li value="210002123">Armanda Giunta</li>
+                           <li value="210002124">Carla Daniela Tapia</li>
+                           <li value="210002125">Luisa Abramovich</li>
+                           <li value="210002126">Jorgelina Comas</li>
+                           <li value="210002127">Albertina Mársico</li>
+                           <li value="210002128">Julia Toresani</li>
+                           <li value="210002129">Roby Cabañas</li>
+                        </ul>
+
+                        <!-- ---------------------- Fin de  listado de pornstars ------------------- -->
+
+                       <div class="form-group plyMatePick">
+                        <label class="label-left" for="MoviePick">Movies: </label>
+
+                        <!-- ------------------Reemplazar por listado de movies ----------------- -->
+
+                        <ul class="form-control assetPick" id="MoviePick">
+                           <li value="110002122">Movie 1</li>
+                           <li value="110002123">Movie 2</li>
+                           <li value="110002124">Movie 3</li>
+                           <li value="110002125">Movie 4</li>
+                           <li value="110002126">Movie 5</li>
+                           <li value="110002127">Movie 6</li>
+                           <li value="110002128">Movie 7</li>
+                        </ul>
+
+                        <!-- ---------------------- Fin de  listado de movies ------------------- -->
+                        </div>
+
+                        <div class="form-group plyMatePick">
+                        <label class="label-left" for="SeriePick">Capítulos: </label>
+
+                        <!-- ------------------Reemplazar por listado de capítulos ----------------- -->
+
+                        <ul class="form-control assetPick" id="SeriePick">
+                           <li value="310002122">Capítulo 1 - Serie 1</li>
+                           <li value="310002123">Capítulo 2 - Serie 1</li>
+                           <li value="310002124">Capítulo 3 - Serie 1</li>
+                           <li value="310002125">Capítulo 1 - Serie 2</li>
+                           <li value="310002126">Capítulo 2 - Serie 2</li>
+                           <li value="310002127">Capítulo 1 - Serie 3</li>
+                           <li value="310002128">Capítulo 2 - Serie 3/li>
+                        </ul>
+
+                        <!-- ---------------------- Fin de  listado de capítulos ------------------- -->
+
+                        </div>
+
+                    </div>
+
+
+
+
+                    <div class="col-xs-4 col-md-4 col-lg-4 form-group plyMateDrop" >
+                       <div class="form-group has-feedback">
+                            <label for="assetDrop">Arrastrar hasta aquí para agregar *</label>
+                            <ul class="form-control assetPick" id="assetDrop" name="assetDrop">
+
+                            </ul>
+                            <span class="glyphicon form-control-feedback"></span>
+                        </div>
+                    </div>
+
+
+
+
+                </div>
+
+
+
+            <!-- Last Row : Buttons -->
+            <div class="row form-row">
+               <div class="col-xs-4 col-md-4 col-lg-4">
+                </div>
+                <div class="col-xs-4 col-md-4 col-lg-4">
+                    <button class="btn btn-primary btn-block form-control" type="submit" id="sendBut">Grabar Bloque</button>
+                </div>
+                <div class="col-xs-4 col-md-4 col-lg-4">
+                </div>
+            </div>
+            </form>
+
+        </div>
+
+{% endblock content %}
+        
