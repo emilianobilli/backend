@@ -9,7 +9,7 @@ from Auth    import Auth
 from json   import dumps 
 from json   import loads
 
-api = Flask(__name__)
+application = Flask(__name__)
 
 
 backend = Backend({"girls":
@@ -82,7 +82,7 @@ backend = Backend({"girls":
                                         "id_field": "asset_id",
                                         "filter_query" : '',
                                         "schema": ["channel","asset_id", "title","summary_short","display_runtime","seasons","season","episode","episodes","categories","show_type","year","serie_id","girls_id","name", "image_big", "image_landscape", "image_portrait", "views", "ranking", "asset_type", "blocks", "publish_date", "class", "summary_long", "nationality"],
-                                        "return_fields": ["asset_id", "name", "title", "ranking", "views","display_runtime", "summary_short" ,"categories", "image_landscape", "image_portrait", "channel", "show_type","asset_type", "year", "seasons", "class","episodes", "episode"],
+                                        "return_fields": ["asset_id", "name", "title", "ranking", "views","display_runtime", "summary_short" ,"categories", "image_landscape", "image_portrait", "channel", "show_type","asset_type", "year", "seasons", "class","episodes", "episode", "serie_id"],
                                         "name" : "eshotgodomain",
                                     }}
                     })
@@ -163,8 +163,8 @@ authorization = Auth({
 #------------------------------------------------------------------------------------------------------------------------
 #       Pages Components: Channels, Categories, Sliders, Blocks
 #------------------------------------------------------------------------------------------------------------------------
-@api.route('/v1/categories/', methods=['GET', 'POST'])
-@api.route('/v1/categories',  methods=['GET', 'POST'])
+@application.route('/v1/categories/', methods=['GET', 'POST'])
+@application.route('/v1/categories',  methods=['GET', 'POST'])
 @cross_origin()
 def urlCategories():
     if request.method == 'GET':
@@ -181,8 +181,8 @@ def urlCategories():
             ret  = components.del_category(body['item'])
         return Response(response=dumps(ret['body']), status=ret['status'])
 
-@api.route('/v1/sliders/',    methods=['GET', 'POST'])
-@api.route('/v1/sliders',     methods=['GET', 'POST'])
+@application.route('/v1/sliders/',    methods=['GET', 'POST'])
+@application.route('/v1/sliders',     methods=['GET', 'POST'])
 @cross_origin()
 def urlSliders():
     if request.method == 'GET':
@@ -199,8 +199,8 @@ def urlSliders():
             ret  = components.del_slider(body['item'])
         return Response(response=dumps(ret['body']), status=ret['status'])
 
-@api.route('/v1/blocks/',     methods=['GET', 'POST'])
-@api.route('/v1/blocks',      methods=['GET', 'POST'])
+@application.route('/v1/blocks/',     methods=['GET', 'POST'])
+@application.route('/v1/blocks',      methods=['GET', 'POST'])
 @cross_origin()
 def urlBlocks():
     if request.method == 'GET':
@@ -218,8 +218,8 @@ def urlBlocks():
         return Response(response=dumps(ret['body']), status=ret['status'])
 
 
-@api.route('/v1/channels/',     methods=['GET', 'POST'])
-@api.route('/v1/channels',      methods=['GET', 'POST'])
+@application.route('/v1/channels/',     methods=['GET', 'POST'])
+@application.route('/v1/channels',      methods=['GET', 'POST'])
 @cross_origin()
 def urlChannels():
     if request.method == 'GET':
@@ -241,8 +241,8 @@ def urlChannels():
 #------------------------------------------------------------------------------------------------------------------------
 #       Assets: Shows (Movies, Series) and Girls
 #------------------------------------------------------------------------------------------------------------------------
-@api.route('/v1/search/', methods=['GET'])
-@api.route('/v1/search',  methods=['GET'])
+@application.route('/v1/search/', methods=['GET'])
+@application.route('/v1/search',  methods=['GET'])
 @cross_origin()
 def urlSearch():
     args = {}
@@ -251,8 +251,8 @@ def urlSearch():
     ret  = backend.search(args)
     return Response(response=dumps(ret['body']), status=ret['status'])
 
-@api.route('/v1/suggest/<string:asset_id>/', methods=['GET'])
-@api.route('/v1/suggest/<string:asset_id>',  methods=['GET'])
+@application.route('/v1/suggest/<string:asset_id>/', methods=['GET'])
+@application.route('/v1/suggest/<string:asset_id>',  methods=['GET'])
 @cross_origin()
 def urlSuggest(asset_id):
     if request.method == 'GET':
@@ -263,8 +263,8 @@ def urlSuggest(asset_id):
         ret = backend.suggest(args)
         return Response(response=dumps(ret['body']), status=ret['status'])
 
-@api.route('/v1/episodes/', methods=['GET'])
-@api.route('/v1/episodes',  methods=['GET'])
+@application.route('/v1/episodes/', methods=['GET'])
+@application.route('/v1/episodes',  methods=['GET'])
 @cross_origin()
 def urlEpisode():
     if request.method == 'GET':
@@ -274,9 +274,9 @@ def urlEpisode():
         ret = backend.query_episode(args)
         return Response(response=dumps(ret['body']), status=ret['status'])
 
-#@api.route('/v1/episodes/<string:asset_id>/', methods=['GET'])
-@api.route('/v1/shows/', methods=['GET'])
-@api.route('/v1/shows',  methods=['GET'])
+#@application.route('/v1/episodes/<string:asset_id>/', methods=['GET'])
+@application.route('/v1/shows/', methods=['GET'])
+@application.route('/v1/shows',  methods=['GET'])
 @cross_origin()
 def urlShow():
     if request.method == 'GET':
@@ -286,8 +286,8 @@ def urlShow():
         ret = backend.query_show(args)
         return Response(response=dumps(ret['body']), status=ret['status'])
 
-@api.route('/v1/shows/<string:asset_id>/', methods=['GET'])
-@api.route('/v1/shows/<string:asset_id>',  methods=['GET'])
+@application.route('/v1/shows/<string:asset_id>/', methods=['GET'])
+@application.route('/v1/shows/<string:asset_id>',  methods=['GET'])
 @cross_origin()
 def urlGetShow(asset_id):
     ret = {}
@@ -306,8 +306,8 @@ def urlGetShow(asset_id):
 
     return Response(response=dumps(ret['body']), status=ret['status'])
 
-@api.route('/v1/girls/', methods=['GET'])
-@api.route('/v1/girls',  methods=['GET'])
+@application.route('/v1/girls/', methods=['GET'])
+@application.route('/v1/girls',  methods=['GET'])
 @cross_origin()
 def urlGirl():
     if request.method == 'GET':
@@ -317,8 +317,8 @@ def urlGirl():
         ret = backend.query_girl(args)
         return Response(response=dumps(ret['body']), status=ret['status'])
 
-@api.route('/v1/girls/<string:asset_id>/', methods=['GET'])
-@api.route('/v1/girls/<string:asset_id>',  methods=['GET'])
+@application.route('/v1/girls/<string:asset_id>/', methods=['GET'])
+@application.route('/v1/girls/<string:asset_id>',  methods=['GET'])
 @cross_origin()
 def urlGetGirl(asset_id):
     args = {}
@@ -328,8 +328,8 @@ def urlGetGirl(asset_id):
     ret = backend.get_girl(args)
     return Response(response=dumps(ret['body']), status=ret['status'])
 
-@api.route('/v1/assets/<string:block_id>/', methods=['GET'])
-@api.route('/v1/assets/<string:block_id>',  methods=['GET'])
+@application.route('/v1/assets/<string:block_id>/', methods=['GET'])
+@application.route('/v1/assets/<string:block_id>',  methods=['GET'])
 @cross_origin()
 def urlAssetBlock(block_id):
     args = {}
@@ -342,7 +342,7 @@ def urlAssetBlock(block_id):
 #--------------------------------------------------------------------------------------------
 # Private Methods
 #--------------------------------------------------------------------------------------------
-@api.route('/v1/private/authorize/', methods=['POST'])
+@application.route('/v1/private/authorize/', methods=['POST'])
 @cross_origin()
 def urlAuthorize():
     #
@@ -351,7 +351,7 @@ def urlAuthorize():
     ret = authorization.authorize(user_data)
     return Response(response=dumps(ret['body']), status=ret['status'])
 
-@api.route('/v1/private/assets/', methods=['POST'])
+@application.route('/v1/private/assets/', methods=['POST'])
 @cross_origin()
 def urlAsset():
     print request.method
@@ -365,19 +365,19 @@ def urlAsset():
             ret  = backend.update_asset(body['item'])
         return Response(response=dumps(ret['body']), status=ret['status'])
     
-@api.route('/v1/private/addview/<string:asset_id>', methods=['PUT'])
+@application.route('/v1/private/addview/<string:asset_id>', methods=['PUT'])
 def urlAddView(asset_id):
     ret = backend.add_view(asset_id)
     return Response(response=dumps(ret['body']), status=ret['status'])
 
-@api.route('/v1/private/updateview/<string:asset_id>', methods=['GET'])
+@application.route('/v1/private/updateview/<string:asset_id>', methods=['GET'])
 def urlUpdateView(asset_id):
     ret = backend.update_view(asset_id)
     return Response(response=dumps(ret['body']), status=ret['status'])
 #--------------------------------------------------------------------------------------------
 # Ester Egg
 #--------------------------------------------------------------------------------------------
-@api.route('/v1/private/author/easteregg/8===D/', methods=['GET'])
+@application.route('/v1/private/author/easteregg/8===D/', methods=['GET'])
 def ea():
     with open('./ea') as f:
         html = f.read()
@@ -385,5 +385,5 @@ def ea():
 
 
 if __name__ == "__main__":
-    api.run("0.0.0.0", 8000)
-#    api.run()
+    application.run("0.0.0.0", 8000)
+#    application.run()
