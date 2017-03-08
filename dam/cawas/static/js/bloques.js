@@ -19,7 +19,7 @@ $( document ).ready(function() {
     
     // simular exit con el botón de salir
     $("#getOut").click(function(){
-           window.location.href = "index.html?logstatus=OFF";
+           window.location.href = "/logout";
     })
     
     // Toma el ID de la chica seleccionada en la lista
