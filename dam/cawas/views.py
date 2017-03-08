@@ -1362,7 +1362,8 @@ def add_blocks_view(request):
         # Fin datos Bloque
 
 
-    context = {'message': message}
+    vblocks = Block.objects.all()
+    context = {'message': message, 'vblocks':vblocks}
     return render(request, 'cawas/blocks/add.html', context)
 #</FIN ADD BLOCK>
 
