@@ -669,6 +669,10 @@ hr{
     margin-bottom:12px;    
 }
 
+.sepBOT-big{
+    margin-bottom:22px;    
+}
+
 .sepTOP-big{
     margin-top:50px!important;    
 }
@@ -1100,6 +1104,55 @@ ul.generoPick li.placeholder {
 
 
 /* BLOQUES */
+
+/*asset Pick*/
+ul.assetPick {
+    height:auto!important;
+    max-height:90px!important;
+    overflow: auto;
+    list-style: none;
+    min-height:34px;
+}
+
+ul.assetPick li{
+    width:100%;
+    max-width:250px;
+}
+
+ul.assetPick li:hover{
+    color:#d6212b!important;
+    cursor:move;
+}
+
+ul#MoviePick li:hover{
+    cursor:alias!important;
+}
+
+ul#SeriePick li:hover{
+    cursor:alias!important;
+}
+
+
+
+ul.assetPick li.placeholder {
+    position: relative;
+    margin: 0;
+    padding: 0;
+    border: none; }
+    
+    ul.assetPick li.placeholder:before {
+      position: absolute;
+      content: "";
+      width: 0;
+      height: 0;
+      margin-top: -5px;
+      left: -5px;
+      top: -4px;
+      border: 5px solid transparent;
+      border-left-color: red;
+      border-right: none; }
+
+
 
 
 /*media queries */

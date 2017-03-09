@@ -22,24 +22,29 @@
 <div class="container">
 
       <div class="row">
-               <!-- left col -->
-               <div class="col-xs-12 col-md-6 col-lg-6 sepTOP-big">
-                    <h1>Editar MOVIE</h1>
-                    <div>
-                        <h3>Edita los campos necesarios y presiona el botón EDITAR</h3>
-                    </div>
-
-               </div>
+           <!-- left col -->
+           <div class="col-xs-12 col-md-6 col-lg-6 sepTOP-big">
+                <h1>Editar MOVIE</h1>
+                <div>
+                    <h3>Edita los campos necesarios y presiona el botón EDITAR</h3>
+                </div>
+           </div>
       </div>
-
-
-
+      <div class="row">
+            <div class="col-xs-12 col-md-6 col-lg-6">
+               <div id="repro1">
+                   <video width="400" controls class="fRIGHT">
+                      <source src="" type=video/mp4 id="videomp4">
+                   </video>
+               </div>
+            </div>
+      </div>
                 <!-- 1 Row : Title -->
                 <div class="row form-row">
                     <div class="col-xs-12 col-md-12 col-lg-12">
                         <div class="form-group">
                             <label for="orginalTitle" id="idTit" >ID: {{asset_id}}</label>
-                            <input type="hidden" name="asset_id" value="{{asset_id}}">
+                            <input type="hidden" name="asset_id" id="asset_id" value="{{asset_id}}">
                         </div>
                         <div class="form-group has-feedback" id="oriTit-container">
                             <label class="label-left" for="orginalTitle">Título original: *</label>

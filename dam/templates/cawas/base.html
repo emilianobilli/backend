@@ -14,21 +14,23 @@
 
 
         <!-- Javascript -->
-        <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.2.4/jquery.min.js"></script>
+
+        <script src="{% static 'js/jquery.min.js' %}"></script>
         <script src="{% static 'js/jquery-sortable.js' %}"></script>
         <script src="{% static 'js/bootstrap.min.js' %}"></script>
         <script src="{% static 'js/dcalendar.picker.js' %}"></script>
-        <script src="{% static 'js/duration-picker.min.js' %}"></script>
         <script src="{% static 'js/select2.min.js' %}"></script>
-        <script src="{% static 'js/menu.js' %}"></script>
-
+        <script src="{% static 'js/duration-picker.min.js' %}"></script>
 
         {% block extra_head %}
         {% endblock %}
         <!--/Javascript
+
         <script src="{% static 'js/series.js' %}"></script>
         <script src="{% static 'js/series.js' %}"></script>
         <script src="{% static 'js/bloques.js' %}"></script>
+
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.2.4/jquery.min.js"></script>
 
         -->
 
@@ -49,6 +51,14 @@
                   object.value = object.value.slice(0, 4)
               }
         </script>
+
+
+        {% block mensajes %}
+        <script>
+            resultado = "{{flag}}";
+        </script>
+        {% endblock %}
+
     </head>
     <body>
 

@@ -1,9 +1,31 @@
 
-
 $( document ).ready(function() {
 
+ // rellena el formulario con los datos recogidos en la variable requestedData
+    function completarRuntime(){
+
+        //runtime
+
+        $("#duration-minutes").val(minutos).change();
+        $("#duration-seconds").val(segundos).change();
+    }
+     function leerRuntime(){
+
+            var estreno = ($("#runtime").val());
+            var estrenoArr = estreno.split(":");
+            //var estreno2 = Number(estrenoArr[0]+":,"+estrenoArr[1]);
+            //runtime
+            minutos = Number(estrenoArr[0]);
+            segundos = Number(estrenoArr[1]);
+
+        }
+
     console.log( "ready!" );
-    
+    var asset_id = $("#asset_id").val();
+    if(asset_id != null){
+        changeVideo(asset_id, "#repro1");// Cambia el video de acuerdo al ID. la función está en la línea 135. Construye la url relativa del video con la variable path+ID+'.mp4'
+    };
+
     if(resultado=="success"){
         $("#myModal-OK").modal();
     }
@@ -34,33 +56,35 @@ $( document ).ready(function() {
     var clickedVal; // recoge el valor del ID seleccionado en la lista de movies;
     var clickedText; // recoge el nombre seleccionado en la lista de edición de movies;
     var clickedTextID; // recoge el ID nombre seleccionado en la lista de edición de movies;
-    
+    var hora;
+    var minutos;
     // activar los selects con filtro
     $("#movie-select").select2({placeholder: "Despliega la lista"});
     $("#movie-edit").select2({placeholder: "Despliega la lista"});
     var $myVerifSelect = $("#canalSelect").select2();
-    
+
     // activar timepicker
+    leerRuntime();
+
+
     $("#runtime").durationPicker({
-      /*hours: {
-        label: "h",
-        min: 0,
-        max: 24
-      },*/
       minutes: {
         label: ":",
         min: 0,
-        max: 120
+        max: 120,
+        value:1
       },
       seconds: {
         label: "",
         min: 0,
-        max: 59
+        max: 59,
+        value:20
       },
       classname: 'form-control',
       responsive: true
     });
-    
+    completarRuntime();
+
     // simular exit con el botón de salir
     $("#getOut").click(function(){
            window.location.href = "/logout";
@@ -100,13 +124,18 @@ $( document ).ready(function() {
     
     // simular exit con el botó de salir
     $("#EDBtn").click(function(){
-           window.location.href = "/movies/edit/"+clickedTextID;
+        if (clickedTextID != null){
+               window.location.href = "/movies/edit/"+clickedTextID;
+        }
     })
     
     // interacción del usuario al hacer click en el botón debajo de la lista de selección
     $( "#IDBtn" ).click(function(){ 
-        $( "#idTit" ).html("AGREGANDO ID: "+clickedVal);// Agrega el ID en el título
-        $( "#hidden1" ).show();
+        if (clickedVal != null){
+            $( "#idTit" ).html("AGREGANDO ID: "+clickedVal);// Agrega el ID en el título
+            $( "#hidden1" ).show();
+        }
+
     })
     
     //preview de imagenes cargadas por el front end
@@ -377,7 +406,7 @@ $( document ).ready(function() {
         
          // chequea display runtime
 
-        /*
+
         if(display_runtime=="" || display_runtime=="0:,0")
         {
             errorMe("#runtime");
@@ -391,7 +420,7 @@ $( document ).ready(function() {
             display_runtimeJSON=myDirtyRuntime[0]+myDirtyRuntime[1];
             okMe("#runtime");
         }
-        */
+
         
         // chequea elenco
         if(elenco_selected=="" || elenco_selected==" ")

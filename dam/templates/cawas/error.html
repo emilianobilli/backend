@@ -1,5 +1,20 @@
 {% extends "cawas/base.html" %}
+{% block subheader %}
+<div class="col-xs-12 col-md-12 col-lg-12 unpad">
+    <div class="subHeader">
+        <div class="notifications">
+            {% if user.is_authenticated %}
+                  <a href="{% url 'menu_view' %}"><span class="glyphicon glyphicon-home GLY-med">
+                               </span> &nbsp;volver al menú</a>
 
+                 <button class="btn btn-lg btn-primary btn-block logOFF" type="button" id="exitBtn" data-toggle="modal" data-target="#myModal">LOG-OUT</button>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock subheader %}
 {% block content %}
+<div class="container">
   <h1>ERROR: {{ message }} </h1>
+</div>
 {% endblock content %}

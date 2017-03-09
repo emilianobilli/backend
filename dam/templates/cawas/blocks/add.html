@@ -4,6 +4,7 @@
     <script src="/static/js/bloques.js"></script>
 {% endblock %}
 
+
 {% block subheader %}
 <div class="col-xs-12 col-md-12 col-lg-12 unpad">
     <div class="subHeader">
@@ -19,6 +20,7 @@
 </div>
 {% endblock subheader %}
 
+
 {% block content %}
         <div class="container">
 
@@ -31,7 +33,7 @@
                            <div class="col-xs-12 col-md-4 col-lg-4 btnOnly">
                                 <button class="btn btn-primary btn-block form-control" type="button" id="ADBtn">Nuevo bloque</button>
                            </div>
-                      </div>
+                       </div>
 
 
                       <!-- right col -->
@@ -56,7 +58,7 @@
                                <form method="get" action="bloques-edit.html" name="bloque-pickerForm" id="bloque-pickerForm" class="content-picker movieChoose">
 
                                    <div class="col-xs-12 col-md-8 col-lg-8">
-                                       <input type="text" class="form-control" name="selectedName" id="bloqueNAME" value="">
+                                       <input type="hidden" class="form-control" name="selectedName" id="bloqueNAME" value="">
                                        <input type="hidden" class="form-control" name="selectedID" id="bloqueID" value="">
 
                                    </div>
@@ -69,12 +71,10 @@
                        </div>
 
               </div>
-
         </div>
 
          <!-- hidden form -->
         <div class="container" id="hidden1">
-
              <div class="row">
                        <!-- left col -->
                        <div class="col-xs-12 col-md-6 col-lg-6 sepTOP-big">
@@ -94,14 +94,7 @@
                     <div class="form-group">
                         <label for="orginalTitle" id="idTit">NUEVO ID : </label>
                         <!-- pegar  acá -->
-                        <span class="idLegend">
-
-
-                           <!-- pegar  acá el ID nuevo -->
-                           2121222
-
-
-                        </span>
+                        <span class="idLegend"></span>
                     </div>
                     <div class="form-group has-feedback">
 
@@ -132,7 +125,6 @@
                             <div class="helpright"><span class="glyphicon glyphicon-question-sign" data-toggle="tooltip" title="Selecciona el idioma. Cada bloque debe darse de alta en su idioma aunque sea exactamente igual"></span></div>
 
                             <select type="text" class="form-control" name="canal" id="idiomaSelect">
-                                <option value="0"> </option>
                                 <option value="es">Español</option>
                                 <option value="pt">Portugués</option>
                                 <option value="en">Inglés</option>
@@ -150,14 +142,10 @@
                             <div class="helpright"><span class="glyphicon glyphicon-question-sign" data-toggle="tooltip" title="Selecciona el canal al que pertenece esta movie (ej: Venus)"></span></div>
 
                             <!-- ------------------Reemplazar por listado de canales ----------------- -->
-
                             <select type="text" class="form-control" name="canal" id="canalSelect">
-                                <option value="0"> </option>
-                                <option value="1">Playboy TV</option>
-                                <option value="2">Venus</option>
-                                <option value="3">Sextreme</option>
-                                <option value="4">Penthouse</option>
-                                <option value="5">Brazzers</option>
+                                {% for item in vchannels %}
+                                     <option value="{{item.id}}">{{item.name}}</option>
+                                {% endfor %}
                             </select>
 
                             <!-- ------------------  Fin de listado de canales  ----------------- -->
@@ -172,7 +160,6 @@
                                     <input type="text" class="form-control datePick" name="date_blq" id="date_blq">
                                     <span class="glyphicon form-control-feedback"></span>
                                </div>
-
                     </div>
 
             </div>
@@ -186,11 +173,9 @@
                             <!-- ------------------Reemplazar por listado de dispositivos ----------------- -->
 
                             <select type="text" class="form-control" name="device" id="deviceSelect">
-                                <option value="0"> </option>
-                                <option value="1">Desktop</option>
-                                <option value="2">Mobile/tablet</option>
-                                <option value="3">Tv</option>
-                                <option value="4">Otro</option>
+                                {% for item in vdevices %}
+                                     <option value="{{item.id}}">{{item.name}}</option>
+                                {% endfor %}
                             </select>
 
                             <!-- ------------------  Fin de listado de dispositivos  ----------------- -->
@@ -207,20 +192,14 @@
                     <div class="col-xs-4 col-md-4 col-lg-4 form-group plyMatePick">
                         <label class="label-left" for="pornstarPick" id="pornstarPickTit">Pornstars / Playmates: </label>
 
+
                         <!-- ------------------Reemplazar por listado de pornstars ----------------- -->
-
                         <ul class="form-control assetPick" id="pornstarPick">
-                           <li value="210002122">Carla Navarra Montoya</li>
-                           <li value="210002123">Armanda Giunta</li>
-                           <li value="210002124">Carla Daniela Tapia</li>
-                           <li value="210002125">Luisa Abramovich</li>
-                           <li value="210002126">Jorgelina Comas</li>
-                           <li value="210002127">Albertina Mársico</li>
-                           <li value="210002128">Julia Toresani</li>
-                           <li value="210002129">Roby Cabañas</li>
+                        {% for item in vgirls %}
+                                 <li value="{{item.asset_id}}">{{ item.name }}</li>
+                        {% endfor %}
                         </ul>
-
-                        <!-- ---------------------- Fin de  listado de pornstars ------------------- -->
+                        <!------------------------ Fin de  listado de pornstars --------------------->
 
                        <div class="form-group plyMatePick">
                         <label class="label-left" for="MoviePick">Movies: </label>
@@ -228,31 +207,23 @@
                         <!-- ------------------Reemplazar por listado de movies ----------------- -->
 
                         <ul class="form-control assetPick" id="MoviePick">
-                           <li value="110002122">Movie 1</li>
-                           <li value="110002123">Movie 2</li>
-                           <li value="110002124">Movie 3</li>
-                           <li value="110002125">Movie 4</li>
-                           <li value="110002126">Movie 5</li>
-                           <li value="110002127">Movie 6</li>
-                           <li value="110002128">Movie 7</li>
+                           {% for item in vmovies %}
+                                 <li value="{{item.asset_id}}" id="{{item.asset.asset_id}}">{{ item.original_title }}</li>
+                           {% endfor %}
                         </ul>
 
-                        <!-- ---------------------- Fin de  listado de movies ------------------- -->
+                        <!------------------------ Fin de  listado de movies --------------------->
                         </div>
 
                         <div class="form-group plyMatePick">
                         <label class="label-left" for="SeriePick">Capítulos: </label>
 
-                        <!-- ------------------Reemplazar por listado de capítulos ----------------- -->
+                        <!--------------------Reemplazar por listado de capítulos ------------------->
 
                         <ul class="form-control assetPick" id="SeriePick">
-                           <li value="310002122">Capítulo 1 - Serie 1</li>
-                           <li value="310002123">Capítulo 2 - Serie 1</li>
-                           <li value="310002124">Capítulo 3 - Serie 1</li>
-                           <li value="310002125">Capítulo 1 - Serie 2</li>
-                           <li value="310002126">Capítulo 2 - Serie 2</li>
-                           <li value="310002127">Capítulo 1 - Serie 3</li>
-                           <li value="310002128">Capítulo 2 - Serie 3/li>
+                            {% for item in vcapitulos %}
+                                 <li value="{{item.asset_id}}"  tag="{{item.asset.asset_id}}">{{ item.original_title }}</li>
+                            {% endfor %}
                         </ul>
 
                         <!-- ---------------------- Fin de  listado de capítulos ------------------- -->

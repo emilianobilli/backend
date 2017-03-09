@@ -59,8 +59,10 @@ $( document ).ready(function() {
     })
     
     // interacción del usuario al hacer click en el botón de agregar chicas
-    $( "#ADBtn" ).click(function(){ 
-         $( "#hidden1" ).show();
+    $( "#ADBtn" ).click(function(){
+
+             $( "#hidden1" ).show();
+
     })  
     
     // interacción del usuario al hacer click en el botón cancelar

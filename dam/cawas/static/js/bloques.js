@@ -20,7 +20,16 @@ $( document ).ready(function() {
     // simular exit con el botón de salir
     $("#getOut").click(function(){
            window.location.href = "/logout";
-    })
+    });
+
+
+     // simular exit con el botó de salir
+    $("#IDBtn").click(function(){
+        if (clickedVal != null){
+               window.location.href = "/blocks/edit/"+clickedVal;
+        }
+    });
+
     
     // Toma el ID de la chica seleccionada en la lista
     $( "#bloque-select" ).change(function() {
@@ -40,9 +49,7 @@ $( document ).ready(function() {
     });
     
     // interacción del usuario al hacer click en el botón debajo de la lista de selección
-    $( "#IDBtn" ).click(function(){ 
-        $( "#bloque-pickerForm" ).submit();// Envía el formulario con el id del bloque
-    })
+
     
     // interacción del usuario al hacer click en el botón de agregar chicas
     $( "#ADBtn" ).click(function(){ 
@@ -186,9 +193,18 @@ $( document ).ready(function() {
             okMe("#assetDrop");
             asset_selected = [];
             $('#assetDrop li').each(function(){
-               asset_selected.push($(this).val());
+
+               //asset_selected+= $(this).val();
+
+               //asset =  $(this).attr("tag");
+               var asset_id_aux = $(this).val();
+               if (asset_id_aux != null){
+                   asset_selected.push(asset_id_aux);
+               }
+
+
             })
-            //console.log("asset_selected:"+asset_selected)
+            console.log("asset_selected:"+asset_selected);
         }
         
         
@@ -323,9 +339,9 @@ $( document ).ready(function() {
                     myJSON+='"channel_id":'+canal_selected+',';
                     myJSON+='"publish_date":"'+publish_date+'",';
                     myJSON+='"target_device_id":"'+device_selected+'",';
-                    myJSON+='"assets": [';
+                    myJSON+='"assets": ';
                     myJSON+= explodeArray(asset_selected, "asset_id");
-                    myJSON+=']}}';
+                    myJSON+='}}';
                     console.log(myJSON);
                     $("#varsToJSON").val(myJSON);
                     $("#assetForm").submit();

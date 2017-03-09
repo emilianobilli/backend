@@ -4,7 +4,7 @@ from django.shortcuts import render
 import datetime, os, json
 from django.contrib.auth import authenticate, login, logout
 from django.shortcuts import render, redirect
-from .models import Channel, Asset, Episode, ImageQueue, PublishQueue, Setting,  Block, Serie, SerieMetadata, Movie, MovieMetadata, Girl,GirlMetadata,  Category,CategoryMetadata, Language, Image, PublishZone
+from .models import Channel, Asset, Device, Episode, ImageQueue, PublishQueue, Setting,  Block, Serie, SerieMetadata, Movie, MovieMetadata, Girl,GirlMetadata,  Category,CategoryMetadata, Language, Image, PublishZone
 from django.shortcuts import render_to_response
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from django.shortcuts import get_object_or_404, render
@@ -165,7 +165,9 @@ def add_movies_view(request):
     #ALTA - MOVIE: en el GET debe cargar variables, y en POST debe leer JSON
     #cawas/static/images/landscape/  cawas/static/images/portrait/
 
+    vflag = ""
     if request.method == 'POST':
+
        # parsear JSON
        strjson = request.POST['varsToJSON']
        decjson = json.loads(strjson)
@@ -185,6 +187,7 @@ def add_movies_view(request):
        try:
            img = Image.objects.get(name=vasset.asset_id)
        except Image.DoesNotExist as e:
+           vflag = "error"
            img = Image()
 
        try:
@@ -214,8 +217,6 @@ def add_movies_view(request):
 
        img.save()
        mv.image = img
-
-       print varchivo
 
        #Channel
        try:
@@ -251,6 +252,7 @@ def add_movies_view(request):
                vcategory = Category.objects.get(pk=item['category_id'])
                mv.category.add(vcategory)
            except Category.DoesNotExist as e:
+               vflag = "error"
                return render(request, 'cawas/error.html', {"message": "No existe Categoria. (" + e.message + ")"})
 
 
@@ -308,10 +310,9 @@ def add_movies_view(request):
                imgQueue.save()
        except Exception as e:
            return render(request, 'cawas/error.html', {"message": "Error al Generar Cola de Imagen. (" + e.message + ")"})
-
-
+       vflag = "success"
        message = 'Registrado correctamente'
-       # FIN DE POST
+       #FIN DE POST
 
 
     #VARIABLES PARA GET
@@ -323,7 +324,8 @@ def add_movies_view(request):
     categories = Category.objects.all()
     vlanguages = Language.objects.all()
     title = 'Nueva Movie'
-    context = {'title': title, 'assets':assets, 'channels':channels, 'girls':girls,  'categories':categories, 'movies':vmovies, 'vlanguages':vlanguages }
+    context = {'title': title, 'assets':assets, 'channels':channels, 'girls':girls,  'categories':categories,
+               'movies':vmovies, 'vlanguages':vlanguages, 'flag':vflag }
     return render(request, 'cawas/movies/add.html', context)
 # Fin add_movies_view
 
@@ -1317,60 +1319,78 @@ def add_blocks_view(request):
     if not request.user.is_authenticated:
         return redirect(login_view)
 
-    # VARIABLES LOCALES
+    #VARIABLES LOCALES
     message = ''
-    vg_pathfiles = 'cawas/static/files/block/'
-
+    vflag = ''
+    vschedule_date = ''
     if request.method == 'POST':
         # VARIABLES
         vblock = Block()
-        vasset = Asset()
-        vchannel = Channel()
-
         # Parsear JSON
-        strjson = request.POST['strjson']
-        decjson = json.loads(strjson)
-
-        # Datos de Serie
-        vblock.asset = vasset
-        vblock.name = decjson['Block']['name']
-        vblock.save()
-
-        # Lenguaje
         try:
-            vasset.language = Language.objects.get(code=decjson['Serie']['language'])
+            strjson = request.POST['varsToJSON']
+            decjson = json.loads(strjson)
+            #pathfilesport = Setting.objects.get(code='image_repository_path_portrait')
+            #pathfilesland = Setting.objects.get(code='image_repository_path_landscape')
+            vblock.name = decjson['Block']['name']
+            vschedule_date = datetime.datetime.strptime(decjson['Block']['publish_date'], '%d-%m-%Y').strftime('%Y-%m-%d')
+            vblock.publish_date = vschedule_date
+            vblock.language = Language.objects.get(code=decjson['Block']['language'])
+            vblock.channel = Channel.objects.get(pk=decjson['Block']['channel_id'])
+            vblock.target_device = Device.objects.get(pk=decjson['Block']['target_device_id'])
+
+        except Setting.DoesNotExist as e:
+            return render(request, 'cawas/error.html', {"message": "No Existe Setting. (" + e.message + ")"})
+        except Serie.DoesNotExist as e:
+            return render(request, 'cawas/error.html', {"message": "No Existe Serie. (" + e.message + ")"})
+        except Image.DoesNotExist as e:
+            return render(request, 'cawas/error.html', {"message": "No Existe Imagen Asociada a la Serie. (" + e.message + ")"})
         except Language.DoesNotExist as e:
             return render(request, 'cawas/error.html', {"message": "No existe LENGUAJE. (" + e.message + ")"})
-
-        # Channel
-        try:
-            vchannel.channel = Channel.objects.get(pk=decjson['Serie']['channel_id'])
         except Channel.DoesNotExist as e:
             return render(request, 'cawas/error.html', {"message": "No existe Channel. (" + e.message + ")"})
+        except Device.DoesNotExist as e:
+            return render(request, 'cawas/error.html', {"message": "No existe Device. (" + e.message + ")"})
 
         # CARGAR ASSETS
-        vassets = decjson['Serie']['assets']
+        vassets = decjson['Block']['assets']
         for item in vassets:
             try:
-                vasset = Asset.objects.get(pk=item['asset_id'])
+                #print item['asset_id']
+                #vasset = Asset.objects.get(asset_id=item['asset_id'])
+                asset_id = item['asset_id']
+                print asset_id
+                vasset = Asset.objects.get(pk=asset_id)
+                vblock.save()
                 vblock.assets.add(vasset)
             except Asset.DoesNotExist as e:
                 return render(request, 'cawas/error.html', {"message": "No existe Asset. (" + e.message + ")"})
-
+        # Publica en PublishQueue
+        func_publish_queue(vasset, vblock.language, 'AS', 'Q', vblock.publish_date)
         vblock.save()
+        vflag = "success"
         message = 'Bloque - Registrado Correctamente'
         # Fin datos Bloque
 
-
+    #Variables Para GET
     vblocks = Block.objects.all()
-    context = {'message': message, 'vblocks':vblocks}
+    vchannels = Channel.objects.all()
+    vdevices  = Device.objects.all()
+    vgirls = Girl.objects.all()
+    vlangueages = Language.objects.all()
+    vmovies = Movie.objects.all()
+    vcapitulos = Episode.objects.all()
+
+    context = {'message': message, 'vblocks':vblocks, 'vchannels':vchannels,
+               'vdevices':vdevices, 'vgirls':vgirls, 'vlangueages':vlangueages,
+               'vmovies':vmovies, 'vcapitulos':vcapitulos }
     return render(request, 'cawas/blocks/add.html', context)
 #</FIN ADD BLOCK>
 
 
 
 
-def edit_blocks_view(request):
+def edit_blocks_view(request, asset_id):
     # AUTENTICACION DE USUARIO
     if not request.user.is_authenticated:
         return redirect(login_view)
