@@ -76,9 +76,11 @@ backend = Backend({"girls":
                                     "subtitle": "S",
                             },
                          }},
+                        "ranking": {'table_name': 'Ranking', 'commit_index': 'lala'},
                         "views" : {'table_name': 'Views', 'commit_index':'lala'},
                         "asset_type": {'database': {'table': 'AssetType', 'pk': 'asset_id', 'schema': {'asset_id': 'S', 'asset_type':'S'}}},
-                       "search_domain": {"domain": {
+                        "vote": {'database': {'table': 'Vote', 'pk': 'asset_id', 'sk':'username', 'schema': {'asset_id': 'S', 'username':'S', 'voted':'N'}}},
+                        "search_domain": {"domain": {
                                         "id_field": "asset_id",
                                         "filter_query" : '',
                                         "schema": ["channel","asset_id", "title","summary_short","display_runtime","seasons","season","episode","episodes","categories","show_type","year","serie_id","girls_id","name", "image_big", "image_landscape", "image_portrait", "views", "ranking", "asset_type", "blocks", "publish_date", "class", "summary_long", "nationality"],
@@ -286,6 +288,37 @@ def urlShow():
         ret = backend.query_show(args)
         return Response(response=dumps(ret['body']), status=ret['status'])
 
+
+@application.route('/v1/vote/', methods=['POST'])
+@application.route('/v1/vote',  methods=['POST'])
+@cross_origin()
+def urlVote():
+    if request.method == 'POST':
+        ret = {}
+        data = loads(request.data)
+        if 'asset_id' in data:
+            if 'voted' in data:
+                asset_id = data['asset_id']
+                voted    = data['voted']
+            
+                if 'X-API-KEY' in request.headers:
+                    x_api_key = request.headers.get('X-API-KEY')
+                    ret       = authorization.check_api_key(x_api_key)
+                    if ret['status'] == 200:
+                        username = ret['body']['username']
+                        ret = backend.doVote(data['asset_id'], username, data['voted'])
+                else:
+                    ret['body']     = {'status': 'failure', 'message': 'Missing header'}
+                    ret['status']   = 401
+            else:
+                ret['body']   = {'status': 'failure', 'message': 'Invalid Argument'}
+                ret['status'] = 422
+        else:
+            ret['body']   = {'status': 'failure', 'message': 'Invalid Argument'}
+            ret['status'] = 422
+
+        return Response(response=dumps(ret['body']), status=ret['status'])
+
 @application.route('/v1/shows/<string:asset_id>/', methods=['GET'])
 @application.route('/v1/shows/<string:asset_id>',  methods=['GET'])
 @cross_origin()
@@ -299,7 +332,8 @@ def urlGetShow(asset_id):
             args['asset_id'] = asset_id
             for k in request.args.keys():
                 args[k] = request.args.get(k)
-            ret = backend.get_show(args)
+            username = ret['body']['username']
+            ret      = backend.get_show(args, username)
     else:
         ret['body']     = {'status': 'failure', 'message': 'Missing header'}
         ret['status']   = 401
@@ -374,6 +408,12 @@ def urlAddView(asset_id):
 def urlUpdateView(asset_id):
     ret = backend.update_view(asset_id)
     return Response(response=dumps(ret['body']), status=ret['status'])
+
+@application.route('/v1/private/updateranking/<string:asset_id>', methods=['GET'])
+def urlUpdateRanking(asset_id):
+    ret = backend.update_ranking(asset_id)
+    return Response(response=dumps(ret['body']), status=ret['status'])
+
 #--------------------------------------------------------------------------------------------
 # Ester Egg
 #--------------------------------------------------------------------------------------------
