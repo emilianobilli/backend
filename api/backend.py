@@ -7,6 +7,7 @@ from Sub        import Subtitle
 from views      import Views
 from cdnimg     import CdnImg
 from random     import randrange
+from ranking    import Ranking
 
 import json
 import socket
@@ -225,9 +226,14 @@ class Backend(object):
         else:
             self.views      = None
 
+        if 'ranking' in config:
+            self.ranking    = Ranking(config['ranking']['table_name'],config['ranking']['commit_index'])
+
         if 'asset_type' in config:
             self.asset_type = dynamodbCollection(config['asset_type'])
 
+        if 'vote' in config:
+            self.vote       = dynamodbCollection(config['vote'])
 
         self.videoauth = VideoAuth("https://videoauth.zolechamedia.net/video/", "7a407d4ae99b7c1a1655daddf218ef05")
         self.subtitle  = Subtitle("http://videoauth.zolechamedia.net/subtitle")
@@ -240,7 +246,7 @@ class Backend(object):
     def del_asset():     # borra asset
         pass
 
-    def get_show(self, args):
+    def get_show(self, args, username):
 
         if 'lang' not in args or 'asset_id' not in args:
             status = 422
@@ -268,6 +274,20 @@ class Backend(object):
 
                     if asset_id is not None and self.views is not None:
                         self.views.add_view(asset_id)
+
+                    n = int(asset['item']['ranking'])
+                    if n > 0:
+                        asset['item']['ranking'] = str(round(float(n)/25,2))
+
+                    #
+                    # Busca el voto del usuario
+                    #
+                    q = {}
+                    q['asset_id'] = args['asset_id']
+                    q['username'] = username
+                    vote = self.vote.get(q)
+                    if vote['item'] != {}:
+                        asset['item']['voted'] = vote['item']['voted']
 
                     status = 200
                 else:
@@ -313,6 +333,9 @@ class Backend(object):
                 if asset['item'] != {} and asset['item']['enabled'] == "1":
                     asset_id = asset['item']['asset_id']
                     status   = 200
+                    n = int(asset['item']['ranking'])
+                    if n > 0:
+                        asset['item']['ranking'] = str(round(float(n)/25,2))
                     if 'img' in args:
                         img = args['img']
                     else:
@@ -359,6 +382,76 @@ class Backend(object):
             ret    = {'status': 'failure', 'message': str(e)}
         return {'status': status, 'body': ret}
 
+    def doVote(self, asset_id, username, voted):
+        update = False
+        previous_vote = {}
+        previous_vote['asset_id'] = asset_id
+        previous_vote['username'] = username
+        item          = {}
+        item['asset_id'] = asset_id
+        item['username'] = username
+
+        try:
+            ret = self.vote.get(previous_vote)
+            if 'Item' in ret and ret['Item'] != {}:
+                pvote = int(ret['Item']['voted'])
+                update   = True
+            else:
+                pvote = 0
+        except Exception as e:
+            pvote = 0
+
+        try:
+            # Lo primero que se debe hacer es buscar el voto expedido
+            item['voted'] = voted - pvote
+            if update:
+                self.ranking.update_vote(asset_id, item['voted'])
+            else:
+                self.ranking.add_vote(asset_id, item['voted'])
+    
+            ret = self.vote.add(item)
+            status = 201
+
+
+        except DynamoException as e:
+            ret    = {'status': 'failure', 'message': str(e)}
+            status = 500
+        except Exception as e:
+            status = 500
+            ret    = {'status': 'failure', 'message': str(e)}
+
+        return {'status': status, 'body': ret}
+
+
+    def update_ranking(self, asset_id):
+        lang = ['es'] # OJO QUE ESTA HARDCODEADA LA LISTA DE LENGUAJES
+        try:
+            asset_type = self.__get_asset_type(asset_id)
+            if asset_type is not None:
+                item = {}
+                item['asset_id']   = asset_id
+                item['asset_type'] = asset_type
+                ranking = self.ranking.get_ranking(asset_id)
+                if ranking != 0:
+                    item['ranking']  = ranking
+                for l in lang:
+                    item['lang']   = l
+                    ret            = self.update_asset(item)
+                    if ret['status'] != 201:
+                        return ret
+
+                self.ranking.set_commited(asset_id)
+                status = 200
+                ret    = {'message': 'Asset updated'}
+            else:
+                status = 422
+                ret    = {'status': 'failure', 'message': 'Invalid Asset Type'}
+
+        except Exception as e:
+            status = 500
+            ret    = {'status': 'failure', 'message': str(e) }
+        
+        return {'status': status, 'body': ret}
 
     def update_view(self,asset_id):
         lang = ['es'] # OJO QUE ESTA HARDCODEADA LA LISTA DE LENGUAJES
@@ -420,6 +513,16 @@ class Backend(object):
         response['items'] = ni
         return response
 
+    def __modify_ranking(self, response):
+        items = response['items']
+        ni = []
+        for item in items:
+            n = int(item['ranking'])
+            if n > 0:
+                item['ranking'] = str(round(float(n)/25,2))
+            ni.append(item)
+        response['items'] = ni
+        return response
 
     def __cloudsearch_query(self, lang, fqset, exclude, start, size, sort, img):
         '''
@@ -430,6 +533,7 @@ class Backend(object):
         '''
         try:
             ret    = self.domain.query(fqset,exclude,start,size, sort)
+            ret    = self.__modify_ranking(ret)
             ret    = self.__add_cdn_images(ret, img)
             status = 200
         except CollectionException as  e:
@@ -454,6 +558,7 @@ class Backend(object):
         '''
         try:
             ret    = self.domain.search(q,exclude,start,size)
+            ret    = self.__modify_ranking(ret)
             ret    = self.__add_cdn_images(ret, img)
             status = 200
         except CollectionException as  e:
