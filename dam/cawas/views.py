@@ -73,18 +73,20 @@ def menu_view (request):
     idassetstype = 0
     message = 'Hay 0 contenidos sin publicar.'
     contentypes = (
-        (1, "MOVIE/CAPITULOS"),
+        (1, "MOVIE"),
         (2, "BLOQUES"),
         (3, "CHICAS"),
-        (4, "CATEGORIAS")
+        (4, "CATEGORIAS"),
+        (5, "CAPITULOS")
     )
 
     assetstypes = (
-        (1, "Movies/Capitulos"),
+        (1, "Movies"),
         (2, "Serie"),
         (3, "Bloques"),
         (4, "Chicas"),
-        (5, "Categoria")
+        (5, "Categoria"),
+        (6, "Capitulos")
     )
     # </Definir Variables>
 
@@ -1337,7 +1339,11 @@ def add_blocks_view(request):
             vblock.publish_date = vschedule_date
             vblock.language = Language.objects.get(code=decjson['Block']['language'])
             vblock.channel = Channel.objects.get(pk=decjson['Block']['channel_id'])
-            vblock.target_device = Device.objects.get(pk=decjson['Block']['target_device_id'])
+
+            print "Device:" + str(decjson['Block']['target_device_id'])
+            vblock.target_device = Device.objects.get(pk=int(decjson['Block']['target_device_id']))
+
+            #vblock.target_device = Device.objects.get(pk=decjson['Block']['target_device_id'])
 
         except Setting.DoesNotExist as e:
             return render(request, 'cawas/error.html', {"message": "No Existe Setting. (" + e.message + ")"})
@@ -1357,7 +1363,6 @@ def add_blocks_view(request):
         for item in vassets:
             try:
                 #print item['asset_id']
-                #vasset = Asset.objects.get(asset_id=item['asset_id'])
                 asset_id = item['asset_id']
                 print asset_id
                 vasset = Asset.objects.get(pk=asset_id)
@@ -1377,12 +1382,11 @@ def add_blocks_view(request):
     vchannels = Channel.objects.all()
     vdevices  = Device.objects.all()
     vgirls = Girl.objects.all()
-    vlangueages = Language.objects.all()
+    vlanguages = Language.objects.all()
     vmovies = Movie.objects.all()
     vcapitulos = Episode.objects.all()
 
-    context = {'message': message, 'vblocks':vblocks, 'vchannels':vchannels,
-               'vdevices':vdevices, 'vgirls':vgirls, 'vlangueages':vlangueages,
+    context = {'message': message, 'vblocks':vblocks, 'vchannels':vchannels,'vdevices':vdevices, 'vgirls':vgirls, 'vlanguages':vlanguages,
                'vmovies':vmovies, 'vcapitulos':vcapitulos }
     return render(request, 'cawas/blocks/add.html', context)
 #</FIN ADD BLOCK>
@@ -1390,61 +1394,239 @@ def add_blocks_view(request):
 
 
 
-def edit_blocks_view(request, asset_id):
+def edit_blocks_view(request, block_id):
+    # AUTENTICACION DE USUARIO
+    if not request.user.is_authenticated:
+        return redirect(login_view)
+    vblock = Block()
+    # VARIABLES LOCALES
+    message = ''
+    vflag = ''
+    vschedule_date = ''
+    if request.method == 'POST':
+
+        # Parsear JSON
+        try:
+
+            strjson = request.POST['varsToJSON']
+            print str(strjson)
+            decjson = json.loads(strjson)
+            # pathfilesport = Setting.objects.get(code='image_repository_path_portrait')
+            # pathfilesland = Setting.objects.get(code='image_repository_path_landscape')
+
+            print "deviceID:" + decjson['Block']['target_device_id']
+            vblock = Block.objects.get(block_id=decjson['Block']['block_id'])
+            vblock.name = decjson['Block']['name']
+            vschedule_date = datetime.datetime.strptime(decjson['Block']['publish_date'], '%d-%m-%Y').strftime('%Y-%m-%d')
+            vblock.publish_date = vschedule_date
+            vblock.language = Language.objects.get(code=decjson['Block']['language'])
+            vblock.channel = Channel.objects.get(pk=decjson['Block']['channel_id'])
+            print "Device:" + str(decjson['Block']['target_device_id'])
+            vdevice = Device.objects.get(pk=int(decjson['Block']['target_device_id']))
+
+            vblock.target_device_id = int(decjson['Block']['target_device_id'])
+        except Setting.DoesNotExist as e:
+            return render(request, 'cawas/error.html', {"message": "No Existe Setting. (" + e.message + ")"})
+        except Serie.DoesNotExist as e:
+            return render(request, 'cawas/error.html', {"message": "No Existe Serie. (" + e.message + ")"})
+        except Image.DoesNotExist as e:
+            return render(request, 'cawas/error.html',
+                          {"message": "No Existe Imagen Asociada a la Serie. (" + e.message + ")"})
+        except Language.DoesNotExist as e:
+            return render(request, 'cawas/error.html', {"message": "No existe LENGUAJE. (" + e.message + ")"})
+        except Channel.DoesNotExist as e:
+            return render(request, 'cawas/error.html', {"message": "No existe Channel. (" + e.message + ")"})
+        except Device.DoesNotExist as e:
+            return render(request, 'cawas/error.html', {"message": "No existe Device. (" + e.message + ")"})
+        except Block.DoesNotExist as e:
+            return render(request, 'cawas/error.html', {"message": "No existe Bloque1. (" + e.message + ")"})
+
+        # CARGAR ASSETS
+        vassets = decjson['Block']['assets']
+        for item in vassets:
+            try:
+                # print item['asset_id']
+                asset_id = item['asset_id']
+                vasset = Asset.objects.get(pk=asset_id)
+                vblock.save()
+                vblock.assets.add(vasset)
+            except Asset.DoesNotExist as e:
+                return render(request, 'cawas/error.html', {"message": "No existe Asset. (" + e.message + ")"})
+        # Publica en PublishQueue
+        func_publish_queue(vasset, vblock.language, 'AS', 'Q', vblock.publish_date)
+        vblock.save()
+        vflag = "success"
+        message = 'Bloque - Registrado Correctamente'
+        # Fin datos Bloque
+
+
+    try:
+        print "block_id" + block_id
+        vblock = Block.objects.get(block_id=block_id)
+
+        vassetselect = vblock.assets.all()
+        vmovienotselect = Movie.objects.exclude(asset__in=vassetselect)
+        vgirlnotselect = Girl.objects.exclude(asset__in=vassetselect)
+        vepisodenotselect = Episode.objects.exclude(asset__in=vassetselect)
+        vmovieselect = Movie.objects.filter(asset__in=vassetselect)
+        vgirlselect = Girl.objects.filter(asset__in=vassetselect)
+        vepisodeselect = Episode.objects.filter(asset__in=vassetselect)
+
+    except Block.DoesNotExist as e:
+        return render(request, 'cawas/error.html', {"message": "No existe Bloque2. (" + e.message + ")"})
+
+    # Variables Para GET
+    vblocks = Block.objects.all()
+    vchannels = Channel.objects.all()
+    vdevices = Device.objects.all()
+    vgirls = Girl.objects.all()
+    vlanguages = Language.objects.all()
+
+    vmovies = Movie.objects.all()
+    vcapitulos = Episode.objects.all()
+
+    context = {'message': message, 'vblocks': vblocks, 'vchannels': vchannels,
+               'vdevices': vdevices, 'vgirls': vgirls, 'vlanguages': vlanguages,
+               'vmovies': vmovies, 'vcapitulos': vcapitulos, 'vblock':vblock,
+               'vmovienotselect':vmovienotselect, 'vgirlnotselect':vgirlnotselect,
+               'vepisodenotselect':vepisodenotselect,'vmovieselect':vmovieselect,
+               'vgirlselect':vgirlselect, 'vepisodeselect':vepisodeselect
+               }
+    return render(request, 'cawas/blocks/edit.html', context)
+#<Fin EDIT BLOCKS>
+
+
+
+def add_episodes_view(request):
     # AUTENTICACION DE USUARIO
     if not request.user.is_authenticated:
         return redirect(login_view)
 
     # VARIABLES LOCALES
     message = ''
-    vg_pathfiles = 'cawas/static/files/block/'
-
+    vflag = ''
+    vschedule_date = ''
     if request.method == 'POST':
         # VARIABLES
-        vblock = Block()
+        vepisode = Episode()
+
         vasset = Asset()
-        vchannel = Channel()
+        vasset.asset_type = "episode"
+        vasset.save()
+        print "asset_episode " + vasset.asset_id
+        #print "asset_episode " +  vasset.asset_id
+        #vepisode.asset = vasset
+
+
 
         # Parsear JSON
-        strjson = request.POST['strjson']
-        decjson = json.loads(strjson)
-
-        # Datos de Serie
-        vblock.asset = vasset
-        vblock.name = decjson['Block']['name']
-        vblock.save()
-
-        # Lenguaje
         try:
-            vasset.language = Language.objects.get(code=decjson['Serie']['language'])
+            strjson = request.POST['varsToJSON']
+            decjson = json.loads(strjson)
+
+            pathfilesport = Setting.objects.get(code='image_repository_path_portrait')
+            pathfilesland = Setting.objects.get(code='image_repository_path_landscape')
+
+            vepisode.original_title = decjson['Episode']['original_title']
+            vepisode.channel = Channel.objects.get(pk=decjson['Episode']['channel_id'])
+            #vepisode.asset = Asset.objects.get(pk=decjson['Episode']['asset_id'])
+            vepisode.year = decjson['Episode']['year']
+            vepisode.cast = decjson['Episode']['cast']
+            vepisode.directors = decjson['Episode']['directors']
+            vepisode.display_runtime = decjson['Episode']['display_runtime']
+            print "Asset_serie_id" + decjson['Episode']['serie_id']
+            vasset_serie = Asset.objects.get(asset_id=decjson['Episode']['serie_id'])
+            vepisode.serie = Serie.objects.get(asset=vasset_serie)
+            vepisode.chapter = decjson['Episode']['chapter']
+            vepisode.season = decjson['Episode']['season']
+
+            #vschedule_date = datetime.datetime.strptime(decjson['Episode']['publish_date'], '%d-%m-%Y').strftime('%Y-%m-%d')
+            #vepisode.publish_date = vschedule_date
+            #vepisode.language = Language.objects.get(code=decjson['Block']['language'])
+
+
+
+            #print "Device:" + str(decjson['Block']['target_device_id'])
+            #vepisode.target_device = Device.objects.get(pk=int(decjson['Block']['target_device_id']))
+            vimg = Image()
+
+            # IMAGEN Portrait
+            if (request.FILES.has_key('ThumbHor')):
+                if request.FILES['ThumbHor'].name != '':
+                    vimg.portrait = request.FILES['ThumbHor']
+                    extension = os.path.splitext(vimg.portrait.name)[1]
+                    vimg.name = vasset.asset_id
+                    varchivo = pathfilesport.value + vimg.name + extension
+                    vimg.portrait.name = varchivo
+                    if os.path.isfile(varchivo):
+                        os.remove(varchivo)
+
+            # IMAGEN Landscape
+            if (request.FILES.has_key('ThumbVer')):
+                if request.FILES['ThumbVer'].name != '':
+                    vimg.landscape = request.FILES['ThumbVer']
+                    extension = os.path.splitext(vimg.landscape.name)[1]
+                    varchivo = pathfilesland.value + vimg.name + extension
+                    vimg.landscape.name = varchivo
+                    if os.path.isfile(varchivo):
+                        os.remove(varchivo)
+            vimg.save()
+
+        except Setting.DoesNotExist as e:
+            return render(request, 'cawas/error.html', {"message": "No Existe Setting. (" + e.message + ")"})
+        except Serie.DoesNotExist as e:
+            return render(request, 'cawas/error.html', {"message": "No Existe Serie. (" + e.message + ")"})
+        except Image.DoesNotExist as e:
+            return render(request, 'cawas/error.html',
+                          {"message": "No Existe Imagen Asociada a la Serie. (" + e.message + ")"})
         except Language.DoesNotExist as e:
             return render(request, 'cawas/error.html', {"message": "No existe LENGUAJE. (" + e.message + ")"})
-
-        # Channel
-        try:
-            vchannel.channel = Channel.objects.get(pk=decjson['Serie']['channel_id'])
         except Channel.DoesNotExist as e:
             return render(request, 'cawas/error.html', {"message": "No existe Channel. (" + e.message + ")"})
+        except Device.DoesNotExist as e:
+            return render(request, 'cawas/error.html', {"message": "No existe Device. (" + e.message + ")"})
 
+        vepisode.save()
         # CARGAR ASSETS
-        vassets = decjson['Serie']['assets']
-        for item in vassets:
+        vgirls = decjson['Episode']['girls']
+        for item in vgirls:
             try:
-                vasset = Asset.objects.get(pk=item['asset_id'])
-                vblock.assets.add(vasset)
+                # print item['asset_id']
+                asset_id = item['girl_id']
+                print "AssetId add episode"+ asset_id
+                vasset = Asset.objects.get(pk=asset_id)
+                vepisode.assets.add(vasset)
             except Asset.DoesNotExist as e:
                 return render(request, 'cawas/error.html', {"message": "No existe Asset. (" + e.message + ")"})
-
-
-
-        vblock.save()
+        vepisode.save()
+        # Publica en PublishQueue
+        func_publish_queue(vasset, vepisode.language, 'AS', 'Q', vepisode.publish_date)
+        vepisode.save()
+        vflag = "success"
         message = 'Bloque - Registrado Correctamente'
         # Fin datos Bloque
 
+    # Variables Para GET
+    vseries = Serie.objects.all()
+    vchannels = Channel.objects.all()
+    vcategories = Device.objects.all()
+    vgirls = Girl.objects.all()
+    vlanguages = Language.objects.all()
+    vmovies = Movie.objects.all()
+    vcapitulos = Episode.objects.all()
+    vassets = Asset.objects.filter(asset_type="unknown")
 
-    context = {'message': message}
-    return render(request, 'cawas/blocks/edit.html', context)
-#<Fin EDIT BLOCKS>
+    context = {'message': message, 'vcategories': vcategories, 'vchannels': vchannels, 'vgirls': vgirls,
+               'vlanguages': vlanguages, 'vseries':vseries, 'vmovies': vmovies, 'vcapitulos': vcapitulos, 'vassets':vassets}
+
+    return render(request, 'cawas/episodes/add.html', context)
+
+
+def edit_episodes_view(request, asset_id):
+
+    context = {'message': 'mensaje'}
+    return render(request, 'cawas/episodes/edit.html', context)
+
 
 
 
@@ -1468,3 +1650,5 @@ def add_asset_view(request):
 
     context = {'message': message}
     return render(request, 'cawas/pruebas/blank.html', context)
+
+

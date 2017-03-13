@@ -18,6 +18,10 @@ class Setting(models.Model):
         return self.code
 
 
+class Prueba(models.Model):
+    name = models.CharField(max_length=32, help_text="Nombre del tipo de dipositivo")
+
+
 class Device(models.Model):
     name = models.CharField(max_length=32, help_text="Nombre del tipo de dipositivo")
 
@@ -223,6 +227,7 @@ class Asset(models.Model):
                     self.asset_id = "G%s" % id
                 elif self.asset_type == "serie":
                     self.asset_id = "S%s" % id
+
 
                 super(Asset, self).save(*args, **kwargs)
 

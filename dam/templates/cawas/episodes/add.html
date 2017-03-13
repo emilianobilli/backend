@@ -1,0 +1,317 @@
+{% extends "cawas/base.html" %}
+{% block extra_head %}
+    <script src="/static/js/capitulos.js"></script>
+{% endblock %}
+
+{% block subheader %}
+<div class="col-xs-12 col-md-12 col-lg-12 unpad">
+    <div class="subHeader">
+        <div class="notifications">
+            {% if user.is_authenticated %}
+                  <a href="{% url 'menu_view' %}"><span class="glyphicon glyphicon-home GLY-med">
+                               </span> &nbsp;volver al menú</a>
+
+                 <button class="btn btn-lg btn-primary btn-block logOFF" type="button" id="exitBtn" data-toggle="modal" data-target="#myModal">LOG-OUT</button>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock subheader %}
+
+{% block content %}
+
+<!-- CONTENT -->
+        <div class="container">
+
+              <div class="row">
+                       <!-- left col -->
+                       <div class="col-xs-12 col-md-6 col-lg-6 sepTOP-big">
+
+                            <h1>AGREGAR capítulo</h1>
+                            <div>
+                                <h3>La serie debe estar dada de alta para poder agregar capítulos</h3>
+                            </div>
+
+                            <div>
+                                <h3>Selecciona ID del video *</h3>
+                            </div>
+                            <div>
+                                   <!-- ------------------Reemplazar por listado de movies ----------------- -->
+                                    <select id="movie-select" class="form-control" size="6">
+                                        {% for item in vassets %}
+                                            <option value="{{ item.asset_id }}">ID {{ item.asset_id }} </option>
+                                        {% endfor %}
+                                    </select>
+                                   <!-- ---------------------- Fin de  listado de movies ------------------- -->
+                            </div>
+
+                            <div class="col-xs-12 col-md-4 col-lg-4 unpad">
+                                <button class="btn btn-primary btn-block form-control " type="button" id="IDBtn">Nuevo capítulo</button>
+                            </div>
+
+                       </div>
+
+                       <!-- right col -->
+                       <div class="col-xs-12 col-md-6 col-lg-6 sepTOP-big alignRIGHT-lg">
+                           <h1>EDITAR capítulo</h1>
+                           <div>
+                            <h3>Selecciona el capítulo que quieres editar</h3>
+                           </div>
+                           <div class="fRIGHT-lg">
+
+                                       <!-- ------------------Reemplazar por listado de capítulos ----------------- -->
+                                        <select id="serie-edit" class="form-control movie-edit fRIGHT-lg" size="6">
+                                            {% for item in vcapitulos %}
+                                              <option value="{{ item.asset.asset_id }}"> {{ item.original_title }} </option>
+                                            {% endfor %}
+                                        </select>
+
+                                      <!-- ---------------------- Fin de  listado de capítulos ------------------- -->
+                           </div>
+
+                           <div class="col-xs-12 col-md-4 col-lg-4 fRIGHT-lg unpad">
+                                <button class="btn btn-primary btn-block form-control movieChoose" type="button" id="EDBtn">Editar capítulos</button>
+                           </div>
+                           <div class="col-xs-12 col-md-7 col-lg-7 movieChoose fRIGHT">
+                                <input type="hidden" class="form-control" name="selectedEdit" id="serieName" value="">
+                           </div>
+
+                       </div>
+
+              </div>
+
+        </div>
+
+        <!-- hidden form -->
+        <div class="container" id="hidden1">
+
+                <!-- 1 Row : Title -->
+                <div class="row form-row">
+                    <div class="col-xs-12 col-md-12 col-lg-12">
+                        <div class="form-group">
+                            <label for="orginalTitle" id="idTit">AGREGANDO ID:</label>
+                        </div>
+
+
+
+                        <div class="form-group has-feedback" id="oriTit-container">
+                            <label class="label-left" for="orginalTitle">Título original: *</label>
+                            <input type="text" class="form-control" name="orginalTitle" id="orginalTitle" autofocus>
+                            <span class="glyphicon form-control-feedback"></span>
+                        </div>
+                        <!-- pegar en "value" el ID nuevo -->
+                        <input type="hidden" name="newID" vlaue="">
+                    </div>
+                </div>
+
+                <!-- Row : Serie -->
+                <div class="row form-row">
+                    <div class="col-xs-12 col-md-4 col-lg-4" id="seriess">
+                        <div class="form-group has-feedback" id="SeriePick">
+                            <label class="label-left" for="serie_id">Elegir Serie a la que pertenece: *</label>
+
+                                       <!-- ------------------Reemplazar por listado de series ----------------- -->
+                                        <select type="text" id="serie-id" class="form-control movie-edit" size="6">
+                                             {% for item in vseries %}
+                                                <option value="{{ item.asset.asset_id }}"> {{ item.original_title }} </option>
+                                             {% endfor %}
+                                        </select>
+                                      <!-- ---------------------- Fin de  listado de series ------------------- -->
+
+                            <span class="glyphicon form-control-feedback"></span>
+                        </div>
+
+                    </div>
+
+
+                    <div class="col-xs-12 col-md-3 col-lg-3 form-group">
+                            <div class="form-group has-feedback">
+                                <label class="label-left" for="chapter">Número de capítulo: *</label>
+                                <input type="number" class="form-control" name="chapter" id="chapter" min="000" max="999" oninput="maxLengthCheck(this)" >
+                                <span class="glyphicon form-control-feedback"></span>
+                            </div>
+                    </div>
+
+                    <div class="col-xs-12 col-md-3 col-lg-3 form-group">
+                            <div class="form-group has-feedback">
+                                <label class="label-left" for="season">Temporada: *</label>
+                                <input type="number" class="form-control" name="season" id="season" min="000" max="999" oninput="maxLengthCheck(this)" >
+                                <span class="glyphicon form-control-feedback"></span>
+                            </div>
+                    </div>
+
+                </div>
+                <!-- Form manda imagenes y vars en un JSON hecho string -->
+                <form method="post" action="" name="serie-completeForm"  class="content-picker movieChoose" id="serieForm" enctype="multipart/form-data">
+
+                <!-- Row : Images -->
+                <div class="row form-row">
+                    <div class="col-xs-4 col-md-4 col-lg-4 form-group">
+                       <div class="form-group has-feedback imgUpload">
+                            <label class="label-left" for="ThumbHor" id="ThumbHorTit">Asociar imagen landscape: *</label>
+                            <input type="file" class="form-control" name="ThumbHor" id="ThumbHor" accept="image/*">
+                            <span class="glyphicon form-control-feedback"></span>
+                            <img id="imageH"/>
+
+
+                        </div>
+                    </div>
+                    <div class="col-xs-4 col-md-4 col-lg-4 form-group" >
+                       <div class="form-group has-feedback imgUpload">
+                            <label for="ThumbVer" id="ThumbVerTit">Asociar imagen portrait: *</label>
+                            <input type="file" class="form-control" name="ThumbVer" id="ThumbVer" accept="image/*">
+
+                            <span class="glyphicon form-control-feedback"></span>
+                            <img id="imageV"/>
+                        </div>
+                    </div>
+                    <div class="col-xs-4 col-md-4 col-lg-4">
+                    </div>
+                </div>
+
+                <input type="hidden" name="varsToJSON" id="varsToJSON" value="">
+
+               </form>
+
+                <!-- Row : Palymates pick -->
+                <div class="row form-row">
+                    <div class="col-xs-4 col-md-4 col-lg-4 form-group plyMatePick">
+                        <label class="label-left" for="pornstarPick" id="pornstarPickTit">Pornstar / Playmate: </label>
+
+                        <!-- ------------------Reemplazar por listado de pornstars ----------------- -->
+
+                        <ul class="form-control pornstarPick" id="pornstarPick">
+                            {% for item in vgirls %}
+                                 <li value="{{item.asset_id}}">{{ item.name }}</li>
+                            {% endfor %}
+                        </ul>
+
+                        <!-- ---------------------- Fin de  listado de pornstars ------------------- -->
+
+                    </div>
+                    <div class="col-xs-4 col-md-4 col-lg-4 form-group plyMateDrop" >
+                       <div class="form-group has-feedback">
+                            <label for="ThumbVer" id="ThumbVerTit">Arrastrar hasta aquí para agregar *</label>
+                            <ul class="form-control pornstarPick" id="pornstarDrop">
+
+                            </ul>
+                            <span class="glyphicon form-control-feedback"></span>
+                        </div>
+                    </div>
+                    <div class="col-xs-4 col-md-4 col-lg-4">
+                    </div>
+                </div>
+
+                <!-- Row : Género pick -->
+                <div class="row form-row">
+                    <div class="col-xs-4 col-md-4 col-lg-4 form-group categoryPick">
+                        <label class="label-left" for="generoPick" id="generoPickTit">Género / Categoría: </label>
+
+                        <!-- ------------------Reemplazar por listado de géneros ----------------- -->
+
+                        <ul class="form-control generoPick" id="generoPick">
+                           <li value="210002122">Soft Porn</li>
+                           <li value="210002123">Gang-bang</li>
+                           <li value="210002124">Hardcore</li>
+                           <li value="210002125">Gay</li>
+                           <li value="210002126">Blowjobs</li>
+                           <li value="210002127">Fetish</li>
+                           <li value="210002128">Anal</li>
+                           <li value="210002129">Inter-racial</li>
+                        </ul>
+
+                        <!-- ---------------------- Fin de  listado de géneros ------------------- -->
+
+                    </div>
+                    <div class="col-xs-4 col-md-4 col-lg-4 form-group categoryDrop" >
+                       <div class="form-group has-feedback">
+                            <label for="ThumbVer" id="ThumbVerTit">Arrastrar hasta aquí para agregar *</label>
+                            <ul class="form-control generoPick" id="generoDrop">
+                            </ul>
+                            <span class="glyphicon form-control-feedback"></span>
+                        </div>
+                    </div>
+                    <div class="col-xs-4 col-md-4 col-lg-4">
+                    </div>
+                </div>
+
+                <!-- Row : Canal pick -->
+                <div class="row form-row">
+                    <div class="col-xs-12 col-md-4 col-lg-4 form-group">
+                        <div class="form-group has-feedback" id="channelSelect">
+                            <label class="label-left" for="canal">Canal: *</label>
+                            <div class="helpright"><span class="glyphicon glyphicon-question-sign" data-toggle="tooltip" title="Selecciona el canal al que pertenece esta movie (ej: Venus)"></span></div>
+
+                            <!-- ------------------Reemplazar por listado de canales ----------------- -->
+
+                            <select type="text" class="form-control" name="canal" id="canalSelect">
+                                   {% for item in vchannels %}
+                                     <option value="{{item.id}}">{{item.name}}</option>
+                                {% endfor %}
+                            </select>
+
+                            <!-- ------------------  Fin de listado de canales  ----------------- -->
+                            <span class="glyphicon form-control-feedback"></span>
+                        </div>
+                    </div>
+
+                    <div class="col-xs-12 col-md-4 col-lg-4 form-group">
+                        <div class="form-group has-feedback">
+                            <label class="label-left" for="releaseYear">Año de estreno (AAAA): *</label>
+                            <input type="number" class="form-control" name="releaseYear" id="releaseYear" min="1890" max="2300" oninput="maxLengthCheck(this)" >
+                            <span class="glyphicon form-control-feedback"></span>
+                        </div>
+                    </div>
+
+                    <div class="col-xs-12 col-md-4 col-lg-4 form-group">
+                        <div class="form-group has-feedback">
+                            <label class="label-left" for="releaseYear">Display runtime (mm:ss): *</label>
+                            <input type="text" class="form-control" name="runtime" id="runtime" autofocus>
+                            <span class="glyphicon form-control-feedback"></span>
+                        </div>
+                    </div>
+
+                </div>
+
+
+                <!-- Row : Director pick -->
+                <div class="row form-row">
+                    <div class="col-xs-12 col-md-12 col-lg-12 form-group">
+                        <div class="form-group has-feedback">
+                            <label class="label-left" for="director">Director: *</label>
+                            <input type="text" class="form-control" name="director" id="director" autofocus>
+                            <span class="glyphicon form-control-feedback"></span>
+                        </div>
+                    </div>
+                </div>
+
+
+
+                <!-- Row : Elenco -->
+                <div class="row form-row">
+                    <div class="col-xs-12 col-md-12 col-lg-12 form-group">
+                        <div class="form-group has-feedback">
+                            <label class="label-left" for="elenco">Elenco: *</label>
+                            <div class="helpright"><span class="glyphicon glyphicon-question-sign" data-toggle="tooltip" title="Agregar los nombres del elenco completo separados por comas.La lista NO debe terminar con una coma"></span></div>
+                            <div class="itaright">(Nombres separados por comas). </div>
+                            <input type="text" class="form-control" name="elenco" id="elenco" autofocus>
+                            <span class="glyphicon form-control-feedback"></span>
+                        </div>
+                    </div>
+                </div>
+
+
+
+                <!-- Last Row : Buttons -->
+                <div class="row form-row">
+                   <div class="col-xs-4 col-md-4 col-lg-4">
+                    </div>
+                    <div class="col-xs-4 col-md-4 col-lg-4">
+                        <button class="btn btn-primary btn-block form-control" type="button" id="sendBut">Grabar Capítulo</button>
+                    </div>
+                    <div class="col-xs-4 col-md-4 col-lg-4">
+                    </div>
+                </div>
+
+        </div>
+{% endblock content %}

@@ -55,7 +55,7 @@
                             </div>
 
                             <div>
-                               <form method="get" action="bloques-edit.html" name="bloque-pickerForm" id="bloque-pickerForm" class="content-picker movieChoose">
+                               <form method="post" action="" name="bloque-pickerForm" id="bloque-pickerForm" class="content-picker movieChoose">
 
                                    <div class="col-xs-12 col-md-8 col-lg-8">
                                        <input type="hidden" class="form-control" name="selectedName" id="bloqueNAME" value="">
@@ -125,9 +125,9 @@
                             <div class="helpright"><span class="glyphicon glyphicon-question-sign" data-toggle="tooltip" title="Selecciona el idioma. Cada bloque debe darse de alta en su idioma aunque sea exactamente igual"></span></div>
 
                             <select type="text" class="form-control" name="canal" id="idiomaSelect">
-                                <option value="es">Español</option>
-                                <option value="pt">Portugués</option>
-                                <option value="en">Inglés</option>
+                                {% for item in vlanguages %}
+                                     <option value="{{item.code}}">{{ item.name}}</option>
+                                {% endfor %}
                             </select>
 
                             <span class="glyphicon form-control-feedback"></span>

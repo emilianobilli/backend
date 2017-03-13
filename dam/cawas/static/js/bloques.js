@@ -127,7 +127,8 @@ $( document ).ready(function() {
         // this function checks for all form values and makes json string to post or alerts user to complete fields.
         console.log("checking form...");
         checkVal = 0;
-        var asset_Id = $('#newID').val();
+        var block_id = $('#block_id').val();
+        var asset_Id = $('#asset_id').val();
         var original_name = $('#orginalName').val();
         var idioma_selected = $('#idiomaSelect').val();
         var canal_selected = $('#canalSelect').val();
@@ -313,7 +314,7 @@ $( document ).ready(function() {
                 
                 for(i=0; i<lngth; i++){
                     var lang=arr[i];
-                    var assetID = $("#asset_id_").val().trim()
+                    var assetID = $("#asset_id").val().trim()
                     var short = $("#short_desc_"+lang).val().trim();
                     myLangs += '{"Girlmetadata":';
                     myLangs += '{"language": "'+lang+'",';
@@ -333,7 +334,7 @@ $( document ).ready(function() {
                     
                     var myJSON = '';
                     myJSON+='{"Block":{';
-                    myJSON+='"block_id":"'+asset_Id+'",';
+                    myJSON+='"block_id":"'+block_id+'",';
                     myJSON+='"name":"'+original_name+'",';
                     myJSON+='"language":"'+idioma_selected+'",';
                     myJSON+='"channel_id":'+canal_selected+',';

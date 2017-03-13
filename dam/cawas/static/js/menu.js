@@ -48,6 +48,9 @@ $( document ).ready(function() {
                      case "5":
                         urlstring = "/categories/add/";
                         break;
+                     case "6":
+                        urlstring = "/episodes/add/";
+                        break;
                 }
                 console.log( "clickedVal="+clickedVal );
                 window.location.href = urlstring;
