@@ -1683,3 +1683,4 @@ def add_asset_view(request):
     return render(request, 'cawas/pruebas/blank.html', context)
 
 
+# Borrar comentario
