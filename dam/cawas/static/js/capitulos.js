@@ -54,7 +54,14 @@ $( document ).ready(function() {
       classname: 'form-control',
       responsive: true
     });
-    
+
+    /*---- DATE PICKER ----*/
+    $('.datePick').dcalendarpicker({
+     // default: mm/dd/yyyy
+
+      format: 'dd-mm-yyyy'
+
+    });
         
     // Toma el nombre de la movie seleccionada en la lista
     $( "#serie-edit" ).change(function() {
@@ -441,7 +448,14 @@ $( document ).ready(function() {
             okMe("#elenco");
         }
 
-        
+        // chequeo de idiomas (tit_; desc_; date_)
+        if(langQ==0){
+            errorMe("#pickLang");
+            checkVal++;
+        }else{
+            okMe("#pickLang");
+            checkLangs(langDesc);
+        }
                 
         /* -----------  Sending Routine -----------*/
         
@@ -556,22 +570,26 @@ $( document ).ready(function() {
                     
                 }
             }
-        
-            function addSerieMetadata(arr){
+
+
+
+            function addMetadata(arr){
                 var lngth = arr.length;
                 var myLangs = "";
-                
+
                 for(i=0; i<lngth; i++){
                     var lang=arr[i];
-                    
+
                     var tit = $("#tit_"+lang).val();
                     var short = $("#short_desc_"+lang).val().trim().substring(0,50)+"...";
                     var long = $("#short_desc_"+lang).val().trim();
-                    myLangs += '{"Seriemetadata":';
+                    var fechapub = $("#date_"+lang).val().trim();
+                    myLangs += '{"Episodemetadata":';
                     myLangs += '{"language": "'+lang+'",';
                     myLangs += '"title": "'+tit+'",';
                     myLangs += '"summary_short": "'+short+'",';
-                    myLangs += '"summary_long":"'+long+'"';
+                    myLangs += '"summary_long":"'+long+'",';
+					myLangs += '"schedule_date":"'+fechapub+'"';
                     myLangs += '}}';
                     if(i<lngth-1){
                         myLangs += ',';
@@ -590,15 +608,35 @@ $( document ).ready(function() {
                     myJSON+='"asset_id":"'+asset_Id+'",';
                     myJSON+='"original_title":"'+original_Title+'",';
                     myJSON+='"channel_id":'+canal_selected+',';
-                    myJSON+='"year":"'+year_selected+'",';
                     myJSON+='"girls":'+myGirls+',';
-                    myJSON+='"cast":"'+elenco_selected+'",';
-                    myJSON+='"directors":"'+director_selected+'",';
+
+                    //OPCIONALES
+                    if (year_selected==''){
+                        myJSON+='"year":null,';
+                       }else{
+                        myJSON+='"year":"'+year_selected+'",';
+                    }
+
+                    if (elenco_selected==''){
+                        myJSON+='"cast":null,';
+                    }else{
+                        myJSON+='"cast":"'+elenco_selected+'",';
+                    }
+
+                    if (director_selected==''){
+                        myJSON+='"directors":null,';
+                       }else{
+                        myJSON+='"directors":"'+director_selected+'",';
+                    }
+
                     myJSON+='"display_runtime": "'+display_runtimeJSON+'",';
                     myJSON+='"serie_id": "'+serie_selected+'",';   
                     myJSON+='"chapter": "'+chapter_selected+'",';   
                     myJSON+='"season": "'+season_selected+'",';   
-                    myJSON+='"categories":'+myCategories+'';
+                    myJSON+='"categories":'+myCategories+',';
+                    myJSON+='"Episodesmetadata": [';
+                    myJSON+= addMetadata(langDesc);
+                    myJSON+=']}}';
                     myJSON+='}}';
                     console.log(myJSON);
                     $("#varsToJSON").val(myJSON);

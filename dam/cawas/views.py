@@ -229,6 +229,7 @@ def add_movies_view(request):
        mv.asset = vasset
        mv.channel = vchannel
        mv.original_title = decjson['Movie']['original_title']
+
        if (decjson['Movie']['year']is not None ):
            mv.year = decjson['Movie']['year']
        if (decjson['Movie']['cast'] is not None):
@@ -301,7 +302,6 @@ def add_movies_view(request):
                    vpublish.item_type = 'AS'
                    vpublish.status = 'Q'
                    vpublish.publish_zone = zone
-                   #vpublish.schedule_date = datetime.datetime.strptime(item['Moviemetadata']['schedule_date'], '%d-%m-%Y').strftime('%Y-%m-%d')
                    vpublish.schedule_date = vpublishdate
                    vpublish.save()
 
@@ -409,22 +409,28 @@ def edit_movies_view(request, asset_id):
        mv.asset = vasset
        mv.channel = vchannel
        mv.original_title = decjson['Movie']['original_title']
-       mv.year = int(decjson['Movie']['year'])
-       mv.cast = decjson['Movie']['cast']
-       mv.directors = decjson['Movie']['directors']
+
+       if (decjson['Movie']['year']is not None ):
+           mv.year = decjson['Movie']['year']
+       if (decjson['Movie']['cast'] is not None):
+            mv.cast = decjson['Movie']['cast']
+       if (decjson['Movie']['directors'] is not None):
+           mv.cast = decjson['Movie']['directors']
+
        mv.display_runtime = decjson['Movie']['display_runtime']
        #calcular runtime
        #mv.runtime
        mv.save()
 
        # CARGAR GIRLS
-       vgirls = decjson['Movie']['girls']
-       for item in vgirls:
-           try:
-               vgirl = Girl.objects.get(pk=item['girl_id'])
-               mv.girls.add(vgirl)
-           except Girl.DoesNotExist as e:
-               return render(request, 'cawas/error.html', {"message": "No existe Girl. (" + e.message + ")"})
+       if (decjson['Movie']['girls'] is not None):
+           vgirls = decjson['Movie']['girls']
+           for item in vgirls:
+               try:
+                   vgirl = Girl.objects.get(pk=item['girl_id'])
+                   mv.girls.add(vgirl)
+               except Girl.DoesNotExist as e:
+                   return render(request, 'cawas/error.html', {"message": "No existe Girl. (" + e.message + ")"})
 
        # CARGAR CATEGORIES
        vcategories = decjson['Movie']['categories']
@@ -446,7 +452,12 @@ def edit_movies_view(request, asset_id):
 
        MovieMetadata.objects.filter(movie=mv).delete()
        for item in vmoviesmetadata:
-           print "mmdLanguaje:" + item['Moviemetadata']['language']
+           if (item['Moviemetadata']['schedule_date'] != ''):
+               vpublishdate = datetime.datetime.strptime(item['Moviemetadata']['schedule_date'],
+                                                         '%d-%m-%Y').strftime('%Y-%m-%d')
+           else:
+               vpublishdate = datetime.datetime.now().strftime('%Y-%m-%d')
+
            try:
                #CREAR METADATA POR IDIOMA
                vlanguage = Language.objects.get(code=item['Moviemetadata']['language'])
@@ -459,6 +470,7 @@ def edit_movies_view(request, asset_id):
                mmd.title = item['Moviemetadata']['title']
                mmd.summary_short = item['Moviemetadata']['summary_short']
                mmd.summary_long = item['Moviemetadata']['summary_long']
+               mmd.publish_date = vpublishdate
 
                mmd.save()
                print "titulo title:" + mmd.title
@@ -473,7 +485,7 @@ def edit_movies_view(request, asset_id):
                    vpublish.item_type = 'AS'
                    vpublish.status = 'Q'
                    vpublish.publish_zone = zone
-                   vpublish.schedule_date = datetime.datetime.strptime(item['Moviemetadata']['schedule_date'], '%d-%m-%Y').strftime('%Y-%m-%d')
+                   vpublish.schedule_date = vpublishdate
                    vpublish.save()
 
            except Language.DoesNotExist as e:
@@ -527,15 +539,10 @@ def edit_movies_view(request, asset_id):
             vmoviemetadata = None
             try:
                 vmoviemetadata = MovieMetadata.objects.get(movie=vmovie, language=itemlang)
-                vpublishqueue = PublishQueue.objects.filter(item_id=vasset.asset_id, item_lang = itemlang)[:1]
-                if PublishQueue.objects.filter(item_id=vasset.asset_id, item_lang = itemlang).exists():
-                    vpublishqueue = ''
-                else:
-                    vpublishqueue = PublishQueue.objects.filter(item_id=vasset.asset_id, item_lang=itemlang)[:1].only('schedule_date')
                 vlangmetadata.append(
                     {'checked': True, 'code': itemlang.code, 'name': itemlang.name, 'title': vmoviemetadata.title,
                      'summary_short': vmoviemetadata.summary_short, 'summary_long': vmoviemetadata.summary_long,
-                     'publish_date': vpublishqueue})
+                     'publish_date': vmoviemetadata.publish_date})
             except MovieMetadata.DoesNotExist as a:
                 vlangmetadata.append({'checked':False, 'code':itemlang.code, 'name':itemlang.name,'titulo':'', 'descripcion':'', 'fechapub':''})
 
@@ -582,7 +589,9 @@ def add_girls_view(request):
     if not request.user.is_authenticated:
         return redirect(login_view)
     message = ''
+    vflag = ""
     vimg = Image()
+
     try:
         pathfilesport = Setting.objects.get(code='image_repository_path_portrait')
         pathfilesland = Setting.objects.get(code='image_repository_path_landscape')
@@ -628,20 +637,42 @@ def add_girls_view(request):
             vgirl.asset = vasset
             vgirl.name  = decjson['Girl']['name']
             vgirl.type = decjson['Girl']['type_girl']
-            vgirl.birth_date = datetime.datetime.strptime(decjson['Girl']['birth_date'],'%d-%m-%Y').strftime('%Y-%m-%d')
+
+            if (decjson['Girl']['birth_date'] is not None ):
+                vgirl.birth_date = datetime.datetime.strptime(decjson['Girl']['birth_date'], '%d-%m-%Y').strftime('%Y-%m-%d')
+            else:
+                vgirl.birth_date = datetime.datetime.now().strftime('%Y-%m-%d')
+
             vgirl.height = decjson['Girl']['height']
             vgirl.weight = decjson['Girl']['weight']
             vgirl.image = vimg
             vgirl.save()
         except Exception as e:
-            return render(request, 'cawas/error.html', {"message": "Error al Guardar Girl. (" + str(e.message) + ")."})
+            return render(request, 'cawas/error.html', {"message": "Error al Guardar Girl. (" + e.message + ")."})
 
+        # CREAR METADATA
+        vgirlmetadatas = decjson['Girl']['Girlmetadatas']
+        for item in vgirlmetadatas:
+            vlanguage = Language.objects.get(code=item['Girlmetadata']['language'])
+            try:
+                gmd = GirlMetadata.objects.get(girl=vgirl, language=vlanguage)
+            except GirlMetadata.DoesNotExist as e:
+                gmd = GirlMetadata()
 
-        message ='Girl, generada'
+            vschedule_date = datetime.datetime.now().strftime('%Y-%m-%d')
+            gmd.language = vlanguage
+            gmd.description = item['Girlmetadata']['description']
+            gmd.nationality = item['Girlmetadata']['nationality']
+            gmd.publish_date = vschedule_date
+            gmd.girl = vgirl
+            gmd.save()
+
+            # Publica en PublishQueue
+            func_publish_queue(vasset, vlanguage, 'AS', 'Q', vschedule_date)
+            # Publica en PublishImage
+            func_publish_image(vimg)
+
         # Luego del POST redirige a pagina principal
-        return redirect(menu_view)
-
-        # CARGAR METADATA
 
     #Cargar variables para presentar en templates
     vgirls = Girl.objects.all()
@@ -649,7 +680,8 @@ def add_girls_view(request):
     vlanguages = Language.objects.all()
 
     vtypegirl = {"pornstar":"Pornstar", "playmate":"Playmate"}
-    context = {'message':message, 'vgirls':vgirls, 'vcategories':vcategories, 'vlanguages':vlanguages,'vtypegirl':vtypegirl }
+    context = {'message':message, 'vgirls':vgirls, 'vcategories':vcategories, 'vlanguages':vlanguages,'vtypegirl':vtypegirl,
+               'flag':vflag }
     #checks:
     #Imagenes - OK
     #Girl - OK
@@ -1609,7 +1641,7 @@ def add_episodes_view(request):
                 emd.language = vlang
                 emd.title = item['Episodemetadata']['title']
                 emd.summary_short = item['Episodemetadata']['summary_short']
-                emd.summary_long = item['Episodemetadata']['summary_long']
+                emd.summary_long = item['Episodemetadata']['summary_short']
                 emd.subtitle = item['Episodemetadata']['subtitle']
                 vschedule_date = datetime.datetime.now().strftime('%Y-%m-%d')
                 emd.publish_date = vschedule_date
@@ -1641,7 +1673,8 @@ def add_episodes_view(request):
     vassets = Asset.objects.filter(asset_type="unknown")
 
     context = {'message': message, 'vcategories': vcategories, 'vchannels': vchannels, 'vgirls': vgirls,
-               'vlanguages': vlanguages, 'vseries':vseries, 'vmovies': vmovies, 'vcapitulos': vcapitulos, 'vassets':vassets}
+               'vlanguages': vlanguages, 'vseries':vseries, 'vmovies': vmovies, 'vcapitulos': vcapitulos,
+               'vassets':vassets}
 
     #Episode OK
     #Asset OK

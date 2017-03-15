@@ -225,10 +225,7 @@ $( document ).ready(function() {
     
     /*---- DATE PICKER ----*/
     $('.datePick').dcalendarpicker({
-     // default: mm/dd/yyyy
-
       format: 'dd-mm-yyyy'
-
     });
 
     
