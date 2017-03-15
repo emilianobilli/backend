@@ -346,11 +346,8 @@ $( document ).ready(function() {
         }
         
         // chequea pornstar
-        if ( $('#pornstarDrop li').length < 1 )
+        if ( $('#pornstarDrop li').length > 0 )
         {
-            errorMe("#pornstarDrop");
-            checkVal++;
-        }else{
             okMe("#pornstarDrop");
             pornstars_selected = [];
             $('#pornstarDrop li').each(function(){
@@ -385,7 +382,7 @@ $( document ).ready(function() {
              $(".select2-selection--single").css("border","1px #3c763d solid");
             canal_selected=$('#canalSelect').val();
         }
-        
+        /*
         // chequea director
         if(director_selected=="" || director_selected==" ")
         {
@@ -394,7 +391,7 @@ $( document ).ready(function() {
         }else{
             okMe("#director");
         }
-        
+
         // chequea año de estreno
         if(year_selected=="" || year_selected==" ")
         {
@@ -403,6 +400,8 @@ $( document ).ready(function() {
         }else{
             okMe("#releaseYear");
         }
+        */
+
         
          // chequea display runtime
 
@@ -421,7 +420,7 @@ $( document ).ready(function() {
             okMe("#runtime");
         }
 
-        
+        /*
         // chequea elenco
         if(elenco_selected=="" || elenco_selected==" ")
         {
@@ -430,6 +429,7 @@ $( document ).ready(function() {
         }else{
             okMe("#elenco");
         }
+        */
         
         // chequeo de idiomas (tit_; desc_; date_)
         if(langQ==0){
@@ -534,7 +534,7 @@ $( document ).ready(function() {
                     }else{
                         okMe("#short_desc_"+lang);
                     }
-                    /* check date */
+                    /* check date
                     var dateCont = $("#date_"+lang).val();
                     if(dateCont==""){
                         errorMe("#date_"+lang);
@@ -543,6 +543,7 @@ $( document ).ready(function() {
                     }else{
                         okMe("#date_"+lang);
                     }
+                    */
 
                     if (lengactualok == 1){
                         lenguajescargados = lenguajescargados + 1 ;
@@ -591,10 +592,31 @@ $( document ).ready(function() {
                     myJSON+='"asset_id":"'+asset_Id+'",';
                     myJSON+='"original_title":"'+original_Title+'",';
                     myJSON+='"channel_id":"'+canal_selected+'",';
-                    myJSON+='"year":'+year_selected+',';
-                    myJSON+='"girls":'+myGirls+',';
-                    myJSON+='"cast":"'+elenco_selected+'",';
-                    myJSON+='"directors":"'+director_selected+'",';
+
+                    if (year_selected==''){
+                        myJSON+='"year":null,';
+                       }else{
+                        myJSON+='"year":"'+year_selected+'",';
+                    }
+
+                    if (myGirls=="[]"){
+                        myJSON+='"girls":null,';
+                    }else{
+                        myJSON+='"girls":'+myGirls+',';
+                    }
+
+                    if (elenco_selected==''){
+                        myJSON+='"cast":null,';
+                    }else{
+                        myJSON+='"cast":"'+elenco_selected+'",';
+                    }
+
+                    if (director_selected==''){
+                        myJSON+='"directors":null,';
+                       }else{
+                        myJSON+='"directors":"'+director_selected+'",';
+                    }
+
                     myJSON+='"display_runtime": "'+display_runtimeJSON+'",';
                     myJSON+='"categories":'+myCategories+',';
                     myJSON+='"Moviesmetadata": [';

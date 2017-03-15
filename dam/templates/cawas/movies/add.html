@@ -139,9 +139,7 @@
                 <div class="row form-row">
                     <div class="col-xs-4 col-md-4 col-lg-4 form-group plyMatePick">
                         <label class="label-left" for="pornstarPick" id="pornstarPickTit">Pornstar / Playmate: </label>
-
                         <!-- ------------------Reemplazar por listado de pornstars ----------------- -->
-
                         <ul class="form-control pornstarPick" id="pornstarPick">
                              {% for item in girls %}
                                  <li value="{{item.id}}">{{item.name}} </li>
@@ -152,7 +150,7 @@
 
                      <div class="col-xs-4 col-md-4 col-lg-4 form-group plyMateDrop" >
                        <div class="form-group has-feedback">
-                            <label for="ThumbVer" id="ThumbVerTit">Arrastrar hasta aquí para agregar *</label>
+                            <label for="ThumbVer" id="ThumbVerTit">Arrastrar hasta aquí para agregar </label>
                             <ul class="form-control pornstarPick" id="pornstarDrop">
 
                             </ul>
@@ -215,7 +213,7 @@
 
                      <div class="col-xs-12 col-md-4 col-lg-4 form-group">
                         <div class="form-group has-feedback">
-                            <label class="label-left" for="releaseYear">Año de estreno (AAAA): *</label>
+                            <label class="label-left" for="releaseYear">Año de estreno (AAAA): </label>
                             <input type="number" class="form-control" name="releaseYear" id="releaseYear" min="1890" max="2300" oninput="maxLengthCheck(this)" >
                             <span class="glyphicon form-control-feedback"></span>
                         </div>
@@ -244,7 +242,7 @@
             <div class="row form-row">
                 <div class="col-xs-12 col-md-12 col-lg-12 form-group">
                     <div class="form-group has-feedback">
-                        <label class="label-left" for="elenco">Elenco: *</label>
+                        <label class="label-left" for="elenco">Elenco: </label>
                         <div class="helpright"><span class="glyphicon glyphicon-question-sign" data-toggle="tooltip" title="Agregar los nombres del elenco completo separados por comas.La lista NO debe terminar con una coma"></span></div>
                         <div class="itaright">(Nombres separados por comas). </div>
                         <input type="text" class="form-control" name="elenco" id="elenco" autofocus>

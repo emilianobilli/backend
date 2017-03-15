@@ -4,7 +4,7 @@ from django.shortcuts import render
 import datetime, os, json
 from django.contrib.auth import authenticate, login, logout
 from django.shortcuts import render, redirect
-from .models import Channel, Asset, Device, Episode, ImageQueue, PublishQueue, Setting,  Block, Serie, SerieMetadata, Movie, MovieMetadata, Girl,GirlMetadata,  Category,CategoryMetadata, Language, Image, PublishZone
+from .models import Channel, Asset, Device, Episode, EpisodeMetadata, ImageQueue, PublishQueue, Setting,  Block, Serie, SerieMetadata, Movie, MovieMetadata, Girl,GirlMetadata,  Category,CategoryMetadata, Language, Image, PublishZone
 from django.shortcuts import render_to_response
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from django.shortcuts import get_object_or_404, render
@@ -229,23 +229,27 @@ def add_movies_view(request):
        mv.asset = vasset
        mv.channel = vchannel
        mv.original_title = decjson['Movie']['original_title']
-       mv.year = int(decjson['Movie']['year'])
-       mv.cast = decjson['Movie']['cast']
-       mv.directors = decjson['Movie']['directors']
+       if (decjson['Movie']['year']is not None ):
+           mv.year = decjson['Movie']['year']
+       if (decjson['Movie']['cast'] is not None):
+            mv.cast = decjson['Movie']['cast']
+       if (decjson['Movie']['directors'] is not None):
+           mv.cast = decjson['Movie']['directors']
+
        mv.display_runtime = decjson['Movie']['display_runtime']
        #calcular runtime
        #mv.runtime
        mv.save()
 
        # CARGAR GIRLS
-       vgirls = decjson['Movie']['girls']
-       for item in vgirls:
-           try:
-               vgirl = Girl.objects.get(pk=item['girl_id'])
-               mv.girls.add(vgirl)
-           except Girl.DoesNotExist as e:
-               return render(request, 'cawas/error.html', {"message": "No existe Girl. (" + e.message + ")"})
-
+       if (decjson['Movie']['girls'] is not None):
+           vgirls = decjson['Movie']['girls']
+           for item in vgirls:
+               try:
+                   vgirl = Girl.objects.get(pk=item['girl_id'])
+                   mv.girls.add(vgirl)
+               except Girl.DoesNotExist as e:
+                   return render(request, 'cawas/error.html', {"message": "No existe Girl. (" + e.message + ")"})
 
        # CARGAR CATEGORIES
        vcategories = decjson['Movie']['categories']
@@ -268,8 +272,12 @@ def add_movies_view(request):
        for item in vmoviesmetadata:
            try:
                #CREAR METADATA POR IDIOMA
-               # CREAR METADATA POR IDIOMA
                vlanguage = Language.objects.get(code=item['Moviemetadata']['language'])
+               if (item['Moviemetadata']['schedule_date']!=''):
+                   vpublishdate = datetime.datetime.strptime(item['Moviemetadata']['schedule_date'], '%d-%m-%Y').strftime('%Y-%m-%d')
+               else:
+                   vpublishdate = datetime.datetime.now().strftime('%Y-%m-%d')
+
                try:
                    mmd = MovieMetadata.objects.get(movie=mv, language=vlanguage)
                except MovieMetadata.DoesNotExist as e:
@@ -278,6 +286,7 @@ def add_movies_view(request):
                mmd.title = item['Moviemetadata']['title']
                mmd.summary_short = item['Moviemetadata']['summary_short']
                mmd.summary_long = item['Moviemetadata']['summary_long']
+               mmd.publish_date = vpublishdate
                mmd.movie = mv
                mmd.save()
 
@@ -292,7 +301,8 @@ def add_movies_view(request):
                    vpublish.item_type = 'AS'
                    vpublish.status = 'Q'
                    vpublish.publish_zone = zone
-                   vpublish.schedule_date = datetime.datetime.strptime(item['Moviemetadata']['schedule_date'], '%d-%m-%Y').strftime('%Y-%m-%d')
+                   #vpublish.schedule_date = datetime.datetime.strptime(item['Moviemetadata']['schedule_date'], '%d-%m-%Y').strftime('%Y-%m-%d')
+                   vpublish.schedule_date = vpublishdate
                    vpublish.save()
 
            except Language.DoesNotExist as e:
@@ -572,7 +582,7 @@ def add_girls_view(request):
     if not request.user.is_authenticated:
         return redirect(login_view)
     message = ''
-
+    vimg = Image()
     try:
         pathfilesport = Setting.objects.get(code='image_repository_path_portrait')
         pathfilesland = Setting.objects.get(code='image_repository_path_landscape')
@@ -590,11 +600,6 @@ def add_girls_view(request):
         vasset = Asset()
         vasset.asset_type = "girl"
         vasset.save()
-
-        try:
-            vimg = Image.objects.get(name=vasset.asset_id)
-        except Image.DoesNotExist as e:
-            vimg = Image()
 
         try:
             vimg.name = vasset.asset_id
@@ -631,28 +636,6 @@ def add_girls_view(request):
         except Exception as e:
             return render(request, 'cawas/error.html', {"message": "Error al Guardar Girl. (" + str(e.message) + ")."})
 
-        #CREAR METADATAGIRL
-        vgirlmetadata = decjson['Girl']['Girlmetadatas']
-        for item in vgirlmetadata:
-            try:
-                gmd = GirlMetadata()
-                vlang = Language.objects.get(code=item['Girlmetadata']['language'])
-                gmd.language = vlang
-                gmd.description = item['Girlmetadata']['description']
-                gmd.nationality = item['Girlmetadata']['nationality']
-                gmd.publish_date = datetime.datetime.now().strftime('%Y-%m-%d')
-                gmd.girl = vgirl
-                gmd.save()
-                vschedule_date = datetime.datetime.now().strftime('%Y-%m-%d')
-                #Publica en PublishQueue
-                func_publish_queue(vasset, vlang, 'AS', 'Q',  vschedule_date)
-                #Publica en PublishImage
-                func_publish_image(vimg)
-
-            except Language.DoesNotExist as e:
-                return render(request, 'cawas/error.html', {"message": "Lenguaje no Existe. (" + e.message + ")"})
-            except Exception as e:
-                return render(request, 'cawas/error.html', {"message": "Error al Guardar MetadataGirl. (" + e.message + ")"})
 
         message ='Girl, generada'
         # Luego del POST redirige a pagina principal
@@ -1463,7 +1446,6 @@ def edit_blocks_view(request, block_id):
     try:
         print "block_id" + block_id
         vblock = Block.objects.get(block_id=block_id)
-
         vassetselect = vblock.assets.all()
         vmovienotselect = Movie.objects.exclude(asset__in=vassetselect)
         vgirlnotselect = Girl.objects.exclude(asset__in=vassetselect)
@@ -1509,28 +1491,26 @@ def add_episodes_view(request):
     if request.method == 'POST':
         # VARIABLES
         vepisode = Episode()
-
-        vasset = Asset()
-        vasset.asset_type = "episode"
-        vasset.save()
-        print "asset_episode " + vasset.asset_id
-        #print "asset_episode " +  vasset.asset_id
-        #vepisode.asset = vasset
-
-
-
         # Parsear JSON
         try:
+            pathfilesport = Setting.objects.get(code='image_repository_path_portrait')
+            pathfilesland = Setting.objects.get(code='image_repository_path_landscape')
             strjson = request.POST['varsToJSON']
             decjson = json.loads(strjson)
 
-            pathfilesport = Setting.objects.get(code='image_repository_path_portrait')
-            pathfilesland = Setting.objects.get(code='image_repository_path_landscape')
+            vasset = Asset.objects.get(asset_id=decjson['Episode']['asset_id'])
+            print "asset_episode " + vasset.asset_id
+            vasset.asset_type = "episode"
+            vasset.save()
+
+            vepisode.asset = vasset
 
             vepisode.original_title = decjson['Episode']['original_title']
             vepisode.channel = Channel.objects.get(pk=decjson['Episode']['channel_id'])
-            #vepisode.asset = Asset.objects.get(pk=decjson['Episode']['asset_id'])
-            vepisode.year = decjson['Episode']['year']
+            print "YEAR: " + decjson['Episode']['year']
+            if (decjson['Episode']['year']!=''):
+                vepisode.year = decjson['Episode']['year']
+
             vepisode.cast = decjson['Episode']['cast']
             vepisode.directors = decjson['Episode']['directors']
             vepisode.display_runtime = decjson['Episode']['display_runtime']
@@ -1548,15 +1528,19 @@ def add_episodes_view(request):
 
             #print "Device:" + str(decjson['Block']['target_device_id'])
             #vepisode.target_device = Device.objects.get(pk=int(decjson['Block']['target_device_id']))
-            vimg = Image()
+
+            try:
+                vimg = Image.objects.get(name=vasset.asset_id)
+            except Image.DoesNotExist as e:
+                vimg = Image()
+                vimg.name = vasset.asset_id
 
             # IMAGEN Portrait
             if (request.FILES.has_key('ThumbHor')):
                 if request.FILES['ThumbHor'].name != '':
                     vimg.portrait = request.FILES['ThumbHor']
                     extension = os.path.splitext(vimg.portrait.name)[1]
-                    vimg.name = vasset.asset_id
-                    varchivo = pathfilesport.value + vimg.name + extension
+                    varchivo = pathfilesport.value +  vimg.name + extension
                     vimg.portrait.name = varchivo
                     if os.path.isfile(varchivo):
                         os.remove(varchivo)
@@ -1571,7 +1555,10 @@ def add_episodes_view(request):
                     if os.path.isfile(varchivo):
                         os.remove(varchivo)
             vimg.save()
-
+            vepisode.image = vimg
+            vepisode.save()
+        except Asset.DoesNotExist as e:
+            return render(request, 'cawas/error.html', {"message": "No Existe Asset. (" + e.message + ")"})
         except Setting.DoesNotExist as e:
             return render(request, 'cawas/error.html', {"message": "No Existe Setting. (" + e.message + ")"})
         except Serie.DoesNotExist as e:
@@ -1586,7 +1573,7 @@ def add_episodes_view(request):
         except Device.DoesNotExist as e:
             return render(request, 'cawas/error.html', {"message": "No existe Device. (" + e.message + ")"})
 
-        vepisode.save()
+
         # CARGAR ASSETS
         vgirls = decjson['Episode']['girls']
         for item in vgirls:
@@ -1594,14 +1581,51 @@ def add_episodes_view(request):
                 # print item['asset_id']
                 asset_id = item['girl_id']
                 print "AssetId add episode"+ asset_id
-                vasset = Asset.objects.get(pk=asset_id)
-                vepisode.assets.add(vasset)
+                vgirl = Girl.objects.get(asset_id=item['girl_id'])
+                vepisode.girls.add(vgirl)
+            except Girl.DoesNotExist as e:
+                return render(request, 'cawas/error.html', {"message": "No existe Girl. (" + e.message + ")"})
             except Asset.DoesNotExist as e:
                 return render(request, 'cawas/error.html', {"message": "No existe Asset. (" + e.message + ")"})
+
+        # CARGAR CATEGORY
+        vcategories = decjson['Episode']['categories']
+        for item in vcategories:
+            try:
+                category_id = item['category_id']
+                print "category_id add episode" + category_id
+                vcategory = Category.objects.get(pk=category_id)
+                vepisode.category.add(vcategory)
+            except Category.DoesNotExist as e:
+                return render(request, 'cawas/error.html', {"message": "No existe Categoria. (" + e.message + ")"})
         vepisode.save()
-        # Publica en PublishQueue
-        func_publish_queue(vasset, vepisode.language, 'AS', 'Q', vepisode.publish_date)
-        vepisode.save()
+
+        """
+        vepisodemetadata = decjson['Episode']['Episodemetadatas']
+        for item in vepisodemetadata:
+            try:
+                emd = EpisodeMetadata()
+                vlang = Language.objects.get(code=item['Episodemetadata']['language'])
+                emd.language = vlang
+                emd.title = item['Episodemetadata']['title']
+                emd.summary_short = item['Episodemetadata']['summary_short']
+                emd.summary_long = item['Episodemetadata']['summary_long']
+                emd.subtitle = item['Episodemetadata']['subtitle']
+                vschedule_date = datetime.datetime.now().strftime('%Y-%m-%d')
+                emd.publish_date = vschedule_date
+                emd.episode = vepisode
+                emd.save()
+                # Publica en PublishQueue
+                func_publish_queue(vasset, vlang, 'AS', 'Q', vschedule_date)
+                # Publica en PublishImage
+                func_publish_image(vimg)
+
+            except Language.DoesNotExist as e:
+                return render(request, 'cawas/error.html', {"message": "Lenguaje no Existe. (" + e.message + ")"})
+            except Exception as e:
+                return render(request, 'cawas/error.html',
+                              {"message": "Error al Guardar MetadataGirl. (" + e.message + ")"})
+        """
         vflag = "success"
         message = 'Bloque - Registrado Correctamente'
         # Fin datos Bloque
@@ -1609,7 +1633,7 @@ def add_episodes_view(request):
     # Variables Para GET
     vseries = Serie.objects.all()
     vchannels = Channel.objects.all()
-    vcategories = Device.objects.all()
+    vcategories = Category.objects.all()
     vgirls = Girl.objects.all()
     vlanguages = Language.objects.all()
     vmovies = Movie.objects.all()
@@ -1619,6 +1643,13 @@ def add_episodes_view(request):
     context = {'message': message, 'vcategories': vcategories, 'vchannels': vchannels, 'vgirls': vgirls,
                'vlanguages': vlanguages, 'vseries':vseries, 'vmovies': vmovies, 'vcapitulos': vcapitulos, 'vassets':vassets}
 
+    #Episode OK
+    #Asset OK
+    #Imagenes OK
+    #Metadata Falta
+    #categorias OK
+    #girls OK
+    #
     return render(request, 'cawas/episodes/add.html', context)
 
 

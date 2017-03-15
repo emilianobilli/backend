@@ -27,8 +27,7 @@ $( document ).ready(function() {
     $("#serie-edit").select2({placeholder: "Despliega la lista"});
     var $mySerieSelect = $("#serie-id").select2();
     var $myVerifSelect = $("#canalSelect").select2();
-    
-    
+    var $myVerifEpisodeSelect = $("#episode-select").select2();
     
     // simular exit con el botón de salir
     $("#getOut").click(function(){
@@ -200,13 +199,30 @@ $( document ).ready(function() {
             checkAll();
         }
     });
-    
+
+    // Toma el ID de la movie seleccionada en la lista
+    $( "#episode-select" ).change(function() {
+
+        $( "#episode-select option:selected" ).each(function() {
+          clickedVal= $(this).val();
+            if(clickedVal!="")
+            {
+                console.log( "clickedVal="+clickedVal ); // debug
+                $( "#episodeID" ).val(clickedVal);// Agrega el ID en el input field
+                changeVideo(clickedVal, "#repro1");// Cambia el video de acuerdo al ID. la función está en la línea 135. Construye la url relativa del video con la variable path+ID+'.mp4'
+
+            }
+        });
+
+    });
+
 //----------------> Helper functions
-    
+
     function changeVideo(src, divId){// para cambiar lo que reproduce el player de acuerdo al ID de la lista.
-        path="video/";
+        path="http://cdnlevel3.zolechamedia.net/" + src + "/mp4/350/" + src +".mp4";
         var video = $(divId+' video')[0];
-        video.src = path+src+".mp4";
+        //http://cdnlevel3.zolechamedia.net/{asset_id}/mp4/350/{asset_id}.mp4
+        video.src = path;
         console.log(video.src);
         video.load();
         video.play();
@@ -254,7 +270,7 @@ $( document ).ready(function() {
         // this function checks for all form values and makes json string to post or alerts user to complete fields.
         console.log("checking form...");
         checkVal = 0;
-        var asset_Id = $('#movieID').val();
+        var asset_Id = $('#episodeID').val();
         var original_Title = $('#orginalTitle').val();
         var serie_selected; 
         var chapter_selected = $('#chapter').val();
@@ -265,7 +281,7 @@ $( document ).ready(function() {
         var director_selected = $('#director').val();
         var elenco_selected = $('#elenco').val();
         var display_runtime = $('#runtime').val();
-        var year_selected = $('#releaseYear').val();
+        var year_selected = $('#releaseYear').val().toString();
         
         // chequea original Title
         if(original_Title=="" || original_Title==" ")
@@ -371,47 +387,60 @@ $( document ).ready(function() {
         }
         
         // chequea canal
+
+        //NO OBLIGATORIO
         console.log("#canalSelect"+$('#canalSelect').val());
         if ( $('#canalSelect').val()=="0" || $('#canalSelect').val()==0)
         {
-            errorMe("#canalSelect");
-            //$(".select2-selection--single").css("border","1px #a94442 solid");
-            checkVal++;
+            //errorMe("#canalSelect");
+            okMe("#canalSelect");
+            canal_selected = null;
+            //canal_selected=$('#canalSelect').val();
+           // checkVal++;
         }else{
             okMe("#canalSelect");
-             //$(".select2-selection--single").css("border","1px #3c763d solid");
+
             canal_selected=$('#canalSelect').val();
         }
-        
+
         // chequea director
+        //NO OBLIGATORIO
         if(director_selected=="" || director_selected==" ")
         {
-            errorMe("#director");
-            checkVal++;
+            director_selected = " ";
+            //errorMe("#director");
+            okMe("#director");
+            //checkVal++;
         }else{
             okMe("#director");
         }
-        
+
         // chequea año de estreno
+        //NO OBLIGATORIO
         if(year_selected=="" || year_selected==" ")
         {
-            errorMe("#releaseYear");
-            checkVal++;
+            year_selected = "";
+            //errorMe("#releaseYear");
+             okMe("#releaseYear");
+            //checkVal++;
         }else{
             okMe("#releaseYear");
         }
-        
+
         
         
         // chequea elenco
+        //NO OBLIGATORIO
         if(elenco_selected=="" || elenco_selected==" ")
         {
-            errorMe("#elenco");
-            checkVal++;
+            //errorMe("#elenco");
+            elenco_selected = " ";
+            okMe("#elenco");
+            //checkVal++;
         }else{
             okMe("#elenco");
         }
-        
+
         
                 
         /* -----------  Sending Routine -----------*/
@@ -560,9 +589,9 @@ $( document ).ready(function() {
                     myJSON+='{"Episode":{';
                     myJSON+='"asset_id":"'+asset_Id+'",';
                     myJSON+='"original_title":"'+original_Title+'",';
-                    myJSON+='"channel_id":"'+canal_selected+'",';
-                    myJSON+='"year":'+year_selected+',';
-                    myJSON+='"girls":'+myGirls+','; 
+                    myJSON+='"channel_id":'+canal_selected+',';
+                    myJSON+='"year":"'+year_selected+'",';
+                    myJSON+='"girls":'+myGirls+',';
                     myJSON+='"cast":"'+elenco_selected+'",';
                     myJSON+='"directors":"'+director_selected+'",';
                     myJSON+='"display_runtime": "'+display_runtimeJSON+'",';

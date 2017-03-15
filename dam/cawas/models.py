@@ -611,7 +611,7 @@ class Movie(models.Model):
     asset           = models.ForeignKey(Asset)
     original_title  = models.CharField(max_length=128, help_text="Titulo original")
     channel         = models.ForeignKey(Channel)
-    year            = models.IntegerField(default=2000, help_text="Fecha de produccion")
+    year            = models.IntegerField(default=2000, help_text="Fecha de produccion",blank=True, null=True)
     girls           = models.ManyToManyField(Girl)
     cast            = models.CharField(max_length=1024, blank=True, help_text="Listado de actores separados por coma")
     directors       = models.CharField(max_length=1024, blank=True, help_text="Listado de directores separados por coma")
