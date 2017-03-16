@@ -259,7 +259,8 @@ def publish_items():
                     ep.add(item[0])
                     job.status = 'D'
                     job.save()
-                    obj.publish_date = timezone.now()
+                    if not obj.publish_status:
+                        obj.publish_date = timezone.now()
                     obj.publish_status = True
                     obj.save()
                 except ApiBackendException as err:
