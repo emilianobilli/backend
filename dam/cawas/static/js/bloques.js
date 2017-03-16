@@ -3,7 +3,7 @@ $( document ).ready(function() {
     console.log( "ready!" );
     // inicializar tooltips para los íconos de HELP
     $('[data-toggle="tooltip"]').tooltip(); 
-    
+
     var checkedOnce = 0; //chequea si el formulario se ha intentado enviar alguna vez
     var checkVal=0; //chequea la cantidad de errores en el formulario
     var clickedToSubmit = 0; //chequea si el botón de submit se ha presionado
@@ -13,9 +13,11 @@ $( document ).ready(function() {
     var langDesc = [] // recoge qué idiomas son los que se seleccionaron
     var clickedVal; // recoge el valor del ID seleccionado en la lista de chcas;
     var clickedName; // recoge el valor del Nombre seleccionado en la lista de chcas;
-    
+    var $mySerieSelect = $("#serie-id").select2();
+
     // activar los selects con filtro
     $("#bloque-select").select2({placeholder: "Despliega la lista"});
+
     
     // simular exit con el botón de salir
     $("#getOut").click(function(){
@@ -30,7 +32,8 @@ $( document ).ready(function() {
         }
     });
 
-    
+
+
     // Toma el ID de la chica seleccionada en la lista
     $( "#bloque-select" ).change(function() {
         
@@ -145,8 +148,16 @@ $( document ).ready(function() {
         }else{
             okMe("#orginalName");
         }
-        
-        
+
+        if ( $('#serie-id').val()=="0" || $('#serie-id').val()==0)
+        {
+            errorMe("#serie-id");
+            checkVal++;
+        }else{
+            okMe("#serie-id");
+            serie_selected=$('#serie-id').val();
+        }
+
         
         // chequea idioma
         if (idioma_selected =="0" || idioma_selected ==""){

@@ -5,7 +5,6 @@ import datetime, os, json
 from django.contrib.auth import authenticate, login, logout
 from django.shortcuts import render, redirect
 from .models import Channel, Asset, Device, Episode, EpisodeMetadata, ImageQueue, PublishQueue, Setting,  Block, Serie, SerieMetadata, Movie, MovieMetadata, Girl,GirlMetadata,  Category,CategoryMetadata, Language, Image, PublishZone
-from django.shortcuts import render_to_response
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from django.shortcuts import get_object_or_404, render
 from django.http import Http404, HttpResponse
@@ -1377,7 +1376,6 @@ def add_blocks_view(request):
         vassets = decjson['Block']['assets']
         for item in vassets:
             try:
-                #print item['asset_id']
                 asset_id = item['asset_id']
                 print asset_id
                 vasset = Asset.objects.get(pk=asset_id)
@@ -1400,8 +1398,10 @@ def add_blocks_view(request):
     vlanguages = Language.objects.all()
     vmovies = Movie.objects.all()
     vcapitulos = Episode.objects.all()
+    vseries = Serie.objects.all()
 
-    context = {'message': message, 'vblocks':vblocks, 'vchannels':vchannels,'vdevices':vdevices, 'vgirls':vgirls, 'vlanguages':vlanguages,
+    context = {'message': message, 'vblocks':vblocks, 'vchannels':vchannels,'vdevices':vdevices, 'vgirls':vgirls,
+               'vlanguages':vlanguages, 'vseries':vseries,
                'vmovies':vmovies, 'vcapitulos':vcapitulos }
     return render(request, 'cawas/blocks/add.html', context)
 #</FIN ADD BLOCK>
@@ -1458,6 +1458,7 @@ def edit_blocks_view(request, block_id):
 
         # CARGAR ASSETS
         vassets = decjson['Block']['assets']
+
         for item in vassets:
             try:
                 # print item['asset_id']
@@ -1479,10 +1480,14 @@ def edit_blocks_view(request, block_id):
         print "block_id" + block_id
         vblock = Block.objects.get(block_id=block_id)
         vassetselect = vblock.assets.all()
+        #
         vmovienotselect = Movie.objects.exclude(asset__in=vassetselect)
+        vserienotselect = Serie.objects.exclude(asset__in=vassetselect)
         vgirlnotselect = Girl.objects.exclude(asset__in=vassetselect)
         vepisodenotselect = Episode.objects.exclude(asset__in=vassetselect)
+
         vmovieselect = Movie.objects.filter(asset__in=vassetselect)
+        vserieselect = Serie.objects.filter(asset__in=vassetselect)
         vgirlselect = Girl.objects.filter(asset__in=vassetselect)
         vepisodeselect = Episode.objects.filter(asset__in=vassetselect)
 
@@ -1504,7 +1509,8 @@ def edit_blocks_view(request, block_id):
                'vmovies': vmovies, 'vcapitulos': vcapitulos, 'vblock':vblock,
                'vmovienotselect':vmovienotselect, 'vgirlnotselect':vgirlnotselect,
                'vepisodenotselect':vepisodenotselect,'vmovieselect':vmovieselect,
-               'vgirlselect':vgirlselect, 'vepisodeselect':vepisodeselect
+               'vgirlselect':vgirlselect, 'vepisodeselect':vepisodeselect,
+               'vserienotselect':vserienotselect, 'vserieselect':vserieselect
                }
     return render(request, 'cawas/blocks/edit.html', context)
 #<Fin EDIT BLOCKS>
@@ -1523,34 +1529,38 @@ def add_episodes_view(request):
     if request.method == 'POST':
         # VARIABLES
         vepisode = Episode()
-        # Parsear JSON
+
         try:
             pathfilesport = Setting.objects.get(code='image_repository_path_portrait')
             pathfilesland = Setting.objects.get(code='image_repository_path_landscape')
+
+            #Parsear JSON
             strjson = request.POST['varsToJSON']
             decjson = json.loads(strjson)
-
+            # DATOS OBLIGATORIOS
             vasset = Asset.objects.get(asset_id=decjson['Episode']['asset_id'])
-            print "asset_episode " + vasset.asset_id
             vasset.asset_type = "episode"
             vasset.save()
-
             vepisode.asset = vasset
-
             vepisode.original_title = decjson['Episode']['original_title']
             vepisode.channel = Channel.objects.get(pk=decjson['Episode']['channel_id'])
-            print "YEAR: " + decjson['Episode']['year']
-            if (decjson['Episode']['year']!=''):
-                vepisode.year = decjson['Episode']['year']
-
-            vepisode.cast = decjson['Episode']['cast']
-            vepisode.directors = decjson['Episode']['directors']
             vepisode.display_runtime = decjson['Episode']['display_runtime']
-            print "Asset_serie_id" + decjson['Episode']['serie_id']
             vasset_serie = Asset.objects.get(asset_id=decjson['Episode']['serie_id'])
             vepisode.serie = Serie.objects.get(asset=vasset_serie)
             vepisode.chapter = decjson['Episode']['chapter']
             vepisode.season = decjson['Episode']['season']
+
+            #Datos OPCIONALES
+            if (decjson['Episode']['year'] is not None):
+                vepisode.year = decjson['Episode']['year']
+
+            if (decjson['Episode']['cast'] is not None):
+                vepisode.cast = decjson['Episode']['cast']
+
+            if (decjson['Episode']['directors'] is not None):
+                vepisode.directors = decjson['Episode']['directors']
+
+
 
             #vschedule_date = datetime.datetime.strptime(decjson['Episode']['publish_date'], '%d-%m-%Y').strftime('%Y-%m-%d')
             #vepisode.publish_date = vschedule_date
@@ -1632,18 +1642,22 @@ def add_episodes_view(request):
                 return render(request, 'cawas/error.html', {"message": "No existe Categoria. (" + e.message + ")"})
         vepisode.save()
 
-        """
+
         vepisodemetadata = decjson['Episode']['Episodemetadatas']
         for item in vepisodemetadata:
             try:
                 emd = EpisodeMetadata()
+                #convertDateYMDnowIsNull
+                if (item['Episodemetadata']['schedule_date'] !=''):
+                    vschedule_date = datetime.datetime.strptime(item['Episodemetadata']['schedule_date'],'%d-%m-%Y').strftime('%Y-%m-%d')
+                else:
+                    vschedule_date = datetime.datetime.now().strftime('%Y-%m-%d')
+
                 vlang = Language.objects.get(code=item['Episodemetadata']['language'])
                 emd.language = vlang
                 emd.title = item['Episodemetadata']['title']
                 emd.summary_short = item['Episodemetadata']['summary_short']
-                emd.summary_long = item['Episodemetadata']['summary_short']
-                emd.subtitle = item['Episodemetadata']['subtitle']
-                vschedule_date = datetime.datetime.now().strftime('%Y-%m-%d')
+                emd.summary_long = item['Episodemetadata']['summary_long']
                 emd.publish_date = vschedule_date
                 emd.episode = vepisode
                 emd.save()
@@ -1655,9 +1669,8 @@ def add_episodes_view(request):
             except Language.DoesNotExist as e:
                 return render(request, 'cawas/error.html', {"message": "Lenguaje no Existe. (" + e.message + ")"})
             except Exception as e:
-                return render(request, 'cawas/error.html',
-                              {"message": "Error al Guardar MetadataGirl. (" + e.message + ")"})
-        """
+                return render(request, 'cawas/error.html',{"message": "Error al Guardar Episode Metadata. (" + str(e.message) + ")"})
+
         vflag = "success"
         message = 'Bloque - Registrado Correctamente'
         # Fin datos Bloque
@@ -1676,9 +1689,9 @@ def add_episodes_view(request):
                'vlanguages': vlanguages, 'vseries':vseries, 'vmovies': vmovies, 'vcapitulos': vcapitulos,
                'vassets':vassets}
 
-    #Episode OK
-    #Asset OK
-    #Imagenes OK
+    #Episode > OK
+    #Asset > OK
+    #Imagenes > OK
     #Metadata Falta
     #categorias OK
     #girls OK

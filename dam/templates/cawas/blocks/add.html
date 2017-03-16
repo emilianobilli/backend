@@ -182,6 +182,8 @@
                             <span class="glyphicon form-control-feedback"></span>
                         </div>
                     </div>
+
+
                 </div>
 
             <!-- Assets modules -->
@@ -216,17 +218,29 @@
                         </div>
 
                         <div class="form-group plyMatePick">
-                        <label class="label-left" for="SeriePick">Capítulos: </label>
+                        <label class="label-left" for="MoviePick">Series: </label>
 
-                        <!--------------------Reemplazar por listado de capítulos ------------------->
+                        <!-- ------------------Reemplazar por listado de movies ----------------- -->
 
                         <ul class="form-control assetPick" id="SeriePick">
-                            {% for item in vcapitulos %}
-                                 <li value="{{item.asset_id}}"  tag="{{item.asset.asset_id}}">{{ item.original_title }}</li>
-                            {% endfor %}
+                           {% for item in vseries %}
+                                 <li value="{{item.asset_id}}" id="{{item.asset.asset_id}}">{{ item.original_title }}</li>
+                           {% endfor %}
                         </ul>
 
-                        <!-- ---------------------- Fin de  listado de capítulos ------------------- -->
+                        <!------------------------ Fin de  listado de movies --------------------->
+                        </div>
+
+                        <div class="form-group plyMatePick">
+                        <label class="label-left" for="SeriePick">Capítulos: </label>
+
+                            <!--------------------Reemplazar por listado de capítulos ------------------->
+                            <ul class="form-control assetPick" id="EpisodePick">
+                                {% for item in vcapitulos %}
+                                     <li value="{{item.asset_id}}"  tag="{{item.asset.asset_id}}">{{ item.original_title }}</li>
+                                {% endfor %}
+                            </ul>
+                            <!-- ---------------------- Fin de  listado de capítulos ------------------- -->
 
                         </div>
 

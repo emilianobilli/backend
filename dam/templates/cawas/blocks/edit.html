@@ -172,25 +172,33 @@
                         <ul class="form-control assetPick" id="pornstarPick">
                          {% for item in vgirlnotselect %}
                                  <li value="{{item.asset_id}}">{{ item.name }}</li>
-                        {% endfor %}
+                         {% endfor %}
 
                         </ul>
 
                         <!-- ---------------------- Fin de  listado de pornstars ------------------- -->
 
-                       <div class="form-group plyMatePick">
-                        <label class="label-left" for="MoviePick">Movies: </label>
+                        <div class="form-group plyMatePick">
+                            <label class="label-left" for="MoviePick">Movies: </label>
+                            <ul class="form-control assetPick" id="MoviePick">
+                                {% for item in vmovienotselect %}
+                                     <li value="{{item.asset_id}}" id="{{item.asset.asset_id}}">{{ item.original_title }}</li>
+                               {% endfor %}
+                            </ul>
 
-                        <!-- ------------------Reemplazar por listado de movies ----------------- -->
-
-                        <ul class="form-control assetPick" id="MoviePick">
-                            {% for item in vmovienotselect %}
-                                 <li value="{{item.asset_id}}" id="{{item.asset.asset_id}}">{{ item.original_title }}</li>
-                           {% endfor %}
-                        </ul>
-
-                        <!-- ---------------------- Fin de  listado de movies ------------------- -->
                         </div>
+
+                        <div class="form-group plyMatePick">
+                            <label class="label-left" for="SeriePick">Series: </label>
+                            <ul class="form-control assetPick" id="SeriePick">
+                            {% for item in vserienotselect %}
+                                 <li value="{{item.asset_id}}" id="{{item.asset.asset_id}}">{{ item.original_title }}</li>
+                            {% endfor %}
+                            </ul>
+
+
+                        </div>
+
 
                         <div class="form-group plyMatePick">
                         <label class="label-left" for="SeriePick">Capítulos: </label>
@@ -219,8 +227,11 @@
                                  {% for item in vmovieselect %}
                                      <li value="{{item.asset_id}}"  tag="{{item.asset.asset_id}}">{{ item.original_title }}</li>
                                  {% endfor %}
-                                 {% for item in vgirlselect %}
+                                 {% for item in vserieselect %}
                                      <li value="{{item.asset_id}}"  tag="{{item.asset.asset_id}}">{{ item.original_title }}</li>
+                                 {% endfor %}
+                                 {% for item in vgirlselect %}
+                                     <li value="{{item.asset_id}}"  tag="{{item.asset.asset_id}}">{{ item.name }}</li>
                                  {% endfor %}
                                  {% for item in vepisodeselect %}
                                      <li value="{{item.asset_id}}"  tag="{{item.asset.asset_id}}">{{ item.original_title }}</li>

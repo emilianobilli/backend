@@ -28,6 +28,8 @@ $( document ).ready(function() {
     var $mySerieSelect = $("#serie-id").select2();
     var $myVerifSelect = $("#canalSelect").select2();
     var $myVerifEpisodeSelect = $("#episode-select").select2();
+
+    $("#episode-edit").select2();
     
     // simular exit con el botón de salir
     $("#getOut").click(function(){
@@ -80,8 +82,12 @@ $( document ).ready(function() {
     
     // simular exit con el botón de salir
     $("#EDBtn").click(function(){
-           window.location.href = "capitulos-edit.html?ID="+clickedTextID;
-    })
+          if (clickedVal != null){
+               window.location.href = "/episodes/edit/"+clickedVal;
+        }
+    });
+
+
     
     // interacción del usuario al hacer click en el botón debajo de la lista de selección
     $( "#IDBtn" ).click(function(){ 
@@ -208,6 +214,22 @@ $( document ).ready(function() {
     });
 
     // Toma el ID de la movie seleccionada en la lista
+    $( "#episode-edit" ).change(function() {
+
+        $( "#episode-edit option:selected" ).each(function() {
+          clickedVal= $(this).val();
+            if(clickedVal!="")
+            {
+                console.log( "clickedVal="+clickedVal ); // debug
+                $( "#episodeID" ).val(clickedVal);// Agrega el ID en el input field
+                changeVideo(clickedVal, "#repro1");// Cambia el video de acuerdo al ID. la función está en la línea 135. Construye la url relativa del video con la variable path+ID+'.mp4'
+
+            }
+        });
+
+    });
+
+     // Toma el ID de la movie seleccionada en la lista
     $( "#episode-select" ).change(function() {
 
         $( "#episode-select option:selected" ).each(function() {
@@ -589,7 +611,9 @@ $( document ).ready(function() {
                     myLangs += '"title": "'+tit+'",';
                     myLangs += '"summary_short": "'+short+'",';
                     myLangs += '"summary_long":"'+long+'",';
-					myLangs += '"schedule_date":"'+fechapub+'"';
+                    myLangs += '"schedule_date":"'+fechapub+'"';
+
+
                     myLangs += '}}';
                     if(i<lngth-1){
                         myLangs += ',';
@@ -634,9 +658,9 @@ $( document ).ready(function() {
                     myJSON+='"chapter": "'+chapter_selected+'",';   
                     myJSON+='"season": "'+season_selected+'",';   
                     myJSON+='"categories":'+myCategories+',';
-                    myJSON+='"Episodesmetadata": [';
+                    myJSON+='"Episodemetadatas": [';
                     myJSON+= addMetadata(langDesc);
-                    myJSON+=']}}';
+                    myJSON+=']';
                     myJSON+='}}';
                     console.log(myJSON);
                     $("#varsToJSON").val(myJSON);
