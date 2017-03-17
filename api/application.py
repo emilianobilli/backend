@@ -8,6 +8,11 @@ from backend import Components
 from Auth    import Auth
 from json   import dumps 
 from json   import loads
+##
+# Keys
+##
+from keys   import MA
+from keys   import CAWAS
 
 application = Flask(__name__)
 
@@ -387,9 +392,16 @@ def urlAuthorize():
     # Falta mecanismo de validacion
     if 'MA-API-KEY' in request.headers:
         ma_api_key = request.headers.get('MA-API-KEY')
-        #### Si no es la posta
+        if MA != ma_api_key:
+            ret = {}
+            ret['status'] = 401
+            ret['body']   = {'status': 'failure', 'message': 'Invalid api key'}
+            return Response(response=dumps(ret['body']), status=ret['status'])
     else:
-        pass
+        ret = {}
+        ret['status'] = 401
+        ret['body']   = {'status': 'failure', 'message': 'Missing Header'}
+        return Response(response=dumps(ret['body']), status=ret['status']) 
 
     try:
         user_data = loads(request.data)
