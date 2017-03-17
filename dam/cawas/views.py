@@ -1388,7 +1388,7 @@ def add_blocks_view(request):
                 # Publica en PublishQueue
                 func_publish_queue(asset_id, vblock.language, 'AS', 'Q', vblock.publish_date)
             except Asset.DoesNotExist as e:
-                return render(request, 'cawas/error.html', {"message": "No existe Asset. (" + e.message + ")"})
+                return render(request, 'cawas/error.html', {"message": "No existe Asset. "+ asset_id + "  (" + e.message + ")" })
 
         vblock.save()
         func_publish_queue(vblock.block_id, vblock.language, 'BL', 'Q', vblock.publish_date)
@@ -1440,6 +1440,7 @@ def edit_blocks_view(request, block_id):
             vdevice = Device.objects.get(pk=int(decjson['Block']['target_device_id']))
 
             vblock.target_device_id = int(decjson['Block']['target_device_id'])
+            vblock.save()
         except Setting.DoesNotExist as e:
             return render(request, 'cawas/error.html', {"message": "No Existe Setting. (" + e.message + ")"})
         except Serie.DoesNotExist as e:
@@ -1464,7 +1465,7 @@ def edit_blocks_view(request, block_id):
                 # print item['asset_id']
                 asset_id = item['asset_id']
                 vasset = Asset.objects.get(pk=asset_id)
-                vblock.save()
+
                 vblock.assets.add(vasset)
                 func_publish_queue(asset_id, vblock.language, 'AS', 'Q', vblock.publish_date)
             except Asset.DoesNotExist as e:
