@@ -8,6 +8,11 @@ from backend import Components
 from Auth    import Auth
 from json   import dumps 
 from json   import loads
+##
+# Keys
+##
+from keys   import MA
+from keys   import CAWAS
 
 application = Flask(__name__)
 
@@ -147,7 +152,11 @@ components = Components({
                 }
             })
 
+#
+# Faltan agregar campos 
+# {u'username': u'AR_dibox_000100000004', u'apikey_ttl': u'2017-03-18T14:30:11.838Z', u'country': u'AR', u'source_ip': u'::1', u'idp': u'dibox', u'access': u'full', u'user_agent': u'Mozilla/5.0 (Windows NT 10.0; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/56.0.2924.87 Safari/537.36'}
 
+ 
 authorization = Auth({
                 "database":
                     { "table" : "Auth",
@@ -381,8 +390,34 @@ def urlAssetBlock(block_id):
 def urlAuthorize():
     #
     # Falta mecanismo de validacion
-    user_data = loads(request.data)
-    ret = authorization.authorize(user_data)
+    if 'MA-API-KEY' in request.headers:
+        ma_api_key = request.headers.get('MA-API-KEY')
+        if MA != ma_api_key:
+            ret = {}
+            ret['status'] = 401
+            ret['body']   = {'status': 'failure', 'message': 'Invalid api key'}
+            return Response(response=dumps(ret['body']), status=ret['status'])
+    else:
+        ret = {}
+        ret['status'] = 401
+        ret['body']   = {'status': 'failure', 'message': 'Missing Header'}
+        return Response(response=dumps(ret['body']), status=ret['status']) 
+
+    try:
+        user_data = loads(request.data)
+    except Exception as e:
+        ret = {}
+        ret['status'] = 422
+        ret['body']   = {'status': 'failure', 'message': 'Invalid body format, we expect a JSON %s' % str(e)}
+        return Response(response=dumps(ret['body']), status=ret['status'])
+
+    try:
+        ret = authorization.authorize(user_data)
+    except Exception as e:
+        ret = {}
+        ret['status'] = 500
+        ret['body']   = {'status': 'failure', 'message': str(e)}
+
     return Response(response=dumps(ret['body']), status=ret['status'])
 
 @application.route('/v1/private/assets/', methods=['POST'])
