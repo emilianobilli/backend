@@ -15,7 +15,7 @@ class CdnImg(object):
 
     def getUrl(self, filename, width=None):
         if width is not None:
-            return '%s%s%s?w=%s&q=60' % (self.cdnbase[self.nxt()],
+            return '%s%s%s?w=%s' % (self.cdnbase[self.nxt()],
                                          self.path,
                                          filename, str(width) if type(width).__name__ == 'int' else width)
         else:
