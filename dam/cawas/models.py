@@ -246,43 +246,6 @@ class Asset(models.Model):
         return dict
 
 
-class Block(models.Model):
-    block_id          = models.CharField(max_length=8, unique=True, help_text="ID del Bloque")
-    name              = models.CharField(max_length=128, help_text="Nombre del bloque")
-    language          = models.ForeignKey(Language)
-    channel           = models.ForeignKey(Channel, blank=True, null=True)
-    assets            = models.ManyToManyField(Asset, blank=True)
-    target_device     = models.ForeignKey(Device)
-    modification_date = models.DateTimeField(auto_now=True)
-    publish_date      = models.DateTimeField(auto_now=False, auto_now_add=False, blank=True, null=True)
-    publish_status    = models.BooleanField(default=False)
-
-    def save(self, *args, **kwargs):
-        super(Block, self).save(*args, **kwargs)
-        if self.block_id == '':
-
-            id = str(self.id)
-
-            while len(id) < 5:
-                id = "0" + id
-
-            self.block_id = "B%s" % (id)
-        super(Block, self).save(*args, **kwargs)
-
-    def __unicode__(self):
-        return self.block_id
-
-    def toDict(self):
-        dict = {}
-
-        dict["block_id"]      = self.block_id
-        dict["block_name"]    = self.name
-        dict["lang"]          = self.language.code
-        dict["target_device"] = self.target_device.name
-        if self.channel is not None:
-            dict["channel"] = self.channel.name
-
-        return dict
 
 
 class Slider(models.Model):
@@ -571,7 +534,7 @@ class EpisodeMetadata(models.Model):
     title             = models.CharField(max_length=128, help_text="Titulo en el idioma correspondiente")
     summary_short     = models.CharField(max_length=2048, blank=True, help_text="Descripcion corta")
     summary_long      = models.CharField(max_length=4096, blank=True, help_text="Descripcion larga")
-    subtitle          = models.BooleanField(default=False)
+    subtitle          = models.BooleanField(default=False )
     modification_date = models.DateTimeField(auto_now=True)
     publish_date      = models.DateTimeField(auto_now=False, auto_now_add=False, blank=True, null=True)
     publish_status    = models.BooleanField(default=False)
@@ -693,5 +656,45 @@ class MovieMetadata(models.Model):
         dict["subtitle"]       = self.subtitle
         if len(categories) > 0:
             dict["categories"]     = categories
+
+        return dict
+
+
+
+class Block(models.Model):
+    block_id          = models.CharField(max_length=8, unique=True, help_text="ID del Bloque")
+    name              = models.CharField(max_length=128, help_text="Nombre del bloque")
+    language          = models.ForeignKey(Language)
+    channel           = models.ForeignKey(Channel, blank=True, null=True)
+    assets            = models.ManyToManyField(Asset, blank=True)
+    target_device     = models.ForeignKey(Device)
+    modification_date = models.DateTimeField(auto_now=True)
+    publish_date      = models.DateTimeField(auto_now=False, auto_now_add=False, blank=True, null=True)
+    publish_status    = models.BooleanField(default=False)
+
+    def save(self, *args, **kwargs):
+        super(Block, self).save(*args, **kwargs)
+        if self.block_id == '':
+
+            id = str(self.id)
+
+            while len(id) < 5:
+                id = "0" + id
+
+            self.block_id = "B%s" % (id)
+        super(Block, self).save(*args, **kwargs)
+
+    def __unicode__(self):
+        return self.block_id
+
+    def toDict(self):
+        dict = {}
+
+        dict["block_id"]      = self.block_id
+        dict["block_name"]    = self.name
+        dict["lang"]          = self.language.code
+        dict["target_device"] = self.target_device.name
+        if self.channel is not None:
+            dict["channel"] = self.channel.name
 
         return dict

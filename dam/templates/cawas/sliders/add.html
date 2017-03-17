@@ -1,0 +1,250 @@
+{% extends "cawas/base.html" %}
+{% block extra_head %}
+    <script src="/static/js/Sliders.js"></script>
+{% endblock %}
+
+{% block subheader %}
+<div class="col-xs-12 col-md-12 col-lg-12 unpad">
+    <div class="subHeader">
+        <div class="notifications">
+            {% if user.is_authenticated %}
+
+                  <a href="{% url 'menu_view' %}"><span class="glyphicon glyphicon-home GLY-med">
+                               </span> &nbsp;volver al menú</a>
+
+                 <button class="btn btn-lg btn-primary btn-block logOFF" type="button" id="exitBtn" data-toggle="modal" data-target="#myModal">LOG-OUT</button>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock subheader %}
+{% block content %}
+<div class="container">
+              <div class="row">
+                       <!-- left col -->
+                       <div class="col-xs-12 col-md-6 col-lg-6 sepTOP-big">
+                           <div class="col-xs-12 col-md-12 col-lg-12 ">
+                               <h1>AGREGAR Slider</h1>
+                           </div>
+                           <div class="col-xs-12 col-md-4 col-lg-4 btnOnly">       
+                                <button class="btn btn-primary btn-block form-control" type="button" id="ADBtn">Nueva Slider</button>
+                           </div>
+                      </div>
+                        
+                       
+                      <!-- right col -->
+                      <div class="col-xs-12 col-md-6 col-lg-6 sepTOP-big">
+                           <div class="alignRIGHT-lg">
+                                <h1>EDITAR Slider</h1>
+                                <div>
+                                    <h3>Selecciona una Slider de la lista para editarla</h3>
+                                </div>
+                            </div>
+                            <div>
+                            
+                                   <!-- ------------------Reemplazar por listado de Sliders ----------------- -->
+                                      
+                                    <select id="Slider-select" class="form-control" size="6">
+                                        {% for item in vgirls %}
+                                            <option value="{{ item.asset.asset_id }}"> {{ item.name }} </option>
+                                        {% endfor %}
+                                    </select>
+                                    
+                                  <!-- ---------------------- Fin de  listado de Sliders ------------------- -->
+                            </div>
+                            
+                            <div>
+                               <form method="get" action="" name="Slider-pickerForm" id="Slider-pickerForm" class="content-picker movieChoose">
+                                   
+                                   <div class="col-xs-12 col-md-8 col-lg-8">       
+                                       <input type="hidden" class="form-control" name="selectedName" id="SliderNAME" value="">
+                                       <input type="hidden" class="form-control" name="selectedID" id="SliderID" value="">
+                                   </div>
+                                   <div class="col-xs-12 col-md-4 col-lg-4">       
+                                       <button class="btn btn-primary btn-block form-control" type="button" id="EDBtn">Editar</button>
+                                   </div>
+                                   
+                                </form>
+                            </div>
+                       </div>
+                                        
+              </div>
+              
+        </div>
+        
+         <!-- hidden form -->
+        <div class="container" id="hidden1">
+        
+             <div class="row">
+                       <!-- left col -->
+                       <div class="col-xs-12 col-md-6 col-lg-6 sepTOP-big">
+                           <div class="col-xs-12 col-md-12 col-lg-12">
+                            <h1>Nueva Slider</h1>
+                           </div>
+                           <div class="col-xs-4 col-md-3 col-lg-3">
+                                <button class="btn btn-primary btn-block form-control" type="button" id="CancelBtn">Cancelar</button>
+                           </div>
+                       </div> 
+                                                               
+              </div>
+              
+            <!-- First Row : Title -->
+            <div class="row form-row">
+                <div class="col-xs-12 col-md-12 col-lg-12">
+                    <div class="form-group">
+                        <label for="orginalTitle" id="idTit">NUEVO ID : </label>
+                        <!-- pegar  acá -->
+                        <span class="idLegend">
+
+                        </span>
+                    </div>
+                    <div class="form-group has-feedback">
+                      
+                      
+                        <!-- pegar en "value" el ID nuevo -->
+                        <input type="hidden" name="newID" vlaue="">
+                        <label class="label-left" for="orginalName">Nombre: *</label>
+                        <input type="text" class="form-control" name="orginalName" id="orginalName" required autofocus><span class="glyphicon form-control-feedback"></span>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Form manda imagenes y vars en un JSON hecho string -->
+                <form method="post" action="" name="girl-completeForm"  class="content-picker movieChoose" id="girlForm" enctype="multipart/form-data">
+                
+            <!-- 2 Row : Images -->
+                <div class="row form-row">
+                    <div class="col-xs-4 col-md-4 col-lg-4 form-group">
+                       <div class="form-group has-feedback imgUpload">
+                            <label class="label-left" for="ThumbHor" id="ThumbHorTit">Asociar imagen landscape: *</label>
+                            <input type="file" class="form-control" name="ThumbHor" id="ThumbHor" accept="image/*">
+                            <span class="glyphicon form-control-feedback"></span>
+                            <img id="imageH"/>
+                            
+                            
+                        </div>
+                    </div>
+                    <div class="col-xs-4 col-md-4 col-lg-4 form-group" >
+                       <div class="form-group has-feedback imgUpload">
+                            <label for="ThumbVer" id="ThumbVerTit">Asociar imagen portrait: *</label>
+                            <input type="file" class="form-control" name="ThumbVer" id="ThumbVer" accept="image/*">
+                            
+                            <span class="glyphicon form-control-feedback"></span>
+                            <img id="imageV"/>
+                        </div>
+                    </div>
+                    <div class="col-xs-4 col-md-4 col-lg-4">
+                    </div>
+                </div>
+
+                <input type="hidden" name="varsToJSON" id="varsToJSON" value="">
+              
+               </form>
+            
+            
+            <!-- Row 3: Fecha Nacimiento -->
+            <div class="row form-row">
+               <div class="col-xs-12 col-md-4 col-lg-4">
+                   <div class="form-group has-feedback">
+                    <label class="label-left" for="birthDate">Fecha de Nacimiento: </label>
+                     <input type="text" class="form-control" name="birthDate" id="birthDate" required autofocus placeholder="dd-mm-aaaa">
+                     <span class="glyphicon form-control-feedback"></span>
+                   </div>
+                </div>
+            </div>
+            
+            <!-- Row 4: Altura y peso -->
+            <div class="row form-row">
+               <div class="col-xs-12 col-md-4 col-lg-4">
+                   <div class="form-group has-feedback">
+                    <label class="label-left" for="height">Altura (en mts. ej:1.60): </label>
+                     <input type="number" class="form-control" name="height" id="height" min="0" max="3" oninput="maxLengthCheck(this)" required autofocus ><span class="glyphicon form-control-feedback"></span>
+                   </div>
+                </div>
+                
+                <div class="col-xs-12 col-md-4 col-lg-4">
+                   <div class="form-group has-feedback">
+                    <label class="label-left" for="weight">Peso (en kgs.): </label>
+                     <input type="number" class="form-control" name="weight" id="weight" min="30" max="200" oninput="maxLengthCheck(this)" required autofocus><span class="glyphicon form-control-feedback"></span>
+                    </div>
+                </div>
+            </div>
+           
+            <!-- Row 5: Categoría -->
+            <div class="row form-row">
+               <div class="col-xs-12 col-md-4 col-lg-4">
+                   <div class="form-group has-feedback">
+                    <label class="label-left" for="category">Categoría: *</label>
+                     <select class="form-control" id="category">
+                            {% for key, value in vtypegirl.items %}
+                                <option id="{{ key }}" value="{{key}}">{{ value }}</option>
+                            {% endfor %}
+                     </select>
+                     <span class="glyphicon form-control-feedback"></span>
+                   </div>
+                </div>
+            </div>
+            
+            <!--  9 : Idioma -->
+                <div class="row form-row">
+                    <div class="col-xs-12 col-md-3 col-lg-3 form-group">
+                        <div class="form-group has-feedback" id="lang-container">
+                            <div id="pickLang">
+                                <label class="label-left" for="idioms">Elija idioma: (al menos uno)*</label>
+                                
+                            </div>
+                            <span class="glyphicon form-control-feedback"></span>
+                            <div class="form-group has-feedback">
+
+                                {% for item in vlanguages %}
+                                    <input type="checkbox" name="idioma" value="{{ item.code }}" id="{{ item.code }}" class="chkbx"> {{ item.name }}<br>
+                                {% endfor %}
+                            </div>
+                            
+                        </div>
+                    </div>
+                </div>
+            
+            <!-- LANGUAGE modules -->
+            {% for item in vlanguages %}
+            <div class="row form-row hid" id="Module_{{item.code}}">
+                <div class="col-xs-12 col-md-12 col-lg-12 form-group">
+                    <h2>{{item.name}}</h2>
+                       <div class="col-xs-12 col-md-12 col-lg-12 form-group inlang">
+                           <div class="form-group has-feedback">
+                            <div class="helpright"><span class="glyphicon glyphicon-question-sign" data-toggle="tooltip"
+                                                         title="La descripción para los thumbnails mostrará los primeros 50 caracteres. Al ingresar en la Slider se verá completa."></span></div>
+                            <label class="label-left" for="short_desc_{{item.code}}">Descripción corta: *</label>
+                           <textarea class="form-control" name="short_desc_{{item.code}}" id="short_desc_{{item.code}}"></textarea>
+                           <span class="glyphicon form-control-feedback"></span>
+                           </div>
+                       </div>
+                       
+                       <div class="col-xs-12 col-md-12 col-lg-12 form-group inlang">
+                           <div class="form-group has-feedback">
+                            <label class="label-left" for="nacionalidad_{{item.code}}">Nacionalidad:</label>
+                            <input type="text" class="form-control" name="nacionalidad_{{item.code}}" id="nacionalidad_{{item.code}}">
+                            <span class="glyphicon form-control-feedback"></span>
+                           </div>
+                       </div>
+                        
+                </div>
+            </div>
+            {% endfor %}
+
+            
+            <!-- Last Row : Buttons -->
+            <div class="row form-row">
+               <div class="col-xs-4 col-md-4 col-lg-4">
+                </div>
+                <div class="col-xs-4 col-md-4 col-lg-4">      
+                    <button class="btn btn-primary btn-block form-control" type="submit" id="sendBut">Grabar Slider</button>
+                </div>
+                <div class="col-xs-4 col-md-4 col-lg-4">
+                </div>
+            </div>
+            </form>
+        
+        </div>
+
+{% endblock content %}

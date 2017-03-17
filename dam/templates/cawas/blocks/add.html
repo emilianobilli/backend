@@ -125,6 +125,7 @@
                             <div class="helpright"><span class="glyphicon glyphicon-question-sign" data-toggle="tooltip" title="Selecciona el idioma. Cada bloque debe darse de alta en su idioma aunque sea exactamente igual"></span></div>
 
                             <select type="text" class="form-control" name="canal" id="idiomaSelect">
+
                                 {% for item in vlanguages %}
                                      <option value="{{item.code}}">{{ item.name}}</option>
                                 {% endfor %}
@@ -143,6 +144,7 @@
 
                             <!-- ------------------Reemplazar por listado de canales ----------------- -->
                             <select type="text" class="form-control" name="canal" id="canalSelect">
+                                 <option value=""></option>
                                 {% for item in vchannels %}
                                      <option value="{{item.id}}">{{item.name}}</option>
                                 {% endfor %}
@@ -198,7 +200,7 @@
                         <!-- ------------------Reemplazar por listado de pornstars ----------------- -->
                         <ul class="form-control assetPick" id="pornstarPick">
                         {% for item in vgirls %}
-                                 <li value="{{item.asset_id}}">{{ item.name }}</li>
+                                 <li value="{{item.asset.asset_id}}">{{ item.name }}</li>
                         {% endfor %}
                         </ul>
                         <!------------------------ Fin de  listado de pornstars --------------------->
@@ -210,7 +212,7 @@
 
                         <ul class="form-control assetPick" id="MoviePick">
                            {% for item in vmovies %}
-                                 <li value="{{item.asset_id}}" id="{{item.asset.asset_id}}">{{ item.original_title }}</li>
+                                 <li value="{{item.asset.asset_id}}" id="{{item.asset.asset_id}}">{{ item.original_title }}</li>
                            {% endfor %}
                         </ul>
 
@@ -224,7 +226,7 @@
 
                         <ul class="form-control assetPick" id="SeriePick">
                            {% for item in vseries %}
-                                 <li value="{{item.asset_id}}" id="{{item.asset.asset_id}}">{{ item.original_title }}</li>
+                                 <li value="{{item.asset.asset_id}}" id="{{item.asset.asset_id}}">{{ item.original_title }}</li>
                            {% endfor %}
                         </ul>
 
@@ -237,7 +239,7 @@
                             <!--------------------Reemplazar por listado de capítulos ------------------->
                             <ul class="form-control assetPick" id="EpisodePick">
                                 {% for item in vcapitulos %}
-                                     <li value="{{item.asset_id}}"  tag="{{item.asset.asset_id}}">{{ item.original_title }}</li>
+                                     <li value="{{item.asset.asset_id}}"  tag="{{item.asset.asset_id}}">{{ item.original_title }}</li>
                                 {% endfor %}
                             </ul>
                             <!-- ---------------------- Fin de  listado de capítulos ------------------- -->
