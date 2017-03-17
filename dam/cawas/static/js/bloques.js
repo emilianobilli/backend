@@ -206,11 +206,8 @@ $( document ).ready(function() {
             asset_selected = [];
             $('#assetDrop li').each(function(){
 
-               //asset_selected+= $(this).val();
-
-               //asset =  $(this).attr("tag");
                var asset_id_aux = $(this).attr("value"); //val();
-               window.alert(asset_id_aux);
+
                if (asset_id_aux != null){
                    asset_selected.push(asset_id_aux);
                }

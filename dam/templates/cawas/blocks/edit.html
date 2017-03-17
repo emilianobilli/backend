@@ -171,9 +171,8 @@
 
                         <ul class="form-control assetPick" id="pornstarPick">
                          {% for item in vgirlnotselect %}
-                                 <li value="{{item.asset_id}}">{{ item.name }}</li>
+                                 <li value="{{item.asset.asset_id}}">{{ item.name }}</li>
                          {% endfor %}
-
                         </ul>
 
                         <!-- ---------------------- Fin de  listado de pornstars ------------------- -->
@@ -182,7 +181,7 @@
                             <label class="label-left" for="MoviePick">Movies: </label>
                             <ul class="form-control assetPick" id="MoviePick">
                                 {% for item in vmovienotselect %}
-                                     <li value="{{item.asset_id}}" id="{{item.asset.asset_id}}">{{ item.original_title }}</li>
+                                     <li value="{{item.asset.asset_id}}" id="{{item.asset.asset_id}}">{{ item.original_title }}</li>
                                {% endfor %}
                             </ul>
 
@@ -192,11 +191,9 @@
                             <label class="label-left" for="SeriePick">Series: </label>
                             <ul class="form-control assetPick" id="SeriePick">
                             {% for item in vserienotselect %}
-                                 <li value="{{item.asset_id}}" id="{{item.asset.asset_id}}">{{ item.original_title }}</li>
+                                 <li value="{{item.asset.asset_id}}" id="{{item.asset.asset_id}}">{{ item.original_title }}</li>
                             {% endfor %}
                             </ul>
-
-
                         </div>
 
 
@@ -207,7 +204,7 @@
 
                         <ul class="form-control assetPick" id="SeriePick">
                            {% for item in vepisodenotselect %}
-                                 <li value="{{item.asset_id}}"  tag="{{item.asset.asset_id}}">{{ item.original_title }}</li>
+                                 <li value="{{item.asset.asset_id}}"  tag="{{item.asset.asset_id}}">{{ item.original_title }}</li>
                             {% endfor %}
                         </ul>
 
@@ -225,16 +222,16 @@
                             <label for="assetDrop">Arrastrar hasta aquí para agregar *</label>
                             <ul class="form-control assetPick" id="assetDrop" name="assetDrop">
                                  {% for item in vmovieselect %}
-                                     <li value="{{item.asset_id}}"  tag="{{item.asset.asset_id}}">{{ item.original_title }}</li>
+                                     <li value="{{item.asset.asset_id}}"  tag="{{item.asset.asset_id}}">{{ item.original_title }}</li>
                                  {% endfor %}
                                  {% for item in vserieselect %}
-                                     <li value="{{item.asset_id}}"  tag="{{item.asset.asset_id}}">{{ item.original_title }}</li>
+                                     <li value="{{item.asset.asset_id}}"  tag="{{item.asset.asset_id}}">{{ item.original_title }}</li>
                                  {% endfor %}
                                  {% for item in vgirlselect %}
-                                     <li value="{{item.asset_id}}"  tag="{{item.asset.asset_id}}">{{ item.name }}</li>
+                                     <li value="{{item.asset.asset_id}}"  tag="{{item.asset.asset_id}}">{{ item.name }}</li>
                                  {% endfor %}
                                  {% for item in vepisodeselect %}
-                                     <li value="{{item.asset_id}}"  tag="{{item.asset.asset_id}}">{{ item.original_title }}</li>
+                                     <li value="{{item.asset.asset_id}}"  tag="{{item.asset.asset_id}}">{{ item.original_title }}</li>
                                  {% endfor %}
                             </ul>
                             <span class="glyphicon form-control-feedback"></span>

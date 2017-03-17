@@ -1457,22 +1457,46 @@ def edit_blocks_view(request, block_id):
         except Block.DoesNotExist as e:
             return render(request, 'cawas/error.html', {"message": "No existe Bloque1. (" + e.message + ")"})
 
-        # CARGAR ASSETS
-        vassets = decjson['Block']['assets']
 
+
+        # CARGAR NUEVOS ASSETS SELECCIONADOS
+        assetall = []
+
+        vassets = decjson['Block']['assets']
+        for itemactual in vassets:
+            if itemactual['asset_id'] not in assetall:
+                assetall.append(itemactual['asset_id'])
+
+        for itemactual in vblock.assets.all():
+            if itemactual.asset_id not in assetall:
+                assetall.append(itemactual.asset_id)
+
+        #Bloque en Cawas
+        vblock.assets.clear()
         for item in vassets:
             try:
-                # print item['asset_id']
-                asset_id = item['asset_id']
-                vasset = Asset.objects.get(pk=asset_id)
-
-                vblock.assets.add(vasset)
-                func_publish_queue(asset_id, vblock.language, 'AS', 'Q', vblock.publish_date)
+                 asset_id = item['asset_id']
+                 vasset = Asset.objects.get(asset_id=asset_id)
+                 vblock.assets.add(vasset)
             except Asset.DoesNotExist as e:
                 return render(request, 'cawas/error.html', {"message": "No existe Asset. (" + e.message + ")"})
-        # Publica en PublishQueue
         vblock.save()
-        func_publish_queue(vblock.block_id, vblock.language, 'BK', 'Q', vblock.publish_date)
+
+        #Publicacion
+        for item in assetall:
+            try:
+                #asset_id = item['asset_id']
+                #vasset = Asset.objects.get(asset_id=item)
+                #vblock.assets.add(vasset)
+                func_publish_queue(item, vblock.language, 'AS', 'Q', vblock.publish_date)
+            except Asset.DoesNotExist as e:
+                return render(request, 'cawas/error.html', {"message": "No existe Asset. (" + e.message + ")"})
+
+
+
+        # Publica en PublishQueue
+
+        func_publish_queue(vblock.block_id, vblock.language, 'BL', 'Q', vblock.publish_date)
         vflag = "success"
         message = 'Bloque - Registrado Correctamente'
         # Fin datos Bloque
