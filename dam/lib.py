@@ -4,7 +4,14 @@ from django.core.exceptions import *
 os.environ.setdefault("DJANGO_SETTINGS_MODULE", "dam.settings")
 django.setup()
 from cawas.models import *
-from datetime import datetime
+
+from django.utils import timezone
+
+import json
+import datetime
+
+from urlparse import urlparse
+import httplib2
 
 
 class SerializerException(Exception):
@@ -296,20 +303,6 @@ def girl_serializer(asset, lang):
 ######################### MISC ######################################
 
 
-import django
-import os
-os.environ.setdefault("DJANGO_SETTINGS_MODULE", "dam.settings")
-django.setup()
-from django.core.exceptions import *
-from cawas.models import *
-from django.utils import timezone
-
-
-import json
-import datetime
-
-from urlparse import urlparse
-import httplib2
 
 
 class EnqueuerException(Exception):
@@ -351,7 +344,7 @@ def check_thumbnail(asset_id):
         return False
 
 
-def chech_subtitle(asset_id, lang):
+def check_subtitle(asset_id, lang):
     method = 'GET'
     body = ''
     url = "http://videoauth.zolechamedia.net/subtitle/%s/%s/vtt/check" % (asset_id, lang)
@@ -781,7 +774,7 @@ def __update_episode_metadata(data, metadata, lang):
     metadata.title = data["title"]
     metadata.summary_short = data["summary_short"].replace("<p>", "").replace("</p>", "").rstrip()
     metadata.summary_long = data["summary_long"].replace("<p>", "").replace("</p>", "").rstrip()
-    #metadata.subtitle = chech_subtitle(metadata.episode.asset.asset_id, lang.code)
+    #metadata.subtitle = check_subtitle(metadata.episode.asset.asset_id, lang.code)
     metadata.save()
 
     return metadata
@@ -916,7 +909,7 @@ def __update_movie_metadata(data, metadata, lang):
     metadata.title = data["title"]
     metadata.summary_short = data["summary_short"].replace("<p>", "").replace("</p>", "").rstrip()
     metadata.summary_long = data["summary_long"].replace("<p>", "").replace("</p>", "").rstrip()
-    #metadata.subtitle = chech_subtitle(metadata.movie.asset.asset_id, lang.code)
+    #metadata.subtitle = check_subtitle(metadata.movie.asset.asset_id, lang.code)
     metadata.save()
 
     return metadata

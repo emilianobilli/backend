@@ -177,34 +177,6 @@ $( document ).ready(function() {
 
 
         
-        // chequea birthDate
-        if(birth_date=="" || birth_date==" ")
-        {
-            errorMe("#birthDate");
-            checkVal++;
-        }else{
-            okMe("#birthDate");
-        }
-        
-        // chequea girl_height
-        if(girl_height=="" || girl_height==" ")
-        {
-            errorMe("#height");
-            checkVal++;
-        }else{
-            okMe("#height");
-        }
-        
-        // chequea girl_weight
-        if(girl_weight=="" || girl_weight==" ")
-        {
-            errorMe("#weight");
-            checkVal++;
-        }else{
-            okMe("#weight");
-        }
-        
-        
         // chequea categoria
         console.log("#category"+$('#category').val());
         if ( $('#category').val()=="0" || $('#category').val()==0)
@@ -303,12 +275,7 @@ $( document ).ready(function() {
                     var lang=arr[i];
                     /* check nacionalidad */
                     var titCont = $("#nacionalidad_"+lang).val();
-                    if(titCont==""){
-                        errorMe("#nacionalidad_"+lang);
-                        checkVal++;
-                    }else{
-                        okMe("#nacionalidad_"+lang);
-                    }
+
                     /* check desc */
                     var descCont = $("#short_desc_"+lang).val().trim();
                     if(descCont.length < 1){
@@ -350,9 +317,22 @@ $( document ).ready(function() {
                     myJSON+='"asset_id":"'+edit_asset_id+'",';
                     myJSON+='"type_girl":"'+category_selected+'",';
                     myJSON+='"name":"'+original_name+'",';
-                    myJSON+='"birth_date":"'+birth_date+'",';
-                    myJSON+='"height":'+girl_height+',';
-                    myJSON+='"weight":"'+girl_weight+'",';
+                    if (birth_date==''){
+                        myJSON+='"birth_date":null,';
+                       }else{
+                        myJSON+='"birth_date":"'+birth_date+'",';
+                    }
+                    if (girl_height==''){
+                        myJSON+='"height":null,';
+                       }else{
+                        myJSON+='"height":"'+girl_height+'",';
+                    }
+
+                    if (girl_weight==''){
+                        myJSON+='"weight":null,';
+                       }else{
+                        myJSON+='"weight":"'+girl_weight+'",';
+                    }
                     myJSON+='"Girlmetadatas": [';
                     myJSON+= addGirlMetadata(langDesc);
                     myJSON+=']}}';

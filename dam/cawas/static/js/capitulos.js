@@ -1,31 +1,7 @@
-
 $( document ).ready(function() {
-
- // rellena el formulario con los datos recogidos en la variable requestedData
-    function completarRuntime(){
-
-        //runtime
-
-        $("#duration-minutes").val(minutos).change();
-        $("#duration-seconds").val(segundos).change();
-    }
-     function leerRuntime(){
-
-            var estreno = ($("#runtime").val());
-            var estrenoArr = estreno.split(":");
-            //var estreno2 = Number(estrenoArr[0]+":,"+estrenoArr[1]);
-            //runtime
-            minutos = Number(estrenoArr[0]);
-            segundos = Number(estrenoArr[1]);
-
-        }
-
+    
     console.log( "ready!" );
-    var asset_id = $("#asset_id").val();
-    if(asset_id != null){
-        changeVideo(asset_id, "#repro1");// Cambia el video de acuerdo al ID. la función está en la línea 135. Construye la url relativa del video con la variable path+ID+'.mp4'
-    };
-
+    
     if(resultado=="success"){
         $("#myModal-OK").modal();
     }
@@ -33,18 +9,7 @@ $( document ).ready(function() {
         $("#myModal-ERROR").modal();
     }
     
-     /* Funcion que cuenta la cantidad de idiomas selecionados, se utiliza al momento de validar la edicion de la movie */
-    var countChecked = function() {
-    langQ = $("input:checked" ).length;
-        $('input[type=checkbox]').each(function(){
-            if (this.checked) {
-                langDesc.push($(this).attr("id"));
-            }
-        });
-
-    };
-
-
+    
     
     var checkedOnce = 0; //chequea si el formulario se ha intentado enviar alguna vez
     var checkVal=0; //chequea la cantidad de errores en el formulario
@@ -56,86 +21,72 @@ $( document ).ready(function() {
     var clickedVal; // recoge el valor del ID seleccionado en la lista de movies;
     var clickedText; // recoge el nombre seleccionado en la lista de edición de movies;
     var clickedTextID; // recoge el ID nombre seleccionado en la lista de edición de movies;
-    var hora;
-    var minutos;
+    
     // activar los selects con filtro
-    $("#movie-select").select2({placeholder: "Despliega la lista"});
-    $("#movie-edit").select2({placeholder: "Despliega la lista"});
+    
+    $("#serie-edit").select2({placeholder: "Despliega la lista"});
+    var $mySerieSelect = $("#serie-id").select2();
     var $myVerifSelect = $("#canalSelect").select2();
-
+    var $myVerifEpisodeSelect = $("#episode-select").select2();
+    
+    // simular exit con el botón de salir
+    $("#getOut").click(function(){
+           window.location.href = "/logout/";
+    })
+    
     // activar timepicker
-    leerRuntime();
-
-
     $("#runtime").durationPicker({
+      /*hours: {
+        label: "h",
+        min: 0,
+        max: 24
+      },*/
       minutes: {
         label: ":",
         min: 0,
-        max: 120,
-        value:1
+        max: 120
       },
       seconds: {
         label: "",
         min: 0,
-        max: 59,
-        value:20
+        max: 59
       },
       classname: 'form-control',
       responsive: true
     });
-    completarRuntime();
 
-    // simular exit con el botón de salir
-    $("#getOut").click(function(){
-           window.location.href = "/logout";
-    })
-    
-    
-    
-    // Toma el ID de la movie seleccionada en la lista
-    $( "#movie-select" ).change(function() {
-        
-        $( "#movie-select option:selected" ).each(function() {
-          clickedVal= $(this).val();
-            if(clickedVal!="")
-            {
-                console.log( "clickedVal="+clickedVal ); // debug
-                $( "#movieID" ).val(clickedVal);// Agrega el ID en el input field
-                changeVideo(clickedVal, "#repro1");// Cambia el video de acuerdo al ID. la función está en la línea 135. Construye la url relativa del video con la variable path+ID+'.mp4'
-                
-            }
-        });
-        
+    /*---- DATE PICKER ----*/
+    $('.datePick').dcalendarpicker({
+     // default: mm/dd/yyyy
+
+      format: 'dd-mm-yyyy'
+
     });
-    
-    // Toma el nombre de la movie seleccionada en la lista
-    $( "#movie-edit" ).change(function() {
         
-        $( "#movie-edit option:selected" ).each(function() {
+    // Toma el nombre de la movie seleccionada en la lista
+    $( "#serie-edit" ).change(function() {
+        
+        $( "#serie-edit option:selected" ).each(function() {
             clickedText = $(this).html();
             clickedTextID = $(this).val();
             if(clickedText!="")
             {
-                $( "#movieName" ).val(clickedText);// Agrega el ID en el input field
+                $( "#serieName" ).val(clickedText);// Agrega el ID en el input field
+                               
             }
         });
         
     });
     
-    // simular exit con el botó de salir
+    // simular exit con el botón de salir
     $("#EDBtn").click(function(){
-        if (clickedTextID != null){
-               window.location.href = "/movies/edit/"+clickedTextID;
-        }
+           window.location.href = "capitulos-edit.html?ID="+clickedTextID;
     })
     
     // interacción del usuario al hacer click en el botón debajo de la lista de selección
     $( "#IDBtn" ).click(function(){ 
-        if (clickedVal != null){
-            $( "#idTit" ).html("AGREGANDO ID: "+clickedVal);// Agrega el ID en el título
-            $( "#hidden1" ).show();
-        }
-
+        $( "#idTit" ).html("AGREGANDO ID: "+clickedVal);// Agrega el ID en el título
+        $( "#hidden1" ).show();
     })
     
     //preview de imagenes cargadas por el front end
@@ -223,10 +174,13 @@ $( document ).ready(function() {
     });
     
     
-    /*---- DATE PICKER ----*/
+    /*---- DATE PICKER 
     $('.datePick').dcalendarpicker({
+     // default: mm/dd/yyyy
+
       format: 'dd-mm-yyyy'
-    });
+
+    });----*/
 
     
     
@@ -252,9 +206,25 @@ $( document ).ready(function() {
             checkAll();
         }
     });
-    
+
+    // Toma el ID de la movie seleccionada en la lista
+    $( "#episode-select" ).change(function() {
+
+        $( "#episode-select option:selected" ).each(function() {
+          clickedVal= $(this).val();
+            if(clickedVal!="")
+            {
+                console.log( "clickedVal="+clickedVal ); // debug
+                $( "#episodeID" ).val(clickedVal);// Agrega el ID en el input field
+                changeVideo(clickedVal, "#repro1");// Cambia el video de acuerdo al ID. la función está en la línea 135. Construye la url relativa del video con la variable path+ID+'.mp4'
+
+            }
+        });
+
+    });
+
 //----------------> Helper functions
-    
+
     function changeVideo(src, divId){// para cambiar lo que reproduce el player de acuerdo al ID de la lista.
         path="http://cdnlevel3.zolechamedia.net/" + src + "/mp4/350/" + src +".mp4";
         var video = $(divId+' video')[0];
@@ -307,16 +277,19 @@ $( document ).ready(function() {
         // this function checks for all form values and makes json string to post or alerts user to complete fields.
         console.log("checking form...");
         checkVal = 0;
-        var asset_Id = $('#movieID').val();
+        var asset_Id = $('#episodeID').val();
         var original_Title = $('#orginalTitle').val();
-        var canal_selected = $('#canalSelect option:selected');
+        var serie_selected; 
+        var chapter_selected = $('#chapter').val();
+        var season_selected = $('#season').val();
+        var canal_selected; $('#canalSelect option:selected');
         var pornstars_selected = [];
         var categories_selected = [];
         var director_selected = $('#director').val();
         var elenco_selected = $('#elenco').val();
         var display_runtime = $('#runtime').val();
-        var year_selected = $('#releaseYear').val();
-        countChecked();
+        var year_selected = $('#releaseYear').val().toString();
+        
         // chequea original Title
         if(original_Title=="" || original_Title==" ")
         {
@@ -325,9 +298,59 @@ $( document ).ready(function() {
         }else{
             okMe("#orginalTitle");
         }
+        
+        // chequea serie
+        console.log("#serie-id:"+$('#serie-id').val());
+        if ( $('#serie-id').val()=="0" || $('#serie-id').val()==0)
+        {
+            errorMe("#serie-id");
+            //$(".select2-selection--single").css("border","1px #a94442 solid");
+            checkVal++;
+        }else{
+            
+           
+            okMe("#serie-id");
+            
+            //$(".select2-selection--single").css("border","1px #3c763d solid");
+            serie_selected=$('#serie-id').val();
+        }
+        
+        //chequea número capíitulo
+        if(chapter_selected=="" || chapter_selected==" ")
+        {
+            errorMe("#chapter");
+            checkVal++;
+        }else{
+            okMe("#chapter");
+        }
+        
+        //chequea temporada
+        if(season_selected=="" || season_selected==" ")
+        {
+            errorMe("#season");
+            checkVal++;
+        }else{
+            okMe("#season");
+        }
+        
+         // chequea display runtime
+        if(display_runtime=="" || display_runtime=="0:,0")
+        {
+            errorMe("#runtime");
+            $(".durationpicker-container").css("border","1px #a94442 solid");
+            checkVal++;
+        }else{
+            console.log("display:runtime"+display_runtime);
+            $(".durationpicker-container").css("border","1px #3c763d solid");
+            var myStrRuntime = display_runtime;
+            var myDirtyRuntime = myStrRuntime.split(",");
+            display_runtimeJSON=myDirtyRuntime[0]+myDirtyRuntime[1];
+            okMe("#runtime");
+        }
+        
+        
         // chequea thumbnail horizaontal
-        if(!$('#ThumbHor').val() && !$('#imgantportrait').val()){
-
+        if(!$('#ThumbHor').val()){
             errorMe("#ThumbHor");
             checkVal++;
         }else{
@@ -335,7 +358,7 @@ $( document ).ready(function() {
         }
         
         // chequea thumbnail vertical
-        if(!$('#ThumbVer').val() && !$('#imgantlandscape').val()){
+        if(!$('#ThumbVer').val()){
             errorMe("#ThumbVer");
             checkVal++;
         }else{
@@ -343,8 +366,11 @@ $( document ).ready(function() {
         }
         
         // chequea pornstar
-        if ( $('#pornstarDrop li').length > 0 )
+        if ( $('#pornstarDrop li').length < 1 )
         {
+            errorMe("#pornstarDrop");
+            checkVal++;
+        }else{
             okMe("#pornstarDrop");
             pornstars_selected = [];
             $('#pornstarDrop li').each(function(){
@@ -368,66 +394,60 @@ $( document ).ready(function() {
         }
         
         // chequea canal
+
+        //NO OBLIGATORIO
         console.log("#canalSelect"+$('#canalSelect').val());
         if ( $('#canalSelect').val()=="0" || $('#canalSelect').val()==0)
         {
-            errorMe("#canalSelect");
-            $(".select2-selection--single").css("border","1px #a94442 solid");
-            checkVal++;
+            //errorMe("#canalSelect");
+            okMe("#canalSelect");
+            canal_selected = null;
+            //canal_selected=$('#canalSelect').val();
+           // checkVal++;
         }else{
             okMe("#canalSelect");
-             $(".select2-selection--single").css("border","1px #3c763d solid");
+
             canal_selected=$('#canalSelect').val();
         }
-        /*
+
         // chequea director
+        //NO OBLIGATORIO
         if(director_selected=="" || director_selected==" ")
         {
-            errorMe("#director");
-            checkVal++;
+            director_selected = " ";
+            //errorMe("#director");
+            okMe("#director");
+            //checkVal++;
         }else{
             okMe("#director");
         }
 
         // chequea año de estreno
+        //NO OBLIGATORIO
         if(year_selected=="" || year_selected==" ")
         {
-            errorMe("#releaseYear");
-            checkVal++;
+            year_selected = "";
+            //errorMe("#releaseYear");
+             okMe("#releaseYear");
+            //checkVal++;
         }else{
             okMe("#releaseYear");
         }
-        */
 
         
-         // chequea display runtime
-
-
-        if(display_runtime=="" || display_runtime=="0:,0")
-        {
-            errorMe("#runtime");
-            $(".durationpicker-container").css("border","1px #a94442 solid");
-            checkVal++;
-        }else{
-            console.log("display:runtime"+display_runtime);
-            $(".durationpicker-container").css("border","1px #3c763d solid");
-            var myStrRuntime = display_runtime;
-            var myDirtyRuntime = myStrRuntime.split(",");
-            display_runtimeJSON=myDirtyRuntime[0]+myDirtyRuntime[1];
-            okMe("#runtime");
-        }
-
-        /*
+        
         // chequea elenco
+        //NO OBLIGATORIO
         if(elenco_selected=="" || elenco_selected==" ")
         {
-            errorMe("#elenco");
-            checkVal++;
+            //errorMe("#elenco");
+            elenco_selected = " ";
+            okMe("#elenco");
+            //checkVal++;
         }else{
             okMe("#elenco");
         }
-        */
-        
+
         // chequeo de idiomas (tit_; desc_; date_)
         if(langQ==0){
             errorMe("#pickLang");
@@ -461,6 +481,8 @@ $( document ).ready(function() {
         
         
         // helper subfunctions
+        
+        
             function errorMe(theField){
                 if ($(theField).parent().hasClass('has-success')){
                     $(theField).parent().removeClass('has-success');
@@ -471,15 +493,35 @@ $( document ).ready(function() {
                 }
                 $(theField).parent().addClass('has-error');
                 $(theField).next(".glyphicon").addClass('glyphicon-remove');
+                
+                if(theField=="#serie-id"){
+                    
+                    $('#SeriePick').find('span.select2-selection--single').removeClass("has-successSelect2");
+                    $('#SeriePick').find('span.select2-selection--single').addClass("has-errorSelect2");
+                }
+                
                 if(theField=="#canalSelect"){
-                    console.log("canalSelect selected");
-                    $("#channelSelect").children(".select2-selection--single").css("display","none");
-                        //.css("border","1px #ff0000 solid!important");
+                    
+                    $('#channelSelect').find('span.select2-selection--single').removeClass("has-successSelect2");
+                    $('#channelSelect').find('span.select2-selection--single').addClass("has-errorSelect2");
                 }
                 
             }
         
             function okMe(theField){
+                if(theField=="#serie-id"){
+                    
+                    $('#SeriePick').find('span.select2-selection--single').addClass("has-successSelect2");
+                    $('#SeriePick').find('span.select2-selection--single').removeClass("has-errorSelect2");
+                 
+                }
+                
+                if(theField=="#canalSelect"){
+                    
+                    $('#channelSelect').find('span.select2-selection--single').addClass("has-successSelect2");
+                    $('#channelSelect').find('span.select2-selection--single').removeClass("has-errorSelect2");
+                 
+                }
                 if ($(theField).parent().hasClass('has-error')){
                     $(theField).parent().removeClass('has-error');
                 }
@@ -507,9 +549,6 @@ $( document ).ready(function() {
         
             function checkLangs(arr){ // itera sobre los lenguajes seleccionados buscando errores
                 var lngth = arr.length;
-                var lenguajescargados = 0;
-
-                var lengactualok = 1;
                 for(i=0; i<lngth; i++){
                     var lang=arr[i];
                     /* check title */
@@ -517,47 +556,27 @@ $( document ).ready(function() {
                     if(titCont==""){
                         errorMe("#tit_"+lang);
                         checkVal++;
-                        lengactualok = 0;
                     }else{
                         okMe("#tit_"+lang);
-
                     }
                     /* check desc */
                     var descCont = $("#short_desc_"+lang).val().trim();
                     if(descCont.length < 1){
                         errorMe("#short_desc_"+lang);
                         checkVal++;
-                        lengactualok = 0;
                     }else{
                         okMe("#short_desc_"+lang);
                     }
-                    /* check date
-                    var dateCont = $("#date_"+lang).val();
-                    if(dateCont==""){
-                        errorMe("#date_"+lang);
-                        checkVal++;
-                        lengactualok = 0;
-                    }else{
-                        okMe("#date_"+lang);
-                    }
-                    */
-
-                    if (lengactualok == 1){
-                        lenguajescargados = lenguajescargados + 1 ;
-                    }
-
-
-                    if (lenguajescargados > 0 && lengactualok > 1){
-                        checkVal = 0;
-                    }
-
+                    
                 }
             }
-        
-            function addMovieMetadata(arr){
+
+
+
+            function addMetadata(arr){
                 var lngth = arr.length;
                 var myLangs = "";
-                
+
                 for(i=0; i<lngth; i++){
                     var lang=arr[i];
 
@@ -565,7 +584,7 @@ $( document ).ready(function() {
                     var short = $("#short_desc_"+lang).val().trim().substring(0,50)+"...";
                     var long = $("#short_desc_"+lang).val().trim();
                     var fechapub = $("#date_"+lang).val().trim();
-                    myLangs += '{"Moviemetadata":';
+                    myLangs += '{"Episodemetadata":';
                     myLangs += '{"language": "'+lang+'",';
                     myLangs += '"title": "'+tit+'",';
                     myLangs += '"summary_short": "'+short+'",';
@@ -585,21 +604,17 @@ $( document ).ready(function() {
                     var myGirls=explodeArray(pornstars_selected,"girl_id");
                     var myCategories=explodeArray(categories_selected,"category_id");
                     var myJSON = '';
-                    myJSON+='{"Movie":{';
+                    myJSON+='{"Episode":{';
                     myJSON+='"asset_id":"'+asset_Id+'",';
                     myJSON+='"original_title":"'+original_Title+'",';
-                    myJSON+='"channel_id":"'+canal_selected+'",';
+                    myJSON+='"channel_id":'+canal_selected+',';
+                    myJSON+='"girls":'+myGirls+',';
 
+                    //OPCIONALES
                     if (year_selected==''){
                         myJSON+='"year":null,';
                        }else{
                         myJSON+='"year":"'+year_selected+'",';
-                    }
-
-                    if (myGirls=="[]"){
-                        myJSON+='"girls":null,';
-                    }else{
-                        myJSON+='"girls":'+myGirls+',';
                     }
 
                     if (elenco_selected==''){
@@ -615,13 +630,17 @@ $( document ).ready(function() {
                     }
 
                     myJSON+='"display_runtime": "'+display_runtimeJSON+'",';
+                    myJSON+='"serie_id": "'+serie_selected+'",';   
+                    myJSON+='"chapter": "'+chapter_selected+'",';   
+                    myJSON+='"season": "'+season_selected+'",';   
                     myJSON+='"categories":'+myCategories+',';
-                    myJSON+='"Moviesmetadata": [';
-                    myJSON+= addMovieMetadata(langDesc);
+                    myJSON+='"Episodesmetadata": [';
+                    myJSON+= addMetadata(langDesc);
                     myJSON+=']}}';
+                    myJSON+='}}';
                     console.log(myJSON);
                     $("#varsToJSON").val(myJSON);
-                    $("#movieForm").submit();
+                    $("#serieForm").submit();
                   }  
             }
         

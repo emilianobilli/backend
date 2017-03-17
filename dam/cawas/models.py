@@ -7,7 +7,7 @@ from django.core.exceptions import *
 # Create your models here.
 import json
 import os
-
+from datetime import datetime
 
 class Setting(models.Model):
     code             = models.CharField(max_length=32, help_text="Codigo del parametro")
@@ -16,6 +16,10 @@ class Setting(models.Model):
 
     def __unicode__(self):
         return self.code
+
+
+class Prueba(models.Model):
+    name = models.CharField(max_length=32, help_text="Nombre del tipo de dipositivo")
 
 
 class Device(models.Model):
@@ -224,6 +228,7 @@ class Asset(models.Model):
                 elif self.asset_type == "serie":
                     self.asset_id = "S%s" % id
 
+
                 super(Asset, self).save(*args, **kwargs)
 
     def __unicode__(self):
@@ -357,7 +362,7 @@ class Girl(models.Model):
     name              = models.CharField(max_length=128, unique=True, help_text="Nombre de la actriz")
     type              = models.CharField(max_length=20, choices=TYPE, help_text="Tipo de actriz")
     image             = models.ForeignKey(Image, blank=True, null=True)
-    birth_date        = models.DateField(blank=True, null=True, help_text="Fecha de nacimiento")
+    birth_date        = models.DateField(blank=True, null=True,   help_text="Fecha de nacimiento")
     height            = models.IntegerField(blank=True, null=True, help_text="Altura en cm")
     weight            = models.IntegerField(blank=True, null=True, help_text="Peso en KG")
 
@@ -606,7 +611,7 @@ class Movie(models.Model):
     asset           = models.ForeignKey(Asset)
     original_title  = models.CharField(max_length=128, help_text="Titulo original")
     channel         = models.ForeignKey(Channel)
-    year            = models.IntegerField(default=2000, help_text="Fecha de produccion")
+    year            = models.IntegerField(default=2000, help_text="Fecha de produccion",blank=True, null=True)
     girls           = models.ManyToManyField(Girl)
     cast            = models.CharField(max_length=1024, blank=True, help_text="Listado de actores separados por coma")
     directors       = models.CharField(max_length=1024, blank=True, help_text="Listado de directores separados por coma")
