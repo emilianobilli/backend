@@ -693,7 +693,7 @@ class Block(models.Model):
         dict["block_id"]      = self.block_id
         dict["block_name"]    = self.name
         dict["lang"]          = self.language.code
-        dict["target_device"] = self.target_device.name
+        dict["target"] = self.target_device.name
         if self.channel is not None:
             dict["channel"] = self.channel.name
 
