@@ -255,13 +255,13 @@ def publish_items():
                 ep = ApiBackendResource(endpoint, URLs[str(job.item_type)])
                 try:
                     print item
-                    item[0]['publish_date'] = timezone.now().strftime('%s')
+                    if not obj.publish_status:
+                        item[0]['publish_date'] = timezone.now().strftime('%s')
+                        obj.publish_date = timezone.now()
+                        obj.publish_status = True
                     ep.add(item[0])
                     job.status = 'D'
                     job.save()
-                    if not obj.publish_status:
-                        obj.publish_date = timezone.now()
-                    obj.publish_status = True
                     obj.save()
                 except ApiBackendException as err:
                     job.status = 'E'
