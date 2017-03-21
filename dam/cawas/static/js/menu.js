@@ -50,6 +50,8 @@ $( document ).ready(function() {
                         break;
                      case "6":
                         urlstring = "/episodes/add/";
+                     case "7":
+                        urlstring = "/sliders/add/";
                         break;
                 }
                 console.log( "clickedVal="+clickedVal );

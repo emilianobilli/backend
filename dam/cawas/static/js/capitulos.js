@@ -1,14 +1,41 @@
 $( document ).ready(function() {
     
     console.log( "ready!" );
-    
+    var minutos = 0 ;
+    var segundos = 0 ;
+
     if(resultado=="success"){
         $("#myModal-OK").modal();
     }
     if(resultado=="error"){
         $("#myModal-ERROR").modal();
     }
-    
+
+    function completarRuntime(){
+        $("#duration-minutes").val(minutos).change();
+        $("#duration-seconds").val(segundos).change();
+    }
+
+    function leerRuntime(){
+            var estreno = ($("#runtime").val());
+            var estrenoArr = estreno.split(":");
+            minutos = Number(estrenoArr[0]);
+            segundos = Number(estrenoArr[1]);
+
+    }
+
+    /* Funcion que cuenta la cantidad de idiomas selecionados, se utiliza al momento de validar la edicion de la movie */
+    var countChecked = function() {
+    langQ = $("input:checked" ).length;
+        $('input[type=checkbox]').each(function(){
+            if (this.checked) {
+                langDesc.push($(this).attr("id"));
+            }
+        });
+
+    };
+
+
     
     
     var checkedOnce = 0; //chequea si el formulario se ha intentado enviar alguna vez
@@ -29,33 +56,36 @@ $( document ).ready(function() {
     var $myVerifSelect = $("#canalSelect").select2();
     var $myVerifEpisodeSelect = $("#episode-select").select2();
 
+    leerRuntime();
+    $("#runtime").durationPicker({
+      minutes: {
+        label: ":",
+        min: 0,
+        max: 120,
+        value:1
+      },
+      seconds: {
+        label: "",
+        min: 0,
+        max: 59,
+        value:20
+      },
+      classname: 'form-control',
+      responsive: true
+    });
+    completarRuntime();
+
+
+
     $("#episode-edit").select2();
     
     // simular exit con el botón de salir
     $("#getOut").click(function(){
            window.location.href = "/logout/";
     })
-    
-    // activar timepicker
-    $("#runtime").durationPicker({
-      /*hours: {
-        label: "h",
-        min: 0,
-        max: 24
-      },*/
-      minutes: {
-        label: ":",
-        min: 0,
-        max: 120
-      },
-      seconds: {
-        label: "",
-        min: 0,
-        max: 59
-      },
-      classname: 'form-control',
-      responsive: true
-    });
+
+
+
 
     /*---- DATE PICKER ----*/
     $('.datePick').dcalendarpicker({
@@ -311,7 +341,7 @@ $( document ).ready(function() {
         var elenco_selected = $('#elenco').val();
         var display_runtime = $('#runtime').val();
         var year_selected = $('#releaseYear').val().toString();
-        
+        countChecked();
         // chequea original Title
         if(original_Title=="" || original_Title==" ")
         {
@@ -372,7 +402,8 @@ $( document ).ready(function() {
         
         
         // chequea thumbnail horizaontal
-        if(!$('#ThumbHor').val()){
+
+        if(!$('#ThumbHor').val() && !$('#imgantlandscape').val()){
             errorMe("#ThumbHor");
             checkVal++;
         }else{
@@ -380,7 +411,7 @@ $( document ).ready(function() {
         }
         
         // chequea thumbnail vertical
-        if(!$('#ThumbVer').val()){
+        if(!$('#ThumbVer').val() && !$('#imgantportrait').attr("value")){
             errorMe("#ThumbVer");
             checkVal++;
         }else{
@@ -498,11 +529,7 @@ $( document ).ready(function() {
         }
         
         checkedOnce++;
-        
-                
-        
-        
-        // helper subfunctions
+
         
         
             function errorMe(theField){

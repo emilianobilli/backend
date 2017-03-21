@@ -31,13 +31,11 @@
                 <h3>Selecciona ID del video *</h3>
             </div>
             <div>
-                   <!-- ------------------Reemplazar por listado de movies ----------------- -->
                     <select id="movie-select" class="form-control" size="6">
                         {% for item in assets %}
                             <option value="{{ item.asset_id }}">ID {{ item.asset_id }} </option>
                         {% endfor %}
                     </select>
-                   <!-- ---------------------- Fin de  listado de movies ------------------- -->
             </div>
 
 
@@ -173,8 +171,6 @@
                              <li value="{{item.id}}">{{item.original_name}}</li>
                          {% endfor %}
                        </ul>
-
-                        <!-- ---------------------- Fin de  listado de géneros ------------------- -->
 
                     </div>
                     <div class="col-xs-4 col-md-4 col-lg-4 form-group categoryDrop" >

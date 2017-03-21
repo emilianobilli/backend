@@ -253,12 +253,11 @@ class Slider(models.Model):
         ("image", "Image"),
         ("video", "Video")
     )
-
     slider_id         = models.CharField(max_length=8, unique=True, help_text="ID del Slider")
     media_type        = models.CharField(max_length=10, choices=TYPE, help_text="Tipo de Slider")
     media_url         = models.CharField(max_length=256, help_text="Media url")
     asset             = models.ForeignKey(Asset, blank=True, null=True)
-    
+    target_device     = models.ForeignKey(Device)
 
     def save(self, *args, **kwargs):
         super(Slider, self).save(*args, **kwargs)

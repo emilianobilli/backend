@@ -1,25 +1,17 @@
 
 $( document ).ready(function() {
 
- // rellena el formulario con los datos recogidos en la variable requestedData
-    function completarRuntime(){
-        $("#duration-minutes").val(minutos).change();
-        $("#duration-seconds").val(segundos).change();
-    }
+     $("#slider-select").select2({placeholder: "Despliega la lista"});
+    $("#slider-edit").select2({placeholder: "Despliega la lista"});
 
-    function leerRuntime(){
-            var estreno = ($("#runtime").val());
-            var estrenoArr = estreno.split(":");
-            minutos = Number(estrenoArr[0]);
-            segundos = Number(estrenoArr[1]);
+  $('.datePick').dcalendarpicker({
+      format: 'dd-mm-yyyy'
+    });
 
-    }
-
+    /*
     console.log( "ready!" );
     var asset_id = $("#asset_id").val();
-    if(asset_id != null){
-        changeVideo(asset_id, "#repro1");// Cambia el video de acuerdo al ID. la función está en la línea 135. Construye la url relativa del video con la variable path+ID+'.mp4'
-    };
+
 
     if(resultado=="success"){
         $("#myModal-OK").modal();
@@ -28,7 +20,7 @@ $( document ).ready(function() {
         $("#myModal-ERROR").modal();
     }
     
-     /* Funcion que cuenta la cantidad de idiomas selecionados, se utiliza al momento de validar la edicion de la movie */
+
     var countChecked = function() {
     langQ = $("input:checked" ).length;
         $('input[type=checkbox]').each(function(){
@@ -48,37 +40,17 @@ $( document ).ready(function() {
     var display_runtimeJSON; //necesaria para armar el valor final que debe ir en el JSON
     var langQ = 0; //Cuenta la cantidad de idiomas elegidos por el usuario
     var langDesc = [] // recoge qué idiomas son los que se seleccionaron
-    var clickedVal; // recoge el valor del ID seleccionado en la lista de movies;
-    var clickedText; // recoge el nombre seleccionado en la lista de edición de movies;
-    var clickedTextID; // recoge el ID nombre seleccionado en la lista de edición de movies;
+    var clickedVal; // recoge el valor del ID seleccionado en la lista de sliders;
+    var clickedText; // recoge el nombre seleccionado en la lista de edición de sliders;
+    var clickedTextID; // recoge el ID nombre seleccionado en la lista de edición de sliders;
     var hora;
     var minutos;
     // activar los selects con filtro
-    $("#movie-select").select2({placeholder: "Despliega la lista"});
-    $("#movie-edit").select2({placeholder: "Despliega la lista"});
-    var $myVerifSelect = $("#canalSelect").select2();
-
-    // activar timepicker
-    leerRuntime();
 
 
-    $("#runtime").durationPicker({
-      minutes: {
-        label: ":",
-        min: 0,
-        max: 120,
-        value:1
-      },
-      seconds: {
-        label: "",
-        min: 0,
-        max: 59,
-        value:20
-      },
-      classname: 'form-control',
-      responsive: true
-    });
-    completarRuntime();
+
+
+
 
     // simular exit con el botón de salir
     $("#getOut").click(function(){
@@ -87,42 +59,41 @@ $( document ).ready(function() {
     
     
     
-    // Toma el ID de la movie seleccionada en la lista
-    $( "#movie-select" ).change(function() {
+    // Toma el ID de la slider seleccionada en la lista
+    $( "#slider-select" ).change(function() {
         
-        $( "#movie-select option:selected" ).each(function() {
+        $( "#slider-select option:selected" ).each(function() {
           clickedVal= $(this).val();
             if(clickedVal!="")
             {
                 console.log( "clickedVal="+clickedVal ); // debug
-                $( "#movieID" ).val(clickedVal);// Agrega el ID en el input field
-                changeVideo(clickedVal, "#repro1");// Cambia el video de acuerdo al ID. la función está en la línea 135. Construye la url relativa del video con la variable path+ID+'.mp4'
-                
+                $( "#sliderID" ).val(clickedVal);// Agrega el ID en el input field
+
             }
         });
         
     });
-    
-    // Toma el nombre de la movie seleccionada en la lista
-    $( "#movie-edit" ).change(function() {
+
+    // Toma el nombre de la slider seleccionada en la lista
+    $( "#slider-edit" ).change(function() {
         
-        $( "#movie-edit option:selected" ).each(function() {
+        $( "#slider-edit option:selected" ).each(function() {
             clickedText = $(this).html();
             clickedTextID = $(this).val();
             if(clickedText!="")
             {
-                $( "#movieName" ).val(clickedText);// Agrega el ID en el input field
+                $( "#sliderName" ).val(clickedText);// Agrega el ID en el input field
             }
         });
         
     });
-    
+
     // simular exit con el botó de salir
     $("#EDBtn").click(function(){
         if (clickedTextID != null){
-               window.location.href = "/movies/edit/"+clickedTextID;
+               window.location.href = "/sliders/edit/"+clickedTextID;
         }
-    })
+    });
     
     // interacción del usuario al hacer click en el botón debajo de la lista de selección
     $( "#IDBtn" ).click(function(){ 
@@ -131,12 +102,8 @@ $( document ).ready(function() {
             $( "#hidden1" ).show();
         }
 
-    })
-    
-    //preview de imagenes cargadas por el front end
-    
-    $( "#ThumbHor" ).change(showPreviewImage_click);
-    $( "#ThumbVer" ).change(showPreviewImage_click);
+    });
+
     
     // inicializar tooltips para los íconos de HELP
     $('[data-toggle="tooltip"]').tooltip(); 
@@ -145,83 +112,7 @@ $( document ).ready(function() {
     // drag and drop controles para las listas
     var adjustment;
 
-    $("ul.pornstarPick").sortable({
-      group: 'pornstarPick',
-      pullPlaceholder: false,
-      // animation on drop
-      onDrop: function  ($item, container, _super) {
-        var $clonedItem = $('<li/>').css({height: 0});
-        $item.before($clonedItem);
-        $clonedItem.animate({'height': $item.height()});
 
-        $item.animate($clonedItem.position(), function  () {
-          $clonedItem.detach();
-          _super($item, container);
-        });
-      },
-
-      // set $item relative to cursor position
-      onDragStart: function ($item, container, _super) {
-        var offset = $item.offset(),
-            pointer = container.rootGroup.pointer;
-
-        adjustment = {
-          left: pointer.left - offset.left,
-          top: pointer.top - offset.top
-        };
-
-        _super($item, container);
-      },
-      onDrag: function ($item, position) {
-        $item.css({
-          left: position.left - adjustment.left,
-          top: position.top - adjustment.top
-        });
-      }
-    });
-    
-    
-    /**/
-    $("ul.generoPick").sortable({
-      group: 'generoPick',
-      pullPlaceholder: false,
-      // animation on drop
-      onDrop: function  ($item, container, _super) {
-        var $clonedItem = $('<li/>').css({height: 0});
-        $item.before($clonedItem);
-        $clonedItem.animate({'height': $item.height()});
-
-        $item.animate($clonedItem.position(), function  () {
-          $clonedItem.detach();
-          _super($item, container);
-        });
-      },
-
-      // set $item relative to cursor position
-      onDragStart: function ($item, container, _super) {
-        var offset = $item.offset(),
-            pointer = container.rootGroup.pointer;
-
-        adjustment = {
-          left: pointer.left - offset.left,
-          top: pointer.top - offset.top
-        };
-
-        _super($item, container);
-      },
-      onDrag: function ($item, position) {
-        $item.css({
-          left: position.left - adjustment.left,
-          top: position.top - adjustment.top
-        });
-      }
-    });
-    
-    
-    /*---- DATE PICKER ----*/
-    $('.datePick').dcalendarpicker({
-      format: 'dd-mm-yyyy'
-    });
 
     
     
@@ -247,19 +138,9 @@ $( document ).ready(function() {
             checkAll();
         }
     });
-    
+
 //----------------> Helper functions
-    
-    function changeVideo(src, divId){// para cambiar lo que reproduce el player de acuerdo al ID de la lista.
-        path="http://cdnlevel3.zolechamedia.net/" + src + "/mp4/350/" + src +".mp4";
-        var video = $(divId+' video')[0];
-        //http://cdnlevel3.zolechamedia.net/{asset_id}/mp4/350/{asset_id}.mp4
-        video.src = path;
-        console.log(video.src);
-        video.load();
-        video.play();
-    }
-    
+
     function showPreviewImage_click(e) {
             var $input = $(this);
             var inputFiles = this.files;
@@ -284,145 +165,53 @@ $( document ).ready(function() {
           object.value = object.value.slice(0, 4)
       }
     
-    /* triggers for checkALL function */
+
     $("#sendBut").click(function(){
         clickedToSubmit=1;
         checkAll();
-    })
+    });
     
     $("body").mouseup(function(){
         if(checkedOnce>0 && checkVal>0 ){
             clickedToSubmit=0;
             checkAll();      
         }
-    })
+    });
     
-    
+
     function checkAll(){
         // this function checks for all form values and makes json string to post or alerts user to complete fields.
         console.log("checking form...");
         checkVal = 0;
-        var asset_Id = $('#movieID').val();
-        var original_Title = $('#orginalTitle').val();
-        var canal_selected = $('#canalSelect option:selected');
-        var pornstars_selected = [];
-        var categories_selected = [];
-        var director_selected = $('#director').val();
-        var elenco_selected = $('#elenco').val();
-        var display_runtime = $('#runtime').val();
-        var year_selected = $('#releaseYear').val();
+        var asset_Id = $('#sliderID').val();
+        var url = $('#url').val();
+        var typeslider_selected = $('#typeslider option:selected');
+
         countChecked();
         // chequea original Title
-        if(original_Title=="" || original_Title==" ")
+        if(url=="" || url==" ")
         {
-            errorMe("#orginalTitle");
+            errorMe("#url");
             checkVal++;
         }else{
-            okMe("#orginalTitle");
-        }
-        // chequea thumbnail horizaontal
-        if(!$('#ThumbHor').val() && !$('#imgantportrait').val()){
-
-            errorMe("#ThumbHor");
-            checkVal++;
-        }else{
-            okMe("#ThumbHor");
-        }
-        
-        // chequea thumbnail vertical
-        if(!$('#ThumbVer').val() && !$('#imgantlandscape').val()){
-            errorMe("#ThumbVer");
-            checkVal++;
-        }else{
-            okMe("#ThumbVer");
-        }
-        
-        // chequea pornstar
-        if ( $('#pornstarDrop li').length > 0 )
-        {
-            okMe("#pornstarDrop");
-            pornstars_selected = [];
-            $('#pornstarDrop li').each(function(){
-               pornstars_selected.push($(this).val());
-            })
-            //console.log("pornstars_selected:"+pornstars_selected)
-        }
-        
-        // chequea categorías
-        if ( $('#generoDrop li').length < 1 )
-        {
-            errorMe("#generoDrop");
-            checkVal++;
-        }else{
-            okMe("#generoDrop");
-            categories_selected = [];
-            $('#generoDrop li').each(function(){
-              categories_selected.push($(this).val());
-            })
-            console.log("generoDrop:"+categories_selected)
+            okMe("#url");
         }
         
         // chequea canal
-        console.log("#canalSelect"+$('#canalSelect').val());
-        if ( $('#canalSelect').val()=="0" || $('#canalSelect').val()==0)
+        console.log("#typeslider"+$('#typeslider').val());
+
+        if ( $('#typeslider').val()=="0" || $('#typeslider').val()==0)
         {
-            errorMe("#canalSelect");
+            errorMe("#typeslider");
             $(".select2-selection--single").css("border","1px #a94442 solid");
             checkVal++;
         }else{
-            okMe("#canalSelect");
+            okMe("#typeslider");
              $(".select2-selection--single").css("border","1px #3c763d solid");
-            canal_selected=$('#canalSelect').val();
-        }
-        /*
-        // chequea director
-        if(director_selected=="" || director_selected==" ")
-        {
-            errorMe("#director");
-            checkVal++;
-        }else{
-            okMe("#director");
+            typeslider_selected=$('#typeslider').val();
         }
 
-        // chequea año de estreno
-        if(year_selected=="" || year_selected==" ")
-        {
-            errorMe("#releaseYear");
-            checkVal++;
-        }else{
-            okMe("#releaseYear");
-        }
-        */
 
-        
-         // chequea display runtime
-
-
-        if(display_runtime=="" || display_runtime=="0:,0")
-        {
-            errorMe("#runtime");
-            $(".durationpicker-container").css("border","1px #a94442 solid");
-            checkVal++;
-        }else{
-            console.log("display:runtime"+display_runtime);
-            $(".durationpicker-container").css("border","1px #3c763d solid");
-            var myStrRuntime = display_runtime;
-            var myDirtyRuntime = myStrRuntime.split(",");
-            display_runtimeJSON=myDirtyRuntime[0]+myDirtyRuntime[1];
-            okMe("#runtime");
-        }
-
-        /*
-        // chequea elenco
-        if(elenco_selected=="" || elenco_selected==" ")
-        {
-            errorMe("#elenco");
-            checkVal++;
-        }else{
-            okMe("#elenco");
-        }
-        */
-        
         // chequeo de idiomas (tit_; desc_; date_)
         if(langQ==0){
             errorMe("#pickLang");
@@ -431,9 +220,7 @@ $( document ).ready(function() {
             okMe("#pickLang");
             checkLangs(langDesc);
         }
-                
-        /* -----------  Sending Routine -----------*/
-        
+
         if(checkVal>0){
             if(checkedOnce<1){// envía por primera vez y tiene error
                 $("#myModal2").modal();
@@ -469,7 +256,7 @@ $( document ).ready(function() {
                 if(theField=="#canalSelect"){
                     console.log("canalSelect selected");
                     $("#channelSelect").children(".select2-selection--single").css("display","none");
-                        //.css("border","1px #ff0000 solid!important");
+
                 }
                 
             }
@@ -499,7 +286,10 @@ $( document ).ready(function() {
                 stringIt += ']';
                 return(stringIt);
             }
-        
+
+
+
+
             function checkLangs(arr){ // itera sobre los lenguajes seleccionados buscando errores
                 var lngth = arr.length;
                 var lenguajescargados = 0;
@@ -507,7 +297,7 @@ $( document ).ready(function() {
                 var lengactualok = 1;
                 for(i=0; i<lngth; i++){
                     var lang=arr[i];
-                    /* check title */
+
                     var titCont = $("#tit_"+lang).val();
                     if(titCont==""){
                         errorMe("#tit_"+lang);
@@ -517,7 +307,7 @@ $( document ).ready(function() {
                         okMe("#tit_"+lang);
 
                     }
-                    /* check desc */
+
                     var descCont = $("#short_desc_"+lang).val().trim();
                     if(descCont.length < 1){
                         errorMe("#short_desc_"+lang);
@@ -526,7 +316,7 @@ $( document ).ready(function() {
                     }else{
                         okMe("#short_desc_"+lang);
                     }
-                    /* check date
+                    // check date
                     var dateCont = $("#date_"+lang).val();
                     if(dateCont==""){
                         errorMe("#date_"+lang);
@@ -535,7 +325,7 @@ $( document ).ready(function() {
                     }else{
                         okMe("#date_"+lang);
                     }
-                    */
+
 
                     if (lengactualok == 1){
                         lenguajescargados = lenguajescargados + 1 ;
@@ -548,7 +338,7 @@ $( document ).ready(function() {
 
                 }
             }
-        
+
             function addMovieMetadata(arr){
                 var lngth = arr.length;
                 var myLangs = "";
@@ -574,52 +364,29 @@ $( document ).ready(function() {
                 return(myLangs);
             };
         
-        
+
             function submitJson(){
                 if(checkVal==0){
-                    var myGirls=explodeArray(pornstars_selected,"girl_id");
-                    var myCategories=explodeArray(categories_selected,"category_id");
+
                     var myJSON = '';
-                    myJSON+='{"Movie":{';
+                    myJSON+='{"Slider":{';
                     myJSON+='"asset_id":"'+asset_Id+'",';
-                    myJSON+='"original_title":"'+original_Title+'",';
-                    myJSON+='"channel_id":"'+canal_selected+'",';
-
-                    if (year_selected==''){
-                        myJSON+='"year":null,';
+                    myJSON+='"url":"'+original_Title+'",';
+                    if (typeslider_selected=='' ||typeslider_selected='0' ){
+                        myJSON+='"type_slider":null,';
                        }else{
-                        myJSON+='"year":"'+year_selected+'",';
+                        myJSON+='"type_slider":"'+typeslider_selected+'",';
                     }
-
-                    if (myGirls=="[]"){
-                        myJSON+='"girls":null,';
-                    }else{
-                        myJSON+='"girls":'+myGirls+',';
-                    }
-
-                    if (elenco_selected==''){
-                        myJSON+='"cast":null,';
-                    }else{
-                        myJSON+='"cast":"'+elenco_selected+'",';
-                    }
-
-                    if (director_selected==''){
-                        myJSON+='"directors":null,';
-                       }else{
-                        myJSON+='"directors":"'+director_selected+'",';
-                    }
-
-                    myJSON+='"display_runtime": "'+display_runtimeJSON+'",';
-                    myJSON+='"categories":'+myCategories+',';
-                    myJSON+='"Moviesmetadata": [';
-                    myJSON+= addMovieMetadata(langDesc);
+                    myJSON+='"Slidersmetadata": [';
+                    myJSON+= addSliderMetadata(langDesc);
                     myJSON+=']}}';
                     console.log(myJSON);
                     $("#varsToJSON").val(myJSON);
-                    $("#movieForm").submit();
+                    $("#sliderForm").submit();
                   }  
             }
         
     }
+    */
     
 });

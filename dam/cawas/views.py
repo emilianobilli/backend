@@ -4,7 +4,7 @@ from django.shortcuts import render
 import datetime, os, json
 from django.contrib.auth import authenticate, login, logout
 from django.shortcuts import render, redirect
-from .models import Channel, Asset, Device, Episode, EpisodeMetadata, ImageQueue, PublishQueue, Setting,  Block, Serie, SerieMetadata, Movie, MovieMetadata, Girl,GirlMetadata,  Category,CategoryMetadata, Language, Image, PublishZone
+from .models import Channel, Asset, Device, Slider, SliderMetadata, Episode, EpisodeMetadata, ImageQueue, PublishQueue, Setting,  Block, Serie, SerieMetadata, Movie, MovieMetadata, Girl,GirlMetadata,  Category,CategoryMetadata, Language, Image, PublishZone
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from django.shortcuts import get_object_or_404, render
 from django.http import Http404, HttpResponse
@@ -143,7 +143,7 @@ def index_movies_view(request, opcion = 0):
     title = 'Movies'
     episodies = Episode.objects.all()
     context = {'episodies':episodies , 'assets':assets, 'title': title, 'opcion': opcion, 'id': id}
-    return render(request, 'cawas/movies/index.html', context)
+    return render(request, 'cawas/menu.html', context)
 
 
 
@@ -534,8 +534,6 @@ def edit_movies_view(request, asset_id):
         languages = Language.objects.all()
 
         #nuevo diccionario para completar lenguages y metadata
-
-
         for itemlang in languages:
             vmoviemetadata = None
             try:
@@ -1521,18 +1519,18 @@ def edit_blocks_view(request, block_id):
         return render(request, 'cawas/error.html', {"message": "No existe Bloque2. (" + e.message + ")"})
 
     # Variables Para GET
-    vblocks = Block.objects.all()
+
     vchannels = Channel.objects.all()
-    vdevices = Device.objects.all()
+    vseries = Serie.objects.all()
     vgirls = Girl.objects.all()
     vlanguages = Language.objects.all()
 
-    vmovies = Movie.objects.all()
-    vcapitulos = Episode.objects.all()
 
-    context = {'message': message, 'vblocks': vblocks, 'vchannels': vchannels,
-               'vdevices': vdevices, 'vgirls': vgirls, 'vlanguages': vlanguages,
-               'vmovies': vmovies, 'vcapitulos': vcapitulos, 'vblock':vblock,
+
+
+    context = {'message': message, 'vchannels': vchannels,
+               'vgirls': vgirls, 'vlanguages': vlanguages,
+               'vseries': vseries, 'vblock':vblock,
                'vmovienotselect':vmovienotselect, 'vgirlnotselect':vgirlnotselect,
                'vepisodenotselect':vepisodenotselect,'vmovieselect':vmovieselect,
                'vgirlselect':vgirlselect, 'vepisodeselect':vepisodeselect,
@@ -1716,7 +1714,7 @@ def add_episodes_view(request):
 
 
 
-def edit_episodes_view(request, block_id):
+def edit_episodes_view(request, episode_id):
     # AUTENTICACION DE USUARIO
     if not request.user.is_authenticated:
         return redirect(login_view)
@@ -1725,9 +1723,12 @@ def edit_episodes_view(request, block_id):
     message = ''
     vflag = ''
     vschedule_date = ''
+    vasset = Asset()
+    vepisode = Episode()
 
     try:
-        vasset = Asset.objects.get(asset_id=block_id)
+        vasset = Asset.objects.get(asset_id=episode_id)
+        print "episode: " +episode_id
         vepisode = Episode.objects.get(asset=vasset)
         i = len(vepisode.image.portrait.name)
         imgport = vepisode.image.portrait.name[5:i]
@@ -1736,14 +1737,14 @@ def edit_episodes_view(request, block_id):
         print "episodio " + vepisode.original_title
 
     except Asset.DoesNotExist as e:
-        return render(request, 'cawas/error.html', {"message": "No Existe Asset. (" + e.message + ")"})
+        return render(request, 'cawas/error.html', {"message": "No Existe Asset1. (" + e.message + ")"})
     except Setting.DoesNotExist as e:
         return render(request, 'cawas/error.html', {"message": "No Existe Episode. (" + e.message + ")"})
 
 
     if request.method == 'POST':
         # VARIABLES
-        vepisode = Episode()
+
 
         try:
             pathfilesport = Setting.objects.get(code='image_repository_path_portrait')
@@ -1756,6 +1757,7 @@ def edit_episodes_view(request, block_id):
             vepisode.original_title = decjson['Episode']['original_title']
             vepisode.channel = Channel.objects.get(pk=decjson['Episode']['channel_id'])
             vepisode.display_runtime = decjson['Episode']['display_runtime']
+            print "Serie_id" + decjson['Episode']['serie_id']
             vasset_serie = Asset.objects.get(asset_id=decjson['Episode']['serie_id'])
             vepisode.serie = Serie.objects.get(asset=vasset_serie)
             vepisode.chapter = decjson['Episode']['chapter']
@@ -1800,7 +1802,7 @@ def edit_episodes_view(request, block_id):
             vepisode.image = vimg
             vepisode.save()
         except Asset.DoesNotExist as e:
-            return render(request, 'cawas/error.html', {"message": "No Existe Asset. (" + e.message + ")"})
+            return render(request, 'cawas/error.html', {"message": "No Existe Asset 3. (" + e.message + ")"})
         except Setting.DoesNotExist as e:
             return render(request, 'cawas/error.html', {"message": "No Existe Setting. (" + e.message + ")"})
         except Serie.DoesNotExist as e:
@@ -1816,6 +1818,7 @@ def edit_episodes_view(request, block_id):
             return render(request, 'cawas/error.html', {"message": "No existe Device. (" + e.message + ")"})
         except Episode.DoesNotExist as e:
             return render(request, 'cawas/error.html', {"message": "No existe Episode. (" + e.message + ")"})
+
         # CARGAR ASSETS
         vgirls = decjson['Episode']['girls']
         for item in vgirls:
@@ -1828,7 +1831,7 @@ def edit_episodes_view(request, block_id):
             except Girl.DoesNotExist as e:
                 return render(request, 'cawas/error.html', {"message": "No existe Girl. (" + e.message + ")"})
             except Asset.DoesNotExist as e:
-                return render(request, 'cawas/error.html', {"message": "No existe Asset. (" + e.message + ")"})
+                return render(request, 'cawas/error.html', {"message": "No existe Asset2. (" + e.message + ")"})
 
         # CARGAR CATEGORY
         vcategories = decjson['Episode']['categories']
@@ -1842,18 +1845,23 @@ def edit_episodes_view(request, block_id):
                 return render(request, 'cawas/error.html', {"message": "No existe Categoria. (" + e.message + ")"})
         vepisode.save()
 
+        EpisodeMetadata.objects.filter(episode=vepisode).delete()
         vepisodemetadata = decjson['Episode']['Episodemetadatas']
         for item in vepisodemetadata:
             try:
-                emd = EpisodeMetadata()
+
+                vlang = Language.objects.get(code=item['Episodemetadata']['language'])
+                try:
+                    emd = EpisodeMetadata.objects.get(episode=vepisode, language=vlang)
+                except EpisodeMetadata.DoesNotExist as e:
+                    emd = EpisodeMetadata();
+
                 # convertDateYMDnowIsNull
                 if (item['Episodemetadata']['schedule_date'] != ''):
                     vschedule_date = datetime.datetime.strptime(item['Episodemetadata']['schedule_date'],
                                                                 '%d-%m-%Y').strftime('%Y-%m-%d')
                 else:
                     vschedule_date = datetime.datetime.now().strftime('%Y-%m-%d')
-
-                vlang = Language.objects.get(code=item['Episodemetadata']['language'])
                 emd.language = vlang
                 emd.title = item['Episodemetadata']['title']
                 emd.summary_short = item['Episodemetadata']['summary_short']
@@ -1874,24 +1882,49 @@ def edit_episodes_view(request, block_id):
 
         vflag = "success"
         message = 'Bloque - Registrado Correctamente'
-        # Fin datos Bloque
-
+        return redirect(menu_view)
+        # Fin POST Bloque
 
     try:
+        vchannels = Channel.objects.all()
+        vcategories = Category.objects.all()
+        vgirls = Girl.objects.all()
+        vlanguages = Language.objects.all()
+        vmovies = Movie.objects.all()
+        vcapitulos = Episode.objects.all()
+        vassets = Asset.objects.filter(asset_type="unknown")
+
+
         vgirlselected = vepisode.girls.all()
         vgirlnotselected = Girl.objects.exclude(id__in=vgirlselected)
         vcategoryselected = vepisode.category.all()
         vcategorynotselected = Category.objects.exclude(id__in=vcategoryselected)
         vseries = Serie.objects.all()
+
+        # nuevo diccionario para completar lenguages y metadata
+        vlangmetadata = []
+        for itemlang in vlanguages:
+            try:
+                vepisodemetadata = EpisodeMetadata.objects.get(episode=vepisode, language=itemlang)
+                vlangmetadata.append({
+                    'checked': True, 'code': itemlang.code, 'name': itemlang.name,
+                    'title': vepisodemetadata.title, 'summary_short': vepisodemetadata.summary_short,
+                    'summary_long': vepisodemetadata.summary_long, 'publish_date': vepisodemetadata.publish_date
+                    })
+            except EpisodeMetadata.DoesNotExist as a:
+                vlangmetadata.append({'checked': False, 'code': itemlang.code,'name': itemlang.name, 'titulo':'', 'descripcion':'','fechapub': ''})
+
     except Girl.DoesNotExist as e:
         return render(request, 'cawas/error.html', {"message": "No existe Chica. (" + e.message + ")"})
     except Category.DoesNotExist as e:
         return render(request, 'cawas/error.html', {"message": "No existe Categoria. (" + e.message + ")"})
 
 
-    context = {'message': message,'vgirlnotselected':vgirlnotselected,'vgirlselected':vgirlselected,
+    context = {'message': message,'vgirlnotselected':vgirlnotselected,
+               'vgirlselected':vgirlselected,
                'imgland': imgland, 'imgport': imgport, 'vepisode': vepisode,
-               'vcategorynotselected':vcategorynotselected, 'vcategoryselected':vcategoryselected
+               'vcategorynotselected':vcategorynotselected, 'vcategoryselected':vcategoryselected,
+               'vchannels':vchannels,'vlangmetadata':vlangmetadata, 'vseries':vseries
                }
 
     # Episode >
@@ -1900,10 +1933,54 @@ def edit_episodes_view(request, block_id):
     # Metadata >
     # categorias >
     # girls >
-    #
-
     return render(request, 'cawas/episodes/edit.html', context)
 
+
+
+
+def add_sliders_view(request):
+    if not request.user.is_authenticated:
+        return redirect(login_view)
+
+        # VARIABLES LOCALES
+    message = ''
+    vflag = ''
+    vschedule_date = ''
+    vasset = Asset()
+    vslider = Slider()
+
+
+
+    if request.method == 'POST':
+        # VARIABLES
+        try:
+            # Parsear JSON
+            strjson = request.POST['varsToJSON']
+            decjson = json.loads(strjson)
+
+
+
+        except Girl.DoesNotExist as e:
+            return render(request, 'cawas/error.html', {"message": "No existe Chica. (" + e.message + ")"})
+
+
+
+
+
+    vassets = Asset.objects.filter(asset_type="unknown")
+    vsliders = Slider.objects.all()
+    vlanguages = Language.objects.all()
+    vtypes  = {"image": "Image", "video": "Video"}
+    message =''
+    context = {'message': message, 'vtypes':vtypes,'vassets':vassets, 'vsliders':vsliders, 'vlanguages':vlanguages}
+    return render(request, 'cawas/sliders/add.html', context)
+
+
+def edit_sliders_view(request, slider_id):
+
+    message=''
+    context = {'message': message}
+    return render(request, 'cawas/sliders/edit.html', context)
 
 
 
@@ -1930,3 +2007,58 @@ def add_asset_view(request):
 
 
 # Borrar comentario
+
+def list_movies_view(request):
+
+    message = "Error"
+    vmovies = Movie.objects.all()
+    #vmovies =
+
+    context = {'message': message, 'registros':vmovies}
+
+    return render(request, 'cawas/movies/list.html', context)
+
+
+def list_girls_view(request):
+
+    message = "Error"
+    registros = Girl.objects.all()
+    context = {'message': message, 'registros':registros}
+
+    return render(request, 'cawas/girls/list.html', context)
+
+
+def list_blocks_view(request):
+
+    message = "Error"
+    registros = Block.objects.all()
+    context = {'message': message, 'registros':registros}
+
+    return render(request, 'cawas/blocks/list.html', context)
+
+
+def list_episodes_view(request):
+
+    message = "Error"
+    registros = Episode.objects.all()
+    context = {'message': message, 'registros':registros}
+
+    return render(request, 'cawas/episodes/list.html', context)
+
+
+def list_series_view(request):
+
+    message = "Error"
+    series = Serie.objects.all()
+    context = {'message': message, 'registros':series}
+
+    return render(request, 'cawas/series/list.html', context)
+
+
+def list_sliders_view(request):
+
+    message = "Error"
+    series = Serie.objects.all()
+    context = {'message': message, 'registros':series}
+
+    return render(request, 'cawas/sliders/list.html', context)
