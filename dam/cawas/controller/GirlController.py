@@ -1,11 +1,12 @@
 
 import datetime, os, json
 from django.db import models
-from .cawas.models import Channel, Girl, Image, GirlMetadata
+from cawas.models import Channel, Girl, Image, GirlMetadata
 from django.shortcuts import get_object_or_404, render
 
 
 class GirlController:
+    #Atributos
     decjson=""
     vimg=Image()
     vgirl=Girl()

@@ -28,18 +28,20 @@
            <!-- Second Row -->
               <div class="row">
                   <div class="col-lg-4 col-md-4 col-sm-4">
-                      <form action="grid-view.html" method="get" id="searchForID" name="searchForId">
+                      <form action="/movies/list" method="post" id="searchForID" name="searchForId">
                             <div class="col-xs-12 col-md-2 col-lg-2 ">
-                                Por <span class="boldIt">ID</span>
+                                 Por <span class="boldIt">Título</span>
                             </div>
+
                             <div class="col-xs-11 col-md-9 col-lg-9 ">
                                 <div>
-                                    <input type="text" class="form-control fLEFT top6" id="InputUser" placeholder="Ingresa ID" name="ID" required>
+                                    <input type="text" class="form-control fLEFT top6"
+                                           id="InputUser" placeholder="Ingresar un texto..." name="ID" required>
                                 </div>
                             </div>
                             <div class="col-xs-1 col-md-1 col-lg-1 unpad">
                                <input type="submit" style="display:none;">
-                                <span class="glyphicon glyphicon-search GLY-search fRIGHT top6" id="glyID" ></span>
+                               <span class="glyphicon glyphicon-search GLY-search fRIGHT top6" id="glyID" ></span>
                             </div>
                       </form>
                   </div>
@@ -50,8 +52,8 @@
                          <div class="col-xs-12 col-md-10 col-lg-10 ">
                             <select class="form-control top6">
                                <option vlaue=""></option>
-                                <option vlaue="published">Publicadas</option>
-                                <option vlaue="unpublished">Sin publicar</option>
+                               <option vlaue="published">Publicadas</option>
+                               <option vlaue="unpublished">Sin publicar</option>
                             </select>
 
                         </div>
@@ -84,9 +86,6 @@
                     </div>
 
                      {% for item in registros %}
-
-
-
                         <div class="tb-row">
                             <div class="tb-cell">
                                 <input type="checkbox" id="{{ item.asset.asset_id}}" value="{{ item.asset.asset_id}}"> {{ item.asset.asset_id}}
@@ -98,9 +97,22 @@
                             <div class="tb-cell"><a href="/movies/delete/{{ item.asset.asset_id}}"class="btn-danger btn tb-btn">Borrar</a></div>
                             <div class="tb-cell"><a href="/movies/unpublish/{{ item.asset.asset_id}}"class="btn-warning btn tb-btn">Des-publicar</a></div>
                         </div>
-
-
                     {% endfor %}
+                    <div class="pagination">
+                        <span class="step-links">
+                            {% if contacts.has_previous %}
+                                <a href="?page={{ registros.previous_page_number }}">previous</a>
+                            {% endif %}
+
+                            <span class="current">
+                                Page {{ registros.number }} of {{ registros.paginator.num_pages }}.
+                            </span>
+
+                            {% if registros.has_next %}
+                                <a href="?page={{ registros.next_page_number }}">next</a>
+                            {% endif %}
+                        </span>
+                    </div>
                 </div>
             </div>
             <!-- end of GRID row -->

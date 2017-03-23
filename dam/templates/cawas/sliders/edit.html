@@ -52,7 +52,7 @@
                         <label for="idTit" id="idTit">NUEVO ID: {{vslider.slider_id}}</label>
                         <!-- pegar  acá -->
                         <span class="idLegend">
-
+                        Mediatype {{ vslider.media_type }}
                         </span>
                     </div>
 
@@ -76,9 +76,10 @@
                    <div class="form-group has-feedback">
                     <label class="label-left" for="typeslider">Tipo de Slider: *</label>
                      <select class="form-control" id="typeslider">
+
                             {% for key, value in vtypes.items %}
                                 {% if key == vslider.media_type %}
-                                    <option id="{{ key }}" value="{{key}}" selected>{{ value }}</option>
+                                    <option id="{{ key }}" value="{{key}}" selected >{{ value }} </option>
                                 {% else %}
                                     <option id="{{ key }}" value="{{key}}">{{ value }}</option>
                                 {% endif %}
@@ -89,12 +90,13 @@
                 </div>
                 <div class="col-xs-12 col-md-4 col-lg-4">
                    <div class="form-group has-feedback">
-                    <label class="label-left" for="devices">Dispositivo: *</label>
+                    <label class="label-left" for="devices">Dispositivo: {{vslider.target_device_id }} *</label>
                         <select class="form-control" id="devices">
+
                             <option  value="0"> </option>
                          {% for item in vdevices %}
                                 {% if  item.id  == vslider.target_device_id %}
-                                    <option id="{{ item.id }}" value="{{item.id}}">{{item.name}}</option>
+                                    <option id="{{ item.id }}" value="{{item.id}}" selected> {{item.name}}</option>
                                 {% else %}
                                     <option id="{{ item.id }}" value="{{item.id}}">{{item.name}}</option>
                                 {% endif %}
@@ -108,32 +110,52 @@
                <div class="col-xs-12 col-md-8 col-lg-8">
                   <select id="slider-select" class="form-control" id="assets">
                     {% for item in vassets %}
-                        <option id="{{ item.asset_id }}" value="{{ item.asset_id }}">{{ item.asset_id }} </option>
+                        {% if  item.asset_id  == vslider.asset.asset_id %}
+                            <option id="{{ item.asset_id }}" value="{{item.asset_id}}" selected> {{item.asset_id}}</option>
+                        {% else %}
+                            <option id="{{ item.asset_id }}" value="{{item.asset_id}}">{{item.asset_id}}</option>
+                        {% endif %}
+
                     {% endfor %}
                   </select>
                </div>
            </div>
-            <!--  9 : Idioma -->
-                <div class="row form-row">
-                    <div class="col-xs-12 col-md-3 col-lg-3 form-group">
-                        <div class="form-group has-feedback" id="lang-container">
-                            <div id="pickLang">
-                                <label class="label-left" for="idioms">Elija idioma: (al menos uno)*</label>
-                            </div>
-                            <span class="glyphicon form-control-feedback"></span>
-                            <div class="form-group has-feedback">
-                                {% for item in vlanguages %}
-                                    <input type="checkbox" name="idioma" value="{{ item.code }}" id="{{ item.code }}" class="chkbx"> {{ item.name }}<br>
-                                {% endfor %}
-                            </div>
 
-                        </div>
+
+
+        <!--  9 : Idioma -->
+        <div class="row form-row">
+            <div class="col-xs-12 col-md-3 col-lg-3 form-group">
+                <div class="form-group has-feedback" id="lang-container">
+                    <div id="pickLang">
+                        <label class="label-left" for="idioms">Elija idioma: (al menos uno)*</label>
+
                     </div>
+                    <span class="glyphicon form-control-feedback"></span>
+                    <div class="form-group has-feedback">
+                        {% for item in vlangmetadata %}
+                            {% if item.checked == True %}
+                                 <input type="checkbox" checked name="idioma" value="{{item.code}}" id="{{item.code}}"
+                                       class="chkbx"> {{item.name}}<br>
+                            {% else %}
+                                <input type="checkbox"  name="idioma" value="{{item.code}}" id="{{item.code}}"
+                                       class="chkbx"> {{item.name}}<br>
+                            {% endif %}
+                        {% endfor %}
+                    </div>
+
                 </div>
+            </div>
+        </div>
 
             <!-- LANGUAGE modules -->
-            {% for item in vlanguages %}
-            <div class="row form-row hid" id="Module_{{item.code}}">
+             <!-- LANGUAGE modules -->
+               {% for item in vlangmetadata %}
+                   {% if item.checked == True %}
+                         <div class="row form-row" id="Module_{{item.code}}">
+                   {% else %}
+                         <div class="row form-row hid" id="Module_{{item.code}}">
+                   {% endif %}
                 <div class="col-xs-12 col-md-12 col-lg-12 form-group">
                     <h2>{{item.name}}</h2>
                        <div class="col-xs-12 col-md-12 col-lg-12 form-group inlang">
@@ -141,17 +163,18 @@
                             <div class="helpright"><span class="glyphicon glyphicon-question-sign" data-toggle="tooltip"
                                                          title="La descripción para los thumbnails mostrará los primeros 50 caracteres. Al ingresar en la slider se verá completa."></span></div>
                             <label class="label-left" for="text_{{item.code}}">Texto: *</label>
-                           <textarea class="form-control" name="text_{{item.code}}" id="text_{{item.code}}"></textarea>
+                           <textarea class="form-control" name="text_{{item.code}}" id="text_{{item.code}}">{{item.text}}</textarea>
                            <span class="glyphicon form-control-feedback"></span>
                            </div>
                        </div>
                        <div class="col-xs-12 col-md-12 col-lg-12 form-group inlang">
-                               <div class="form-group has-feedback">
-                                    <div class="helpright"><span class="glyphicon glyphicon-question-sign" data-toggle="tooltip" title="Al ingresar una fecha, el sistema publicará la movie en español en esa fecha."></span></div>
-                                    <label class="label-left" for="date_{{item.code}}">Fecha de Publicación</label>
-                                    <input type="text" class="form-control datePick" name="date_{{item.code}}" id="date_{{item.code}}">
-                                    <span class="glyphicon form-control-feedback"></span>
-                               </div>
+                           <div class="form-group has-feedback">
+                                <div class="helpright"><span class="glyphicon glyphicon-question-sign" data-toggle="tooltip" title="Al ingresar una fecha, el sistema publicará la movie en español en esa fecha."></span></div>
+                                <label class="label-left" for="date_{{item.code}}">Fecha de Publicación</label>
+                                <input type="text" class="form-control datePick" name="date_{{item.code}}" id="date_{{item.code}}"
+                                value="{{ item.publish_date|date:'d-m-Y' }}">
+                                <span class="glyphicon form-control-feedback"></span>
+                           </div>
                        </div>
 
 

@@ -6,10 +6,10 @@ from django.contrib.auth import authenticate, login, logout
 from django.shortcuts import render, redirect
 from .models import Channel, Asset, Device, Slider, SliderMetadata, Episode, EpisodeMetadata, ImageQueue, PublishQueue, Setting,  Block, Serie, SerieMetadata, Movie, MovieMetadata, Girl,GirlMetadata,  Category,CategoryMetadata, Language, Image, PublishZone
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
-from django.shortcuts import get_object_or_404, render
-from django.http import Http404, HttpResponse
-from django.conf import settings
+from django.shortcuts import  render
+from django.http import  HttpResponse
 from django.db import IntegrityError
+
 
 #FUNCIONES GENERALES
 #Funcion para publicar Asset
@@ -1995,17 +1995,16 @@ def add_sliders_view(request):
                     vschedule_date = datetime.datetime.strptime(item['Slidermetadata']['schedule_date'],'%d-%m-%Y').strftime('%Y-%m-%d')
                 else:
                     vschedule_date = datetime.datetime.now().strftime('%Y-%m-%d')
-                #print "DEBUG1" +vschedule_date
-                #smd.publish_date = vschedule_date
-
                 vlang = Language.objects.get(code=item['Slidermetadata']['language'])
                 smd.language = vlang
                 smd.text = item['Slidermetadata']['text']
                 print "DEBUG1" +  item['Slidermetadata']['text']
                 smd.slider = vslider
+                smd.publish_date = vschedule_date
                 smd.save()
 
                 # Publica en PublishQueue
+                print "DEBUG:" + vschedule_date
                 func_publish_queue(vasset, vlang, 'AS', 'Q', vschedule_date)
                 vflag = "success"
             except Language.DoesNotExist as e:
@@ -2015,7 +2014,7 @@ def add_sliders_view(request):
             vflag = "success"
 
 
-    vassets = Asset.objects.filter(asset_type="unknown")
+    vassets = Asset.objects.all()
     vsliders = Slider.objects.all()
     vlanguages = Language.objects.all()
     vdevices = Device.objects.all()
@@ -2035,6 +2034,32 @@ def edit_sliders_view(request, slider_id):
     vschedule_date = ''
     vasset = Asset()
     vslider = Slider()
+
+    try:
+        vslider = Slider.objects.get(slider_id=slider_id)
+
+        vassets = Asset.objects.all()
+        vsliders = Slider.objects.all()
+        vlanguages = Language.objects.all()
+        vdevices = Device.objects.all()
+        vtypes = {"image": "Image", "video": "Video"}
+
+        # nuevo diccionario para completar lenguages y metadata
+        vlangmetadata = []
+        for itemlang in vlanguages:
+            try:
+                vslidermetadata = SliderMetadata.objects.get(slider=vslider, language=itemlang)
+                vlangmetadata.append({
+                    'checked': True, 'code': itemlang.code, 'name': itemlang.name,
+                    'text': vslidermetadata.text, 'publish_date': vslidermetadata.publish_date
+                })
+            except SliderMetadata.DoesNotExist as a:
+                vlangmetadata.append(
+                    {'checked': False, 'code': itemlang.code, 'name': itemlang.name, 'text': '', 'text': '','publish_date': ''})
+
+    except Slider.DoesNotExist as e:
+        return render(request, 'cawas/error.html', {"message": "No Existe Slider. (" + str(e.message) + ")"})
+
 
     if request.method == 'POST':
         # VARIABLES
@@ -2061,7 +2086,7 @@ def edit_sliders_view(request, slider_id):
         except Asset.DoesNotExist as e:
             return render(request, 'cawas/error.html', {"message": "No existe Asset. (" + e.message + ")"})
 
-        print "METADATA"
+
         #METADATA
         vslidermetadata = decjson['Slider']['Slidermetadatas']
         print decjson['Slider']['Slidermetadatas']
@@ -2076,14 +2101,14 @@ def edit_sliders_view(request, slider_id):
                     vschedule_date = datetime.datetime.strptime(item['Slidermetadata']['schedule_date'],'%d-%m-%Y').strftime('%Y-%m-%d')
                 else:
                     vschedule_date = datetime.datetime.now().strftime('%Y-%m-%d')
-                #print "DEBUG1" +vschedule_date
-                #smd.publish_date = vschedule_date
 
                 vlang = Language.objects.get(code=item['Slidermetadata']['language'])
                 smd.language = vlang
                 smd.text = item['Slidermetadata']['text']
-                print "DEBUG1" +  item['Slidermetadata']['text']
+                print "DEBUG12" +  item['Slidermetadata']['text']
+                print "DEBUG12" + vschedule_date
                 smd.slider = vslider
+                smd.publish_date = vschedule_date
                 smd.save()
 
                 # Publica en PublishQueue
@@ -2095,19 +2120,10 @@ def edit_sliders_view(request, slider_id):
                 return render(request, 'cawas/error.html',{"message": "Error al Guardar Metadata. (" + str(e.message) + ")"})
             vflag = "success"
 
-    try:
-        vslider = Slider.objects.get(slider_id=slider_id)
-    except Slider.DoesNotExist as e:
-        return render(request, 'cawas/error.html', {"message": "No Existe Slider. (" + str(e.message) + ")"})
 
-    vassets = Asset.objects.filter(asset_type="unknown")
-    vsliders = Slider.objects.all()
-    vlanguages = Language.objects.all()
-    vdevices = Device.objects.all()
-    vtypes  = {"image": "Image", "video": "Video"}
-    message =''
-    context = {'message': message, 'vtypes':vtypes,'vassets':vassets, 'vsliders':vsliders,
-               'vlanguages':vlanguages, 'vdevices':vdevices, 'flag':vflag,'vslider':vslider}
+    context = {'vtypes':vtypes,'vassets':vassets, 'vsliders':vsliders,
+               'vlanguages':vlanguages, 'vdevices':vdevices, 'flag':vflag,'vslider':vslider,
+               'vlangmetadata':vlangmetadata}
     return render(request, 'cawas/sliders/edit.html', context)
 
 
@@ -2139,10 +2155,21 @@ def add_asset_view(request):
 def list_movies_view(request):
 
     message = "Error"
-    vmovies = Movie.objects.all()
-    #vmovies =
+    movies_list = Movie.objects.all()
+    paginator = Paginator(movies_list, 20)  # Show 25 contacts per page
 
-    context = {'message': message, 'registros':vmovies}
+    page = request.GET.get('page')
+    try:
+        movies = paginator.page(page)
+    except PageNotAnInteger:
+        # If page is not an integer, deliver first page.
+        movies = paginator.page(1)
+    except EmptyPage:
+        # If page is out of range (e.g. 9999), deliver last page of results.
+        movies = paginator.page(paginator.num_pages)
+
+
+    context = {'message': message, 'registros':movies}
 
     return render(request, 'cawas/movies/list.html', context)
 
