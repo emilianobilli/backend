@@ -22,9 +22,11 @@ urlpatterns = [
     url(r'^blocks/add/$', views.add_blocks_view, name='add_blocks'),
     url(r'^blocks/edit/(?P<block_id>\w*)/$', views.edit_blocks_view, name='edit_episodes'),
     url(r'^blocks/list/$', views.list_blocks_view, name='list_blocks'),
+
     url(r'^episodes/add/$', views.add_episodes_view, name='add_blocks'),
     url(r'^episodes/edit/(?P<episode_id>\w*)/$', views.edit_episodes_view, name='edit_episodes'),
     url(r'^episodes/list/$', views.list_episodes_view, name='list_episodes'),
+
     url(r'^sliders/add/$', views.add_sliders_view, name='add_sliders'),
     url(r'^sliders/edit/(?P<slider_id>\w*)/$', views.edit_sliders_view, name='edit_sliders'),
     url(r'^sliders/list/$', views.list_sliders_view, name='list_sliders'),

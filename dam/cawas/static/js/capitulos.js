@@ -639,8 +639,6 @@ $( document ).ready(function() {
                     myLangs += '"summary_short": "'+short+'",';
                     myLangs += '"summary_long":"'+long+'",';
                     myLangs += '"schedule_date":"'+fechapub+'"';
-
-
                     myLangs += '}}';
                     if(i<lngth-1){
                         myLangs += ',';

@@ -374,25 +374,6 @@ $( document ).ready(function() {
              $(".select2-selection--single").css("border","1px #3c763d solid");
             canal_selected=$('#canalSelect').val();
         }
-        /*
-        // chequea director
-        if(director_selected=="" || director_selected==" ")
-        {
-            errorMe("#director");
-            checkVal++;
-        }else{
-            okMe("#director");
-        }
-
-        // chequea año de estreno
-        if(year_selected=="" || year_selected==" ")
-        {
-            errorMe("#releaseYear");
-            checkVal++;
-        }else{
-            okMe("#releaseYear");
-        }
-        */
 
         
          // chequea display runtime
@@ -412,16 +393,7 @@ $( document ).ready(function() {
             okMe("#runtime");
         }
 
-        /*
-        // chequea elenco
-        if(elenco_selected=="" || elenco_selected==" ")
-        {
-            errorMe("#elenco");
-            checkVal++;
-        }else{
-            okMe("#elenco");
-        }
-        */
+
         
         // chequeo de idiomas (tit_; desc_; date_)
         if(langQ==0){

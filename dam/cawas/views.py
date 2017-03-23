@@ -85,7 +85,6 @@ def menu_view (request):
         (2, "Serie"),
         (3, "Bloques"),
         (4, "Chicas"),
-        (5, "Categoria"),
         (6, "Capitulos"),
         (7, "Sliders")
     )
@@ -1103,6 +1102,8 @@ def edit_series_view(request, asset_id):
 
             # Publica en PublishImage
             func_publish_image(vimg)
+            context = {"flag": "success"}
+            return render(request, 'cawas/series/edit.html', context)
             # Fin de POST
 
     # VARIABLES PARA GET - CARGAR GIRL
@@ -1149,6 +1150,8 @@ def edit_series_view(request, asset_id):
                                       'title': '',
                                       'summary_short': '',
                                       'summary_long':''})
+
+
     except Asset.DoesNotExist as e:
         return render(request, 'cawas/error.html', {"message": "Asset No Existe . (" + e.message + ")"})
     except Serie.DoesNotExist as e:
@@ -1322,6 +1325,9 @@ def edit_category_view(request):
             cmd.language = vlanguage
             cmd.save()
 
+        context = {"flag": "success"}
+        return render(request, 'cawas/categories/edit.html', context)
+
     context = {'message': message}
     return render(request, 'cawas/pruebas/subir_img.html', context)
 
@@ -1390,8 +1396,8 @@ def add_blocks_view(request):
 
         vblock.save()
         func_publish_queue(vblock.block_id, vblock.language, 'BL', 'Q', vblock.publish_date)
-        vflag = "success"
-        message = 'Bloque - Registrado Correctamente'
+        context = {"flag": "success"}
+        return render(request, 'cawas/blocks/add.html', context)
         # Fin datos Bloque
 
     #Variables Para GET
@@ -1495,8 +1501,8 @@ def edit_blocks_view(request, block_id):
         # Publica en PublishQueue
 
         func_publish_queue(vblock.block_id, vblock.language, 'BL', 'Q', vblock.publish_date)
-        vflag = "success"
-        message = 'Bloque - Registrado Correctamente'
+        context = {"flag": "success"}
+        return render(request, 'cawas/blocks/edit.html', context)
         # Fin datos Bloque
 
 
@@ -1685,8 +1691,9 @@ def add_episodes_view(request):
                 return render(request, 'cawas/error.html',{"message": "Error al Guardar Episode Metadata. (" + str(e.message) + ")"})
 
         vflag = "success"
-        message = 'Bloque - Registrado Correctamente'
-        # Fin datos Bloque
+        context = {"flag":vflag}
+        return render(request, 'cawas/episodes/add.html', context)
+        # Fin datos EPISODE
 
     # Variables Para GET
     vseries = Serie.objects.all()
@@ -1708,7 +1715,6 @@ def add_episodes_view(request):
     #Metadata Falta
     #categorias OK
     #girls OK
-
     return render(request, 'cawas/episodes/add.html', context)
 
 
@@ -1880,9 +1886,9 @@ def edit_episodes_view(request, episode_id):
                 return render(request, 'cawas/error.html',
                               {"message": "Error al Guardar Episode Metadata. (" + str(e.message) + ")"})
 
-        vflag = "success"
-        message = 'Bloque - Registrado Correctamente'
-        return redirect(menu_view)
+        context = {"flag":"success"}
+        return render(request, 'cawas/episodes/edit.html', context)
+        #return redirect(menu_view)
         # Fin POST Bloque
 
     try:
@@ -1944,12 +1950,10 @@ def add_sliders_view(request):
 
         # VARIABLES LOCALES
     message = ''
-    vflag = ''
+    vflag = ""
     vschedule_date = ''
     vasset = Asset()
     vslider = Slider()
-
-
 
     if request.method == 'POST':
         # VARIABLES
@@ -1957,29 +1961,153 @@ def add_sliders_view(request):
             # Parsear JSON
             strjson = request.POST['varsToJSON']
             decjson = json.loads(strjson)
+            print "DEBUG: "+ decjson['Slider']['media_type']
 
+            vasset = Asset.objects.get(asset_id=decjson['Slider']['asset_id'] )
+            print "ASSET_ID: " + decjson['Slider']['asset_id']
+            vslider.asset = vasset
+            vslider.media_url = decjson['Slider']['media_url']
+            vslider.media_type = decjson['Slider']['media_type']
 
+            print "ASSET_ID: "+decjson['Slider']['media_type']
 
-        except Girl.DoesNotExist as e:
-            return render(request, 'cawas/error.html', {"message": "No existe Chica. (" + e.message + ")"})
+            vdevice = Device.objects.get(id=decjson['Slider']['target_device_id'])
+            vslider.target_device = vdevice
+            vslider.media_type = decjson['Slider']['target_device_id']
+            vslider.save()
+        except Device.DoesNotExist as e:
+            return render(request, 'cawas/error.html', {"message": "No existe Device. (" + e.message + ")"})
+        except Asset.DoesNotExist as e:
+            return render(request, 'cawas/error.html', {"message": "No existe Asset. (" + e.message + ")"})
 
+        print "METADATA"
+        #METADATA
+        vslidermetadata = decjson['Slider']['Slidermetadatas']
+        print decjson['Slider']['Slidermetadatas']
+        vflag = "success"
 
+        #SliderMetadata.objects.filter(slider=vslider).delete()
+        for item in vslidermetadata:
+            try:
+                smd = SliderMetadata()
+                print "DEBUG1: " + item['Slidermetadata']['schedule_date']
+                if (item['Slidermetadata']['schedule_date'] != ''):
+                    vschedule_date = datetime.datetime.strptime(item['Slidermetadata']['schedule_date'],'%d-%m-%Y').strftime('%Y-%m-%d')
+                else:
+                    vschedule_date = datetime.datetime.now().strftime('%Y-%m-%d')
+                #print "DEBUG1" +vschedule_date
+                #smd.publish_date = vschedule_date
 
+                vlang = Language.objects.get(code=item['Slidermetadata']['language'])
+                smd.language = vlang
+                smd.text = item['Slidermetadata']['text']
+                print "DEBUG1" +  item['Slidermetadata']['text']
+                smd.slider = vslider
+                smd.save()
+
+                # Publica en PublishQueue
+                func_publish_queue(vasset, vlang, 'AS', 'Q', vschedule_date)
+                vflag = "success"
+            except Language.DoesNotExist as e:
+                return render(request, 'cawas/error.html', {"message": "Lenguaje no Existe. (" + str(e.message) + ")"})
+            except Exception as e:
+                return render(request, 'cawas/error.html',{"message": "Error al Guardar Metadata. (" + str(e.message) + ")"})
+            vflag = "success"
 
 
     vassets = Asset.objects.filter(asset_type="unknown")
     vsliders = Slider.objects.all()
     vlanguages = Language.objects.all()
+    vdevices = Device.objects.all()
     vtypes  = {"image": "Image", "video": "Video"}
     message =''
-    context = {'message': message, 'vtypes':vtypes,'vassets':vassets, 'vsliders':vsliders, 'vlanguages':vlanguages}
+    context = {'message': message, 'vtypes':vtypes,'vassets':vassets, 'vsliders':vsliders,
+               'vlanguages':vlanguages, 'vdevices':vdevices, 'flag':vflag}
     return render(request, 'cawas/sliders/add.html', context)
 
 
 def edit_sliders_view(request, slider_id):
+    if not request.user.is_authenticated:
+        return redirect(login_view)
 
-    message=''
-    context = {'message': message}
+        # VARIABLES LOCALES
+    vflag = ""
+    vschedule_date = ''
+    vasset = Asset()
+    vslider = Slider()
+
+    if request.method == 'POST':
+        # VARIABLES
+        try:
+            # Parsear JSON
+            strjson = request.POST['varsToJSON']
+            decjson = json.loads(strjson)
+            print "DEBUG: "+ decjson['Slider']['asset_id']
+
+            vasset = Asset.objects.get(asset_id=decjson['Slider']['asset_id'] )
+            print "ASSET_ID: " + decjson['Slider']['asset_id']
+            vslider.asset = vasset
+            vslider.media_url = decjson['Slider']['media_url']
+            vslider.media_type = decjson['Slider']['media_type']
+
+            print "ASSET_ID: "+decjson['Slider']['media_type']
+
+            vdevice = Device.objects.get(id=decjson['Slider']['target_device_id'])
+            vslider.target_device = vdevice
+            vslider.media_type = decjson['Slider']['target_device_id']
+            vslider.save()
+        except Device.DoesNotExist as e:
+            return render(request, 'cawas/error.html', {"message": "No existe Device. (" + e.message + ")"})
+        except Asset.DoesNotExist as e:
+            return render(request, 'cawas/error.html', {"message": "No existe Asset. (" + e.message + ")"})
+
+        print "METADATA"
+        #METADATA
+        vslidermetadata = decjson['Slider']['Slidermetadatas']
+        print decjson['Slider']['Slidermetadatas']
+        vflag = "success"
+
+        #SliderMetadata.objects.filter(slider=vslider).delete()
+        for item in vslidermetadata:
+            try:
+                smd = SliderMetadata()
+                print "DEBUG1: " + item['Slidermetadata']['schedule_date']
+                if (item['Slidermetadata']['schedule_date'] != ''):
+                    vschedule_date = datetime.datetime.strptime(item['Slidermetadata']['schedule_date'],'%d-%m-%Y').strftime('%Y-%m-%d')
+                else:
+                    vschedule_date = datetime.datetime.now().strftime('%Y-%m-%d')
+                #print "DEBUG1" +vschedule_date
+                #smd.publish_date = vschedule_date
+
+                vlang = Language.objects.get(code=item['Slidermetadata']['language'])
+                smd.language = vlang
+                smd.text = item['Slidermetadata']['text']
+                print "DEBUG1" +  item['Slidermetadata']['text']
+                smd.slider = vslider
+                smd.save()
+
+                # Publica en PublishQueue
+                func_publish_queue(vasset, vlang, 'AS', 'Q', vschedule_date)
+                vflag = "success"
+            except Language.DoesNotExist as e:
+                return render(request, 'cawas/error.html', {"message": "Lenguaje no Existe. (" + str(e.message) + ")"})
+            except Exception as e:
+                return render(request, 'cawas/error.html',{"message": "Error al Guardar Metadata. (" + str(e.message) + ")"})
+            vflag = "success"
+
+    try:
+        vslider = Slider.objects.get(slider_id=slider_id)
+    except Slider.DoesNotExist as e:
+        return render(request, 'cawas/error.html', {"message": "No Existe Slider. (" + str(e.message) + ")"})
+
+    vassets = Asset.objects.filter(asset_type="unknown")
+    vsliders = Slider.objects.all()
+    vlanguages = Language.objects.all()
+    vdevices = Device.objects.all()
+    vtypes  = {"image": "Image", "video": "Video"}
+    message =''
+    context = {'message': message, 'vtypes':vtypes,'vassets':vassets, 'vsliders':vsliders,
+               'vlanguages':vlanguages, 'vdevices':vdevices, 'flag':vflag,'vslider':vslider}
     return render(request, 'cawas/sliders/edit.html', context)
 
 

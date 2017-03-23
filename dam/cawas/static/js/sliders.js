@@ -1,14 +1,14 @@
 
 $( document ).ready(function() {
 
-     $("#slider-select").select2({placeholder: "Despliega la lista"});
+    $("#slider-select").select2({placeholder: "Despliega la lista"});
     $("#slider-edit").select2({placeholder: "Despliega la lista"});
 
-  $('.datePick').dcalendarpicker({
+    $('.datePick').dcalendarpicker({
       format: 'dd-mm-yyyy'
     });
 
-    /*
+
     console.log( "ready!" );
     var asset_id = $("#asset_id").val();
 
@@ -23,6 +23,7 @@ $( document ).ready(function() {
 
     var countChecked = function() {
     langQ = $("input:checked" ).length;
+    //langDesc = null;
         $('input[type=checkbox]').each(function(){
             if (this.checked) {
                 langDesc.push($(this).attr("id"));
@@ -46,7 +47,7 @@ $( document ).ready(function() {
     var hora;
     var minutos;
     // activar los selects con filtro
-
+    countChecked();
 
 
 
@@ -58,7 +59,7 @@ $( document ).ready(function() {
     })
     
     
-    
+
     // Toma el ID de la slider seleccionada en la lista
     $( "#slider-select" ).change(function() {
         
@@ -97,14 +98,12 @@ $( document ).ready(function() {
     
     // interacción del usuario al hacer click en el botón debajo de la lista de selección
     $( "#IDBtn" ).click(function(){ 
-        if (clickedVal != null){
-            $( "#idTit" ).html("AGREGANDO ID: "+clickedVal);// Agrega el ID en el título
+
             $( "#hidden1" ).show();
-        }
 
     });
 
-    
+
     // inicializar tooltips para los íconos de HELP
     $('[data-toggle="tooltip"]').tooltip(); 
     
@@ -112,11 +111,6 @@ $( document ).ready(function() {
     // drag and drop controles para las listas
     var adjustment;
 
-
-
-    
-    
-    
     // checkbox idiomas detecta lo que se chequea y muestra el módulo de idioma
     $("input[type=checkbox]").on('change', function () {
         var self = $(this);
@@ -128,12 +122,13 @@ $( document ).ready(function() {
             langDesc.push(self.attr("id"));
             
         } else {
+
             console.log("Id = " + self.attr("id") + "is Unchecked ");
             $(showDiv).hide('fast');
             langQ--;
             langDesc.pop();
         }
-        console.log("idiomas tildados:"+langQ+", y son:"+langDesc);// cantidad de idiomas
+        console.log("idiomas tildados:"+langQ+", y son: "+langDesc);// cantidad de idiomas
         if(checkedOnce>0){
             checkAll();
         }
@@ -177,17 +172,22 @@ $( document ).ready(function() {
             checkAll();      
         }
     });
+
+
     
 
     function checkAll(){
         // this function checks for all form values and makes json string to post or alerts user to complete fields.
         console.log("checking form...");
         checkVal = 0;
-        var asset_Id = $('#sliderID').val();
+        var asset_Id =$("#slider-select option:selected").attr("value");
+        //var asset_Id = $('#sliderID').attr("value");
         var url = $('#url').val();
         var typeslider_selected = $('#typeslider option:selected');
+        var device_selected = $('#devices option:selected');
 
-        countChecked();
+
+
         // chequea original Title
         if(url=="" || url==" ")
         {
@@ -196,10 +196,9 @@ $( document ).ready(function() {
         }else{
             okMe("#url");
         }
-        
-        // chequea canal
-        console.log("#typeslider"+$('#typeslider').val());
 
+        // chequea TYPESLIDER
+        console.log("#typeslider"+$('#typeslider').val());
         if ( $('#typeslider').val()=="0" || $('#typeslider').val()==0)
         {
             errorMe("#typeslider");
@@ -210,6 +209,21 @@ $( document ).ready(function() {
              $(".select2-selection--single").css("border","1px #3c763d solid");
             typeslider_selected=$('#typeslider').val();
         }
+        // chequea DEVICES
+        console.log("#devices"+$('#devices').val());
+        if ( $('#devices').val()=="0" || $('#devices').val()==0)
+        {
+            errorMe("#devices");
+            $(".select2-selection--single").css("border","1px #a94442 solid");
+            checkVal++;
+        }else{
+            okMe("#devices");
+             $(".select2-selection--single").css("border","1px #3c763d solid");
+            device_selected=$('#devices').val();
+        }
+
+
+
 
 
         // chequeo de idiomas (tit_; desc_; date_)
@@ -238,10 +252,10 @@ $( document ).ready(function() {
         }
         
         checkedOnce++;
-        
+
                 
-        
-        
+
+
         // helper subfunctions
             function errorMe(theField){
                 if ($(theField).parent().hasClass('has-success')){
@@ -260,7 +274,7 @@ $( document ).ready(function() {
                 }
                 
             }
-        
+
             function okMe(theField){
                 if ($(theField).parent().hasClass('has-error')){
                     $(theField).parent().removeClass('has-error');
@@ -298,24 +312,15 @@ $( document ).ready(function() {
                 for(i=0; i<lngth; i++){
                     var lang=arr[i];
 
-                    var titCont = $("#tit_"+lang).val();
-                    if(titCont==""){
-                        errorMe("#tit_"+lang);
+                    var text = $("#text_"+lang).val();
+                    if(text==""){
+                        errorMe("#text_"+lang);
                         checkVal++;
                         lengactualok = 0;
                     }else{
-                        okMe("#tit_"+lang);
-
+                        okMe("#text_"+lang);
                     }
 
-                    var descCont = $("#short_desc_"+lang).val().trim();
-                    if(descCont.length < 1){
-                        errorMe("#short_desc_"+lang);
-                        checkVal++;
-                        lengactualok = 0;
-                    }else{
-                        okMe("#short_desc_"+lang);
-                    }
                     // check date
                     var dateCont = $("#date_"+lang).val();
                     if(dateCont==""){
@@ -339,22 +344,23 @@ $( document ).ready(function() {
                 }
             }
 
-            function addMovieMetadata(arr){
+
+            function addSliderMetadata(arr){
                 var lngth = arr.length;
                 var myLangs = "";
-                
+
                 for(i=0; i<lngth; i++){
                     var lang=arr[i];
-
-                    var tit = $("#tit_"+lang).val();
-                    var short = $("#short_desc_"+lang).val().trim().substring(0,50)+"...";
-                    var long = $("#short_desc_"+lang).val().trim();
+                    var text = $("#text_"+lang).val();
                     var fechapub = $("#date_"+lang).val().trim();
-                    myLangs += '{"Moviemetadata":';
+
+                    myLangs += '{"Slidermetadata":';
                     myLangs += '{"language": "'+lang+'",';
-                    myLangs += '"title": "'+tit+'",';
-                    myLangs += '"summary_short": "'+short+'",';
-                    myLangs += '"summary_long":"'+long+'",';
+                    if (text==''){
+                        myLangs+='"text":null,';
+                       }else{
+                        myLangs+='"text":"'+text+'",';
+                    }
 					myLangs += '"schedule_date":"'+fechapub+'"';
                     myLangs += '}}';
                     if(i<lngth-1){
@@ -365,28 +371,34 @@ $( document ).ready(function() {
             };
         
 
+
             function submitJson(){
                 if(checkVal==0){
 
                     var myJSON = '';
                     myJSON+='{"Slider":{';
                     myJSON+='"asset_id":"'+asset_Id+'",';
-                    myJSON+='"url":"'+original_Title+'",';
-                    if (typeslider_selected=='' ||typeslider_selected='0' ){
+                    myJSON+='"media_url":"'+url+'",';
+                    myJSON+='"media_type":"'+typeslider_selected+'",';
+                    myJSON+='"target_device_id":"'+device_selected+'",';
+
+                    if (typeslider_selected=='' ){
                         myJSON+='"type_slider":null,';
                        }else{
                         myJSON+='"type_slider":"'+typeslider_selected+'",';
                     }
-                    myJSON+='"Slidersmetadata": [';
+                    myJSON+='"Slidermetadatas":[';
                     myJSON+= addSliderMetadata(langDesc);
                     myJSON+=']}}';
+
                     console.log(myJSON);
                     $("#varsToJSON").val(myJSON);
                     $("#sliderForm").submit();
                   }  
             }
+
         
     }
-    */
+
     
 });

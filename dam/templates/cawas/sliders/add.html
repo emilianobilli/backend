@@ -8,10 +8,8 @@
     <div class="subHeader">
         <div class="notifications">
             {% if user.is_authenticated %}
-
                   <a href="{% url 'menu_view' %}"><span class="glyphicon glyphicon-home GLY-med">
                                </span> &nbsp;volver al menú</a>
-
                  <button class="btn btn-lg btn-primary btn-block logOFF" type="button" id="exitBtn" data-toggle="modal" data-target="#myModal">LOG-OUT</button>
             {% endif %}
         </div>
@@ -24,17 +22,6 @@
                        <!-- left col -->
                        <div class="col-xs-12 col-md-6 col-lg-6 sepTOP-big">
                             <h1>Nueva Slider</h1>
-                            <div>
-                                <h3>Seleccionar *</h3>
-                            </div>
-                            <div>
-                                <select id="slider-select" class="form-control" size="6">
-                                    {% for item in vassets %}
-                                        <option value="{{ item.asset_id }}">ID {{ item.asset_id }} </option>
-                                    {% endfor %}
-                                </select>
-                            </div>
-
                            <div class="col-xs-12 col-md-4 col-lg-4 btnOnly">       
                                 <button class="btn btn-primary btn-block form-control" type="button" id="IDBtn">Nuevo Slider</button>
                            </div>
@@ -50,15 +37,15 @@
                                 </div>
                             </div>
                             <div>
-                            
+
                                    <!-- ------------------Reemplazar por listado de sliders ----------------- -->
-                                      
+
                                     <select id="slider-edit" class="form-control" size="6">
                                         {% for item in vsliders %}
-                                            <option value="{{ item.asset.asset_id }}"> {{ item.name }} </option>
+                                            <option value="{{ item.slider_id }}"> {{ item.slider_id }} </option>
                                         {% endfor %}
                                     </select>
-                                    
+
                                   <!-- ---------------------- Fin de  listado de sliders ------------------- -->
                             </div>
                             
@@ -86,9 +73,7 @@
              <div class="row">
                        <!-- left col -->
                        <div class="col-xs-12 col-md-6 col-lg-6 sepTOP-big">
-                           <div class="col-xs-12 col-md-12 col-lg-12">
-                            <h1>Nuevo slider</h1>
-                           </div>
+
                            <div class="col-xs-4 col-md-3 col-lg-3">
                                 <button class="btn btn-primary btn-block form-control" type="button" id="CancelBtn">Cancelar</button>
                            </div>
@@ -125,7 +110,7 @@
                    <div class="form-group has-feedback">
                     <label class="label-left" for="typeslider">Tipo de Slider: *</label>
                      <select class="form-control" id="typeslider">
-                            <option id="0"> </option>
+                            <option  value="0"> </option>
                             {% for key, value in vtypes.items %}
                                 <option id="{{ key }}" value="{{key}}">{{ value }}</option>
                             {% endfor %}
@@ -133,8 +118,28 @@
                      <span class="glyphicon form-control-feedback"></span>
                    </div>
                 </div>
+                <div class="col-xs-12 col-md-4 col-lg-4">
+                   <div class="form-group has-feedback">
+                    <label class="label-left" for="devices">Dispositivo: *</label>
+                        <select class="form-control" id="devices">
+                            <option  value="0"> </option>
+                         {% for item in vdevices %}
+                             <option id="{{ item.id }}" value="{{item.id}}">{{item.name}}</option>
+                         {% endfor %}
+                        </select>
+                     <span class="glyphicon form-control-feedback"></span>
+                   </div>
+                </div>
             </div>
-            
+          <div class="row form-row">
+               <div class="col-xs-12 col-md-8 col-lg-8">
+                  <select id="slider-select" class="form-control" id="assets">
+                    {% for item in vassets %}
+                        <option id="{{ item.asset_id }}" value="{{ item.asset_id }}">{{ item.asset_id }} </option>
+                    {% endfor %}
+                  </select>
+               </div>
+           </div>
             <!--  9 : Idioma -->
                 <div class="row form-row">
                     <div class="col-xs-12 col-md-3 col-lg-3 form-group">
@@ -162,19 +167,21 @@
                            <div class="form-group has-feedback">
                             <div class="helpright"><span class="glyphicon glyphicon-question-sign" data-toggle="tooltip"
                                                          title="La descripción para los thumbnails mostrará los primeros 50 caracteres. Al ingresar en la slider se verá completa."></span></div>
-                            <label class="label-left" for="short_desc_{{item.code}}">Descripción corta: *</label>
-                           <textarea class="form-control" name="short_desc_{{item.code}}" id="short_desc_{{item.code}}"></textarea>
+                            <label class="label-left" for="text_{{item.code}}">Texto: *</label>
+                           <textarea class="form-control" name="text_{{item.code}}" id="text_{{item.code}}"></textarea>
                            <span class="glyphicon form-control-feedback"></span>
                            </div>
                        </div>
-                       
                        <div class="col-xs-12 col-md-12 col-lg-12 form-group inlang">
-                           <div class="form-group has-feedback">
-                            <label class="label-left" for="nacionalidad_{{item.code}}">Nacionalidad:</label>
-                            <input type="text" class="form-control" name="nacionalidad_{{item.code}}" id="nacionalidad_{{item.code}}">
-                            <span class="glyphicon form-control-feedback"></span>
-                           </div>
+                               <div class="form-group has-feedback">
+                                    <div class="helpright"><span class="glyphicon glyphicon-question-sign" data-toggle="tooltip" title="Al ingresar una fecha, el sistema publicará la movie en español en esa fecha."></span></div>
+                                    <label class="label-left" for="date_{{item.code}}">Fecha de Publicación</label>
+                                    <input type="text" class="form-control datePick" name="date_{{item.code}}" id="date_{{item.code}}">
+                                    <span class="glyphicon form-control-feedback"></span>
+                               </div>
                        </div>
+
+
                         
                 </div>
             </div>
@@ -182,15 +189,20 @@
 
             
             <!-- Last Row : Buttons -->
-            <div class="row form-row">
-               <div class="col-xs-4 col-md-4 col-lg-4">
+            <form method="post" action="" name="slider-completeForm" enctype="multipart/form-data"
+                  class="content-picker sliderChoose" id="sliderForm">
+                <input type="hidden" name="varsToJSON" id="varsToJSON" value="">
+
+                <div class="row form-row">
+                   <div class="col-xs-4 col-md-4 col-lg-4">
+                    </div>
+
+                    <div class="col-xs-4 col-md-4 col-lg-4">
+                        <button class="btn btn-primary btn-block form-control" type="button" id="sendBut">Grabar slider</button>
+                    </div>
+                    <div class="col-xs-4 col-md-4 col-lg-4">
+                    </div>
                 </div>
-                <div class="col-xs-4 col-md-4 col-lg-4">      
-                    <button class="btn btn-primary btn-block form-control" type="submit" id="sendBut">Grabar slider</button>
-                </div>
-                <div class="col-xs-4 col-md-4 col-lg-4">
-                </div>
-            </div>
             </form>
         
         </div>
