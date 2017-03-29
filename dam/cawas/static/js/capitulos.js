@@ -16,6 +16,10 @@ $( document ).ready(function() {
         $("#duration-seconds").val(segundos).change();
     }
 
+    $("#btnsearch").click(function(){
+           $("#searchForID").submit();
+    });
+
     function leerRuntime(){
             var estreno = ($("#runtime").val());
             var estrenoArr = estreno.split(":");
@@ -35,7 +39,10 @@ $( document ).ready(function() {
 
     };
 
-
+    var asset_id = $("#asset_id").val();
+    if(asset_id != null){
+        changeVideo(asset_id, "#repro1");// Cambia el video de acuerdo al ID. la función está en la línea 135. Construye la url relativa del video con la variable path+ID+'.mp4'
+    };
     
     
     var checkedOnce = 0; //chequea si el formulario se ha intentado enviar alguna vez

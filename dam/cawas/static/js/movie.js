@@ -15,6 +15,14 @@ $( document ).ready(function() {
 
     }
 
+
+    $("#btnsearch").click(function(){
+           $("#searchForID").submit();
+    });
+
+
+
+
     console.log( "ready!" );
     var asset_id = $("#asset_id").val();
     if(asset_id != null){

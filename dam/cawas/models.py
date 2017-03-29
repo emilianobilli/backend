@@ -319,7 +319,6 @@ class Girl(models.Model):
         ("pornstar", "Pornstar"),
         ("playmate", "Playmate")
     )
-
     asset             = models.ForeignKey(Asset)
     name              = models.CharField(max_length=128, unique=True, help_text="Nombre de la actriz")
     type              = models.CharField(max_length=20, choices=TYPE, help_text="Tipo de actriz")

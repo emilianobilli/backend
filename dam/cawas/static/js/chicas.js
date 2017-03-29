@@ -25,7 +25,10 @@ $( document ).ready(function() {
     };
     // activar los selects con filtro
     $("#chica-select").select2({placeholder: "Despliega la lista"});
-    
+
+    $("#btnsearch").click(function(){
+           $("#searchForID").submit();
+    });
     // simular exit con el botón de salir
     $("#getOut").click(function(){
            window.location.href = "/logout";

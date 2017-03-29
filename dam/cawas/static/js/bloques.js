@@ -24,6 +24,9 @@ $( document ).ready(function() {
            window.location.href = "/logout";
     });
 
+    $("#btnsearch").click(function(){
+           $("#searchForID").submit();
+    });
 
      // simular exit con el botó de salir
     $("#IDBtn").click(function(){

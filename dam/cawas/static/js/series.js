@@ -9,7 +9,9 @@ $( document ).ready(function() {
         $("#myModal-ERROR").modal();
     }
     
-    
+     $("#btnsearch").click(function(){
+           $("#searchForID").submit();
+    });
     
     var checkedOnce = 0; //chequea si el formulario se ha intentado enviar alguna vez
     var checkVal=0; //chequea la cantidad de errores en el formulario

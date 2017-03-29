@@ -1,14 +1,18 @@
-from django.shortcuts import render
-
 # Create your views here.
-import datetime, os, json
-from django.contrib.auth import authenticate, login, logout
-from django.shortcuts import render, redirect
-from .models import Channel, Asset, Device, Slider, SliderMetadata, Episode, EpisodeMetadata, ImageQueue, PublishQueue, Setting,  Block, Serie, SerieMetadata, Movie, MovieMetadata, Girl,GirlMetadata,  Category,CategoryMetadata, Language, Image, PublishZone
+import os, datetime, json
+from django.shortcuts import render,redirect
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
-from django.shortcuts import  render
-from django.http import  HttpResponse
 from django.db import IntegrityError
+from django.http import  HttpResponse
+
+from Controller.GirlController import GirlController
+from Controller.LogController import LogController
+
+from models import Channel, Device, Slider, SliderMetadata, Episode, EpisodeMetadata, ImageQueue, PublishQueue, \
+    Block, Serie, SerieMetadata, Movie, MovieMetadata, CategoryMetadata, PublishZone,Girl, GirlMetadata, Asset, Language, Category, Image, Setting
+from django.contrib.auth import authenticate, login, logout
+#from dam.backend_sdk import *
+
 
 
 #FUNCIONES GENERALES
@@ -584,252 +588,37 @@ def edit_movies_view(request, asset_id):
 #<ADD GIRL>
 def add_girls_view(request):
     #AUTENTICACION DE USUARIO
-    if not request.user.is_authenticated:
-        return redirect(login_view)
-    message = ''
-    vflag = ""
-    vimg = Image()
 
-    try:
-        pathfilesport = Setting.objects.get(code='image_repository_path_portrait')
-        pathfilesland = Setting.objects.get(code='image_repository_path_landscape')
-    except Setting.DoesNotExist as e:
-        return render(request, 'cawas/error.html', {"message": "No Setting. (" + e.message + ")"})
 
-    #POST - Obtener datos del formulario y guardar la metadata
-    if request.method == 'POST':
-        # parsear JSON
-        strjson = request.POST['varsToJSON']
-        decjson = json.loads(strjson)
+    gc = GirlController()
+    #if request.method == 'GET':
+    return gc.add(request)
 
-        # VARIABLES
-        vgirl = Girl()
-        vasset = Asset()
-        vasset.asset_type = "girl"
-        vasset.save()
+    #if request.method == 'POST':
+    #    respuesta = gc.add(request)
 
-        try:
-            vimg.name = vasset.asset_id
-            #IMAGEN Portrait
-            if (request.FILES.has_key('ThumbHor')):
-                if request.FILES['ThumbHor'].name != '':
-                    vimg.portrait = request.FILES['ThumbHor']
-                    extension = os.path.splitext(vimg.portrait.name)[1]
-                    varchivo = pathfilesport.value + vimg.name + extension
-                    vimg.portrait.name = varchivo
-                    if os.path.isfile(varchivo):
-                        os.remove(varchivo)
+    #    if respuesta == True:
+    #        lc = LogController()
+    #        return lc.menu_view(request)
 
-            # IMAGEN Landscape
-            if (request.FILES.has_key('ThumbVer')):
-                if request.FILES['ThumbVer'].name != '':
-                    vimg.landscape = request.FILES['ThumbVer']
-                    extension = os.path.splitext(vimg.landscape.name)[1]
-                    varchivo = pathfilesland.value + vimg.name + extension
-                    vimg.landscape.name = varchivo
-                    if os.path.isfile(varchivo):
-                        os.remove(varchivo)
-            vimg.save()
 
-            #CREAR GIRL
-            vgirl.asset = vasset
-            vgirl.name  = decjson['Girl']['name']
-            vgirl.type = decjson['Girl']['type_girl']
-
-            if (decjson['Girl']['birth_date'] is not None ):
-                vgirl.birth_date = datetime.datetime.strptime(decjson['Girl']['birth_date'], '%d-%m-%Y').strftime('%Y-%m-%d')
-            else:
-                vgirl.birth_date = datetime.datetime.now().strftime('%Y-%m-%d')
-
-            vgirl.height = decjson['Girl']['height']
-            vgirl.weight = decjson['Girl']['weight']
-            vgirl.image = vimg
-            vgirl.save()
-        except Exception as e:
-            return render(request, 'cawas/error.html', {"message": "Error al Guardar Girl. (" + e.message + ")."})
-
-        # CREAR METADATA
-        vgirlmetadatas = decjson['Girl']['Girlmetadatas']
-        for item in vgirlmetadatas:
-            vlanguage = Language.objects.get(code=item['Girlmetadata']['language'])
-            try:
-                gmd = GirlMetadata.objects.get(girl=vgirl, language=vlanguage)
-            except GirlMetadata.DoesNotExist as e:
-                gmd = GirlMetadata()
-
-            vschedule_date = datetime.datetime.now().strftime('%Y-%m-%d')
-            gmd.language = vlanguage
-            gmd.description = item['Girlmetadata']['description']
-            gmd.nationality = item['Girlmetadata']['nationality']
-            gmd.publish_date = vschedule_date
-            gmd.girl = vgirl
-            gmd.save()
-
-            # Publica en PublishQueue
-            func_publish_queue(vasset.asset_id, vlanguage, 'AS', 'Q', vschedule_date)
-            # Publica en PublishImage
-            func_publish_image(vimg)
-
-        # Luego del POST redirige a pagina principal
-
-    #Cargar variables para presentar en templates
-    vgirls = Girl.objects.all()
-    vcategories = Category.objects.all()
-    vlanguages = Language.objects.all()
-
-    vtypegirl = {"pornstar":"Pornstar", "playmate":"Playmate"}
-    context = {'message':message, 'vgirls':vgirls, 'vcategories':vcategories, 'vlanguages':vlanguages,'vtypegirl':vtypegirl,
-               'flag':vflag }
-    #checks:
-    #Imagenes - OK
-    #Girl - OK
-    #Girl metadata - OK
-    #Publishqueue - NO
-    #Publishimage - NO
-    return render(request, 'cawas/girls/add.html', context)
 #</fin ADD Girl>
 
 
 def edit_girls_view(request, asset_id):
     #AUTENTICACION DE USUARIO
-    if not request.user.is_authenticated:
-        return redirect(login_view)
 
-    #VARIABLES PARA GET - CARGAR GIRL
-    try:
-        message = ''
-        vlangmetadata = []
-        pathfilesport = Setting.objects.get(code='image_repository_path_portrait')
-        pathfilesland = Setting.objects.get(code='image_repository_path_landscape')
-        vasset = Asset.objects.get(asset_id=asset_id)
-        vgirl = Girl.objects.get(asset=vasset)
-        vtypegirl = {"pornstar": "Pornstar", "playmate": "Playmate"}
-        vlanguages = Language.objects.all()
-    # carga imagenes
-        i = len(vgirl.image.portrait.name)
-        imgport = vgirl.image.portrait.name[5:i]
-        i = len(vgirl.image.landscape.name)
-        imgland = vgirl.image.landscape.name[5:i]
-    #Nuevo diccionario para completar lenguages y metadata
-        for itemlang in vlanguages:
-            vgirlmetadata = None
-            try:
-                vgirlmetadata = GirlMetadata.objects.get(girl=vgirl, language=itemlang)
-                vlangmetadata.append(
-                    {'checked': True, 'code': itemlang.code, 'name': itemlang.name,
-                     'description': vgirlmetadata.description,
-                     'nationality': vgirlmetadata.nationality})
-            except GirlMetadata.DoesNotExist as a:
-                vlangmetadata.append({'checked': False, 'code': itemlang.code, 'name': itemlang.name, 'description': '', 'nationality': ''})
-    except Setting.DoesNotExist as e:
-        return render(request, 'cawas/error.html', {"message": "No Setting. (" + e.message + ")"})
-    except Girl.DoesNotExist as e:
-        return render(request, 'cawas/error.html', {"message": "Asset no se encuentra Vinculado a Girl. (" + e.message + ")"})
-    except Asset.DoesNotExist as e:
-        return render(request, 'cawas/error.html', {"message": "Asset no Existe. (" + e.message + ")"})
-    except Category.DoesNotExist as e:
-        return render(request, 'cawas/error.html', {"message": "Categoria no Existe. (" + e.message + ")"})
-    except GirlMetadata.DoesNotExist as e:
-        return render(request, 'cawas/error.html', {"message": "GirlMetaData No Existe . (" + e.message + ")"})
-
+    gc = GirlController()
+    if request.method == 'GET':
+        return gc.edit(request, asset_id)
 
     if request.method == 'POST':
-        #VARIABLES
-        vasset = Asset()
-        vgirl = Girl()
-        # Parsear JSON
-        strjson = request.POST['varsToJSON']
-        decjson = json.loads(strjson)
+        #Si respuesta es True, quiere decir que se Grabo correctamente
+       respuesta = gc.edit(request, asset_id)
+       if respuesta == True:
+            lc = LogController()
+            return lc.menu_view(request)
 
-        # Leer GIRL desde AssetID
-        try:
-            vasset = Asset.objects.get(asset_id=decjson['Girl']['asset_id'])
-            vgirl = Girl.objects.get(asset=vasset)
-            #verificar imagen
-            vimg = Image.objects.get(name=vasset.asset_id)
-
-        except Asset.DoesNotExist as e:
-            return render(request, 'cawas/error.html', {"message": "Asset no Existe. (" + e.message + ")"})
-        except GirlMetadata.DoesNotExist as e:
-            return render(request, 'cawas/error.html', {"message": "GirlMetaData No Existe . (" + e.message + ")"})
-        except Image.DoesNotExist as e:
-            vimg = Image()
-
-        # IMAGEN Portrait
-        if (request.FILES.has_key('ThumbHor')):
-            if request.FILES['ThumbHor'].name != '':
-                vimg.portrait = request.FILES['ThumbHor']
-                extension = os.path.splitext(vimg.portrait.name)[1]
-                vimg.name = vasset.asset_id
-                varchivo = pathfilesport.value + vimg.name + extension
-                vimg.portrait.name = varchivo
-                if os.path.isfile(varchivo):
-                    os.remove(varchivo)
-
-        # IMAGEN Landscape
-        if (request.FILES.has_key('ThumbVer')):
-            if request.FILES['ThumbVer'].name != '':
-                vimg.landscape = request.FILES['ThumbVer']
-                extension = os.path.splitext(vimg.landscape.name)[1]
-                varchivo = pathfilesland.value + vimg.name + extension
-                vimg.landscape.name = varchivo
-                if os.path.isfile(varchivo):
-                    os.remove(varchivo)
-
-        vimg.save()
-
-        #Actualiza Girl
-        try:
-            vgirl.name = decjson['Girl']['name']
-            vgirl.type = decjson['Girl']['type_girl']
-            vgirl.birth_date = datetime.datetime.strptime(decjson['Girl']['birth_date'], '%d-%m-%Y').strftime('%Y-%m-%d')
-            vgirl.height = decjson['Girl']['height']
-            vgirl.weight = decjson['Girl']['weight']
-            vgirl.image = vimg
-            vgirl.save()
-        except Exception as e:
-            return render(request, 'cawas/error.html', {"message": "Error al Guardar Girl. (" + str(e.message) + ")."})
-
-
-
-        #BORRAR Y CREAR METADATA
-        vgirlmetadatas = decjson['Girl']['Girlmetadatas']
-        gmds = GirlMetadata.objects.filter(girl=vgirl).delete()
-
-        for item in vgirlmetadatas:
-            vlanguage = Language.objects.get(code=item['Girlmetadata']['language'])
-            try:
-                gmd = GirlMetadata.objects.get(girl=vgirl, language=vlanguage)
-            except GirlMetadata.DoesNotExist as e:
-                gmd = GirlMetadata()
-
-            vschedule_date = datetime.datetime.now().strftime('%Y-%m-%d')
-            gmd.language = vlanguage
-            gmd.description = item['Girlmetadata']['description']
-            gmd.nationality = item['Girlmetadata']['nationality']
-            gmd.publish_date = vschedule_date
-            gmd.girl = vgirl
-            gmd.save()
-
-            # Publica en PublishQueue
-            func_publish_queue(vasset.asset_id, vlanguage, 'AS', 'Q', vschedule_date)
-            # Publica en PublishImage
-            func_publish_image(vimg)
-
-        #Luego del POST redirige a pagina principal
-        return redirect(menu_view)
-
-    context = {'message': message,  'vlanguages': vlanguages, 'vgirl':vgirl, 'vtypegirl':vtypegirl,'vlangmetadata':vlangmetadata,
-               'imgport':imgport, 'imgland':imgland}
-    # checks:
-    # Imagenes -
-    # Girl - OK
-    # Girl metadata - OK
-    # Publishqueue - OK
-    # Publishimage - OK
-    # Bugs:
-
-    return render(request, 'cawas/girls/edit.html', context)
 #</Fin EDIT Girl>
 
 
@@ -2130,7 +1919,6 @@ def edit_sliders_view(request, slider_id):
 
 def add_asset_view(request):
     try:
-        print request.POST
         strjson = request.body
         decjson = json.loads(strjson)
         if Asset.objects.filter(asset_id=decjson['asset_id']).exists():
@@ -2150,15 +1938,91 @@ def add_asset_view(request):
     return render(request, 'cawas/pruebas/blank.html', context)
 
 
+
+
+def unpublish_movies_view(request, asset_id):
+    if not request.user.is_authenticated:
+        return redirect(login_view)
+
+    try:
+        asset = Asset.objects.get(asset_id = asset_id)
+        movie = Movie.objects.get(asset=asset)
+        moviemetadata = MovieMetadata.objects(movie)
+        backend_asset_url = Setting.objects.get(CODE='backend_asset_url')
+        vzones = PublishZone.objects.filter(enabled=True)
+        #for zone in vzones:
+            #abr = ApiBackendResource(zone.backend_url ,backend_asset_url, )
+            #abr.delete(asset_id, asset_type,language )
+
+        flag = 'Movie ' + asset_id + 'Despublicada Correctamente'
+    except PublishZone.DoesNotExist as e:
+        return render(request, 'cawas/error.html', {"message": "PublishZone no Existe. (" + str(e.message) + ")"})
+    except Asset.DoesNotExist as e:
+        return render(request, 'cawas/error.html', {"message": "Asset no Existe. (" + str(e.message) + ")"})
+
+    context = {'flag':flag}
+    return render(request, 'cawas/movies/list.html', context)
+
+
+
+
+def unpublish_girls_view(request, asset_id):
+    if not request.user.is_authenticated:
+        return redirect(login_view)
+
+    try:
+        asset = Asset.objects.get(asset_id=asset_id)
+        girl = Girl.objects.get(asset=asset)
+        girlmetadata = GirlMetadata.objects(girl)
+        backend_asset_url = Setting.objects.get(CODE='backend_asset_url')
+        vzones = PublishZone.objects.filter(enabled=True)
+        #for zone in vzones:
+        #    abr = ApiBackendResource(zone.backend_url ,backend_asset_url, )
+        #    abr.delete(asset_id, asset_type,language )
+
+        flag = 'Movie ' + asset_id + 'Despublicada Correctamente'
+    except PublishZone.DoesNotExist as e:
+        return render(request, 'cawas/error.html', {"message": "PublishZone no Existe. (" + str(e.message) + ")"})
+    except Asset.DoesNotExist as e:
+        return render(request, 'cawas/error.html', {"message": "Asset no Existe. (" + str(e.message) + ")"})
+
+    context = {'flag': flag}
+    return render(request, 'cawas/girls/list.html', context)
+
+
+
 # Borrar comentario
-
 def list_movies_view(request):
+    if not request.user.is_authenticated:
+        return redirect(login_view)
 
+    usuario = request.user
     message = "Error"
-    movies_list = Movie.objects.all()
-    paginator = Paginator(movies_list, 20)  # Show 25 contacts per page
-
+    titulo = ''
     page = request.GET.get('page')
+    request.POST.get('page')
+    movies_list= None
+
+    if request.POST:
+        titulo = request.POST['inputTitulo']
+        selectestado = request.POST['selectestado']
+        #movies_list = MovieMetadata.objects.all().order_by('movie_id')
+
+        if titulo != '':
+            movies_sel = Movie.objects.filter(original_title__icontains=titulo)
+        else:
+            movies_sel = Movie.objects.all()
+
+        if selectestado !='':
+            movies_list = MovieMetadata.objects.filter(movie__in=movies_sel, publish_status=selectestado ).order_by('movie_id')
+        else:
+            movies_list = MovieMetadata.objects.filter(movie__in=movies_sel).order_by('movie_id')
+
+
+    if movies_list is None:
+        movies_list = MovieMetadata.objects.all().order_by('movie_id')
+
+    paginator = Paginator(movies_list, 20)  # Show 25 contacts per page
     try:
         movies = paginator.page(page)
     except PageNotAnInteger:
@@ -2169,44 +2033,188 @@ def list_movies_view(request):
         movies = paginator.page(paginator.num_pages)
 
 
-    context = {'message': message, 'registros':movies}
+    context = {'message': message, 'registros':movies, 'titulo':titulo, 'usuario':usuario}
 
     return render(request, 'cawas/movies/list.html', context)
 
 
 def list_girls_view(request):
+    if not request.user.is_authenticated:
+        return redirect(login_view)
 
+    usuario = request.user
     message = "Error"
-    registros = Girl.objects.all()
-    context = {'message': message, 'registros':registros}
+    titulo = ''
+    page = request.GET.get('page')
+    request.POST.get('page')
+    girls_list = None
 
+    if request.POST:
+        titulo = request.POST['inputTitulo']
+        selectestado = request.POST['selectestado']
+
+        #FILTROS
+        if titulo != '':
+            if selectestado != '':
+                girls_list = Girl.objects.filter(name__icontains=titulo, publish_status=selectestado).order_by('girl_id')
+            else:
+                girls_list = Girl.objects.filter(name__icontains=titulo).order_by('girl_id')
+        elif selectestado != '':
+            girls_list = Girl.objects.filter( publish_status=selectestado).order_by('girl_id')
+        else:
+            girls_list = Girl.objects.all().order_by('girl_id')
+
+
+
+    if girls_list is None:
+        girls_list = GirlMetadata.objects.all().order_by('girl_id')
+
+
+    paginator = Paginator(girls_list, 20)  # Show 25 contacts per page
+    try:
+        girls = paginator.page(page)
+    except PageNotAnInteger:
+        # If page is not an integer, deliver first page.
+        girls = paginator.page(1)
+    except EmptyPage:
+        # If page is out of range (e.g. 9999), deliver last page of results.
+        girls = paginator.page(paginator.num_pages)
+
+    context = {'message': message, 'registros': girls, 'titulo': titulo, 'usuario': usuario}
     return render(request, 'cawas/girls/list.html', context)
 
 
+
+
 def list_blocks_view(request):
+    if not request.user.is_authenticated:
+        return redirect(login_view)
 
+    usuario = request.user
     message = "Error"
-    registros = Block.objects.all()
-    context = {'message': message, 'registros':registros}
+    titulo = ''
+    page = request.GET.get('page')
+    request.POST.get('page')
+    blocks_list = None
 
+    if request.POST:
+        titulo = request.POST['inputTitulo']
+        selectestado = request.POST['selectestado']
+
+        # FILTROS
+        if titulo != '':
+            if selectestado != '':
+                blocks_list = Block.objects.filter(name__icontains=titulo, publish_status=selectestado).order_by('block_id')
+            else:
+                blocks_list = Block.objects.filter(name__icontains=titulo).order_by('block_id')
+        elif selectestado != '':
+            blocks_list = Block.objects.filter(publish_status=selectestado).order_by('block_id')
+        else:
+            blocks_list = Block.objects.all().order_by('block_id')
+
+
+    if blocks_list is None:
+        blocks_list = Block.objects.all().order_by('block_id')
+
+    paginator = Paginator(blocks_list, 20)  # Show 25 contacts per page
+    try:
+        blocks = paginator.page(page)
+    except PageNotAnInteger:
+        # If page is not an integer, deliver first page.
+        blocks = paginator.page(1)
+    except EmptyPage:
+        # If page is out of range (e.g. 9999), deliver last page of results.
+        blocks = paginator.page(paginator.num_pages)
+
+    context = {'message': message, 'registros': blocks, 'titulo': titulo, 'usuario': usuario}
     return render(request, 'cawas/blocks/list.html', context)
 
 
+
+
 def list_episodes_view(request):
+    if not request.user.is_authenticated:
+        return redirect(login_view)
 
+    usuario = request.user
     message = "Error"
-    registros = Episode.objects.all()
-    context = {'message': message, 'registros':registros}
+    titulo = ''
+    page = request.GET.get('page')
+    request.POST.get('page')
+    episodes_list = None
 
+    if request.POST:
+        titulo = request.POST['inputTitulo']
+        selectestado = request.POST['selectestado']
+        # FILTROS
+        if titulo != '':
+            if selectestado != '':
+                episodes_list = EpisodeMetadata.objects.filter(title__icontains=titulo, publish_status=selectestado).order_by('episode_id')
+            else:
+                episodes_list = EpisodeMetadata.objects.filter(title__icontains=titulo).order_by('episode_id')
+        elif selectestado != '':
+            episodes_list = EpisodeMetadata.objects.filter(publish_status=selectestado).order_by('episode_id')
+        else:
+            episodes_list = EpisodeMetadata.objects.all().order_by('episode_id')
+
+    if episodes_list is None:
+        episodes_list = EpisodeMetadata.objects.all().order_by('episode_id')
+
+    paginator = Paginator(episodes_list, 20)  # Show 25 contacts per page
+    try:
+        episodes = paginator.page(page)
+    except PageNotAnInteger:
+        # If page is not an integer, deliver first page.
+        episodes = paginator.page(1)
+    except EmptyPage:
+        # If page is out of range (e.g. 9999), deliver last page of results.
+        episodes = paginator.page(paginator.num_pages)
+
+    context = {'message': message, 'registros':episodes, 'titulo':titulo, 'usuario':usuario}
     return render(request, 'cawas/episodes/list.html', context)
+
 
 
 def list_series_view(request):
 
-    message = "Error"
-    series = Serie.objects.all()
-    context = {'message': message, 'registros':series}
+    if not request.user.is_authenticated:
+        return redirect(login_view)
 
+    usuario = request.user
+    message = "Error"
+    titulo = ''
+    page = request.GET.get('page')
+    request.POST.get('page')
+    series_list = None
+
+    if request.POST:
+        titulo = request.POST['inputTitulo']
+        selectestado = request.POST['selectestado']
+        # FILTROS
+        if titulo != '':
+            if selectestado != '':
+                series_list = SerieMetadata.objects.filter(title__icontains=titulo, publish_status=selectestado).order_by('serie_id')
+            else:
+                series_list = SerieMetadata.objects.filter(title__icontains=titulo).order_by('serie_id')
+        elif selectestado != '':
+            series_list = SerieMetadata.objects.filter(publish_status=selectestado).order_by('serie_id')
+        else:
+            series_list = SerieMetadata.objects.all().order_by('serie_id')
+
+    if series_list is None:
+        series_list = SerieMetadata.objects.all().order_by('serie_id')
+
+    paginator = Paginator(series_list, 20)  # Show 25 contacts per page
+    try:
+        series = paginator.page(page)
+    except PageNotAnInteger:
+        # If page is not an integer, deliver first page.
+        series = paginator.page(1)
+    except EmptyPage:
+        # If page is out of range (e.g. 9999), deliver last page of results.
+        series = paginator.page(paginator.num_pages)
+
+    context = {'message': message, 'registros':series, 'titulo':titulo, 'usuario':usuario}
     return render(request, 'cawas/series/list.html', context)
 
 

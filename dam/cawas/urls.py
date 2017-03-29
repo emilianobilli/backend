@@ -11,14 +11,19 @@ urlpatterns = [
     url(r'^movies/add/$', views.add_movies_view, name='add_movie'),
     url(r'^movies/edit/(?P<asset_id>\d*)/$', views.edit_movies_view, name='edit_movie'),
     url(r'^movies/list/$', views.list_movies_view, name='list_movie'),
+    url(r'^movies/unpublish/(?P<asset_id>\d*)/$', views.unpublish_movies_view, name='unpublish_movie'),
+
     url(r'^girls/add/$', views.add_girls_view, name='add_girls'),
     url(r'^girls/edit/(?P<asset_id>\w*)/$', views.edit_girls_view, name='edit_girls'),
     url(r'^girls/list/$', views.list_girls_view, name='list_girls'),
+
     url(r'^categories/add/$', views.add_category_view, name='add_categories'),
     url(r'^categories/edit/(?P<asset_id>\d*)/$', views.edit_category_view, name='edit_categories'),
+
     url(r'^series/add/$', views.add_series_view, name='add_series'),
     url(r'^series/edit/(?P<asset_id>\w*)/$', views.edit_series_view, name='edit_series'),
     url(r'^series/list/$', views.list_series_view, name='list_series'),
+
     url(r'^blocks/add/$', views.add_blocks_view, name='add_blocks'),
     url(r'^blocks/edit/(?P<block_id>\w*)/$', views.edit_blocks_view, name='edit_episodes'),
     url(r'^blocks/list/$', views.list_blocks_view, name='list_blocks'),

@@ -25,21 +25,19 @@
         <div class="container">
 
             <div class="row">
-                       <!-- left col -->
-                       <div class="col-xs-12 col-md-6 col-lg-6 sepTOP-big">
 
-                            <h1>Editar capítulo</h1>
-                            <div>
-                                <h3>Edita los campos necesarios y presiona el botón EDITAR</h3>
-                            </div>
-
-
-
-                       </div>
-
-
-
-              </div>
+               <div class="col-xs-12 col-md-6 col-lg-6 sepTOP-big">
+                    <h1>Editar capítulo</h1>
+                    <div>
+                        <h3>Edita los campos necesarios y presiona el botón EDITAR</h3>
+                    </div>
+               </div>
+                <div  id="repro1">
+                   <video width="400" controls class="fRIGHT">
+                      <source src="" type=video/mp4 id="videomp4">
+                   </video>
+                </div>
+            </div>
 
         </div>
        <div class="container" >
@@ -57,8 +55,8 @@
                                    value="{{ vepisode.original_title }}" name="orginalTitle" id="orginalTitle" autofocus>
                             <span class="glyphicon form-control-feedback"></span>
                         </div>
-                        <!-- pegar en "value" el ID nuevo -->
-                        <input type="hidden" name="newID" value="{{ vepisode.asset_id }}">
+                        <!-- pegar en "value" el ID -->
+                        <input type="hidden" id="asset_id" name="asset_id" value="{{ vepisode.asset.asset_id }}">
                     </div>
                 </div>
 

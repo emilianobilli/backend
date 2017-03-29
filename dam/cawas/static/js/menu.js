@@ -3,7 +3,7 @@ $( document ).ready(function() {
        
     // simular exit con el botó de salir
     $("#getOut").click(function(){
-           window.location.href = "index.html?logstatus=OFF";
+           window.location.href = "/logout";
        })
     
     $("#glyID").click(function(){

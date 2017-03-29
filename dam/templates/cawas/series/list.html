@@ -1,5 +1,9 @@
 {% extends "cawas/base.html" %}
 
+{% block extra_head %}
+    <script src="/static/js/series.js"></script>
+{% endblock %}
+
 {% block subheader %}
 <div class="col-xs-12 col-md-12 col-lg-12 unpad">
     <div class="subHeader">
@@ -25,48 +29,69 @@
                   </div>
               </div>
 
-           <!-- Second Row -->
+           <!-- Filtros Row -->
               <div class="row">
+                  <form method="post" action="" name="searchForID"
+                              id="searchForID" enctype="multipart/form-data">
                   <div class="col-lg-4 col-md-4 col-sm-4">
-                      <form action="grid-view.html" method="get" id="searchForID" name="searchForId">
+
+
                             <div class="col-xs-12 col-md-2 col-lg-2 ">
-                                Por <span class="boldIt">ID</span>
+                                 Por <span class="boldIt">Título</span>
                             </div>
+
                             <div class="col-xs-11 col-md-9 col-lg-9 ">
                                 <div>
-                                    <input type="text" class="form-control fLEFT top6" id="InputUser" placeholder="Ingresa ID" name="ID" required>
+                                    <input type="text" class="form-control fLEFT top6"
+                                           id="inputTitulo" placeholder="Ingresar un texto..." name="inputTitulo" required>
                                 </div>
                             </div>
                             <div class="col-xs-1 col-md-1 col-lg-1 unpad">
-                               <input type="submit" style="display:none;">
-                                <span class="glyphicon glyphicon-search GLY-search fRIGHT top6" id="glyID" ></span>
+                                <span name="btnsearch" id="btnsearch"class="glyphicon glyphicon-search GLY-search fRIGHT top6" id="glyID"> </span>
                             </div>
-                      </form>
+
                   </div>
+
                   <div class="col-lg-4 col-md-4 col-sm-4">
                          <div class="col-xs-12 col-md-2 col-lg-2 ">
                                 Por <span class="boldIt">Status</span>
                          </div>
                          <div class="col-xs-12 col-md-10 col-lg-10 ">
-                            <select class="form-control top6">
-                               <option vlaue=""></option>
-                                <option vlaue="published">Publicadas</option>
-                                <option vlaue="unpublished">Sin publicar</option>
+                            <select id="selectestado" name="selectestado" class="form-control top6">
+                               <option value=""></option>
+                               <option value="1">Publicadas</option>
+                               <option value="0">Sin publicar</option>
                             </select>
 
                         </div>
                   </div>
-
-
-
+                </form>
               </div>
+            <!-- Fin de Filtros -->
 
-            <!-- Third Row -->
             <div class="row">
-                  <div class="col-lg-12 col-md-12 col-sm-12 sepTOP-big">
-                  <h1>Resultados:</h1>
+                  <div class="col-lg-10 col-md-10 col-sm-10" >
+
                   </div>
+                 <div class="col-lg-2 col-md-2 col-sm-2" >
+                    <div class="pagination">
+                            <span class="step-links">
+                                {% if registros.has_previous %}
+                                   <b> <a href="?page={{ registros.previous_page_number }}"> << </a></b>
+                                {% endif %}
+
+                                <span class="current">
+                                    Page {{ registros.number }} of {{ registros.paginator.num_pages }}.
+                                </span>
+
+                                {% if registros.has_next %}
+                                    <b><a href="?page={{ registros.next_page_number }}"> >> </a></b>
+                                {% endif %}
+                            </span>
+                        </div>
+                     </div>
             </div>
+
 
             <!-- GRID row -->
             <div class="row">
@@ -74,29 +99,37 @@
                 <div class="table">
                     <div class="tb-row tb-header">
                         <div class="tb-cell">ID</div>
-                        <div class="tb-cell">Titulo</div>
+                        <div class="tb-cell">Título</div>
+                        <div class="tb-cell">Idioma</div>
                         <div class="tb-cell">Estado</div>
+
                         <div class="tb-cell">Fec. Publicación</div>
                         <div class="tb-cell">Acciones</div>
-                        <div class="tb-cell"></div>
-                        <div class="tb-cell"></div>
+                        {% if usuario.is_superuser == true %}
+                            <div class="tb-cell"></div>
+                        {% endif %}
                         <div class="tb-cell"></div>
                     </div>
 
                      {% for item in registros %}
-
-
-
                         <div class="tb-row">
-                            <div class="tb-cell">
-                                <input type="checkbox" id="{{ item.asset.asset_id}}" value="{{ item.asset.asset_id}}"> {{ item.asset.asset_id}}
-                            </div>
-                            <div class="tb-cell">{{ item.original_title }}</div>
-                            <div class="tb-cell"></div>
-                            <div class="tb-cell"></div>
-                            <div class="tb-cell"><a href="/movies/edit/{{ item.asset.asset_id}}" class="btn-info btn tb-btn" >Editar</a></div>
-                            <div class="tb-cell"><a href="/movies/delete/{{ item.asset.asset_id}}"class="btn-danger btn tb-btn">Borrar</a></div>
-                            <div class="tb-cell"><a href="/movies/unpublish/{{ item.asset.asset_id}}"class="btn-warning btn tb-btn">Des-publicar</a></div>
+                             <div class="tb-cell">
+                                <input type="checkbox" id="{{ item.serie.asset.asset_id}}" value="{{ item.serie.asset.asset_id}}"> {{ item.serie.asset.asset_id }}
+                             </div>
+                             <div class="tb-cell">{{ item.title }}</div>
+                             <div class="tb-cell">{{ item.language.name }}</div>
+                                {% if item.publish_status == 0  %}
+                                    <div class="tb-cell">Sin Publicar</div>
+                                {% else %}
+                                    <div class="tb-cell">Publicado</div>
+                                {% endif %}
+                            <div class="tb-cell">{{ item.publish_date|date:'d-m-Y' }}</div>
+
+                            <div class="tb-cell"><a href="/series/edit/{{ item.serie.asset.asset_id}}" class="btn-info btn tb-btn" >Editar</a></div>
+                            {% if usuario.is_superuser == true %}
+                                <div class="tb-cell"><a href="/series/delete/{{ item.serie.asset.asset_id}}" class="btn-danger btn tb-btn">Borrar</a></div>
+                            {% endif %}
+                            <div class="tb-cell"><a href="/series/unpublish/{{ item.serie.asset.asset_id}}" class="btn-warning btn tb-btn">Des-publicar</a></div>
                         </div>
 
 
