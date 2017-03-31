@@ -355,8 +355,10 @@ class MovieController(object):
                 return render(request, 'cawas/error.html',
                               {"message": "Error al Generar Cola de Imagen. (" + e.message + ")"})
 
-            message = 'archivo subido ok'
-            return redirect(menu_view)
+
+            context={'flag':'success'}
+            return render(request, 'cawas/movies/edit.html', context)
+            #return redirect(menu_view)
             # FIN DE POST
 
         # VARIABLES PARA GET - CARGAR MOVIE

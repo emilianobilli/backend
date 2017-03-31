@@ -353,7 +353,7 @@ def add_movies_view(request):
 
 def edit_movies_view(request, asset_id):
     mc = MovieController()
-    return mc.add(request)
+    return mc.edit(request, asset_id)
 
     '''
     #AUTENTICACION DE USUARIO
