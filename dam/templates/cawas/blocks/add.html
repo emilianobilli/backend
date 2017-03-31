@@ -10,8 +10,9 @@
     <div class="subHeader">
         <div class="notifications">
             {% if user.is_authenticated %}
-                  <a href="{% url 'menu_view' %}"><span class="glyphicon glyphicon-home GLY-med">
-                               </span> &nbsp;volver al menú</a>
+                 <a href="{% url 'menu_view' %}"><span class="glyphicon glyphicon-home GLY-med">
+                               </span> &nbsp;Inicio / </a>
+                 <a href="{% url 'list_series' %}">Bloques</a>
 
                  <button class="btn btn-lg btn-primary btn-block logOFF" type="button" id="exitBtn" data-toggle="modal" data-target="#myModal">LOG-OUT</button>
             {% endif %}

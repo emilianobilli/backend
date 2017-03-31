@@ -4,14 +4,13 @@ from django.shortcuts import render,redirect
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from django.db import IntegrityError
 from django.http import  HttpResponse
-
 from Controller.GirlController import GirlController
+from Controller.MovieController import MovieController
 from Controller.LogController import LogController
-
 from models import Channel, Device, Slider, SliderMetadata, Episode, EpisodeMetadata, ImageQueue, PublishQueue, \
     Block, Serie, SerieMetadata, Movie, MovieMetadata, CategoryMetadata, PublishZone,Girl, GirlMetadata, Asset, Language, Category, Image, Setting
 from django.contrib.auth import authenticate, login, logout
-#from dam.backend_sdk import *
+#from ..backend_sdk import ApiBackendResource
 
 
 
@@ -165,7 +164,10 @@ def prueba_json_view(request):
 
 
 def add_movies_view(request):
-   #AUTENTICACION DE USUARIO
+    mc = MovieController()
+    return mc.add(request)
+
+'''
     if not request.user.is_authenticated:
        return redirect(login_view)
     #ALTA - MOVIE: en el GET debe cargar variables, y en POST debe leer JSON
@@ -343,11 +345,17 @@ def add_movies_view(request):
     context = {'title': title, 'assets':assets, 'channels':channels, 'girls':girls,  'categories':categories,
                'movies':vmovies, 'vlanguages':vlanguages, 'flag':vflag }
     return render(request, 'cawas/movies/add.html', context)
+    '''
+
 # Fin add_movies_view
 
 
 
 def edit_movies_view(request, asset_id):
+    mc = MovieController()
+    return mc.add(request)
+
+    '''
     #AUTENTICACION DE USUARIO
     if not request.user.is_authenticated:
        return redirect(login_view)
@@ -573,6 +581,7 @@ def edit_movies_view(request, asset_id):
                'asset_id':asset_id,  'imgland':imgland, 'imgport':imgport}
 
     return render(request, 'cawas/movies/edit.html', context)
+    '''
 # Fin edit_movies_view
 
 #</CRUD MOVIES>
@@ -587,37 +596,20 @@ def edit_movies_view(request, asset_id):
 
 #<ADD GIRL>
 def add_girls_view(request):
-    #AUTENTICACION DE USUARIO
-
-
     gc = GirlController()
-    #if request.method == 'GET':
     return gc.add(request)
-
-    #if request.method == 'POST':
-    #    respuesta = gc.add(request)
-
-    #    if respuesta == True:
-    #        lc = LogController()
-    #        return lc.menu_view(request)
-
 
 #</fin ADD Girl>
 
 
 def edit_girls_view(request, asset_id):
     #AUTENTICACION DE USUARIO
-
     gc = GirlController()
-    if request.method == 'GET':
-        return gc.edit(request, asset_id)
-
-    if request.method == 'POST':
+    #if request.method == 'GET':
+    return gc.edit(request, asset_id)
+    #if request.method == 'POST':
         #Si respuesta es True, quiere decir que se Grabo correctamente
-       respuesta = gc.edit(request, asset_id)
-       if respuesta == True:
-            lc = LogController()
-            return lc.menu_view(request)
+    #    return gc.edit(request, asset_id)
 
 #</Fin EDIT Girl>
 
@@ -1940,25 +1932,25 @@ def add_asset_view(request):
 
 
 
-def unpublish_movies_view(request, asset_id):
+#Funciones de Despublicacion
+def unpublish_movies_view(request, id):
     if not request.user.is_authenticated:
         return redirect(login_view)
 
     try:
-        asset = Asset.objects.get(asset_id = asset_id)
-        movie = Movie.objects.get(asset=asset)
-        moviemetadata = MovieMetadata.objects(movie)
+        moviemetadata = MovieMetadata.objects.get(id=id)
         backend_asset_url = Setting.objects.get(CODE='backend_asset_url')
         vzones = PublishZone.objects.filter(enabled=True)
-        #for zone in vzones:
-            #abr = ApiBackendResource(zone.backend_url ,backend_asset_url, )
-            #abr.delete(asset_id, asset_type,language )
+        for zone in vzones:
+            abr = ApiBackendResource(zone.backend_url ,backend_asset_url )
+            param = ({"asset_id": moviemetadata.movie.asset.asset_id,"asset_type":"show", "lang":moviemetadata.language.code  })
+            abr.delete(param)
 
-        flag = 'Movie ' + asset_id + 'Despublicada Correctamente'
+        flag = 'Movie ' + moviemetadata.movie.asset.asset_id + 'Despublicada Correctamente'
     except PublishZone.DoesNotExist as e:
         return render(request, 'cawas/error.html', {"message": "PublishZone no Existe. (" + str(e.message) + ")"})
-    except Asset.DoesNotExist as e:
-        return render(request, 'cawas/error.html', {"message": "Asset no Existe. (" + str(e.message) + ")"})
+    except MovieMetadata.DoesNotExist as e:
+        return render(request, 'cawas/error.html', {"message": "Metadata de Movie no Existe. (" + str(e.message) + ")"})
 
     context = {'flag':flag}
     return render(request, 'cawas/movies/list.html', context)
@@ -1966,29 +1958,125 @@ def unpublish_movies_view(request, asset_id):
 
 
 
-def unpublish_girls_view(request, asset_id):
+def unpublish_girls_view(request, id):
+    if not request.user.is_authenticated:
+        return redirect(login_view)
+    try:
+        girlmetadata = GirlMetadata.objects.get(id=id)
+        backend_asset_url = Setting.objects.get(CODE='backend_asset_url')
+        vzones = PublishZone.objects.filter(enabled=True)
+        for zone in vzones:
+            abr = ApiBackendResource(zone.backend_url ,backend_asset_url )
+            param = ({"asset_id": girlmetadata.girl.asset.asset_id,"asset_type":"show", "lang":girlmetadata.language.code  })
+            abr.delete(param)
+
+        flag = 'Girl ' + girlmetadata.girl.asset.asset_id + 'Despublicada Correctamente'
+    except PublishZone.DoesNotExist as e:
+        return render(request, 'cawas/error.html', {"message": "PublishZone no Existe. (" + str(e.message) + ")"})
+    except MovieMetadata.DoesNotExist as e:
+        return render(request, 'cawas/error.html', {"message": "Metadata de Movie no Existe. (" + str(e.message) + ")"})
+
+    context = {'flag':flag}
+    return render(request, 'cawas/girls/list.html', context)
+
+
+#Funciones de Despublicacion
+def unpublish_series_view(request, id):
     if not request.user.is_authenticated:
         return redirect(login_view)
 
     try:
-        asset = Asset.objects.get(asset_id=asset_id)
-        girl = Girl.objects.get(asset=asset)
-        girlmetadata = GirlMetadata.objects(girl)
+        seriemetadata = SerieMetadata.objects.get(id=id)
         backend_asset_url = Setting.objects.get(CODE='backend_asset_url')
         vzones = PublishZone.objects.filter(enabled=True)
-        #for zone in vzones:
-        #    abr = ApiBackendResource(zone.backend_url ,backend_asset_url, )
-        #    abr.delete(asset_id, asset_type,language )
+        for zone in vzones:
+            abr = ApiBackendResource(zone.backend_url ,backend_asset_url )
+            param = ({"asset_id": seriemetadata.serie.asset.asset_id,"asset_type":"show", "lang":seriemetadata.language.code  })
+            abr.delete(param)
 
-        flag = 'Movie ' + asset_id + 'Despublicada Correctamente'
+        flag = 'Serie ' + seriemetadata.serie.asset.asset_id + ' Despublicada Correctamente'
     except PublishZone.DoesNotExist as e:
         return render(request, 'cawas/error.html', {"message": "PublishZone no Existe. (" + str(e.message) + ")"})
-    except Asset.DoesNotExist as e:
-        return render(request, 'cawas/error.html', {"message": "Asset no Existe. (" + str(e.message) + ")"})
+    except SerieMetadata.DoesNotExist as e:
+        return render(request, 'cawas/error.html', {"message": "Metadata de Serie no Existe. (" + str(e.message) + ")"})
 
-    context = {'flag': flag}
-    return render(request, 'cawas/girls/list.html', context)
+    context = {'flag':flag}
+    return render(request, 'cawas/movies/list.html', context)
 
+
+#Funciones de Despublicacion
+def unpublish_blocks_view(request, id):
+    if not request.user.is_authenticated:
+        return redirect(login_view)
+    #recorrer los assets asociados, quitar la relacion del bloque con los asset
+    # y volver a publicar los assets
+    flag= ''
+    '''
+    try:
+        block = Block.objects.get(id=id)
+        backend_asset_url = Setting.objects.get(CODE='backend_asset_url')
+        vzones = PublishZone.objects.filter(enabled=True)
+        for zone in vzones:
+            abr = ApiBackendResource(zone.backend_url ,backend_asset_url )
+            param = ({"asset_id": block.block_id,"asset_type":"show", "lang":block.language.code  })
+            abr.delete(param)
+
+        flag = 'Bloque ' + block.asset.asset_id + 'Despublicada Correctamente'
+    except PublishZone.DoesNotExist as e:
+        return render(request, 'cawas/error.html', {"message": "PublishZone no Existe. (" + str(e.message) + ")"})
+    except MovieMetadata.DoesNotExist as e:
+        return render(request, 'cawas/error.html', {"message": "Metadata de Movie no Existe. (" + str(e.message) + ")"})
+    '''
+    context = {'flag':flag}
+    return render(request, 'cawas/blocks/list.html', context)
+
+
+#Funciones de Despublicacion
+def unpublish_episodes_view(request, id):
+    if not request.user.is_authenticated:
+        return redirect(login_view)
+
+    try:
+        episodemetadata = MovieMetadata.objects.get(id=id)
+        backend_asset_url = Setting.objects.get(CODE='backend_asset_url')
+        vzones = PublishZone.objects.filter(enabled=True)
+        for zone in vzones:
+            abr = ApiBackendResource(zone.backend_url ,backend_asset_url )
+            param = ({"asset_id": episodemetadata.movie.asset.asset_id,"asset_type":"show", "lang":episodemetadata.language.code  })
+            abr.delete(param)
+
+        flag = 'Capitulo ' + episodemetadata.episode.asset.asset_id + ' Despublicada Correctamente'
+    except PublishZone.DoesNotExist as e:
+        return render(request, 'cawas/error.html', {"message": "PublishZone no Existe. (" + str(e.message) + ")"})
+    except EpisodeMetadata.DoesNotExist as e:
+        return render(request, 'cawas/error.html', {"message": "Metadata de Capitulo no Existe. (" + str(e.message) + ")"})
+
+    context = {'flag':flag}
+    return render(request, 'cawas/movies/list.html', context)
+
+
+#Funciones de Despublicacion
+def unpublish_sliders_view(request, id):
+    if not request.user.is_authenticated:
+        return redirect(login_view)
+
+    try:
+        slidermetadata = MovieMetadata.objects.get(id=id)
+        backend_asset_url = Setting.objects.get(CODE='backend_asset_url')
+        vzones = PublishZone.objects.filter(enabled=True)
+        for zone in vzones:
+            abr = ApiBackendResource(zone.backend_url ,backend_asset_url )
+            param = ({"asset_id": slidermetadata.movie.asset.asset_id,"asset_type":"show", "lang":slidermetadata.language.code  })
+            abr.delete(param)
+
+        flag = 'Slider ' + slidermetadata.slider.asset.asset_id + ' Despublicada Correctamente'
+    except PublishZone.DoesNotExist as e:
+        return render(request, 'cawas/error.html', {"message": "PublishZone no Existe. (" + str(e.message) + ")"})
+    except MovieMetadata.DoesNotExist as e:
+        return render(request, 'cawas/error.html', {"message": "Metadata de Movie no Existe. (" + str(e.message) + ")"})
+
+    context = {'flag':flag}
+    return render(request, 'cawas/movies/list.html', context)
 
 
 # Borrar comentario
@@ -2036,6 +2124,8 @@ def list_movies_view(request):
     context = {'message': message, 'registros':movies, 'titulo':titulo, 'usuario':usuario}
 
     return render(request, 'cawas/movies/list.html', context)
+
+
 
 
 def list_girls_view(request):
@@ -2176,7 +2266,6 @@ def list_episodes_view(request):
 
 
 def list_series_view(request):
-
     if not request.user.is_authenticated:
         return redirect(login_view)
 
@@ -2218,10 +2307,46 @@ def list_series_view(request):
     return render(request, 'cawas/series/list.html', context)
 
 
+
+
 def list_sliders_view(request):
+    if not request.user.is_authenticated:
+        return redirect(login_view)
 
+    usuario = request.user
     message = "Error"
-    series = Serie.objects.all()
-    context = {'message': message, 'registros':series}
+    titulo = ''
+    page = request.GET.get('page')
+    request.POST.get('page')
+    sliders_list = None
 
+    if request.POST:
+        titulo = request.POST['inputTitulo']
+        selectestado = request.POST['selectestado']
+        # FILTROS
+        if titulo != '':
+            sliders = Slider.objects.filter(media_url__icontains=titulo).order_by('slider_id')
+            if selectestado != '':
+                sliders_list = SliderMetadata.objects.filter(slider__in=sliders, publish_status=selectestado).order_by('slider_id')
+            else:
+                sliders_list = SliderMetadata.objects.filter(slider__in=sliders).order_by('slider_id')
+        elif selectestado != '':
+            sliders_list = SliderMetadata.objects.filter(publish_status=selectestado).order_by('slider_id')
+        else:
+            sliders_list = SliderMetadata.objects.all().order_by('slider_id')
+
+    if sliders_list is None:
+        sliders_list = SliderMetadata.objects.all().order_by('slider_id')
+
+    paginator = Paginator(sliders_list, 20)  # Show 25 contacts per page
+    try:
+        sliders = paginator.page(page)
+    except PageNotAnInteger:
+        # If page is not an integer, deliver first page.
+        sliders = paginator.page(1)
+    except EmptyPage:
+        # If page is out of range (e.g. 9999), deliver last page of results.
+        sliders = paginator.page(paginator.num_pages)
+
+    context = {'message': message, 'registros':sliders, 'titulo':titulo, 'usuario':usuario}
     return render(request, 'cawas/sliders/list.html', context)

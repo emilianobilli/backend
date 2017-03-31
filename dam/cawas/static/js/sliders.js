@@ -12,6 +12,9 @@ $( document ).ready(function() {
     console.log( "ready!" );
     var asset_id = $("#asset_id").val();
 
+    $("#btnsearch").click(function(){
+           $("#searchForID").submit();
+    });
 
     if(resultado=="success"){
         $("#myModal-OK").modal();

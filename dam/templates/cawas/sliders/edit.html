@@ -52,7 +52,7 @@
                         <label for="idTit" id="idTit">NUEVO ID: {{vslider.slider_id}}</label>
                         <!-- pegar  acá -->
                         <span class="idLegend">
-                        Mediatype {{ vslider.media_type }}
+
                         </span>
                     </div>
 
@@ -90,7 +90,7 @@
                 </div>
                 <div class="col-xs-12 col-md-4 col-lg-4">
                    <div class="form-group has-feedback">
-                    <label class="label-left" for="devices">Dispositivo: {{vslider.target_device_id }} *</label>
+                    <label class="label-left" for="devices">Dispositivo: *</label>
                         <select class="form-control" id="devices">
 
                             <option  value="0"> </option>
@@ -136,10 +136,10 @@
                         {% for item in vlangmetadata %}
                             {% if item.checked == True %}
                                  <input type="checkbox" checked name="idioma" value="{{item.code}}" id="{{item.code}}"
-                                       class="chkbx"> {{item.name}}<br>
+                                       class="chkbx" disabled> {{item.name}}<br>
                             {% else %}
                                 <input type="checkbox"  name="idioma" value="{{item.code}}" id="{{item.code}}"
-                                       class="chkbx"> {{item.name}}<br>
+                                       class="chkbx" disabled> {{item.name}}<br>
                             {% endif %}
                         {% endfor %}
                     </div>
@@ -163,7 +163,8 @@
                             <div class="helpright"><span class="glyphicon glyphicon-question-sign" data-toggle="tooltip"
                                                          title="La descripción para los thumbnails mostrará los primeros 50 caracteres. Al ingresar en la slider se verá completa."></span></div>
                             <label class="label-left" for="text_{{item.code}}">Texto: *</label>
-                           <textarea class="form-control" name="text_{{item.code}}" id="text_{{item.code}}">{{item.text}}</textarea>
+                           <textarea class="form-control" name="text_{{item.code}}" id="text_{{item.code}}"
+                                >{{item.text}}</textarea>
                            <span class="glyphicon form-control-feedback"></span>
                            </div>
                        </div>

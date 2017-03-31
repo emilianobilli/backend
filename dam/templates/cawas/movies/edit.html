@@ -237,17 +237,16 @@
                         <div class="form-group has-feedback" id="lang-container">
                             <div id="pickLang">
                                 <label class="label-left" for="idioms">Elija idioma: (al menos uno)*</label>
-
                             </div>
                             <span class="glyphicon form-control-feedback"></span>
                             <div class="form-group has-feedback">
                                 {% for item in vlangmetadata %}
                                     {% if item.checked == True %}
                                          <input type="checkbox" checked name="idioma" value="{{item.code}}" id="{{item.code}}"
-                                               class="chkbx"> {{item.name}}<br>
+                                               class="chkbx" disabled> {{item.name}}<br>
                                     {% else %}
                                         <input type="checkbox"  name="idioma" value="{{item.code}}" id="{{item.code}}"
-                                               class="chkbx"> {{item.name}}<br>
+                                               class="chkbx" disabled> {{item.name}}<br>
                                     {% endif %}
                                 {% endfor %}
                             </div>

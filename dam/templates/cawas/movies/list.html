@@ -127,9 +127,9 @@
 
                             <div class="tb-cell"><a href="/movies/edit/{{ item.movie.asset.asset_id}}" class="btn-info btn tb-btn" >Editar</a></div>
                             {% if usuario.is_superuser == true %}
-                                <div class="tb-cell"><a href="/movies/delete/{{ item.movie.asset.asset_id}}" class="btn-danger btn tb-btn">Borrar</a></div>
+                                <div class="tb-cell"><a href="/movies/delete/{{ item.id}}/" class="btn-danger btn tb-btn">Borrar</a></div>
                             {% endif %}
-                            <div class="tb-cell"><a href="/movies/unpublish/{{ item.movie.asset.asset_id}}" class="btn-warning btn tb-btn">Des-publicar</a></div>
+                            <div class="tb-cell"><a href="/movies/unpublish/{{ item.id}}" class="btn-warning btn tb-btn">Des-publicar</a></div>
                         </div>
                     {% endfor %}
                    <!-- Third Row -->
