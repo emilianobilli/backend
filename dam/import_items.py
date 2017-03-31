@@ -195,7 +195,7 @@ for asset in assets:
 """
 
 
-
+"""
 ### Asignar categorias de los episodios a las serie
 series = Serie.objects.all()
 for serie in series:
@@ -209,3 +209,14 @@ for serie in series:
     for category in categories:
         print category.original_name
 #        serie.category.add(category)
+"""
+
+assets_ids = [""]
+
+for aid in assets_ids:
+    try:
+        asset = Asset.objects.get(asset_id=aid)
+        enqueue_asset(asset, "Virginia", "es")
+    except:
+        print "ID %s no existe" % aid
+
