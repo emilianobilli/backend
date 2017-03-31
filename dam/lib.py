@@ -566,7 +566,7 @@ def import_girl(file, up_img=False):
             girl = Girl.objects.get(name=g_json["name"])
             g = __update_girl(girl, g_json, up_img)
         except ObjectDoesNotExist:
-            g = __create_girl(g_json, up_img)
+            g = __create_girl(g_json, True)
 
         try:
             met = GirlMetadata.objects.get(girl=g, language=lang)
@@ -672,7 +672,7 @@ def import_serie(file, up_img=False):
             serie = Serie.objects.get(original_title=s_json["original_title"])
             s = __update_serie(serie, s_json, up_img)
         except ObjectDoesNotExist:
-            s = __create_serie(s_json, up_img)
+            s = __create_serie(s_json, True)
 
         try:
             met = SerieMetadata.objects.get(serie=s, language=lang)
@@ -811,7 +811,7 @@ def import_episode(file, up_img=False):
                 continue
         except ObjectDoesNotExist:
             try:
-                ep = __create_episode(e_json, up_img)
+                ep = __create_episode(e_json, True)
             except ImporterException as err:
                 print err.value
                 continue

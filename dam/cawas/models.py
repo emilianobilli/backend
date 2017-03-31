@@ -164,6 +164,7 @@ class CategoryMetadata(models.Model):
     modification_date = models.DateTimeField(auto_now=True)
     publish_date      = models.DateTimeField(auto_now=False, auto_now_add=False, blank=True, null=True)
     publish_status    = models.BooleanField(default=False)
+    activated         = models.BooleanField(default=False)
 
     class Meta:
         unique_together = ('category', 'language',)
@@ -186,6 +187,7 @@ class Channel(models.Model):
     modification_date = models.DateTimeField(auto_now=True)
     publish_date      = models.DateTimeField(auto_now=False, auto_now_add=False, blank=True, null=True)
     publish_status    = models.BooleanField(default=False)
+    activated         = models.BooleanField(default=False)
 
     def __unicode__(self):
         return self.name
@@ -298,6 +300,7 @@ class SliderMetadata(models.Model):
     modification_date = models.DateTimeField(auto_now=True)
     publish_date      = models.DateTimeField(auto_now=False, auto_now_add=False, blank=True, null=True)
     publish_status    = models.BooleanField(default=False)
+    activated         = models.BooleanField(default=False)
 
     class Meta:
         unique_together = ('slider', 'language',)
@@ -365,6 +368,7 @@ class GirlMetadata(models.Model):
     modification_date = models.DateTimeField(auto_now=True)
     publish_date      = models.DateTimeField(auto_now=False, auto_now_add=False, blank=True, null=True)
     publish_status    = models.BooleanField(default=False)
+    activated         = models.BooleanField(default=False)
 
     class Meta:
         unique_together = ('girl', 'language',)
@@ -439,6 +443,7 @@ class SerieMetadata(models.Model):
     modification_date = models.DateTimeField(auto_now=True)
     publish_date      = models.DateTimeField(auto_now=False, auto_now_add=False, blank=True, null=True)
     publish_status    = models.BooleanField(default=False)
+    activated         = models.BooleanField(default=False)
 
     class Meta:
         unique_together = ('serie', 'language',)
@@ -536,6 +541,7 @@ class EpisodeMetadata(models.Model):
     modification_date = models.DateTimeField(auto_now=True)
     publish_date      = models.DateTimeField(auto_now=False, auto_now_add=False, blank=True, null=True)
     publish_status    = models.BooleanField(default=False)
+    activated         = models.BooleanField(default=False)
 
     class Meta:
         unique_together = ('episode', 'language',)
@@ -626,6 +632,7 @@ class MovieMetadata(models.Model):
     modification_date = models.DateTimeField(auto_now=True)
     publish_date      = models.DateTimeField(auto_now=False, auto_now_add=False, blank=True, null=True)
     publish_status    = models.BooleanField(default=False)
+    activated         = models.BooleanField(default=False)
 
     class Meta:
         unique_together = ('movie', 'language',)
@@ -669,6 +676,7 @@ class Block(models.Model):
     modification_date = models.DateTimeField(auto_now=True)
     publish_date      = models.DateTimeField(auto_now=False, auto_now_add=False, blank=True, null=True)
     publish_status    = models.BooleanField(default=False)
+    activated         = models.BooleanField(default=False)
 
     def save(self, *args, **kwargs):
         super(Block, self).save(*args, **kwargs)
