@@ -259,6 +259,7 @@ def publish_items():
                         item[0]['publish_date'] = timezone.now().strftime('%s')
                         obj.publish_date = timezone.now()
                         obj.publish_status = True
+                        obj.activated = True
                     ep.add(item[0])
                     job.status = 'D'
                     job.save()
