@@ -140,7 +140,7 @@
                                        class="chkbx" disabled> {{item.name}}<br>
                             {% else %}
                                 <input type="checkbox"  name="idioma" value="{{item.code}}" id="{{item.code}}"
-                                       class="chkbx" disabled> {{item.name}}<br>
+                                       class="chkbx" > {{item.name}}<br>
                             {% endif %}
                         {% endfor %}
                     </div>
@@ -153,9 +153,9 @@
              <!-- LANGUAGE modules -->
                {% for item in vlangmetadata %}
                    {% if item.checked == True %}
-                         <div class="row form-row" id="Module_{{item.code}}">
+                         <div class="row form-row" id="Module_{{item.code}}" >
                    {% else %}
-                         <div class="row form-row hid" id="Module_{{item.code}}">
+                         <div class="row form-row hid" id="Module_{{item.code}}" >
                    {% endif %}
                 <div class="col-xs-12 col-md-12 col-lg-12 form-group">
                     <h2>{{item.name}}</h2>

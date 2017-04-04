@@ -3,6 +3,7 @@ from LogController import LogController
 from django.shortcuts import render,redirect
 from ..models import Asset, Setting, Girl, Block, Category, Language, Image, Channel, Device, Serie, Movie, Episode, EpisodeMetadata
 from ..Helpers.PublishHelper import PublishHelper
+from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 
 class EpisodeController(object):
 
@@ -146,9 +147,9 @@ class EpisodeController(object):
                     ph.func_publish_queue(request, vasset.asset_id, vlang, 'AS', 'Q', vschedule_date)
                     ph.func_publish_image(request, vimg)
 
-                    #func_publish_queue(vasset, vlang, 'AS', 'Q', vschedule_date)
+                    # func_publish_queue(vasset, vlang, 'AS', 'Q', vschedule_date)
                     # Publica en PublishImage
-                    #func_publish_image(vimg)
+                    # func_publish_image(vimg)
 
                 except Language.DoesNotExist as e:
                     return render(request, 'cawas/error.html', {"message": "Lenguaje no Existe. (" + e.message + ")"})
@@ -317,7 +318,7 @@ class EpisodeController(object):
                     return render(request, 'cawas/error.html', {"message": "No existe Categoria. (" + e.message + ")"})
             vepisode.save()
 
-            EpisodeMetadata.objects.filter(episode=vepisode).delete()
+            #EpisodeMetadata.objects.filter(episode=vepisode).delete()
             vepisodemetadata = decjson['Episode']['Episodemetadatas']
             for item in vepisodemetadata:
                 try:
@@ -340,11 +341,13 @@ class EpisodeController(object):
                     emd.summary_long = item['Episodemetadata']['summary_long']
                     emd.publish_date = vschedule_date
                     emd.episode = vepisode
-                    emd.save()
-                    # Publica en PublishQueue
-                    func_publish_queue(vasset, vlang, 'AS', 'Q', vschedule_date)
-                    # Publica en PublishImage
-                    func_publish_image(vimg)
+
+                    metadatas = EpisodeMetadata.objects.filter(episode=vepisode, language=vlang)
+                    if metadatas.count() < 1:
+                        emd.save()
+                        ph = PublishHelper()
+                        ph.func_publish_queue(request, vasset.asset_id, vlang, 'AS', 'Q', vschedule_date)
+                        ph.func_publish_image(request, vimg)
 
                 except Language.DoesNotExist as e:
                     return render(request, 'cawas/error.html', {"message": "Lenguaje no Existe. (" + e.message + ")"})
@@ -405,3 +408,48 @@ class EpisodeController(object):
         # categorias >
         # girls >
         return render(request, 'cawas/episodes/edit.html', context)
+
+
+
+    def list(self, request):
+        if not request.user.is_authenticated:
+            lc = LogController()
+            return redirect(lc.login_view(request))
+
+        usuario = request.user
+        message = "Error"
+        titulo = ''
+        page = request.GET.get('page')
+        request.POST.get('page')
+        episodes_list = None
+
+        if request.POST:
+            titulo = request.POST['inputTitulo']
+            selectestado = request.POST['selectestado']
+            # FILTROS
+            if titulo != '':
+                if selectestado != '':
+                    episodes_list = EpisodeMetadata.objects.filter(title__icontains=titulo,
+                                                                   publish_status=selectestado).order_by('episode_id')
+                else:
+                    episodes_list = EpisodeMetadata.objects.filter(title__icontains=titulo).order_by('episode_id')
+            elif selectestado != '':
+                episodes_list = EpisodeMetadata.objects.filter(publish_status=selectestado).order_by('episode_id')
+            else:
+                episodes_list = EpisodeMetadata.objects.all().order_by('episode_id')
+
+        if episodes_list is None:
+            episodes_list = EpisodeMetadata.objects.all().order_by('episode_id')
+
+        paginator = Paginator(episodes_list, 20)  # Show 25 contacts per page
+        try:
+            episodes = paginator.page(page)
+        except PageNotAnInteger:
+            # If page is not an integer, deliver first page.
+            episodes = paginator.page(1)
+        except EmptyPage:
+            # If page is out of range (e.g. 9999), deliver last page of results.
+            episodes = paginator.page(paginator.num_pages)
+
+        context = {'message': message, 'registros': episodes, 'titulo': titulo, 'usuario': usuario}
+        return render(request, 'cawas/episodes/list.html', context)

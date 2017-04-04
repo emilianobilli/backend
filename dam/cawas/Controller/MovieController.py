@@ -3,8 +3,11 @@ from LogController import LogController
 from django.shortcuts import render,redirect
 from ..models import Asset, Setting, Movie, MovieMetadata, Category, Language, Image, Girl, PublishZone, Channel, PublishQueue, ImageQueue
 from ..Helpers.PublishHelper import PublishHelper
+from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 
 class MovieController(object):
+
+
 
     def add(self, request):
         # AUTENTICACION DE USUARIO
@@ -130,27 +133,30 @@ class MovieController(object):
                         mmd = MovieMetadata.objects.get(movie=mv, language=vlanguage)
                     except MovieMetadata.DoesNotExist as e:
                         mmd = MovieMetadata();
+
                     mmd.language = vlanguage
                     mmd.title = item['Moviemetadata']['title']
                     mmd.summary_short = item['Moviemetadata']['summary_short']
                     mmd.summary_long = item['Moviemetadata']['summary_long']
                     mmd.publish_date = vpublishdate
                     mmd.movie = mv
-                    mmd.save()
 
-                    # Recorrer el publicZone y genera un PublicQueue por cada idioma
-
-                    vzones = PublishZone.objects.filter(enabled=True)
-                    for zone in vzones:
-                        # CREAR COLA DE PUBLICACION
-                        vpublish = PublishQueue()
-                        vpublish.item_id = vasset.asset_id
-                        vpublish.item_lang = vlanguage
-                        vpublish.item_type = 'AS'
-                        vpublish.status = 'Q'
-                        vpublish.publish_zone = zone
-                        vpublish.schedule_date = vpublishdate
-                        vpublish.save()
+                    #Si no existe METADATA, se GENERA
+                    metadatas = MovieMetadata.objects.filter(movie=mv, language=mmd.language)
+                    if metadatas.count() < 1:
+                        mmd.save()
+                        # Recorrer el publicZone y genera un PublicQueue por cada idioma
+                        vzones = PublishZone.objects.filter(enabled=True)
+                        for zone in vzones:
+                            # CREAR COLA DE PUBLICACION
+                            vpublish = PublishQueue()
+                            vpublish.item_id = vasset.asset_id
+                            vpublish.item_lang = vlanguage
+                            vpublish.item_type = 'AS'
+                            vpublish.status = 'Q'
+                            vpublish.publish_zone = zone
+                            vpublish.schedule_date = vpublishdate
+                            vpublish.save()
 
                 except Language.DoesNotExist as e:
                     return render(request, 'cawas/error.html', {"message": "No existe Lenguaje. (" + e.message + ")"})
@@ -321,21 +327,22 @@ class MovieController(object):
                     mmd.summary_long = item['Moviemetadata']['summary_long']
                     mmd.publish_date = vpublishdate
 
-                    mmd.save()
-                    print "titulo title:" + mmd.title
-                    # Recorrer el publicZone y genera un PublicQueue por cada idioma
-
-                    vzones = PublishZone.objects.filter(enabled=True)
-                    for zone in vzones:
-                        # CREAR COLA DE PUBLICACION
-                        vpublish = PublishQueue()
-                        vpublish.item_id = vasset.asset_id
-                        vpublish.item_lang = vlanguage
-                        vpublish.item_type = 'AS'
-                        vpublish.status = 'Q'
-                        vpublish.publish_zone = zone
-                        vpublish.schedule_date = vpublishdate
-                        vpublish.save()
+                    # Si no existe METADATA, se GENERA
+                    metadatas = MovieMetadata.objects.filter(movie=mv, language=mmd.language)
+                    if metadatas.count() < 1:
+                        mmd.save()
+                        # Recorrer el publicZone y genera un PublicQueue por cada idioma
+                        vzones = PublishZone.objects.filter(enabled=True)
+                        for zone in vzones:
+                            # CREAR COLA DE PUBLICACION
+                            vpublish = PublishQueue()
+                            vpublish.item_id = vasset.asset_id
+                            vpublish.item_lang = vlanguage
+                            vpublish.item_type = 'AS'
+                            vpublish.status = 'Q'
+                            vpublish.publish_zone = zone
+                            vpublish.schedule_date = vpublishdate
+                            vpublish.save()
 
                 except Language.DoesNotExist as e:
                     return render(request, 'cawas/error.html', {"message": "No existe Lenguaje. (" + e.message + ")"})
@@ -355,13 +362,7 @@ class MovieController(object):
             except Exception as e:
                 return render(request, 'cawas/error.html',
                               {"message": "Error al Generar Cola de Imagen. (" + e.message + ")"})
-
-
-            #context={'flag':'success'}
             flag = 'success'
-            #return render(request, 'cawas/movies/edit.html', context)
-            #return redirect(menu_view)
-            # FIN DE POST
 
         # VARIABLES PARA GET - CARGAR MOVIE
         try:
@@ -421,3 +422,49 @@ class MovieController(object):
                    'asset_id': asset_id, 'imgland': imgland, 'imgport': imgport,'flag':flag}
 
         return render(request, 'cawas/movies/edit.html', context)
+
+
+
+    def list(self, request):
+        if not request.user.is_authenticated:
+            lc = LogController()
+            return redirect(lc.login_view(request))
+
+        usuario = request.user
+        message = "Error"
+        titulo = ''
+        page = request.GET.get('page')
+        request.POST.get('page')
+        movies_list = None
+
+        if request.POST:
+            titulo = request.POST['inputTitulo']
+            selectestado = request.POST['selectestado']
+
+            if titulo != '':
+                movies_sel = Movie.objects.filter(original_title__icontains=titulo)
+            else:
+                movies_sel = Movie.objects.all()
+
+            if selectestado != '':
+                movies_list = MovieMetadata.objects.filter(movie__in=movies_sel, publish_status=selectestado).order_by(
+                    'movie_id')
+            else:
+                movies_list = MovieMetadata.objects.filter(movie__in=movies_sel).order_by('movie_id')
+
+        if movies_list is None:
+            movies_list = MovieMetadata.objects.all().order_by('movie_id')
+
+        paginator = Paginator(movies_list, 20)  # Show 25 contacts per page
+        try:
+            movies = paginator.page(page)
+        except PageNotAnInteger:
+            # If page is not an integer, deliver first page.
+            movies = paginator.page(1)
+        except EmptyPage:
+            # If page is out of range (e.g. 9999), deliver last page of results.
+            movies = paginator.page(paginator.num_pages)
+
+        context = {'message': message, 'registros': movies, 'titulo': titulo, 'usuario': usuario}
+
+        return render(request, 'cawas/movies/list.html', context)

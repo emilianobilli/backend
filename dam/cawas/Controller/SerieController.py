@@ -3,6 +3,7 @@ from LogController import LogController
 from django.shortcuts import render,redirect
 from ..models import Asset, Setting, Serie, SerieMetadata, Category, Language, Image, Girl,  GirlMetadata, Channel
 from ..Helpers.PublishHelper import PublishHelper
+from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 
 class SerieController(object):
 
@@ -107,17 +108,14 @@ class SerieController(object):
                 smd.summary_long = item['Seriemetadata']['summary_long']
                 smd.serie = vserie
                 smd.publish_date = vschedule_date
-                smd.save()
 
+                smd.save()
                 # Publica en PublishQueue
                 ph = PublishHelper()
                 ph.func_publish_queue(request, vasset.asset_id, smd.language, 'AS', 'Q', vschedule_date)
                 ph.func_publish_image(request, vimg)
-                #func_publish_queue(vasset.asset_id, smd.language, 'AS', 'Q', vschedule_date)
             flag = 'success'
-                # Publica en PublishImage
-                #func_publish_image(vimg)
-                # Fin de POST
+
 
         # VARIABLES PARA GET - CARGAR GIRL
         try:
@@ -243,7 +241,7 @@ class SerieController(object):
             # BORRAR Y CREAR METADATA
 
             vseriemetadatas = decjson['Serie']['Seriemetadatas']
-            SerieMetadata.objects.filter(serie=vserie).delete()
+            #SerieMetadata.objects.filter(serie=vserie).delete()
             for item in vseriemetadatas:
                 try:
                     vlanguage = Language.objects.get(code=item['Seriemetadata']['language'])
@@ -260,19 +258,16 @@ class SerieController(object):
                 smd.summary_long = item['Seriemetadata']['summary_long']
                 smd.serie = vserie
                 smd.publish_date = vschedule_date
-                smd.save()
 
-                # Publica en PublishQueue
-                ph = PublishHelper()
-                ph.func_publish_queue(request, vasset.asset_id, smd.language, 'AS', 'Q', vschedule_date)
-                ph.func_publish_image(request, vimg)
-                # Publica en PublishQueue
-                #func_publish_queue(vasset.asset_id, smd.language, 'AS', 'Q', vschedule_date)
-                # Publica en PublishImage
-                #func_publish_image(vimg)
+                metadatas = SerieMetadata.objects.filter(serie=vserie, language=smd.language)
+                # Si no existe METADATA, se genera
+                if metadatas.count() < 1:
+                    smd.save()
+                    # Publica en PublishQueue
+                    ph = PublishHelper()
+                    ph.func_publish_queue(request, vasset.asset_id, smd.language, 'AS', 'Q', vschedule_date)
+                    ph.func_publish_image(request, vimg)
 
-                #context = {"flag": "success"}
-                #return render(request, 'cawas/series/edit.html', context)
                 # Fin de POST
             flag = "success"
 
@@ -357,3 +352,48 @@ class SerieController(object):
         # Imagequeue -
 
         return render(request, 'cawas/series/edit.html', context)
+
+
+
+    def list(self, request):
+        if not request.user.is_authenticated:
+            lc = LogController()
+            return redirect(lc.login_view(request))
+
+        usuario = request.user
+        message = "Error"
+        titulo = ''
+        page = request.GET.get('page')
+        request.POST.get('page')
+        series_list = None
+
+        if request.POST:
+            titulo = request.POST['inputTitulo']
+            selectestado = request.POST['selectestado']
+            # FILTROS
+            if titulo != '':
+                if selectestado != '':
+                    series_list = SerieMetadata.objects.filter(title__icontains=titulo,
+                                                               publish_status=selectestado).order_by('serie_id')
+                else:
+                    series_list = SerieMetadata.objects.filter(title__icontains=titulo).order_by('serie_id')
+            elif selectestado != '':
+                series_list = SerieMetadata.objects.filter(publish_status=selectestado).order_by('serie_id')
+            else:
+                series_list = SerieMetadata.objects.all().order_by('serie_id')
+
+        if series_list is None:
+            series_list = SerieMetadata.objects.all().order_by('serie_id')
+
+        paginator = Paginator(series_list, 20)  # Show 25 contacts per page
+        try:
+            series = paginator.page(page)
+        except PageNotAnInteger:
+            # If page is not an integer, deliver first page.
+            series = paginator.page(1)
+        except EmptyPage:
+            # If page is out of range (e.g. 9999), deliver last page of results.
+            series = paginator.page(paginator.num_pages)
+
+        context = {'message': message, 'registros': series, 'titulo': titulo, 'usuario': usuario}
+        return render(request, 'cawas/series/list.html', context)
