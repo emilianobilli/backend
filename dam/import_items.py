@@ -2,8 +2,8 @@ from lib import *
 
 """
 try:
-    import_girl('girl.json.es')
-    import_girl('girl.json.pt')
+    import_girl('jsons/chicas.json.pt')
+    #import_girl('girl.json.pt')
 except ImporterException as err:
     print err.value
 """
@@ -15,25 +15,25 @@ except ImporterException as err:
 """
 """
 try:
-    import_serie('serie.json.es')
-    import_serie('serie.json.pt')
+    import_serie('jsons/serie.json.pt')
+    #import_serie('serie.json.pt')
 except ImporterException as err:
     print err.value
 """
 """
 try:
-    import_movie('movie.json.es')
-    import_movie('movie.json.pt')
+    import_movie('jsons/movie.json.pt')
+    #import_movie('movie.json.pt')
 except ImporterException as err:
     print err.value
 """
-"""
+
 try:
-    import_episode('episode.json.es')
-    import_episode('episode.json.pt')
+    #import_episode('jsons/episode.json.pt')
+    import_episode('jsons/episode.json', True)
 except ImporterException as err:
     print err.value
-"""
+
 
 """
 girls_list = Girl.objects.all()
@@ -210,7 +210,7 @@ for serie in series:
         print category.original_name
 #        serie.category.add(category)
 """
-
+"""
 assets_ids = [""]
 
 for aid in assets_ids:
@@ -219,4 +219,4 @@ for aid in assets_ids:
         enqueue_asset(asset, "Virginia", "es")
     except:
         print "ID %s no existe" % aid
-
+"""

@@ -405,6 +405,7 @@ def __get_girls(g):
 def __get_categories(cat):
     categories = []
     if cat != '':
+        cat = cat.replace(", ", ",")
         cat_list = cat.split(",")
     else:
         cat_list = []
@@ -514,7 +515,7 @@ def __update_girl(girl, g_json, up_img=False):
         girl.image = i
 
     girl.name = g_json["name"]
-    girl.type = g_json["type"]
+    girl.type = g_json["tipo"]
     if g_json["birth_date"] != '':
         girl.birth_date = g_json["birth_date"]
     girl.save()
@@ -560,12 +561,14 @@ def import_girl(file, up_img=False):
 
     for g_json in json_list:
         # Verifico que el lenguage exista
-        lang = __get_language(g_json["language"])
+        lang = __get_language(g_json["Idioma"])
 
         try:
             girl = Girl.objects.get(name=g_json["name"])
+            print "Actualizando chica: %s" % g_json["name"]
             g = __update_girl(girl, g_json, up_img)
         except ObjectDoesNotExist:
+            print "Creando chica: %s" % g_json["name"]
             g = __create_girl(g_json, True)
 
         try:
@@ -670,8 +673,10 @@ def import_serie(file, up_img=False):
 
         try:
             serie = Serie.objects.get(original_title=s_json["original_title"])
+            print "Actualizando serie: %s" % s_json["original_title"]
             s = __update_serie(serie, s_json, up_img)
         except ObjectDoesNotExist:
+            print "Creando serie: %s" % s_json["original_title"]
             s = __create_serie(s_json, True)
 
         try:
@@ -708,9 +713,10 @@ def __update_episode(episode, e_json, up_img):
             i = Image.objects.get(name=a.asset_id)
         except ObjectDoesNotExist:
             i = Image()
+        print "creando imagen"
         i.name = a.asset_id
         i.portrait = e_json["image_portrait"]
-        i.landscape = e_json["image_big"]
+        i.landscape = e_json["image_landscape"]
         i.save()
         episode.image = i
 
@@ -721,7 +727,7 @@ def __update_episode(episode, e_json, up_img):
             msg = "La serie %s no existe" % e_json["serie"]
             raise ImporterException(msg)
     else:
-        msg = "La key serie es vacia"
+        msg = "La key serie es vacia: %s" % episode.asset.asset_id
         raise ImporterException(msg)
 
     episode.original_title = e_json["original_title"]
@@ -771,7 +777,7 @@ def __create_episode_metadata(data, episode, lang):
 
 
 def __update_episode_metadata(data, metadata, lang):
-    metadata.title = data["title"]
+    metadata.title = data["title01"]
     metadata.summary_short = data["summary_short"].replace("<p>", "").replace("</p>", "").rstrip()
     metadata.summary_long = data["summary_long"].replace("<p>", "").replace("</p>", "").rstrip()
     #metadata.subtitle = check_subtitle(metadata.episode.asset.asset_id, lang.code)
@@ -790,7 +796,7 @@ def import_episode(file, up_img=False):
     for e_json in json_list:
         print "asset_id: %s" % e_json["asset_id"]
         # Verifico que el lenguage exista
-        lang = __get_language(e_json["language"])
+        lang = __get_language(e_json["idioma"])
 
         # Verifico que el json tenga runtime
         if e_json["runtime"] == '':
@@ -860,7 +866,7 @@ def __update_movie(movie, m_json, up_img):
             i = Image()
         i.name = a.asset_id
         i.portrait = m_json["image_portrait"]
-        i.landscape = m_json["image_big"]
+        i.landscape = m_json["image_landscape"]
         i.save()
         movie.image = i
 
@@ -906,7 +912,7 @@ def __create_movie_metadata(data, movie, lang):
 
 
 def __update_movie_metadata(data, metadata, lang):
-    metadata.title = data["title"]
+    metadata.title = data["title01"]
     metadata.summary_short = data["summary_short"].replace("<p>", "").replace("</p>", "").rstrip()
     metadata.summary_long = data["summary_long"].replace("<p>", "").replace("</p>", "").rstrip()
     #metadata.subtitle = check_subtitle(metadata.movie.asset.asset_id, lang.code)
@@ -925,7 +931,7 @@ def import_movie(file, up_img=False):
     for m_json in json_list:
         print "asset_id: %s" % m_json["asset_id"]
         # Verifico que el lenguage exista
-        lang = __get_language(m_json["language"])
+        lang = __get_language(m_json["idioma"])
 
         # Verifico que el json tenga runtime
         if m_json["runtime"] == '':
@@ -940,16 +946,24 @@ def import_movie(file, up_img=False):
                 msg = "No existe una movie asociada al asset ID %s" % m_json["asset_id"]
                 raise ImporterException(msg)
             try:
-                mov = __update_movie(movie, m_json, up_img)
+                image = Image.objects.get(name=asset.asset_id)
+                if str(image.portrait).startswith("http://"):
+                    mov = __update_movie(movie, m_json, True)
+                    print "Imagen actualizada"
+                elif str(image.landscape).startswith("http://"):
+                    mov = __update_movie(movie, m_json, True)
+                    print "Imagen actualizada"
+                else:
+                    mov = __update_movie(movie, m_json, up_img)
             except ImporterException as err:
                 print err.value
                 continue
         except ObjectDoesNotExist:
-            try:
-                mov = __create_movie(m_json, up_img)
-            except ImporterException as err:
-                print err.value
-                continue
+            #try:
+            mov = __create_movie(m_json, True)
+            #except ImporterException as err:
+                #print str(err.value)
+                #continue
 
         try:
             met = MovieMetadata.objects.get(movie=mov, language=lang)

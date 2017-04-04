@@ -60,7 +60,7 @@ class AssetAdmin(admin.ModelAdmin):
 @admin.register(models.Girl)
 class GirlAdmin(admin.ModelAdmin):
     list_display = ['asset', 'name', 'type' ]
-    search_fields = ['asset__asset_id']
+    search_fields = ['asset__asset_id', 'name']
 
 @admin.register(models.GirlMetadata)
 class GirlMetadataAdmin(admin.ModelAdmin):
