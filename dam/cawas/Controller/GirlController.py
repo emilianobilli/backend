@@ -268,11 +268,4 @@ class GirlController(object):
         context = {'message': message,  'vlanguages': vlanguages, 'vgirl':vgirl, 'vtypegirl':vtypegirl,'vlangmetadata':vlangmetadata,
                    'imgport':imgport, 'imgland':imgland}
         # checks:
-        # Imagenes -
-        # Girl - OK
-        # Girl metadata - OK
-        # Publishqueue - OK
-        # Publishimage - OK
-        # Bugs:
-
         return render(request, 'cawas/girls/edit.html', context)

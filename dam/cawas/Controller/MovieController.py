@@ -196,6 +196,7 @@ class MovieController(object):
             return redirect(lc.login_view(request))
         # EDIT - MOVIE: en el GET debe cargar variables, y en POST debe leer JSON
         vlangmetadata = []
+        flag=''
 
         try:
             pathfilesport = Setting.objects.get(code='image_repository_path_portrait')
@@ -263,7 +264,7 @@ class MovieController(object):
             if (decjson['Movie']['cast'] is not None):
                 mv.cast = decjson['Movie']['cast']
             if (decjson['Movie']['directors'] is not None):
-                mv.cast = decjson['Movie']['directors']
+                mv.directors = decjson['Movie']['directors']
 
             mv.display_runtime = decjson['Movie']['display_runtime']
             # calcular runtime
@@ -356,8 +357,9 @@ class MovieController(object):
                               {"message": "Error al Generar Cola de Imagen. (" + e.message + ")"})
 
 
-            context={'flag':'success'}
-            return render(request, 'cawas/movies/edit.html', context)
+            #context={'flag':'success'}
+            flag = 'success'
+            #return render(request, 'cawas/movies/edit.html', context)
             #return redirect(menu_view)
             # FIN DE POST
 
@@ -416,6 +418,6 @@ class MovieController(object):
                    'vmovie': vmovie, 'vgirlselected': vgirlselected, 'vgirlnotselected': vgirlnotselected,
                    'vcategoryselected': vcategoryselected, 'vcategorynotselected': vcategorynotselected,
                    'languages': languages, 'vmoviemetadata': vmoviemetadata, 'vlangmetadata': vlangmetadata,
-                   'asset_id': asset_id, 'imgland': imgland, 'imgport': imgport}
+                   'asset_id': asset_id, 'imgland': imgland, 'imgport': imgport,'flag':flag}
 
         return render(request, 'cawas/movies/edit.html', context)

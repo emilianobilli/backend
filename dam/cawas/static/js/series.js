@@ -461,7 +461,7 @@ $( document ).ready(function() {
                     var lang=arr[i];
                     
                     var tit = $("#tit_"+lang).val();
-                    var short = $("#short_desc_"+lang).val().trim().substring(0,50)+"...";
+                    var short = $("#short_desc_"+lang).val().trim();
                     var long = $("#short_desc_"+lang).val().trim();
                     myLangs += '{"Seriemetadata":';
                     myLangs += '{"language": "'+lang+'",';
