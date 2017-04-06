@@ -2,8 +2,9 @@ import os, datetime, json
 from LogController import LogController
 from django.shortcuts import render,redirect
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
-from ..models import Asset, Setting, Girl, GirlMetadata, Category, Language, Image,PublishZone
+from ..models import Asset, Setting, Girl, GirlMetadata, Category, Language, Image,PublishZone, PublishQueue
 from ..Helpers.PublishHelper import PublishHelper
+from ..Helpers.GlobalValues import *
 
 class GirlController(object):
     #Atributos
@@ -23,8 +24,8 @@ class GirlController(object):
             lc = LogController()
             return redirect(lc.login_view(request))
 
+        flag = ''
         message = ''
-        vflag = ""
         vimg = Image()
 
         try:
@@ -87,10 +88,7 @@ class GirlController(object):
             # CREAR METADATA
             vgirlmetadatas = decjson['Girl']['Girlmetadatas']
             for item in vgirlmetadatas:
-
                 vlanguage = Language.objects.get(code=item['Girlmetadata']['language'])
-                # Publica en PublishQueue
-
                 # Luego del POST redirige a pagina principal
                 try:
                     gmd = GirlMetadata.objects.get(girl=vgirl, language=vlanguage)
@@ -104,12 +102,13 @@ class GirlController(object):
                 gmd.publish_date = vschedule_date
                 gmd.girl = vgirl
 
-
                 gmd.save()
                 ph = PublishHelper()
                 ph.func_publish_queue(request, vasset.asset_id, vlanguage, 'AS', 'Q', vschedule_date)
                 ph.func_publish_image(request, vimg)
-            flag = "success"
+
+            flag = 'success'
+            message = 'Guardado Correctamente.'
 
 
         # Cargar variables para presentar en templates
@@ -118,9 +117,11 @@ class GirlController(object):
         vlanguages = Language.objects.all()
 
         vtypegirl = {"pornstar": "Pornstar", "playmate": "Playmate"}
-        context = {'message': message, 'vgirls': vgirls, 'vcategories': vcategories, 'vlanguages': vlanguages,
+        context = {'vgirls': vgirls, 'vcategories': vcategories, 'vlanguages': vlanguages,
                    'vtypegirl': vtypegirl,
-                   'flag': vflag}
+                   'message':message,
+                   'flag': flag
+                   }
         # checks:
         # Imagenes - OK
         # Girl - OK
@@ -265,42 +266,17 @@ class GirlController(object):
                     ph.func_publish_image(request, vimg)
 
             flag='success'
-        context = {'message': message,  'vlanguages': vlanguages, 'vgirl':vgirl, 'vtypegirl':vtypegirl,'vlangmetadata':vlangmetadata,
-                   'imgport':imgport, 'imgland':imgland, 'flag':flag}
+            message = 'Guardado Correctamente.'
+
+        context = { 'vlanguages': vlanguages, 'vgirl':vgirl,
+                   'vtypegirl':vtypegirl,'vlangmetadata':vlangmetadata,
+                   'imgport':imgport, 'imgland':imgland,
+                   'flag':flag,
+                   'message':message}
         # checks:
         return render(request, 'cawas/girls/edit.html', context)
 
 
-
-    def unpublish_girls_view(self, request, id):
-        if not request.user.is_authenticated:
-            lc = LogController()
-            return redirect(lc.login_view(request))
-
-        try:
-            # VERIFICAR, si estado de publicacion esta en Q, se debe eliminar
-            #publicacion = PublishQueue.objects.filter()
-            # Realizar delete al backend
-            # Actualizar Activated a False
-
-            girlmetadata = GirlMetadata.objects.get(id=id)
-            backend_asset_url = Setting.objects.get(CODE='backend_asset_url')
-            vzones = PublishZone.objects.filter(enabled=True)
-            for zone in vzones:
-                abr = ApiBackendResource(zone.backend_url, backend_asset_url)
-                param = ({"asset_id": girlmetadata.girl.asset.asset_id, "asset_type": "show",
-                          "lang": girlmetadata.language.code})
-                abr.delete(param)
-
-            self.code_return = 0
-            self.message_return='Girl ' + girlmetadata.girl.asset.asset_id + 'Despublicada Correctamente'
-        except PublishZone.DoesNotExist as e:
-            return render(request, 'cawas/error.html', {"message": "PublishZone no Existe. (" + str(e.message) + ")"})
-        except GirlMetadata.DoesNotExist as e:
-            return render(request, 'cawas/error.html',
-                          {"message": "Metadata de Girl no Existe. (" + str(e.message) + ")"})
-
-        return self.code_return
 
 
     def list(self, request):
@@ -309,11 +285,26 @@ class GirlController(object):
             return redirect(lc.login_view(request))
 
         usuario = request.user
-        message = "Error"
-        titulo = ''
+        message = ''
+        flag = ''
         page = request.GET.get('page')
         request.POST.get('page')
         girls_list = None
+
+        if request.session.has_key('list_girl_message'):
+            if request.session['list_girl_message'] != '':
+                message = request.session['list_girl_message']
+                request.session['list_girl_message'] = ''
+
+        if request.session.has_key('list_girl_flag'):
+            if request.session['list_girl_flag'] != '':
+                flag = request.session['list_girl_flag']
+                request.session['list_girl_flag'] = ''
+
+        if self.message_return !='':
+            message = self.message_return
+            self.message_return =''
+            flag='success'
 
         if request.POST:
             titulo = request.POST['inputTitulo']
@@ -344,5 +335,49 @@ class GirlController(object):
             # If page is out of range (e.g. 9999), deliver last page of results.
             girls = paginator.page(paginator.num_pages)
 
-        context = {'message': message, 'registros': girls, 'titulo': titulo, 'usuario': usuario}
+        context = {'message': message,'flag':flag, 'registros': girls,  'usuario': usuario}
         return render(request, 'cawas/girls/list.html', context)
+
+
+
+
+    def unpublish(self, request, id):
+        if not request.user.is_authenticated:
+            lc = LogController()
+            return redirect(lc.login_view(request))
+
+        try:
+            girlmetadata = GirlMetadata.objects.get(id=id)
+            vasset_id = girlmetadata.girl.asset.asset_id
+
+            # 1 - VERIFICAR, si estado de publicacion esta en Q, se debe eliminar
+            publishs = PublishQueue.objects.filter(item_id=vasset_id, status='Q')
+            if publishs.count > 0:
+                publishs.delete()
+
+            # 2 - Realizar delete al backend
+            backend_asset_url = Setting.objects.get(code='backend_asset_url')
+            #vzones = PublishZone.objects.filter(enabled=True)
+            #SE COMENTA PARA
+            #for zone in vzones:
+            #    abr = ApiBackendResource(zone.backend_url, backend_asset_url)
+            #    param = ({"asset_id": girlmetadata.girl.asset.asset_id, "asset_type": "show",
+            #              "lang": girlmetadata.language.code})
+            #    abr.delete(param)
+
+
+            # 3 - Actualizar Activated a False
+            girlmetadata.activated=False
+            girlmetadata.save()
+
+            self.code_return = 0
+            request.session['list_girl_message'] = 'Metadata en ' + girlmetadata.language.name + ' de Chica ' + girlmetadata.girl.asset.asset_id + ' Despublicado Correctamente'
+            request.session['list_girl_flag'] = FLAG_SUCCESS
+
+        except PublishZone.DoesNotExist as e:
+            return render(request, 'cawas/error.html', {"message": "PublishZone no Existe. (" + str(e.message) + ")"})
+        except GirlMetadata.DoesNotExist as e:
+            return render(request, 'cawas/error.html',
+                          {"message": "Metadata de Girl no Existe. (" + str(e.message) + ")"})
+
+        return self.code_return

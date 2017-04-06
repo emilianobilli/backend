@@ -16,8 +16,12 @@ from models import Channel, Device, Slider, SliderMetadata, Episode, EpisodeMeta
     Block, Serie, SerieMetadata, Movie, MovieMetadata, CategoryMetadata, PublishZone,Girl, GirlMetadata, Asset, Language, Category, Image, Setting
 from django.contrib.auth import authenticate, login, logout
 #from ..backend_sdk import ApiBackendResource
+from Helpers.GlobalValues import *
 
 
+#Variables:
+MESSAGE_TMP = ''
+FLAG_TMP = ''
 
 
 #FUNCIONES GENERALES
@@ -79,7 +83,7 @@ def menu_view (request):
 
     #<Definir Variables>
     idassetstype = 0
-    message = 'Hay 0 contenidos sin publicar.'
+    message = ''
     contentypes = (
         (1, "MOVIE"),
         (2, "BLOQUES"),
@@ -206,16 +210,10 @@ def add_blocks_view(request):
     controller = BlockController()
     return controller.edit(request)
 
-#</FIN ADD BLOCK>
-
 
 def edit_blocks_view(request, block_id):
     controller = BlockController()
     return controller.edit(request, block_id)
-
-#<Fin EDIT BLOCKS>
-
-
 
 def add_episodes_view(request):
     controller = EpisodeController()
@@ -263,66 +261,28 @@ def add_asset_view(request):
 
 #Funciones de Despublicacion
 def unpublish_movies_view(request, id):
-    if not request.user.is_authenticated:
-        return redirect(login_view)
-
-    try:
-        moviemetadata = MovieMetadata.objects.get(id=id)
-        backend_asset_url = Setting.objects.get(CODE='backend_asset_url')
-        vzones = PublishZone.objects.filter(enabled=True)
-        for zone in vzones:
-            abr = ApiBackendResource(zone.backend_url ,backend_asset_url )
-            param = ({"asset_id": moviemetadata.movie.asset.asset_id,"asset_type":"show", "lang":moviemetadata.language.code  })
-            abr.delete(param)
-
-        flag = 'Movie ' + moviemetadata.movie.asset.asset_id + 'Despublicada Correctamente'
-    except PublishZone.DoesNotExist as e:
-        return render(request, 'cawas/error.html', {"message": "PublishZone no Existe. (" + str(e.message) + ")"})
-    except MovieMetadata.DoesNotExist as e:
-        return render(request, 'cawas/error.html', {"message": "Metadata de Movie no Existe. (" + str(e.message) + ")"})
-
-    context = {'flag':flag}
-    return render(request, 'cawas/movies/list.html', context)
+    controller = MovieController()
+    controller.unpublish(request, id)
+    if controller.code_return == RETURN_OK:
+        return redirect(list_movies_view)
 
 
 
 def unpublish_girls_view(request, id):
-    gc = GirlController()
+    controller = GirlController()
+    controller.unpublish(request, id)
+    if controller.code_return == RETURN_OK:
+        return redirect(list_girls_view)
 
-    if gc.unpublish_girls_view(request,id)== 0 :
-        flag='success'
-        message = gc.message_return
-
-    if gc.unpublish_girls_view(request, id) == -1:
-        flag = 'error'
-        message = gc.message_return
-
-    context = {'flag':flag, 'message':message}
-    return render(request, 'cawas/girls/list.html', context)
 
 
 #Funciones de Despublicacion
 def unpublish_series_view(request, id):
-    if not request.user.is_authenticated:
-        return redirect(login_view)
+    controller = SerieController()
+    controller.unpublish(request, id)
+    if controller.code_return == RETURN_OK:
+        return redirect(list_series_view)
 
-    try:
-        seriemetadata = SerieMetadata.objects.get(id=id)
-        backend_asset_url = Setting.objects.get(CODE='backend_asset_url')
-        vzones = PublishZone.objects.filter(enabled=True)
-        for zone in vzones:
-            abr = ApiBackendResource(zone.backend_url ,backend_asset_url )
-            param = ({"asset_id": seriemetadata.serie.asset.asset_id,"asset_type":"show", "lang":seriemetadata.language.code  })
-            abr.delete(param)
-
-        flag = 'Serie ' + seriemetadata.serie.asset.asset_id + ' Despublicada Correctamente'
-    except PublishZone.DoesNotExist as e:
-        return render(request, 'cawas/error.html', {"message": "PublishZone no Existe. (" + str(e.message) + ")"})
-    except SerieMetadata.DoesNotExist as e:
-        return render(request, 'cawas/error.html', {"message": "Metadata de Serie no Existe. (" + str(e.message) + ")"})
-
-    context = {'flag':flag}
-    return render(request, 'cawas/movies/list.html', context)
 
 
 #Funciones de Despublicacion
@@ -332,70 +292,25 @@ def unpublish_blocks_view(request, id):
     #recorrer los assets asociados, quitar la relacion del bloque con los asset
     # y volver a publicar los assets
     flag= ''
-    '''
-    try:
-        block = Block.objects.get(id=id)
-        backend_asset_url = Setting.objects.get(CODE='backend_asset_url')
-        vzones = PublishZone.objects.filter(enabled=True)
-        for zone in vzones:
-            abr = ApiBackendResource(zone.backend_url ,backend_asset_url )
-            param = ({"asset_id": block.block_id,"asset_type":"show", "lang":block.language.code  })
-            abr.delete(param)
 
-        flag = 'Bloque ' + block.asset.asset_id + 'Despublicada Correctamente'
-    except PublishZone.DoesNotExist as e:
-        return render(request, 'cawas/error.html', {"message": "PublishZone no Existe. (" + str(e.message) + ")"})
-    except MovieMetadata.DoesNotExist as e:
-        return render(request, 'cawas/error.html', {"message": "Metadata de Movie no Existe. (" + str(e.message) + ")"})
-    '''
     context = {'flag':flag}
     return render(request, 'cawas/blocks/list.html', context)
 
 
 #Funciones de Despublicacion
 def unpublish_episodes_view(request, id):
-    if not request.user.is_authenticated:
-        return redirect(login_view)
+    controller = EpisodeController()
+    controller.unpublish(request, id)
+    if controller.code_return == RETURN_OK:
+        return redirect (list_episodes_view)
 
-    try:
-        episodemetadata = MovieMetadata.objects.get(id=id)
-        backend_asset_url = Setting.objects.get(CODE='backend_asset_url')
-        vzones = PublishZone.objects.filter(enabled=True)
-        for zone in vzones:
-            abr = ApiBackendResource(zone.backend_url ,backend_asset_url )
-            param = ({"asset_id": episodemetadata.movie.asset.asset_id,"asset_type":"show", "lang":episodemetadata.language.code  })
-            abr.delete(param)
-
-        flag = 'Capitulo ' + episodemetadata.episode.asset.asset_id + ' Despublicada Correctamente'
-    except PublishZone.DoesNotExist as e:
-        return render(request, 'cawas/error.html', {"message": "PublishZone no Existe. (" + str(e.message) + ")"})
-    except EpisodeMetadata.DoesNotExist as e:
-        return render(request, 'cawas/error.html', {"message": "Metadata de Capitulo no Existe. (" + str(e.message) + ")"})
-
-    context = {'flag':flag}
-    return render(request, 'cawas/movies/list.html', context)
 
 
 #Funciones de Despublicacion
 def unpublish_sliders_view(request, id):
     if not request.user.is_authenticated:
         return redirect(login_view)
-
-    try:
-        slidermetadata = MovieMetadata.objects.get(id=id)
-        backend_asset_url = Setting.objects.get(CODE='backend_asset_url')
-        vzones = PublishZone.objects.filter(enabled=True)
-        for zone in vzones:
-            abr = ApiBackendResource(zone.backend_url ,backend_asset_url )
-            param = ({"asset_id": slidermetadata.movie.asset.asset_id,"asset_type":"show", "lang":slidermetadata.language.code  })
-            abr.delete(param)
-
-        flag = 'Slider ' + slidermetadata.slider.asset.asset_id + ' Despublicada Correctamente'
-    except PublishZone.DoesNotExist as e:
-        return render(request, 'cawas/error.html', {"message": "PublishZone no Existe. (" + str(e.message) + ")"})
-    except MovieMetadata.DoesNotExist as e:
-        return render(request, 'cawas/error.html', {"message": "Metadata de Movie no Existe. (" + str(e.message) + ")"})
-
+    flag = ''
     context = {'flag':flag}
     return render(request, 'cawas/movies/list.html', context)
 
@@ -404,6 +319,7 @@ def unpublish_sliders_view(request, id):
 def list_movies_view(request):
     gc = MovieController()
     return gc.list(request)
+
 
 
 def list_girls_view(request):
@@ -419,6 +335,7 @@ def list_blocks_view(request):
 def list_episodes_view(request):
     gc = EpisodeController()
     return gc.list(request)
+
 
 
 

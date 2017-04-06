@@ -1,12 +1,17 @@
 import os, datetime, json
 from LogController import LogController
 from django.shortcuts import render,redirect
-from ..models import Asset, Setting, Girl, Block, Category, Language, Image, Channel, Device, Serie, Movie, Episode, EpisodeMetadata
+from ..models import Asset, Setting, Girl, Block, Category, Language, Image,PublishZone,PublishQueue, Channel, Device, Serie, Movie, Episode, EpisodeMetadata
 from ..Helpers.PublishHelper import PublishHelper
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
+from ..Helpers.GlobalValues import *
+
 
 class EpisodeController(object):
+    code_return = 0
+    message_return = ''
 
+    # 0 = ok, -1= error
 
 
     def add(self, request):
@@ -158,7 +163,8 @@ class EpisodeController(object):
                                   {"message": "Error al Guardar Episode Metadata. (" + str(e.message) + ")"})
 
             vflag = "success"
-            context = {"flag": vflag}
+            message ='Guardado Correctamente'
+            context = {"flag": vflag, 'message':message }
             return render(request, 'cawas/episodes/add.html', context)
             # Fin datos EPISODE
 
@@ -355,7 +361,9 @@ class EpisodeController(object):
                     return render(request, 'cawas/error.html',
                                   {"message": "Error al Guardar Episode Metadata. (" + str(e.message) + ")"})
 
-            context = {"flag": "success"}
+            vflag = "success"
+            message = 'Guardado Correctamente'
+            context = {"flag": vflag, 'message': message}
             return render(request, 'cawas/episodes/edit.html', context)
             # return redirect(menu_view)
             # Fin POST Bloque
@@ -417,8 +425,19 @@ class EpisodeController(object):
             return redirect(lc.login_view(request))
 
         usuario = request.user
-        message = "Error"
-        titulo = ''
+        #Cuando hay una Des-publicacion se completa esta variable
+        message =''
+        flag = ''
+        if request.session.has_key('list_episode_message'):
+            if request.session['list_episode_message'] != '':
+                message = request.session['list_episode_message']
+                request.session['list_episode_message'] = ''
+
+        if request.session.has_key('list_episode_flag'):
+            if request.session['list_episode_flag'] != '':
+                flag = request.session['list_episode_flag']
+                request.session['list_episode_flag'] = ''
+
         page = request.GET.get('page')
         request.POST.get('page')
         episodes_list = None
@@ -451,5 +470,48 @@ class EpisodeController(object):
             # If page is out of range (e.g. 9999), deliver last page of results.
             episodes = paginator.page(paginator.num_pages)
 
-        context = {'message': message, 'registros': episodes, 'titulo': titulo, 'usuario': usuario}
+        context = {'message': message,'flag':flag, 'registros': episodes, 'usuario': usuario}
         return render(request, 'cawas/episodes/list.html', context)
+
+
+#despublicar
+    def unpublish(self, request, id):
+        if not request.user.is_authenticated:
+            lc = LogController()
+            return redirect(lc.login_view(request))
+
+        try:
+            episodemetadata = EpisodeMetadata.objects.get(id=id)
+            vasset_id = episodemetadata.episode.asset.asset_id
+
+            # 1 - VERIFICAR, si estado de publicacion esta en Q, se debe eliminar
+            publishs = PublishQueue.objects.filter(item_id=vasset_id, status='Q')
+            if publishs.count > 0:
+                publishs.delete()
+
+            # 2 - Realizar delete al backend
+            backend_asset_url = Setting.objects.get(code='backend_asset_url')
+            #vzones = PublishZone.objects.filter(enabled=True)
+            #SE COMENTA PARA
+            #for zone in vzones:
+            #    abr = ApiBackendResource(zone.backend_url, backend_asset_url)
+            #    param = ({"asset_id": girlmetadata.girl.asset.asset_id, "asset_type": "show",
+            #              "lang": girlmetadata.language.code})
+            #    abr.delete(param)
+
+
+            # 3 - Actualizar Activated a False
+            episodemetadata.activated=False
+            episodemetadata.save()
+
+            self.code_return = 0
+            self.message_return= 'Episode ' + episodemetadata.episode.asset.asset_id + ' despublicada Correctamente'
+            request.session['list_episode_message'] = 'Metadata en ' + episodemetadata.language.name +' de Capitulo ' + episodemetadata.episode.asset.asset_id + ' Despublicado Correctamente'
+            request.session['list_episode_flag'] = FLAG_SUCCESS
+        except PublishZone.DoesNotExist as e:
+            return render(request, 'cawas/error.html', {"message": "PublishZone no Existe. (" + str(e.message) + ")"})
+        except EpisodeMetadata.DoesNotExist as e:
+            return render(request, 'cawas/error.html',
+                          {"message": "Metadata de Capitulo no Existe. (" + str(e.message) + ")"})
+
+        return self.code_return

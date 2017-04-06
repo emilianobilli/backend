@@ -1,10 +1,47 @@
 Desarrollar:
 
+    En Edicion de Metadata, se puede agregar idiomas si todavia no ha sido agregado.
+        SliderMetadata -> OK
+        EpisodeMetadata -> OK
+        SerieMetadata -> OK
+        Moviemetadata -> OK
+        Girlmetadata -> OK
 
 Despublicar:
-    En Edicion de Metadata, se puede agregar idiomas si todavia no ha sido agregado.
-    SliderMetadata -> OK
-    EpisodeMetadata -> OK
-    SerieMetadata -> OK
-    Moviemetadata -> OK
-    Girlmetadata ->
+    Logica de des-publicacion:
+        si esta en estado Q  se borra
+        se envia delete a back
+        actualizar activated a False
+
+        TEST
+
+        EpisodeMetadata -> 004288
+            publishqueu tiene q borrarse 4333
+            metadata 905 actualizarse -> Ok
+        Moviemetadata ->
+           005485
+           publishqueue -> 2632 -> OK
+           metadata -> 255 -> OK
+        Girlmetadata -> G00004
+            publishqueue -> 4216 -> OK
+            metadata -> 255 -> OK
+
+        SliderMetadata ->
+            S00114
+
+        SerieMetadata ->
+
+
+
+
+
+
+los edit y add, cuando se guardan correctamente, se deben configurar las cookies y se redirige al listado
+
+------------
+Consultas:
+en despublicacion,
+    se debe cambiar el publish_estatus?
+    se debe agregar la columna
+
+    Serie, que va en el serie_id

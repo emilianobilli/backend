@@ -1,13 +1,12 @@
 import os, datetime, json
 from LogController import LogController
 from django.shortcuts import render,redirect
-from ..models import Asset, Setting, Movie, MovieMetadata, Category, Language, Image, Girl, PublishZone, Channel, PublishQueue, ImageQueue
+from ..models import Asset, Setting, Movie, MovieMetadata, MovieMetadata, Category, Language, Image, Girl, PublishZone, Channel, PublishQueue, ImageQueue
 from ..Helpers.PublishHelper import PublishHelper
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
+from ..Helpers.GlobalValues import *
 
 class MovieController(object):
-
-
 
     def add(self, request):
         # AUTENTICACION DE USUARIO
@@ -18,7 +17,8 @@ class MovieController(object):
         # ALTA - MOVIE: en el GET debe cargar variables, y en POST debe leer JSON
         # cawas/static/images/landscape/  cawas/static/images/portrait/
 
-        vflag = ""
+        vflag = ''
+        message = ''
         if request.method == 'POST':
 
             # parsear JSON
@@ -190,7 +190,7 @@ class MovieController(object):
         vlanguages = Language.objects.all()
         title = 'Nueva Movie'
         context = {'title': title, 'assets': assets, 'channels': channels, 'girls': girls, 'categories': categories,
-                   'movies': vmovies, 'vlanguages': vlanguages, 'flag': vflag}
+                   'movies': vmovies, 'vlanguages': vlanguages, 'flag': vflag, 'message': message}
         return render(request, 'cawas/movies/add.html', context)
 
 
@@ -203,6 +203,7 @@ class MovieController(object):
         # EDIT - MOVIE: en el GET debe cargar variables, y en POST debe leer JSON
         vlangmetadata = []
         flag=''
+        message= ''
 
         try:
             pathfilesport = Setting.objects.get(code='image_repository_path_portrait')
@@ -363,6 +364,7 @@ class MovieController(object):
                 return render(request, 'cawas/error.html',
                               {"message": "Error al Generar Cola de Imagen. (" + e.message + ")"})
             flag = 'success'
+            message='Guardado Correctamente'
 
         # VARIABLES PARA GET - CARGAR MOVIE
         try:
@@ -419,7 +421,7 @@ class MovieController(object):
                    'vmovie': vmovie, 'vgirlselected': vgirlselected, 'vgirlnotselected': vgirlnotselected,
                    'vcategoryselected': vcategoryselected, 'vcategorynotselected': vcategorynotselected,
                    'languages': languages, 'vmoviemetadata': vmoviemetadata, 'vlangmetadata': vlangmetadata,
-                   'asset_id': asset_id, 'imgland': imgland, 'imgport': imgport,'flag':flag}
+                   'asset_id': asset_id, 'imgland': imgland, 'imgport': imgport,'flag':flag,'message':message}
 
         return render(request, 'cawas/movies/edit.html', context)
 
@@ -431,11 +433,22 @@ class MovieController(object):
             return redirect(lc.login_view(request))
 
         usuario = request.user
-        message = "Error"
         titulo = ''
         page = request.GET.get('page')
         request.POST.get('page')
         movies_list = None
+
+        message = ''
+        flag = ''
+        if request.session.has_key('list_movie_message'):
+            if request.session['list_movie_message'] != '':
+                message = request.session['list_movie_message']
+                request.session['list_movie_message'] = ''
+
+        if request.session.has_key('list_movie_flag'):
+            if request.session['list_movie_flag'] != '':
+                flag = request.session['list_movie_flag']
+                request.session['list_movie_flag'] = ''
 
         if request.POST:
             titulo = request.POST['inputTitulo']
@@ -465,6 +478,48 @@ class MovieController(object):
             # If page is out of range (e.g. 9999), deliver last page of results.
             movies = paginator.page(paginator.num_pages)
 
-        context = {'message': message, 'registros': movies, 'titulo': titulo, 'usuario': usuario}
+        context = {'message': message, 'flag':flag, 'registros': movies, 'titulo': titulo, 'usuario': usuario}
 
         return render(request, 'cawas/movies/list.html', context)
+
+
+    # Despublicar
+    def unpublish(self, request, id):
+        if not request.user.is_authenticated:
+            lc = LogController()
+            return redirect(lc.login_view(request))
+
+        try:
+            moviemetadata = MovieMetadata.objects.get(id=id)
+            vasset_id = moviemetadata.movie.asset.asset_id
+
+            # 1 - VERIFICAR, si estado de publicacion esta en Q, se debe eliminar
+            publishs = PublishQueue.objects.filter(item_id=vasset_id, status='Q')
+            if publishs.count > 0:
+                publishs.delete()
+
+            # 2 - Realizar delete al backend
+            backend_asset_url = Setting.objects.get(code='backend_asset_url')
+            # vzones = PublishZone.objects.filter(enabled=True)
+            # SE COMENTA PARA
+            # for zone in vzones:
+            #    abr = ApiBackendResource(zone.backend_url, backend_asset_url)
+            #    param = ({"asset_id": girlmetadata.girl.asset.asset_id, "asset_type": "show",
+            #              "lang": girlmetadata.language.code})
+            #    abr.delete(param)
+
+            # 3 - Actualizar Activated a False
+            moviemetadata.activated = False
+            moviemetadata.save()
+            self.code_return = 0
+            request.session['list_movie_message'] = 'Metadata en ' + moviemetadata.language.name + ' de Movie ' + moviemetadata.movie.asset.asset_id + ' Despublicado Correctamente'
+            request.session['list_movie_flag'] = FLAG_SUCCESS
+
+        except PublishZone.DoesNotExist as e:
+            return render(request, 'cawas/error.html',
+                          {"message": "PublishZone no Existe. (" + str(e.message) + ")"})
+        except MovieMetadata.DoesNotExist as e:
+            return render(request, 'cawas/error.html',
+                          {"message": "Metadata de Capitulo no Existe. (" + str(e.message) + ")"})
+
+        return self.code_return

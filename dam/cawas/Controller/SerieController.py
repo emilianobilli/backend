@@ -1,9 +1,10 @@
 import os, datetime, json
 from LogController import LogController
 from django.shortcuts import render,redirect
-from ..models import Asset, Setting, Serie, SerieMetadata, Category, Language, Image, Girl,  GirlMetadata, Channel
+from ..models import Asset, Setting, Serie, SerieMetadata, Category, Language,PublishQueue, PublishZone, Image, Girl,  GirlMetadata, Channel
 from ..Helpers.PublishHelper import PublishHelper
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
+from ..Helpers.GlobalValues import *
 
 class SerieController(object):
 
@@ -361,11 +362,22 @@ class SerieController(object):
             return redirect(lc.login_view(request))
 
         usuario = request.user
-        message = "Error"
         titulo = ''
         page = request.GET.get('page')
         request.POST.get('page')
         series_list = None
+
+        message = ''
+        flag = ''
+        if request.session.has_key('list_serie_message'):
+            if request.session['list_serie_message'] != '':
+                message = request.session['list_serie_message']
+                request.session['list_serie_message'] = ''
+
+        if request.session.has_key('list_serie_flag'):
+            if request.session['list_serie_flag'] != '':
+                flag = request.session['list_serie_flag']
+                request.session['list_serie_flag'] = ''
 
         if request.POST:
             titulo = request.POST['inputTitulo']
@@ -395,5 +407,49 @@ class SerieController(object):
             # If page is out of range (e.g. 9999), deliver last page of results.
             series = paginator.page(paginator.num_pages)
 
-        context = {'message': message, 'registros': series, 'titulo': titulo, 'usuario': usuario}
+        context = {'message': message, 'flag':flag, 'registros': series, 'titulo': titulo, 'usuario': usuario}
         return render(request, 'cawas/series/list.html', context)
+
+
+
+    # despublicar
+    def unpublish(self, request, id):
+        if not request.user.is_authenticated:
+            lc = LogController()
+            return redirect(lc.login_view(request))
+
+        try:
+            seriemetadata = SerieMetadata.objects.get(id=id)
+            vasset_id = SerieMetadata.serie.asset.asset_id
+
+            # 1 - VERIFICAR, si estado de publicacion esta en Q, se debe eliminar
+            publishs = PublishQueue.objects.filter(item_id=vasset_id, status='Q')
+            if publishs.count > 0:
+                publishs.delete()
+
+            # 2 - Realizar delete al backend
+            backend_asset_url = Setting.objects.get(code='backend_asset_url')
+            # vzones = PublishZone.objects.filter(enabled=True)
+            # SE COMENTA PARA
+            # for zone in vzones:
+            #    abr = ApiBackendResource(zone.backend_url, backend_asset_url)
+            #    param = ({"asset_id": girlmetadata.girl.asset.asset_id, "asset_type": "show",
+            #              "lang": girlmetadata.language.code})
+            #    abr.delete(param)
+
+
+            # 3 - Actualizar Activated a False
+            seriemetadata.activated = False
+            seriemetadata.save()
+
+            self.code_return = 0
+            request.session['list_serie_message'] = 'Metadata en ' + seriemetadata.serie.asset.asset_id + ' de Serie ' + seriemetadata.serie.asset.asset_id + ' Despublicado Correctamente'
+            request.session['list_serie_flag'] = FLAG_SUCCESS
+        except PublishZone.DoesNotExist as e:
+            return render(request, 'cawas/error.html',
+                          {"message": "PublishZone no Existe. (" + str(e.message) + ")"})
+        except SerieMetadata.DoesNotExist as e:
+            return render(request, 'cawas/error.html',
+                          {"message": "Metadata de Serie no Existe. (" + str(e.message) + ")"})
+
+        return self.code_return
