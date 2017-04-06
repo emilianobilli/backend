@@ -92,7 +92,7 @@ class SerieController(object):
                 return render(request, 'cawas/error.html', {"message": "No existe Channel. (" + e.message + ")"})
 
             vserie.save()
-            message = 'Categoria - Registrado Correctamente'
+            message = 'Registrado Correctamente'
             # Fin datos serie
 
             # BORRAR Y CREAR METADATA
@@ -103,6 +103,7 @@ class SerieController(object):
                     smd.language = Language.objects.get(code=item['Seriemetadata']['language'])
                 except Language.DoesNotExist as e:
                     return render(request, 'cawas/error.html', {"message": "No existe LANGUAGE. (" + e.message + ")"})
+
                 vschedule_date = datetime.datetime.now().strftime('%Y-%m-%d')
                 smd.title = item['Seriemetadata']['title']
                 smd.summary_short = item['Seriemetadata']['summary_short']
@@ -115,6 +116,7 @@ class SerieController(object):
                 ph = PublishHelper()
                 ph.func_publish_queue(request, vasset.asset_id, smd.language, 'AS', 'Q', vschedule_date)
                 ph.func_publish_image(request, vimg)
+
             flag = 'success'
 
 
@@ -139,7 +141,7 @@ class SerieController(object):
         except GirlMetadata.DoesNotExist as e:
             return render(request, 'cawas/error.html', {"message": "GirlMetaData No Existe . (" + e.message + ")"})
 
-        context = {'message': message, 'vgirls': vgirls, 'vlanguages': vlanguages, 'vcategories': vcategories,
+        context = {'message': message, 'flag':flag,'vgirls': vgirls, 'vlanguages': vlanguages, 'vcategories': vcategories,
                    'vchannels': vchannels, 'vseries': vseries,'flag':flag}
         return render(request, 'cawas/series/add.html', context)
 
@@ -420,9 +422,10 @@ class SerieController(object):
 
         try:
             seriemetadata = SerieMetadata.objects.get(id=id)
-            vasset_id = SerieMetadata.serie.asset.asset_id
+            vasset_id = seriemetadata.serie.asset.asset_id
 
             # 1 - VERIFICAR, si estado de publicacion esta en Q, se debe eliminar
+            print "itemid " + vasset_id
             publishs = PublishQueue.objects.filter(item_id=vasset_id, status='Q')
             if publishs.count > 0:
                 publishs.delete()
@@ -443,7 +446,7 @@ class SerieController(object):
             seriemetadata.save()
 
             self.code_return = 0
-            request.session['list_serie_message'] = 'Metadata en ' + seriemetadata.serie.asset.asset_id + ' de Serie ' + seriemetadata.serie.asset.asset_id + ' Despublicado Correctamente'
+            request.session['list_serie_message'] = 'Metadata '+ str(seriemetadata.id) + ' de Serie '+str(seriemetadata.serie.asset.asset_id)+ ' Despublicado Correctamente'
             request.session['list_serie_flag'] = FLAG_SUCCESS
         except PublishZone.DoesNotExist as e:
             return render(request, 'cawas/error.html',

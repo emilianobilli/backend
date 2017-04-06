@@ -287,14 +287,10 @@ def unpublish_series_view(request, id):
 
 #Funciones de Despublicacion
 def unpublish_blocks_view(request, id):
-    if not request.user.is_authenticated:
-        return redirect(login_view)
-    #recorrer los assets asociados, quitar la relacion del bloque con los asset
-    # y volver a publicar los assets
-    flag= ''
-
-    context = {'flag':flag}
-    return render(request, 'cawas/blocks/list.html', context)
+    controller = BlockController()
+    controller.unpublish(request, id)
+    if controller.code_return == RETURN_OK:
+        return redirect(list_series_view)
 
 
 #Funciones de Despublicacion
@@ -308,11 +304,10 @@ def unpublish_episodes_view(request, id):
 
 #Funciones de Despublicacion
 def unpublish_sliders_view(request, id):
-    if not request.user.is_authenticated:
-        return redirect(login_view)
-    flag = ''
-    context = {'flag':flag}
-    return render(request, 'cawas/movies/list.html', context)
+    controller = SliderController()
+    controller.unpublish(request, id)
+    if controller.code_return == RETURN_OK:
+        return redirect(list_sliders_view)
 
 
 # Listados

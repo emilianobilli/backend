@@ -35,6 +35,7 @@ urlpatterns = [
     url(r'^episodes/add/$', views.add_episodes_view, name='add_blocks'),
     url(r'^episodes/edit/(?P<episode_id>\w*)/$', views.edit_episodes_view, name='edit_episodes'),
     url(r'^episodes/list/$', views.list_episodes_view, name='list_episodes'),
+    url(r'^episodes/list/(?P<episode_id>\w*)$', views.list_episodes_view, name='list_episodes'),
     url(r'^episodes/unpublish/(?P<id>\w*)$', views.unpublish_episodes_view, name='unpublish_episodes'),
 
     url(r'^sliders/add/$', views.add_sliders_view, name='add_sliders'),

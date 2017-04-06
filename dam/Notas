@@ -26,10 +26,15 @@ Despublicar:
             publishqueue -> 4216 -> OK
             metadata -> 255 -> OK
 
-        SliderMetadata ->
-            S00114
+        SliderMetadata -> S00114
+            publishqueue -> OK
+            metadata update -> OK
 
         SerieMetadata ->
+            publishqueue -> OK
+            metadata update -> OK
+
+
 
 
 
@@ -45,3 +50,4 @@ en despublicacion,
     se debe agregar la columna
 
     Serie, que va en el serie_id
+    Slider, alta, publishqueue, que debe ir en asset_id
