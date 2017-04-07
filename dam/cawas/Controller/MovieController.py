@@ -5,6 +5,8 @@ from ..models import Asset, Setting, Movie, MovieMetadata, MovieMetadata, Catego
 from ..Helpers.PublishHelper import PublishHelper
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from ..Helpers.GlobalValues import *
+from backend_sdk import ApiBackendServer, ApiBackendResource
+
 
 class MovieController(object):
 
@@ -146,17 +148,20 @@ class MovieController(object):
                     if metadatas.count() < 1:
                         mmd.save()
                         # Recorrer el publicZone y genera un PublicQueue por cada idioma
-                        vzones = PublishZone.objects.filter(enabled=True)
-                        for zone in vzones:
+                        ph = PublishHelper()
+                        ph.func_publish_queue(request, vasset.asset_id, vlanguage, 'AS', 'Q', vpublishdate)
+                        #vzones = PublishZone.objects.filter(enabled=True)
+                        #for zone in vzones:
                             # CREAR COLA DE PUBLICACION
-                            vpublish = PublishQueue()
-                            vpublish.item_id = vasset.asset_id
-                            vpublish.item_lang = vlanguage
-                            vpublish.item_type = 'AS'
-                            vpublish.status = 'Q'
-                            vpublish.publish_zone = zone
-                            vpublish.schedule_date = vpublishdate
-                            vpublish.save()
+                        #    vpublish = PublishQueue()
+                        #    vpublish.item_id = vasset.asset_id
+                        #    vpublish.item_lang = vlanguage
+                        #    vpublish.item_type = 'AS'
+                        #    vpublish.status = 'Q'
+                        #    vpublish.publish_zone = zone
+                        #    vpublish.schedule_date = vpublishdate
+                        #    vpublish.save()
+
 
                 except Language.DoesNotExist as e:
                     return render(request, 'cawas/error.html', {"message": "No existe Lenguaje. (" + e.message + ")"})
@@ -500,13 +505,13 @@ class MovieController(object):
 
             # 2 - Realizar delete al backend
             backend_asset_url = Setting.objects.get(code='backend_asset_url')
-            # vzones = PublishZone.objects.filter(enabled=True)
+            vzones = PublishZone.objects.filter(enabled=True)
             # SE COMENTA PARA
-            # for zone in vzones:
-            #    abr = ApiBackendResource(zone.backend_url, backend_asset_url)
-            #    param = ({"asset_id": girlmetadata.girl.asset.asset_id, "asset_type": "show",
-            #              "lang": girlmetadata.language.code})
-            #    abr.delete(param)
+            for zone in vzones:
+                abr = ApiBackendResource(zone.backend_url, backend_asset_url)
+                param = ({"asset_id": moviemetadata.girl.asset.asset_id, "asset_type": "show",
+                          "lang": moviemetadata.language.code})
+                abr.delete(param)
 
             # 3 - Actualizar Activated a False
             moviemetadata.activated = False

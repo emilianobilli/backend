@@ -5,7 +5,7 @@ from ..models import Asset, Setting, Girl, Block, Category, Language, Image,Publ
 from ..Helpers.PublishHelper import PublishHelper
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from ..Helpers.GlobalValues import *
-
+from backend_sdk import ApiBackendServer, ApiBackendResource
 
 class EpisodeController(object):
     code_return = 0
@@ -474,7 +474,7 @@ class EpisodeController(object):
         return render(request, 'cawas/episodes/list.html', context)
 
 
-#despublicar
+    #despublicar
     def unpublish(self, request, id):
         if not request.user.is_authenticated:
             lc = LogController()
@@ -491,14 +491,14 @@ class EpisodeController(object):
 
             # 2 - Realizar delete al backend
             backend_asset_url = Setting.objects.get(code='backend_asset_url')
-            #vzones = PublishZone.objects.filter(enabled=True)
-            #SE COMENTA PARA
-            #for zone in vzones:
-            #    abr = ApiBackendResource(zone.backend_url, backend_asset_url)
-            #    param = ({"asset_id": girlmetadata.girl.asset.asset_id, "asset_type": "show",
-            #              "lang": girlmetadata.language.code})
-            #    abr.delete(param)
-
+            vzones = PublishZone.objects.filter(enabled=True)
+            for zone in vzones:
+                abr = ApiBackendResource(zone.backend_url, backend_asset_url)
+                param = {"asset_id": episodemetadata.girl.asset.asset_id,
+                          "asset_type": "show",
+                          "lang": episodemetadata.language.code}
+                abr.delete(param)
+            #Se deberia hacer algo con las Series?
 
             # 3 - Actualizar Activated a False
             episodemetadata.activated=False

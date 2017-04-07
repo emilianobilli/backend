@@ -5,6 +5,8 @@ from ..models import Asset, Setting, Slider, SliderMetadata, Category, Language,
 from ..Helpers.PublishHelper import PublishHelper
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from ..Helpers.GlobalValues import *
+from backend_sdk import ApiBackendServer, ApiBackendResource
+
 
 class SliderController(object):
 
@@ -270,13 +272,13 @@ class SliderController(object):
 
             # 2 - Realizar delete al backend
             backend_asset_url = Setting.objects.get(code='backend_asset_url')
-            #vzones = PublishZone.objects.filter(enabled=True)
+            vzones = PublishZone.objects.filter(enabled=True)
             #SE COMENTA PARA
-            #for zone in vzones:
-            #    abr = ApiBackendResource(zone.backend_url, backend_asset_url)
-            #    param = ({"asset_id": girlmetadata.girl.asset.asset_id, "asset_type": "show",
-            #              "lang": girlmetadata.language.code})
-            #    abr.delete(param)
+            for zone in vzones:
+                abr = ApiBackendResource(zone.backend_url, backend_asset_url)
+                param = ({"asset_id": slidermetadata.slider.asset.asset_id, "asset_type": "show",
+                          "lang": slidermetadata.language.code})
+                abr.delete(param)
 
 
             # 3 - Actualizar Activated a False

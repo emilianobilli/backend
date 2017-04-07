@@ -1,11 +1,16 @@
-import os, datetime, json
-from LogController import LogController
-from django.shortcuts import render,redirect
-from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
-from ..models import Asset, Setting, Girl, GirlMetadata, Category, Language, Image,PublishZone, PublishQueue
-from ..Helpers.PublishHelper import PublishHelper
-from ..Helpers.GlobalValues import *
+import datetime
+import os
 
+from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
+from django.shortcuts import render,redirect
+from LogController import LogController
+from backend_sdk import ApiBackendServer, ApiBackendResource
+from ..Helpers.GlobalValues import *
+from ..Helpers.PublishHelper import PublishHelper
+from ..models import Asset, Setting, Movie,MovieMetadata, Girl, GirlMetadata, Category, Language, Image,PublishZone, PublishQueue
+
+
+#ApiBackendResource, ApiBackendException,ApiBackendServer
 class GirlController(object):
     #Atributos
     decjson=""
@@ -355,20 +360,36 @@ class GirlController(object):
             if publishs.count > 0:
                 publishs.delete()
 
-            # 2 - Realizar delete al backend
-            backend_asset_url = Setting.objects.get(code='backend_asset_url')
-            #vzones = PublishZone.objects.filter(enabled=True)
-            #SE COMENTA PARA
-            #for zone in vzones:
-            #    abr = ApiBackendResource(zone.backend_url, backend_asset_url)
-            #    param = ({"asset_id": girlmetadata.girl.asset.asset_id, "asset_type": "show",
-            #              "lang": girlmetadata.language.code})
-            #    abr.delete(param)
+            # Buscar todas Movies con esa chica
+            girl = girlmetadata.girl
+            movies = Movie.objects.filter(girls__in=[girl])
+            for movie in movies:
+                # Quitar la asocicacion de Chica-Movie
+                movie.girls.remove(girl)
+                movie.save()
 
+                # Las movies modificadas, volver a publicarlas PublishQueue
+                metadatas = MovieMetadata.objects.filter(movie=movie)
+                for metadata in metadatas:
+                    ph = PublishHelper()
+                    ph.func_publish_queue(request, movie.asset.asset_id, metadata.language, 'AS', 'Q', metadata.publish_date)
+                    print 'asset_id Despublicacion: '+ movie.asset.asset_id
 
-            # 3 - Actualizar Activated a False
-            girlmetadata.activated=False
+            #  Realizar delete al backend
+            setting = Setting.objects.get(code='backend_asset_url')
+            vzones = PublishZone.objects.filter(enabled=True)
+            for zone in vzones:
+                abr = ApiBackendResource(zone.backend_url, setting.value)
+                param = {"asset_id": girlmetadata.girl.asset.asset_id,
+                          "asset_type": "girl",
+                          "lang": girlmetadata.language.code}
+                #print 'param: ' + param
+                abr.delete(param)
+
+            #  Actualizar Activated a False
+            girlmetadata.activated = False
             girlmetadata.save()
+
 
             self.code_return = 0
             request.session['list_girl_message'] = 'Metadata en ' + girlmetadata.language.name + ' de Chica ' + girlmetadata.girl.asset.asset_id + ' Despublicado Correctamente'
@@ -379,5 +400,23 @@ class GirlController(object):
         except GirlMetadata.DoesNotExist as e:
             return render(request, 'cawas/error.html',
                           {"message": "Metadata de Girl no Existe. (" + str(e.message) + ")"})
+
+        return self.code_return
+
+
+
+
+
+    def publish(self, request, id):
+
+        gmd = GirlMetadata.objects.get(id=id)
+        gmd.publish_date = datetime.datetime.now().strftime('%Y-%m-%d')
+        gmd.activated = True
+        gmd.save()
+        ph = PublishHelper()
+        ph.func_publish_queue(request, gmd.girl.asset.asset_id, gmd.language, 'AS', 'Q', datetime.datetime.now().strftime('%Y-%m-%d'))
+        request.session['list_girl_message'] = 'Metadata en ' + gmd.language.name + ' de Chica ' + gmd.girl.asset.asset_id + ' Publicada Correctamente'
+        request.session['list_girl_flag'] = FLAG_SUCCESS
+        self.code_return = 0
 
         return self.code_return

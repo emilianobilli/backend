@@ -18,6 +18,7 @@ urlpatterns = [
     url(r'^girls/edit/(?P<asset_id>\w*)/$', views.edit_girls_view, name='edit_girls'),
     url(r'^girls/list/$', views.list_girls_view, name='list_girls'),
     url(r'^girls/unpublish/(?P<id>\w*)$', views.unpublish_girls_view, name='unpublish_girls'),
+    url(r'^girls/publish/(?P<id>\w*)$', views.publish_girls_view, name='publish_girls'),
 
     url(r'^categories/add/$', views.add_category_view, name='add_categories'),
     url(r'^categories/edit/(?P<asset_id>\d*)/$', views.edit_category_view, name='edit_categories'),

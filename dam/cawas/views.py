@@ -267,13 +267,18 @@ def unpublish_movies_view(request, id):
         return redirect(list_movies_view)
 
 
-
 def unpublish_girls_view(request, id):
     controller = GirlController()
     controller.unpublish(request, id)
     if controller.code_return == RETURN_OK:
         return redirect(list_girls_view)
 
+
+def publish_girls_view(request, id):
+    controller = GirlController()
+    controller.publish(request, id)
+    if controller.code_return == RETURN_OK:
+        return redirect(list_girls_view)
 
 
 #Funciones de Despublicacion

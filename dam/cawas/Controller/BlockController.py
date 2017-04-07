@@ -1,7 +1,7 @@
 import os, datetime, json
 from LogController import LogController
 from django.shortcuts import render,redirect
-from ..models import Asset, Setting, Girl, Block, Category, Language, Image, Channel, Device, Serie, Movie, Episode
+from ..models import Asset, Setting, Girl, Block, Category,PublishZone,  Language, Image, Channel, Device, Serie, Movie, Episode
 from ..Helpers.PublishHelper import PublishHelper
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 
@@ -261,3 +261,47 @@ class BlockController(object):
 
         context = {'message': message, 'registros': blocks, 'titulo': titulo, 'usuario': usuario}
         return render(request, 'cawas/blocks/list.html', context)
+
+        # despublicar
+        def unpublish(self, request, id):
+            if not request.user.is_authenticated:
+                lc = LogController()
+                return redirect(lc.login_view(request))
+
+            try:
+                #blockmetadata = BlockMetadata.objects.get(id=id)
+                #vasset_id = blockmetadata.slider.slider_id
+
+                # 1 - VERIFICAR, si estado de publicacion esta en Q, se debe eliminar
+                '''
+                publishs = PublishQueue.objects.filter(item_id=vasset_id, status='Q')
+                if publishs.count > 0:
+                    publishs.delete()
+
+                # 2 - Realizar delete al backend
+                backend_asset_url = Setting.objects.get(code='backend_asset_url')
+                vzones = PublishZone.objects.filter(enabled=True)
+                # SE COMENTA PARA
+                for zone in vzones:
+                    abr = ApiBackendResource(zone.backend_url, backend_asset_url)
+                    param = ({"asset_id": blockmetadata.girl.asset.asset_id, "asset_type": "show",
+                              "lang": blockmetadata.language.code})
+                    abr.delete(param)
+
+                # 3 - Actualizar Activated a False
+                blockmetadata.activated = False
+                blockmetadata.save()
+
+                self.code_return = 0
+                request.session[
+                    'list_slider_message'] = 'Metadata en ' + blockmetadata.language.name + ' de Slider ' + blockmetadata.slider.slider_id + ' Despublicado Correctamente'
+                request.session['list_slider_flag'] = FLAG_SUCCESS
+                '''
+            except PublishZone.DoesNotExist as e:
+                return render(request, 'cawas/error.html',
+                              {"message": "PublishZone no Existe. (" + str(e.message) + ")"})
+            except Block.DoesNotExist as e:
+                return render(request, 'cawas/error.html',
+                              {"message": "Metadata de Slider no Existe. (" + str(e.message) + ")"})
+
+            return self.code_return

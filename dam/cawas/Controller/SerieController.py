@@ -5,6 +5,7 @@ from ..models import Asset, Setting, Serie, SerieMetadata, Category, Language,Pu
 from ..Helpers.PublishHelper import PublishHelper
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from ..Helpers.GlobalValues import *
+from backend_sdk import ApiBackendServer, ApiBackendResource
 
 class SerieController(object):
 
@@ -432,13 +433,18 @@ class SerieController(object):
 
             # 2 - Realizar delete al backend
             backend_asset_url = Setting.objects.get(code='backend_asset_url')
-            # vzones = PublishZone.objects.filter(enabled=True)
+            vzones = PublishZone.objects.filter(enabled=True)
             # SE COMENTA PARA
-            # for zone in vzones:
-            #    abr = ApiBackendResource(zone.backend_url, backend_asset_url)
-            #    param = ({"asset_id": girlmetadata.girl.asset.asset_id, "asset_type": "show",
-            #              "lang": girlmetadata.language.code})
-            #    abr.delete(param)
+            for zone in vzones:
+                abr = ApiBackendResource(zone.backend_url, backend_asset_url)
+                param = ({"asset_id": seriemetadata.serie.asset.asset_id, "asset_type": "show",
+                          "lang": seriemetadata.language.code})
+                abr.delete(param)
+
+            #Se deben reenviar los episodios?
+            #Obtener los episodios que pertenecen a esta serie
+            #desvincular
+            #publicar nuevamente los episodes
 
 
             # 3 - Actualizar Activated a False
