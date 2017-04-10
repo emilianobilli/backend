@@ -186,7 +186,13 @@ def edit_movies_view(request, asset_id):
 #<GIRL>
 def add_girls_view(request):
     gc = GirlController()
-    return gc.add(request)
+    if request.method == 'GET':
+        return gc.add(request)
+    if request.method == 'POST':
+        gc.add(request)
+        return redirect(list_girls_view)
+
+
 
 def edit_girls_view(request, asset_id):
     #AUTENTICACION DE USUARIO
@@ -228,12 +234,21 @@ def edit_episodes_view(request, episode_id):
 
 def add_sliders_view(request):
     controller = SliderController()
-    return controller.add(request)
+    if request.method == 'GET':
+        return controller.add(request)
+    if request.method == 'POST':
+        controller.add(request)
+        return redirect(list_sliders_view)
 
 
 def edit_sliders_view(request, slider_id):
     controller = SliderController()
-    return controller.edit(request, slider_id)
+    if request.method == 'GET':
+        return controller.edit(request, slider_id)
+    if request.method == 'POST':
+        controller.edit(request, slider_id)
+        return redirect(list_sliders_view)
+
 
 
 
@@ -267,6 +282,13 @@ def unpublish_movies_view(request, id):
         return redirect(list_movies_view)
 
 
+def publish_movies_view(request, id):
+    controller = MovieController()
+    controller.publish(request, id)
+    if controller.code_return == RETURN_OK:
+        return redirect(list_movies_view)
+
+
 def unpublish_girls_view(request, id):
     controller = GirlController()
     controller.unpublish(request, id)
@@ -288,6 +310,11 @@ def unpublish_series_view(request, id):
     if controller.code_return == RETURN_OK:
         return redirect(list_series_view)
 
+def publish_series_view(request, id):
+    controller = SerieController()
+    controller.publish(request, id)
+    if controller.code_return == RETURN_OK:
+        return redirect(list_series_view)
 
 
 #Funciones de Despublicacion
@@ -297,6 +324,12 @@ def unpublish_blocks_view(request, id):
     if controller.code_return == RETURN_OK:
         return redirect(list_series_view)
 
+def publish_blocks_view(request, id):
+    controller = BlockController()
+    controller.publish(request, id)
+    if controller.code_return == RETURN_OK:
+        return redirect(list_blocks_view)
+
 
 #Funciones de Despublicacion
 def unpublish_episodes_view(request, id):
@@ -305,6 +338,17 @@ def unpublish_episodes_view(request, id):
     if controller.code_return == RETURN_OK:
         return redirect (list_episodes_view)
 
+def publish_episodes_view(request, id):
+    controller = EpisodeController()
+    controller.publish(request, id)
+    if controller.code_return == RETURN_OK:
+        return redirect(list_episodes_view)
+
+def publish_sliders_view(request, id):
+    controller = SliderController()
+    controller.publish(request, id)
+    if controller.code_return == RETURN_OK:
+        return redirect(list_sliders_view)
 
 
 #Funciones de Despublicacion

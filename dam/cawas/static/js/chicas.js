@@ -130,7 +130,14 @@ $( document ).ready(function() {
     $("#sendBut").click(function(){
         clickedToSubmit=1;
         checkAll();
-    })
+    });
+
+    $("#btngrabarypublicar").click(function(){
+
+        $("#publicar").val("1");
+        clickedToSubmit=1;
+        checkAll();
+    });
     
     $("body").mouseup(function(){
         if(checkedOnce>0 && checkVal>0 ){
@@ -151,6 +158,7 @@ $( document ).ready(function() {
         var birth_date = $('#birthDate').val().trim();
         var girl_height = $('#height').val();
         var girl_weight = $('#weight').val();
+        var publicar = $('#publicar').val();
         
         countChecked();
         // chequea original Name
@@ -320,6 +328,7 @@ $( document ).ready(function() {
                     myJSON+='"asset_id":"'+edit_asset_id+'",';
                     myJSON+='"type_girl":"'+category_selected+'",';
                     myJSON+='"name":"'+original_name+'",';
+                    myJSON+='"publicar":"'+publicar+'",';
                     if (birth_date==''){
                         myJSON+='"birth_date":null,';
                        }else{

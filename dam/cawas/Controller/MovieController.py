@@ -487,44 +487,79 @@ class MovieController(object):
 
         return render(request, 'cawas/movies/list.html', context)
 
-
-    # Despublicar
     def unpublish(self, request, id):
+        # Despublicar
         if not request.user.is_authenticated:
             lc = LogController()
             return redirect(lc.login_view(request))
 
         try:
-            moviemetadata = MovieMetadata.objects.get(id=id)
-            vasset_id = moviemetadata.movie.asset.asset_id
+            md = MovieMetadata.objects.get(id=id)
+            vasset_id = md.movie.asset.asset_id
 
             # 1 - VERIFICAR, si estado de publicacion esta en Q, se debe eliminar
             publishs = PublishQueue.objects.filter(item_id=vasset_id, status='Q')
             if publishs.count > 0:
                 publishs.delete()
 
-            # 2 - Realizar delete al backend
-            backend_asset_url = Setting.objects.get(code='backend_asset_url')
+            # Buscar todas Movies con esa chica
+            #girl = md.movie
+            #movies = Movie.objects.filter(girls__in=[girl])
+            #for movie in movies:
+            #    # Quitar la asocicacion de Chica-Movie
+            #    movie.girls.remove(girl)
+            #    movie.save()
+
+                # Las movies modificadas, volver a publicarlas PublishQueue
+            #    metadatas = MovieMetadata.objects.filter(movie=movie)
+            #    for metadata in metadatas:
+            #        ph = PublishHelper()
+            #        ph.func_publish_queue(request, movie.asset.asset_id, metadata.language, 'AS', 'Q',
+            #                              metadata.publish_date)
+            #        print 'asset_id Despublicacion: ' + movie.asset.asset_id
+
+            # Realizar delete al backend
+            setting = Setting.objects.get(code='backend_asset_url')
             vzones = PublishZone.objects.filter(enabled=True)
-            # SE COMENTA PARA
             for zone in vzones:
-                abr = ApiBackendResource(zone.backend_url, backend_asset_url)
-                param = ({"asset_id": moviemetadata.girl.asset.asset_id, "asset_type": "show",
-                          "lang": moviemetadata.language.code})
+                abr = ApiBackendResource(zone.backend_url, setting.value)
+                param = {"asset_id": md.movie.asset.asset_id,
+                         "asset_type": "show",
+                         "lang": md.language.code}
+                # print 'param: ' + param
                 abr.delete(param)
 
-            # 3 - Actualizar Activated a False
-            moviemetadata.activated = False
-            moviemetadata.save()
+            # Actualizar Activated a False
+            md.activated = False
+            md.save()
+
             self.code_return = 0
-            request.session['list_movie_message'] = 'Metadata en ' + moviemetadata.language.name + ' de Movie ' + moviemetadata.movie.asset.asset_id + ' Despublicado Correctamente'
+            request.session['list_movie_message'] = 'Metadata en ' + md.language.name + ' de Movie ' + md.movie.asset.asset_id + ' Despublicado Correctamente'
             request.session['list_movie_flag'] = FLAG_SUCCESS
 
         except PublishZone.DoesNotExist as e:
-            return render(request, 'cawas/error.html',
-                          {"message": "PublishZone no Existe. (" + str(e.message) + ")"})
+            return render(request, 'cawas/error.html', {"message": "PublishZone no Existe. (" + str(e.message) + ")"})
         except MovieMetadata.DoesNotExist as e:
             return render(request, 'cawas/error.html',
-                          {"message": "Metadata de Capitulo no Existe. (" + str(e.message) + ")"})
+                          {"message": "Metadata de Movie no Existe. (" + str(e.message) + ")"})
+
+        return self.code_return
+
+
+
+
+
+    def publish(self, request, id):
+        md = MovieMetadata.objects.get(id=id)
+        md.publish_date = datetime.datetime.now().strftime('%Y-%m-%d')
+        md.activated = True
+        md.save()
+
+        ph = PublishHelper()
+        ph.func_publish_queue(request, md.movie.asset.asset_id, md.language, 'AS', 'Q', datetime.datetime.now().strftime('%Y-%m-%d'))
+        ph.func_publish_image(request, md.movie.image)
+        request.session['list_movie_message'] = 'Metadata en ' + md.language.name + ' de Movie ' + md.movie.asset.asset_id + ' Publicada Correctamente'
+        request.session['list_movie_flag'] = FLAG_SUCCESS
+        self.code_return = 0
 
         return self.code_return

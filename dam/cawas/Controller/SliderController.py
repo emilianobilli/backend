@@ -189,11 +189,14 @@ class SliderController(object):
                     return render(request, 'cawas/error.html',
                                   {"message": "Error al Guardar Metadata. (" + str(e.message) + ")"})
                 vflag = "success"
+                request.session['list_slider_message'] = 'Guardado Correctamente'
+                request.session['list_slider_flag'] = FLAG_SUCCESS
 
-        context = {'vtypes': vtypes, 'vassets': vassets, 'vsliders': vsliders,
-                   'vlanguages': vlanguages, 'vdevices': vdevices, 'flag': vflag, 'vslider': vslider,
-                   'vlangmetadata': vlangmetadata, 'message':message, 'flag':vflag}
-        return render(request, 'cawas/sliders/edit.html', context)
+        if request.method == 'GET':
+            context = {'vtypes': vtypes, 'vassets': vassets, 'vsliders': vsliders,
+                       'vlanguages': vlanguages, 'vdevices': vdevices, 'flag': vflag, 'vslider': vslider,
+                       'vlangmetadata': vlangmetadata, 'message':message, 'flag':vflag}
+            return render(request, 'cawas/sliders/edit.html', context)
 
 
 
@@ -271,15 +274,15 @@ class SliderController(object):
                 publishs.delete()
 
             # 2 - Realizar delete al backend
-            backend_asset_url = Setting.objects.get(code='backend_asset_url')
+            setting = Setting.objects.get(code='backend_asset_url')
             vzones = PublishZone.objects.filter(enabled=True)
             #SE COMENTA PARA
             for zone in vzones:
-                abr = ApiBackendResource(zone.backend_url, backend_asset_url)
-                param = ({"asset_id": slidermetadata.slider.asset.asset_id, "asset_type": "show",
-                          "lang": slidermetadata.language.code})
+                abr = ApiBackendResource(zone.backend_url, setting.value)
+                param = {"asset_id": slidermetadata.slider.slider_id,
+                          "asset_type": "show",
+                          "lang": slidermetadata.language.code}
                 abr.delete(param)
-
 
             # 3 - Actualizar Activated a False
             slidermetadata.activated=False

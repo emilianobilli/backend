@@ -13,6 +13,7 @@ urlpatterns = [
     url(r'^movies/edit/(?P<asset_id>\d*)/$', views.edit_movies_view, name='edit_movie'),
     url(r'^movies/list/$', views.list_movies_view, name='list_movies'),
     url(r'^movies/unpublish/(?P<id>\d*)/$', views.unpublish_movies_view, name='unpublish_movie'),
+    url(r'^movies/publish/(?P<id>\d*)/$', views.publish_movies_view, name='publish_movie'),
 
     url(r'^girls/add/$', views.add_girls_view, name='add_girls'),
     url(r'^girls/edit/(?P<asset_id>\w*)/$', views.edit_girls_view, name='edit_girls'),
@@ -27,22 +28,27 @@ urlpatterns = [
     url(r'^series/edit/(?P<asset_id>\w*)/$', views.edit_series_view, name='edit_series'),
     url(r'^series/list/$', views.list_series_view, name='list_series'),
     url(r'^series/unpublish/(?P<id>\w*)$', views.unpublish_series_view, name='unpublish_series'),
+    url(r'^series/publish/(?P<id>\w*)$', views.publish_series_view, name='publish_series'),
 
     url(r'^blocks/add/$', views.add_blocks_view, name='add_blocks'),
     url(r'^blocks/edit/(?P<block_id>\w*)/$', views.edit_blocks_view, name='edit_episodes'),
     url(r'^blocks/list/$', views.list_blocks_view, name='list_blocks'),
     url(r'^blocks/unpublish/(?P<id>\w*)$', views.unpublish_blocks_view, name='unpublish_blocks'),
+    url(r'^blocks/publish/(?P<id>\w*)$', views.publish_blocks_view, name='publish_blocks'),
+
 
     url(r'^episodes/add/$', views.add_episodes_view, name='add_blocks'),
     url(r'^episodes/edit/(?P<episode_id>\w*)/$', views.edit_episodes_view, name='edit_episodes'),
     url(r'^episodes/list/$', views.list_episodes_view, name='list_episodes'),
     url(r'^episodes/list/(?P<episode_id>\w*)$', views.list_episodes_view, name='list_episodes'),
     url(r'^episodes/unpublish/(?P<id>\w*)$', views.unpublish_episodes_view, name='unpublish_episodes'),
+    url(r'^episodes/publish/(?P<id>\w*)$', views.publish_episodes_view, name='publish_episodes'),
 
     url(r'^sliders/add/$', views.add_sliders_view, name='add_sliders'),
     url(r'^sliders/edit/(?P<slider_id>\w*)/$', views.edit_sliders_view, name='edit_sliders'),
     url(r'^sliders/list/$', views.list_sliders_view, name='list_sliders'),
     url(r'^sliders/unpublish/(?P<id>\w*)$', views.unpublish_sliders_view, name='unpublish_sliders'),
+    url(r'^sliders/publish/(?P<id>\w*)$', views.publish_sliders_view, name='publish_sliders'),
 
     #<#POST Json CAWAS>
     #url(r'^add_movie_json/$', views.add_movies_view, name='add_movie_json'),

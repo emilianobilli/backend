@@ -1,8 +1,7 @@
-import datetime
-import os
 
+import os, datetime, json
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
-from django.shortcuts import render,redirect
+from django.shortcuts import render, redirect
 from LogController import LogController
 from backend_sdk import ApiBackendServer, ApiBackendResource
 from ..Helpers.GlobalValues import *
@@ -32,7 +31,7 @@ class GirlController(object):
         flag = ''
         message = ''
         vimg = Image()
-
+        vgrabarypublicar=''
         try:
             pathfilesport = Setting.objects.get(code='image_repository_path_portrait')
             pathfilesland = Setting.objects.get(code='image_repository_path_landscape')
@@ -78,6 +77,7 @@ class GirlController(object):
                 vgirl.asset = vasset
                 vgirl.name = decjson['Girl']['name']
                 vgirl.type = decjson['Girl']['type_girl']
+                vgrabarypublicar = decjson['Girl']['publicar']
                 if (decjson['Girl']['birth_date'] is not None):
                     vgirl.birth_date = datetime.datetime.strptime(decjson['Girl']['birth_date'], '%d-%m-%Y').strftime(
                         '%Y-%m-%d')
@@ -106,34 +106,30 @@ class GirlController(object):
                 gmd.nationality = item['Girlmetadata']['nationality']
                 gmd.publish_date = vschedule_date
                 gmd.girl = vgirl
-
                 gmd.save()
-                ph = PublishHelper()
-                ph.func_publish_queue(request, vasset.asset_id, vlanguage, 'AS', 'Q', vschedule_date)
-                ph.func_publish_image(request, vimg)
 
-            flag = 'success'
-            message = 'Guardado Correctamente.'
+                if vgrabarypublicar == '1':
+                    print 'grabar y publicar:' + vgrabarypublicar
+                    ph = PublishHelper()
+                    ph.func_publish_queue(request, vasset.asset_id, vlanguage, 'AS', 'Q', vschedule_date)
+                    ph.func_publish_image(request, vimg)
 
 
-        # Cargar variables para presentar en templates
-        vgirls = Girl.objects.all()
-        vcategories = Category.objects.all()
-        vlanguages = Language.objects.all()
+            request.session['list_girl_message'] = 'Guardado Correctamente.'
+            request.session['list_girl_flag'] = FLAG_SUCCESS
+            #FIN DE POST
 
-        vtypegirl = {"pornstar": "Pornstar", "playmate": "Playmate"}
-        context = {'vgirls': vgirls, 'vcategories': vcategories, 'vlanguages': vlanguages,
-                   'vtypegirl': vtypegirl,
-                   'message':message,
-                   'flag': flag
-                   }
-        # checks:
-        # Imagenes - OK
-        # Girl - OK
-        # Girl metadata - OK
-        # Publishqueue - NO
-        # Publishimage - NO
-        return render(request, 'cawas/girls/add.html', context)
+        if request.method =='GET':
+            # Cargar variables para presentar en templates
+            vgirls = Girl.objects.all()
+            vcategories = Category.objects.all()
+            vlanguages = Language.objects.all()
+
+            vtypegirl = {"pornstar": "Pornstar", "playmate": "Playmate"}
+            context = {'vgirls': vgirls, 'vcategories': vcategories, 'vlanguages': vlanguages,
+                       'vtypegirl': vtypegirl
+                       }
+            return render(request, 'cawas/girls/add.html', context)
 
 
 
@@ -245,7 +241,6 @@ class GirlController(object):
 
             #BORRAR Y CREAR METADATA
             vgirlmetadatas = decjson['Girl']['Girlmetadatas']
-            #gmds = GirlMetadata.objects.filter(girl=vgirl).delete()
             for item in vgirlmetadatas:
                 vlanguage = Language.objects.get(code=item['Girlmetadata']['language'])
                 try:
@@ -265,6 +260,7 @@ class GirlController(object):
                 if metadatas.count() < 1:
                     gmd.save()
                     # Publica en PublishQueue
+
                     ph = PublishHelper()
                     ph.func_publish_queue(request, vasset.asset_id, vlanguage, 'AS', 'Q', vschedule_date)
                     # Publica en PublishImage
@@ -415,6 +411,7 @@ class GirlController(object):
         gmd.save()
         ph = PublishHelper()
         ph.func_publish_queue(request, gmd.girl.asset.asset_id, gmd.language, 'AS', 'Q', datetime.datetime.now().strftime('%Y-%m-%d'))
+        ph.func_publish_image(request,gmd.girl.image)
         request.session['list_girl_message'] = 'Metadata en ' + gmd.language.name + ' de Chica ' + gmd.girl.asset.asset_id + ' Publicada Correctamente'
         request.session['list_girl_flag'] = FLAG_SUCCESS
         self.code_return = 0

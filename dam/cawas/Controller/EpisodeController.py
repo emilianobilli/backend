@@ -10,7 +10,6 @@ from backend_sdk import ApiBackendServer, ApiBackendResource
 class EpisodeController(object):
     code_return = 0
     message_return = ''
-
     # 0 = ok, -1= error
 
 
@@ -490,13 +489,13 @@ class EpisodeController(object):
                 publishs.delete()
 
             # 2 - Realizar delete al backend
-            backend_asset_url = Setting.objects.get(code='backend_asset_url')
+            setting = Setting.objects.get(code='backend_asset_url')
             vzones = PublishZone.objects.filter(enabled=True)
             for zone in vzones:
-                abr = ApiBackendResource(zone.backend_url, backend_asset_url)
-                param = {"asset_id": episodemetadata.girl.asset.asset_id,
-                          "asset_type": "show",
-                          "lang": episodemetadata.language.code}
+                abr = ApiBackendResource(zone.backend_url,  setting.value)
+                param = {"asset_id": episodemetadata.episode.asset.asset_id,
+                         "asset_type": "show",
+                         "lang": episodemetadata.language.code}
                 abr.delete(param)
             #Se deberia hacer algo con las Series?
 
@@ -513,5 +512,21 @@ class EpisodeController(object):
         except EpisodeMetadata.DoesNotExist as e:
             return render(request, 'cawas/error.html',
                           {"message": "Metadata de Capitulo no Existe. (" + str(e.message) + ")"})
+
+        return self.code_return
+
+
+    def publish(self, request, id):
+        md = EpisodeMetadata.objects.get(id=id)
+        md.publish_date = datetime.datetime.now().strftime('%Y-%m-%d')
+        md.activated = True
+        md.save()
+
+        ph = PublishHelper()
+        ph.func_publish_queue(request, md.episode.asset.asset_id, md.language, 'AS', 'Q', datetime.datetime.now().strftime('%Y-%m-%d'))
+        ph.func_publish_image(request, md.episode.image)
+        request.session['list_episode_message'] = 'Metadata en ' + md.language.name + ' de Capitulo ' + md.episode.asset.asset_id + ' Publicada Correctamente'
+        request.session['list_episode_flag'] = FLAG_SUCCESS
+        self.code_return = 0
 
         return self.code_return
