@@ -257,7 +257,7 @@ class Slider(models.Model):
     )
     slider_id         = models.CharField(max_length=8, unique=True, help_text="ID del Slider")
     media_type        = models.CharField(max_length=10, choices=TYPE, help_text="Tipo de Slider")
-    media_url         = models.CharField(max_length=256, help_text="Media url")
+    image             = models.ForeignKey(Image, blank=True, null=True)
     asset             = models.ForeignKey(Asset, blank=True, null=True)
     target_device     = models.ForeignKey(Device)
 
@@ -285,7 +285,9 @@ class Slider(models.Model):
 
         dict["slider_id"]  = self.slider_id
         dict["media_type"] = self.media_type
-        dict["media_url"]  = self.media_url
+        if self.image is not None:
+            if self.image.landscape.name != '':
+                dict["media_url"] = os.path.basename(self.image.landscape.name)
         if self.asset is not None:
             dict["linked_asset_id"]   = self.asset.asset_id
             dict["linked_asset_type"] = self.asset.asset_type
