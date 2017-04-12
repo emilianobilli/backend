@@ -530,3 +530,21 @@ class EpisodeController(object):
         self.code_return = 0
 
         return self.code_return
+
+
+    def publish_all(self, request,param_episode ):
+        #Publica nuevamente la Girl para todos los idiomas
+
+        mditems = EpisodeMetadata.objects.filter(episode=param_episode)
+        #Actualizar la fecha de publicacion
+        for md in mditems:
+            md.publish_date = datetime.datetime.now().strftime('%Y-%m-%d')
+            md.activated = True
+            md.save()
+            #Dejar en cola de publicacion para cada idioma
+            ph = PublishHelper()
+            ph.func_publish_queue(request, md.episode.asset.asset_id, md.language, 'AS', 'Q', md.publish_date)
+            ph.func_publish_image(request, md.episode.image)
+            self.code_return = 0
+
+        return self.code_return

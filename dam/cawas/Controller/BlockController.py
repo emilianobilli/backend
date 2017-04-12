@@ -1,9 +1,16 @@
 import os, datetime, json
 from LogController import LogController
 from django.shortcuts import render,redirect
-from ..models import Asset, Setting, Girl, Block, Category,PublishZone,  Language, Image, Channel, Device, Serie, Movie, Episode
+from ..models import Asset, Setting, Girl, Block, PublishQueue,  Category, GirlMetadata, EpisodeMetadata, SerieMetadata, MovieMetadata, PublishZone,  Language, Image, Channel, Device, Serie, Movie, Episode
 from ..Helpers.PublishHelper import PublishHelper
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
+from MovieController import MovieController
+from SerieController import SerieController
+from GirlController import GirlController
+from EpisodeController import EpisodeController
+from ..Helpers.GlobalValues import *
+from backend_sdk import ApiBackendServer, ApiBackendResource
+
 
 class BlockController(object):
 
@@ -262,46 +269,72 @@ class BlockController(object):
         context = {'message': message, 'registros': blocks, 'titulo': titulo, 'usuario': usuario}
         return render(request, 'cawas/blocks/list.html', context)
 
-        # despublicar
-        def unpublish(self, request, id):
-            if not request.user.is_authenticated:
-                lc = LogController()
-                return redirect(lc.login_view(request))
 
-            try:
-                #blockmetadata = BlockMetadata.objects.get(id=id)
-                #vasset_id = blockmetadata.slider.slider_id
+    # despublicar
+    def unpublish(self, request, id):
+        if not request.user.is_authenticated:
+            lc = LogController()
+            return redirect(lc.login_view(request))
 
-                # 1 - VERIFICAR, si estado de publicacion esta en Q, se debe eliminar
-                '''
-                publishs = PublishQueue.objects.filter(item_id=vasset_id, status='Q')
-                if publishs.count > 0:
-                    publishs.delete()
+        try:
+            block = Block.objects.get(id=id)
 
-                # 2 - Realizar delete al backend
-                backend_asset_url = Setting.objects.get(code='backend_asset_url')
-                vzones = PublishZone.objects.filter(enabled=True)
-                # SE COMENTA PARA
-                for zone in vzones:
-                    abr = ApiBackendResource(zone.backend_url, backend_asset_url)
-                    param = ({"asset_id": blockmetadata.girl.asset.asset_id, "asset_type": "show",
-                              "lang": blockmetadata.language.code})
-                    abr.delete(param)
+            #1 - quitar la asociacion
+            assetsblock = block.assets
+            block.assets = None
+            block.save()
 
-                # 3 - Actualizar Activated a False
-                blockmetadata.activated = False
-                blockmetadata.save()
+            # 2 - VERIFICAR, Si bloque esta encolado, se elimina de cola de publicacion
+            publishs = PublishQueue.objects.filter(item_id=block.block_id, status='Q')
+            if publishs.count > 0:
+                publishs.delete()
 
-                self.code_return = 0
-                request.session[
-                    'list_slider_message'] = 'Metadata en ' + blockmetadata.language.name + ' de Slider ' + blockmetadata.slider.slider_id + ' Despublicado Correctamente'
-                request.session['list_slider_flag'] = FLAG_SUCCESS
-                '''
-            except PublishZone.DoesNotExist as e:
-                return render(request, 'cawas/error.html',
-                              {"message": "PublishZone no Existe. (" + str(e.message) + ")"})
-            except Block.DoesNotExist as e:
-                return render(request, 'cawas/error.html',
-                              {"message": "Metadata de Slider no Existe. (" + str(e.message) + ")"})
+            # 3 - Publicar los assets que pertenecen al Bloque
+            #vschedule_date = datetime.datetime.strptime(decjson['Block']['publish_date'], '%d-%m-%Y').strftime('%Y-%m-%d')
+            for item in assetsblock:
+                # enconlar los assets
+                if item.asset_type =="movie":
+                    movie = Movie.objects.get(asset=item)
+                    ctr = MovieController()
+                    ctr.publish_all(request, param_movie=movie)
+                if item.asset_type == "serie":
+                    serie = Serie.objects.get(asset=item)
+                    ctr = SerieController()
+                    ctr.publish_all(request, param_serie=serie)
+                if item.asset_type == "episode":
+                    episode = Episode.objects.get(asset=item)
+                    ctr = EpisodeController()
+                    ctr.publish_all(request, param_episode=episode)
+                if item.asset_type == "girl":
+                    girl = Girl.objects.get(asset=item)
+                    ctr = GirlController()
+                    ctr.publish_all(request, param_girl=girl)
 
-            return self.code_return
+
+
+            # 4 - Realizar delete al backend
+            setting = Setting.objects.get(code='backend_asset_url')
+            vzones = PublishZone.objects.filter(enabled=True)
+            for zone in vzones:
+                abr = ApiBackendResource(zone.backend_url, setting.value)
+                param = {"asset_id": block.block_id,
+                         "asset_type": "block",
+                         "lang": block.language}
+                abr.delete(param)
+
+            # 3 - Actualizar Activated a False
+            #blockmetadata.activated = False
+            #blockmetadata.save()
+
+            self.code_return = 0
+            request.session['list_block_message'] = 'Bloque Despublicado Correctamente '
+            request.session['list_block_flag'] = FLAG_SUCCESS
+
+        except PublishZone.DoesNotExist as e:
+            return render(request, 'cawas/error.html',
+                          {"message": "PublishZone no Existe. (" + str(e.message) + ")"})
+        except Block.DoesNotExist as e:
+            return render(request, 'cawas/error.html',
+                          {"message": "Metadata de Slider no Existe. (" + str(e.message) + ")"})
+
+        return self.code_return

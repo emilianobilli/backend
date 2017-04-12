@@ -4,13 +4,14 @@ from django.shortcuts import render,redirect
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from django.db import IntegrityError
 from django.http import  HttpResponse
-from Controller.GirlController import GirlController
 from Controller.MovieController import MovieController
 from Controller.SerieController import SerieController
-from Controller.BlockController import BlockController
-from Controller.EpisodeController import EpisodeController
-from Controller.SliderController import SliderController
 from Controller.GirlController import GirlController
+from Controller.EpisodeController import EpisodeController
+from Controller.BlockController import BlockController
+
+from Controller.SliderController import SliderController
+
 from Controller.LogController import LogController
 from models import Channel, Device, Slider, SliderMetadata, Episode, EpisodeMetadata, ImageQueue, PublishQueue, \
     Block, Serie, SerieMetadata, Movie, MovieMetadata, CategoryMetadata, PublishZone,Girl, GirlMetadata, Asset, Language, Category, Image, Setting

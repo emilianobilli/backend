@@ -258,7 +258,22 @@ class SliderController(object):
         return render(request, 'cawas/sliders/list.html', context)
 
 
-#despublicar
+
+
+    def publish(self, request, id):
+        md = SliderMetadata.objects.get(id=id)
+        md.publish_date = datetime.datetime.now().strftime('%Y-%m-%d')
+        md.activated = True
+        md.save()
+
+        ph = PublishHelper()
+        ph.func_publish_queue(request, md.slider.slider_id, md.language, 'AS', 'Q', md.publish_date)
+        request.session['list_slider_message'] = 'Metadata en ' + md.language.name + ' de Slider ' + md.slider.asset.asset_id + ' Publicada Correctamente'
+        request.session['list_slider_flag'] = FLAG_SUCCESS
+        self.code_return = 0
+
+
+    #Despublicar
     def unpublish(self, request, id):
         if not request.user.is_authenticated:
             lc = LogController()
@@ -274,14 +289,13 @@ class SliderController(object):
                 publishs.delete()
 
             # 2 - Realizar delete al backend
-            setting = Setting.objects.get(code='backend_asset_url')
+            setting = Setting.objects.get(code='backend_slider_url')
             vzones = PublishZone.objects.filter(enabled=True)
             #SE COMENTA PARA
             for zone in vzones:
                 abr = ApiBackendResource(zone.backend_url, setting.value)
-                param = {"asset_id": slidermetadata.slider.slider_id,
-                          "asset_type": "show",
-                          "lang": slidermetadata.language.code}
+                param = {"slider_id": slidermetadata.slider.slider_id,
+                         "lang": slidermetadata.language.code}
                 abr.delete(param)
 
             # 3 - Actualizar Activated a False

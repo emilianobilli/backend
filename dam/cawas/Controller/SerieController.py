@@ -8,7 +8,7 @@ from ..Helpers.GlobalValues import *
 from backend_sdk import ApiBackendServer, ApiBackendResource
 
 class SerieController(object):
-
+    code_return = 0
 
     def add(self, request):
         # AUTENTICACION DE USUARIO
@@ -353,7 +353,7 @@ class SerieController(object):
         # Serie - OK
         # SerieMetadata -
         # Publishqueue -
-        # Imagequeue -
+        # Imagequeue - s
 
         return render(request, 'cawas/series/edit.html', context)
 
@@ -388,8 +388,7 @@ class SerieController(object):
             # FILTROS
             if titulo != '':
                 if selectestado != '':
-                    series_list = SerieMetadata.objects.filter(title__icontains=titulo,
-                                                               publish_status=selectestado).order_by('serie_id')
+                    series_list = SerieMetadata.objects.filter(title__icontains=titulo, publish_status=selectestado).order_by('serie_id')
                 else:
                     series_list = SerieMetadata.objects.filter(title__icontains=titulo).order_by('serie_id')
             elif selectestado != '':
@@ -448,32 +447,38 @@ class SerieController(object):
                 publishs.delete()
 
             # 2 - Realizar delete al backend
-            backend_asset_url = Setting.objects.get(code='backend_asset_url')
+            setting = Setting.objects.get(code='backend_asset_url')
             vzones = PublishZone.objects.filter(enabled=True)
+
             # SE COMENTA PARA
             for zone in vzones:
-                abr = ApiBackendResource(zone.backend_url, backend_asset_url)
-                param = ({"asset_id": seriemetadata.serie.asset.asset_id,
-                          "asset_type": "show",
-                          "lang": seriemetadata.language.code})
+                abr = ApiBackendResource(zone.backend_url, setting.value)
+                param = {"asset_id": seriemetadata.serie.asset.asset_id,
+                         "asset_type": "show",
+                         "lang": seriemetadata.language.code}
                 abr.delete(param)
 
-            #Se deben reenviar los episodios?
+            #Se deben reenviar los episodios
             #Obtener los episodios que pertenecen a esta serie
             #publicar nuevamente los episodes
 
             episodes = Episode.objects.filter(serie=seriemetadata.serie)
             for item in episodes:
                 try:
-                    #se quita la vinculacion
+                    #Se quita la vinculacion
                     item.serie = None
                     item.save()
-                    #volver a publicar el episodio
-                    #mde = EpisodeMetadata.objects.filter(episode=item)
-                    #for episodemetadata in mde:
-                    #    ph = PublishHelper()
-                    #    ph.func_publish_queue(request, item.asset.asset_id, episodemetadata.language, 'AS', 'Q', datetime.datetime.now().strftime('%Y-%m-%d'))
-                    #    ph.func_publish_image(request, item.image)
+                    # Se envia el DELETE al Backend, con un POST
+                    mde = EpisodeMetadata.objects.filter(episode=item)
+                    for episodemetadata in mde:
+                        for zone in vzones:
+                            abr = ApiBackendResource(zone.backend_url, setting.value)
+                            param = {"asset_id": episodemetadata.episode.asset.asset_id,
+                                     "asset_type": "show",
+                                     "lang": episodemetadata.language.code}
+                            abr.delete(param)
+                        episodemetadata.activated = False
+                        episodemetadata.save()
                 except Exception as e:
                     return render(request, 'cawas/error.html', {"message": "No existe Episode. (" + e.message + ")"})
 
@@ -490,5 +495,24 @@ class SerieController(object):
         except SerieMetadata.DoesNotExist as e:
             return render(request, 'cawas/error.html',
                           {"message": "Metadata de Serie no Existe. (" + str(e.message) + ")"})
+
+        return self.code_return
+
+
+
+    def publish_all(self, request, param_serie ):
+        #Publica nuevamente la movie para
+
+        mditems = SerieMetadata.objects.filter(serie=param_serie)
+        #Actualizar la fecha de publicacion
+        for md in mditems:
+            md.publish_date = datetime.datetime.now().strftime('%Y-%m-%d')
+            md.activated = True
+            md.save()
+            #Dejar en cola de publicacion para cada idioma
+            ph = PublishHelper()
+            ph.func_publish_queue(request, md.serie.asset.asset_id, md.language, 'AS', 'Q', md.publish_date)
+            ph.func_publish_image(request, md.serie.image)
+            self.code_return = 0
 
         return self.code_return

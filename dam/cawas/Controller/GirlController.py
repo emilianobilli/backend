@@ -417,3 +417,20 @@ class GirlController(object):
         self.code_return = 0
 
         return self.code_return
+
+    def publish_all(self, request,param_girl ):
+        #Publica nuevamente la Girl para todos los idiomas
+
+        mditems = GirlMetadata.objects.filter(girl=param_girl)
+        #Actualizar la fecha de publicacion
+        for md in mditems:
+            md.publish_date = datetime.datetime.now().strftime('%Y-%m-%d')
+            md.activated = True
+            md.save()
+            #Dejar en cola de publicacion para cada idioma
+            ph = PublishHelper()
+            ph.func_publish_queue(request, md.girl.asset.asset_id, md.language, 'AS', 'Q', md.publish_date)
+            ph.func_publish_image(request, md.girl.image)
+            self.code_return = 0
+
+        return self.code_return

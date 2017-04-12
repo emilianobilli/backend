@@ -10,6 +10,9 @@ from backend_sdk import ApiBackendServer, ApiBackendResource
 
 class MovieController(object):
 
+
+
+
     def add(self, request):
         # AUTENTICACION DE USUARIO
         if not request.user.is_authenticated:
@@ -561,5 +564,23 @@ class MovieController(object):
         request.session['list_movie_message'] = 'Metadata en ' + md.language.name + ' de Movie ' + md.movie.asset.asset_id + ' Publicada Correctamente'
         request.session['list_movie_flag'] = FLAG_SUCCESS
         self.code_return = 0
+
+        return self.code_return
+
+
+    def publish_all(self, request,param_movie ):
+        #Publica nuevamente la movie para
+
+        mditems = MovieMetadata.objects.filter(movie=param_movie)
+        #Actualizar la fecha de publicacion
+        for md in mditems:
+            md.publish_date = datetime.datetime.now().strftime('%Y-%m-%d')
+            md.activated = True
+            md.save()
+            #Dejar en cola de publicacion para cada idioma
+            ph = PublishHelper()
+            ph.func_publish_queue(request, md.movie.asset.asset_id, md.language, 'AS', 'Q', md.publish_date)
+            ph.func_publish_image(request, md.movie.image)
+            self.code_return = 0
 
         return self.code_return

@@ -135,7 +135,14 @@
                             {% if usuario.is_superuser == true %}
                                 <div class="tb-cell"><a href="/series/delete/{{ item.serie.asset.asset_id}}" class="btn-danger btn tb-btn">Borrar</a></div>
                             {% endif %}
-                            <div class="tb-cell"><a href="/series/unpublish/{{ item.id}}" class="btn-warning btn tb-btn">Des-publicar</a></div>
+
+                            {% if item.activated == 0 %}
+                                <div class="tb-cell"><a href="/series/publish/{{ item.id}}" class="btn-success btn tb-btn">Publicar</a></div>
+                            {% else %}
+                               <div class="tb-cell"><a href="/series/unpublish/{{ item.id}}" class="btn-warning btn tb-btn">Des-publicar</a></div>
+                            {% endif %}
+
+
                         </div>
 
 
