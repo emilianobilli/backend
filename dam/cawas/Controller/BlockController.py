@@ -232,7 +232,7 @@ class BlockController(object):
             return redirect(lc.login_view(request))
 
         usuario = request.user
-        message = "Error"
+        message = ''
         titulo = ''
         page = request.GET.get('page')
         request.POST.get('page')
@@ -270,6 +270,8 @@ class BlockController(object):
         return render(request, 'cawas/blocks/list.html', context)
 
 
+
+
     # despublicar
     def unpublish(self, request, id):
         if not request.user.is_authenticated:
@@ -278,10 +280,10 @@ class BlockController(object):
 
         try:
             block = Block.objects.get(id=id)
-
             #1 - quitar la asociacion
             assetsblock = block.assets
-            block.assets = None
+            # a = assets
+            block.assets
             block.save()
 
             # 2 - VERIFICAR, Si bloque esta encolado, se elimina de cola de publicacion
@@ -313,18 +315,17 @@ class BlockController(object):
 
 
             # 4 - Realizar delete al backend
-            setting = Setting.objects.get(code='backend_asset_url')
+            setting = Setting.objects.get(code='backend_block_url')
             vzones = PublishZone.objects.filter(enabled=True)
             for zone in vzones:
                 abr = ApiBackendResource(zone.backend_url, setting.value)
                 param = {"asset_id": block.block_id,
-                         "asset_type": "block",
                          "lang": block.language}
                 abr.delete(param)
 
             # 3 - Actualizar Activated a False
-            #blockmetadata.activated = False
-            #blockmetadata.save()
+            block.activated = False
+            block.save()
 
             self.code_return = 0
             request.session['list_block_message'] = 'Bloque Despublicado Correctamente '

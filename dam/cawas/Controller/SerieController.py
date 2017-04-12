@@ -372,6 +372,7 @@ class SerieController(object):
 
         message = ''
         flag = ''
+
         if request.session.has_key('list_serie_message'):
             if request.session['list_serie_message'] != '':
                 message = request.session['list_serie_message']
@@ -415,16 +416,26 @@ class SerieController(object):
 
 
     def publish(self, request, id):
-        md = EpisodeMetadata.objects.get(id=id)
+        #Publicar la Serie
+        md = SerieMetadata.objects.get(id=id)
         md.publish_date = datetime.datetime.now().strftime('%Y-%m-%d')
         md.activated = True
         md.save()
 
         ph = PublishHelper()
-        ph.func_publish_queue(request, md.episode.asset.asset_id, md.language, 'AS', 'Q',datetime.datetime.now().strftime('%Y-%m-%d'))
-        ph.func_publish_image(request, md.episode.image)
-        request.session['list_episode_message'] = 'Metadata en ' + md.language.name + ' de Capitulo ' + md.episode.asset.asset_id + ' Publicada Correctamente'
-        request.session['list_episode_flag'] = FLAG_SUCCESS
+        ph.func_publish_queue(request, md.serie.asset.asset_id, md.language, 'AS', 'Q',datetime.datetime.now().strftime('%Y-%m-%d'))
+
+        #Publicar los episodios de la serie
+        episodes = Episode.objects.filter(serie=md.serie)
+        for e in episodes:
+            #recorrer la metadata en el idioma que se selecciono la serie
+            episodemetadatas = EpisodeMetadata.objects.filter(episode=e, language=md.language)
+            for em in episodemetadatas:
+                ph = PublishHelper()
+                ph.func_publish_queue(request, em.episode.asset.asset_id, em.language, 'AS', 'Q', datetime.datetime.now().strftime('%Y-%m-%d'))
+                ph.func_publish_image(request, em.episode.image)
+        request.session['list_serie_message'] = 'Serie en ' + md.language.name + ' de Publicada Correctamente'
+        request.session['list_serie_flag'] = FLAG_SUCCESS
         self.code_return = 0
 
         return self.code_return
@@ -441,16 +452,16 @@ class SerieController(object):
             seriemetadata = SerieMetadata.objects.get(id=id)
             vasset_id = seriemetadata.serie.asset.asset_id
 
-            # 1 - VERIFICAR, si estado de publicacion esta en Q, se debe eliminar
+            # 1 - VERIFICAR, si estado de publicacion DE SERIE esta en Q, se debe eliminar
             publishs = PublishQueue.objects.filter(item_id=vasset_id, status='Q')
             if publishs.count > 0:
                 publishs.delete()
 
-            # 2 - Realizar delete al backend
+
+            # 2 - Realizar delete al backend de la Serie
             setting = Setting.objects.get(code='backend_asset_url')
             vzones = PublishZone.objects.filter(enabled=True)
 
-            # SE COMENTA PARA
             for zone in vzones:
                 abr = ApiBackendResource(zone.backend_url, setting.value)
                 param = {"asset_id": seriemetadata.serie.asset.asset_id,
@@ -458,19 +469,23 @@ class SerieController(object):
                          "lang": seriemetadata.language.code}
                 abr.delete(param)
 
-            #Se deben reenviar los episodios
+
             #Obtener los episodios que pertenecen a esta serie
             #publicar nuevamente los episodes
-
+            print 'despublicacion de episodes'
             episodes = Episode.objects.filter(serie=seriemetadata.serie)
             for item in episodes:
+                print 'episode: ' + item.asset.asset_id
                 try:
-                    #Se quita la vinculacion
-                    item.serie = None
-                    item.save()
-                    # Se envia el DELETE al Backend, con un POST
-                    mde = EpisodeMetadata.objects.filter(episode=item)
+                    # Despublicar los episodios que tengan el mismo idioma que la serie.
+                    mde = EpisodeMetadata.objects.filter(episode=item, language=seriemetadata.language)
                     for episodemetadata in mde:
+                        print 'episodemetadata: ' + episodemetadata.episode.asset.asset_id
+                        # VERIFICAR SI estado de publicacion de EPISODE esta en Q, se debe eliminar
+                        publishs = PublishQueue.objects.filter(item_id=episodemetadata.episode.asset.asset_id, status='Q')
+                        if publishs.count > 0:
+                            publishs.delete()
+
                         for zone in vzones:
                             abr = ApiBackendResource(zone.backend_url, setting.value)
                             param = {"asset_id": episodemetadata.episode.asset.asset_id,
@@ -487,8 +502,9 @@ class SerieController(object):
             seriemetadata.save()
 
             self.code_return = 0
-            request.session['list_serie_message'] = 'Metadata '+ str(seriemetadata.id) + ' de Serie '+str(seriemetadata.serie.asset.asset_id)+ ' Despublicado Correctamente'
+            request.session['list_serie_message'] = 'Metadata '+ str(seriemetadata.id) + ' de Serie '+ str(seriemetadata.serie.asset.asset_id)+ ' Despublicado Correctamente'
             request.session['list_serie_flag'] = FLAG_SUCCESS
+
         except PublishZone.DoesNotExist as e:
             return render(request, 'cawas/error.html',
                           {"message": "PublishZone no Existe. (" + str(e.message) + ")"})

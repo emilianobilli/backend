@@ -20,7 +20,6 @@ class GirlController(object):
     #0 = ok, -1= error
 
 
-
     #respuestas, 0 = ok, 2= login
     def add(self, request):
         # AUTENTICACION DE USUARIO
