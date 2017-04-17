@@ -39,6 +39,13 @@ $( document ).ready(function() {
 
     };
 
+  $("#btngrabarypublicar").click(function(){
+
+        $("#publicar").val("1");
+        clickedToSubmit=1;
+        checkAll();
+    });
+
     var asset_id = $("#asset_id").val();
     if(asset_id != null){
         changeVideo(asset_id, "#repro1");// Cambia el video de acuerdo al ID. la función está en la línea 135. Construye la url relativa del video con la variable path+ID+'.mp4'
@@ -348,6 +355,8 @@ $( document ).ready(function() {
         var elenco_selected = $('#elenco').val();
         var display_runtime = $('#runtime').val();
         var year_selected = $('#releaseYear').val().toString();
+        var publicar = $('#publicar').val();
+
         countChecked();
         // chequea original Title
         if(original_Title=="" || original_Title==" ")
@@ -665,6 +674,8 @@ $( document ).ready(function() {
                     myJSON+='"original_title":"'+original_Title+'",';
                     myJSON+='"channel_id":'+canal_selected+',';
                     myJSON+='"girls":'+myGirls+',';
+                    myJSON+='"publicar":"'+publicar+'",';
+
 
                     //OPCIONALES
                     if (year_selected==''){

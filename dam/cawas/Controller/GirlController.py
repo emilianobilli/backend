@@ -82,6 +82,7 @@ class GirlController(object):
                         '%Y-%m-%d')
                 else:
                     vgirl.birth_date = datetime.datetime.now().strftime('%Y-%m-%d')
+
                 vgirl.height = decjson['Girl']['height']
                 vgirl.weight = decjson['Girl']['weight']
                 vgirl.image = vimg
@@ -107,15 +108,24 @@ class GirlController(object):
                 gmd.girl = vgirl
                 gmd.save()
 
-                if vgrabarypublicar == '1':
-                    print 'grabar y publicar:' + vgrabarypublicar
+            #PUBLICAR METADATA
+            if vgrabarypublicar == '1':
+                try:
                     ph = PublishHelper()
-                    ph.func_publish_queue(request, vasset.asset_id, vlanguage, 'AS', 'Q', vschedule_date)
                     ph.func_publish_image(request, vimg)
+                    metadatas = GirlMetadata.objects.filter(girl=vgirl)
+                    for mdi in metadatas:
+                        # Publica en PublishQueue
+                        ph.func_publish_queue(request, mdi.girl.asset.asset_id, mdi.language, 'AS', 'Q', vschedule_date)
+                except GirlMetadata.DoesNotExist as e:
+                    return render(request, 'cawas/error.html',
+                                  {"message": "No existe Metadata Para el Chica. (" + e.message + ")"})
 
 
-            request.session['list_girl_message'] = 'Guardado Correctamente.'
+
+            request.session['list_girl_message'] = 'Guardado Correctamente'
             request.session['list_girl_flag'] = FLAG_SUCCESS
+
             #FIN DE POST
 
         if request.method =='GET':
@@ -258,15 +268,18 @@ class GirlController(object):
                 # Si no existe METADATA, se genera
                 if metadatas.count() < 1:
                     gmd.save()
-                    # Publica en PublishQueue
 
-                    ph = PublishHelper()
-                    ph.func_publish_queue(request, vasset.asset_id, vlanguage, 'AS', 'Q', vschedule_date)
-                    # Publica en PublishImage
-                    ph.func_publish_image(request, vimg)
+                # Publica en PublishQueue
+                ph = PublishHelper()
+                ph.func_publish_queue(request, vasset.asset_id, vlanguage, 'AS', 'Q', vschedule_date)
+                # Publica en PublishImage
+                ph.func_publish_image(request, vimg)
 
             flag='success'
             message = 'Guardado Correctamente.'
+
+        request.session['list_girl_message'] = 'Guardado Correctamente'
+        request.session['list_girl_flag'] = FLAG_SUCCESS
 
         context = { 'vlanguages': vlanguages, 'vgirl':vgirl,
                    'vtypegirl':vtypegirl,'vlangmetadata':vlangmetadata,

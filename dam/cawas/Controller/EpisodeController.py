@@ -23,6 +23,7 @@ class EpisodeController(object):
         message = ''
         vflag = ''
         vschedule_date = ''
+        vgrabarypublicar = ''
         if request.method == 'POST':
             # VARIABLES
             vepisode = Episode()
@@ -46,6 +47,7 @@ class EpisodeController(object):
                 vepisode.serie = Serie.objects.get(asset=vasset_serie)
                 vepisode.chapter = decjson['Episode']['chapter']
                 vepisode.season = decjson['Episode']['season']
+                vgrabarypublicar = decjson['Episode']['publicar']
 
                 # Datos OPCIONALES
                 if (decjson['Episode']['year'] is not None):
@@ -130,7 +132,13 @@ class EpisodeController(object):
             vepisodemetadata = decjson['Episode']['Episodemetadatas']
             for item in vepisodemetadata:
                 try:
-                    emd = EpisodeMetadata()
+
+                    vlang = Language.objects.get(code=item['Episodemetadata']['language'])
+                    try:
+                        emd = EpisodeMetadata.objects.get(episode=vepisode, language=vlang)
+                    except EpisodeMetadata.DoesNotExist as e:
+                        emd = EpisodeMetadata();
+
                     # convertDateYMDnowIsNull
                     if (item['Episodemetadata']['schedule_date'] != ''):
                         vschedule_date = datetime.datetime.strptime(item['Episodemetadata']['schedule_date'],
@@ -138,7 +146,6 @@ class EpisodeController(object):
                     else:
                         vschedule_date = datetime.datetime.now().strftime('%Y-%m-%d')
 
-                    vlang = Language.objects.get(code=item['Episodemetadata']['language'])
                     emd.language = vlang
                     emd.title = item['Episodemetadata']['title']
                     emd.summary_short = item['Episodemetadata']['summary_short']
@@ -146,23 +153,26 @@ class EpisodeController(object):
                     emd.publish_date = vschedule_date
                     emd.episode = vepisode
                     emd.save()
-                    # Publica en PublishQueue
-                    ph = PublishHelper()
-                    ph.func_publish_queue(request, vasset.asset_id, vlang, 'AS', 'Q', vschedule_date)
-                    ph.func_publish_image(request, vimg)
-
-                    # func_publish_queue(vasset, vlang, 'AS', 'Q', vschedule_date)
-                    # Publica en PublishImage
-                    # func_publish_image(vimg)
 
                 except Language.DoesNotExist as e:
                     return render(request, 'cawas/error.html', {"message": "Lenguaje no Existe. (" + e.message + ")"})
-                except Exception as e:
+
+            #PUBLICAR METADATA
+            if vgrabarypublicar == '1':
+                try:
+                    ph = PublishHelper()
+                    ph.func_publish_image(request, vimg)
+                    metadatas = EpisodeMetadata.objects.filter(episode=vepisode)
+                    for mdi in metadatas:
+                        ph.func_publish_queue(request, mdi.episode.asset.asset_id, mdi.language, 'AS', 'Q', vschedule_date)
+                except EpisodeMetadata.DoesNotExist as e:
                     return render(request, 'cawas/error.html',
-                                  {"message": "Error al Guardar Episode Metadata. (" + str(e.message) + ")"})
+                                  {"message": "No existe Metadata Para el Chica. (" + e.message + ")"})
 
             vflag = "success"
             message ='Guardado Correctamente'
+            request.session['list_episode_message'] = 'Guardado Correctamente'
+            request.session['list_episode_flag'] = FLAG_SUCCESS
             context = {"flag": vflag, 'message':message }
             return render(request, 'cawas/episodes/add.html', context)
             # Fin datos EPISODE
@@ -350,9 +360,9 @@ class EpisodeController(object):
                     metadatas = EpisodeMetadata.objects.filter(episode=vepisode, language=vlang)
                     if metadatas.count() < 1:
                         emd.save()
-                        ph = PublishHelper()
-                        ph.func_publish_queue(request, vasset.asset_id, vlang, 'AS', 'Q', vschedule_date)
-                        ph.func_publish_image(request, vimg)
+                    ph = PublishHelper()
+                    ph.func_publish_queue(request, vasset.asset_id, vlang, 'AS', 'Q', vschedule_date)
+                    ph.func_publish_image(request, vimg)
 
                 except Language.DoesNotExist as e:
                     return render(request, 'cawas/error.html', {"message": "Lenguaje no Existe. (" + e.message + ")"})

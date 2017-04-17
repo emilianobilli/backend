@@ -198,7 +198,11 @@ def add_girls_view(request):
 def edit_girls_view(request, asset_id):
     #AUTENTICACION DE USUARIO
     gc = GirlController()
-    return gc.edit(request, asset_id)
+    if request.method == 'GET':
+        return gc.edit(request, asset_id)
+    if request.method == 'POST':
+        gc.edit(request, asset_id)
+        return redirect(list_girls_view)
 
 
 #<CRUD SERIE>
@@ -215,7 +219,7 @@ def edit_series_view(request, asset_id):
 
 def add_blocks_view(request):
     controller = BlockController()
-    return controller.edit(request)
+    return controller.add(request)
 
 
 def edit_blocks_view(request, block_id):
@@ -224,12 +228,20 @@ def edit_blocks_view(request, block_id):
 
 def add_episodes_view(request):
     controller = EpisodeController()
-    return controller.add(request)
+    if request.method == 'GET':
+        return controller.add(request)
+    if request.method == 'POST':
+        controller.add(request)
+        return redirect(list_episodes_view)
 
 
 def edit_episodes_view(request, episode_id):
     controller = EpisodeController()
-    return controller.edit(request, episode_id)
+    if request.method == 'GET':
+        return controller.edit(request, episode_id)
+    if request.method == 'POST':
+        controller.edit(request, episode_id)
+        return redirect(list_episodes_view)
 
 
 
@@ -323,7 +335,7 @@ def unpublish_blocks_view(request, id):
     controller = BlockController()
     controller.unpublish(request, id)
     if controller.code_return == RETURN_OK:
-        return redirect(list_series_view)
+        return redirect(list_blocks_view)
 
 def publish_blocks_view(request, id):
     controller = BlockController()

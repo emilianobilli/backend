@@ -10,7 +10,7 @@ from GirlController import GirlController
 from EpisodeController import EpisodeController
 from ..Helpers.GlobalValues import *
 from backend_sdk import ApiBackendServer, ApiBackendResource
-
+from django.db.models import Q
 
 class BlockController(object):
 
@@ -234,9 +234,21 @@ class BlockController(object):
         usuario = request.user
         message = ''
         titulo = ''
+        flag =''
         page = request.GET.get('page')
         request.POST.get('page')
         blocks_list = None
+
+        if request.session.has_key('list_block_message'):
+            if request.session['list_block_message'] != '':
+                message = request.session['list_block_message']
+                request.session['list_block_message'] = ''
+
+        if request.session.has_key('list_block_flag'):
+            if request.session['list_block_flag'] != '':
+                flag = request.session['list_block_flag']
+                request.session['list_block_flag'] = ''
+
 
         if request.POST:
             titulo = request.POST['inputTitulo']
@@ -245,9 +257,9 @@ class BlockController(object):
             # FILTROS
             if titulo != '':
                 if selectestado != '':
-                    blocks_list = Block.objects.filter(name__icontains=titulo, publish_status=selectestado).order_by('block_id')
+                    blocks_list = Block.objects.filter(name__icontains=titulo,block_id__icontains=titulo, publish_status=selectestado).order_by('block_id')
                 else:
-                    blocks_list = Block.objects.filter(name__icontains=titulo).order_by('block_id')
+                    blocks_list = Block.objects.filter(Q(name__icontains=titulo)|Q(block_id__icontains=titulo)).order_by('block_id')
             elif selectestado != '':
                 blocks_list = Block.objects.filter(publish_status=selectestado).order_by('block_id')
             else:
@@ -266,7 +278,7 @@ class BlockController(object):
             # If page is out of range (e.g. 9999), deliver last page of results.
             blocks = paginator.page(paginator.num_pages)
 
-        context = {'message': message, 'registros': blocks, 'titulo': titulo, 'usuario': usuario}
+        context = {'message': message, 'flag':flag,  'registros': blocks, 'titulo': titulo, 'usuario': usuario}
         return render(request, 'cawas/blocks/list.html', context)
 
 
@@ -281,15 +293,14 @@ class BlockController(object):
         try:
             block = Block.objects.get(id=id)
             #1 - quitar la asociacion
-            assetsblock = block.assets
-            # a = assets
-            block.assets
-            block.save()
+            assetsblock = block.assets.all()
 
+            #print 'assetblock: ' + str(assetsblock)
             # 2 - VERIFICAR, Si bloque esta encolado, se elimina de cola de publicacion
             publishs = PublishQueue.objects.filter(item_id=block.block_id, status='Q')
             if publishs.count > 0:
                 publishs.delete()
+                print 'publish.delete(): '
 
             # 3 - Publicar los assets que pertenecen al Bloque
             #vschedule_date = datetime.datetime.strptime(decjson['Block']['publish_date'], '%d-%m-%Y').strftime('%Y-%m-%d')
@@ -299,31 +310,35 @@ class BlockController(object):
                     movie = Movie.objects.get(asset=item)
                     ctr = MovieController()
                     ctr.publish_all(request, param_movie=movie)
+                    print 'publica movie: '
+
                 if item.asset_type == "serie":
                     serie = Serie.objects.get(asset=item)
                     ctr = SerieController()
                     ctr.publish_all(request, param_serie=serie)
+                    print 'publica serie: '
                 if item.asset_type == "episode":
                     episode = Episode.objects.get(asset=item)
                     ctr = EpisodeController()
                     ctr.publish_all(request, param_episode=episode)
+                    print 'publica episode: '
                 if item.asset_type == "girl":
                     girl = Girl.objects.get(asset=item)
                     ctr = GirlController()
                     ctr.publish_all(request, param_girl=girl)
-
-
+                    print 'publica girl: '
 
             # 4 - Realizar delete al backend
             setting = Setting.objects.get(code='backend_block_url')
             vzones = PublishZone.objects.filter(enabled=True)
             for zone in vzones:
                 abr = ApiBackendResource(zone.backend_url, setting.value)
-                param = {"asset_id": block.block_id,
-                         "lang": block.language}
+                param = {"block_id": block.block_id,
+                         "lang": block.language.code}
                 abr.delete(param)
 
             # 3 - Actualizar Activated a False
+            block.assets = []
             block.activated = False
             block.save()
 
@@ -339,3 +354,33 @@ class BlockController(object):
                           {"message": "Metadata de Slider no Existe. (" + str(e.message) + ")"})
 
         return self.code_return
+
+
+
+    def publish(self, request, id):
+        #Publicar la Serie
+        block = Block.objects.get(id = id)
+        vpublish_date = datetime.datetime.now().strftime('%Y-%m-%d')
+        block.publish_date = vpublish_date
+        block.save()
+       # ENCOLA LOS ASSETS QUE CORRESPONDEN AL BLOQUE
+        vassets = block.assets.all()
+        for item in vassets:
+            try:
+                asset_id = item.asset_id
+                ph = PublishHelper()
+                ph.func_publish_queue(request, asset_id, block.language, 'AS', 'Q', block.publish_date)
+
+            except Asset.DoesNotExist as e:
+                return render(request, 'cawas/error.html',
+                              {"message": "No existe Asset. " + asset_id + "  (" + e.message + ")"})
+
+        ph = PublishHelper()
+        ph.func_publish_queue(request, block.block_id, block.language, 'BL', 'Q', block.publish_date)
+
+        request.session['list_block_message'] = 'Bloque en ' + block.language.name + ' de Publicada Correctamente'
+        request.session['list_block_flag'] = FLAG_SUCCESS
+        self.code_return = 0
+
+        return self.code_return
+

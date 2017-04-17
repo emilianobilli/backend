@@ -22,22 +22,21 @@ class SliderController(object):
         vasset = Asset()
         vslider = Slider()
 
+        try:
+            pathfilesport = Setting.objects.get(code='image_repository_path_portrait')
+        except Setting.DoesNotExist as e:
+            return render(request, 'cawas/error.html', {"message": "No Setting. (" + e.message + ")"})
+
         if request.method == 'POST':
             # VARIABLES
             try:
                 # Parsear JSON
                 strjson = request.POST['varsToJSON']
                 decjson = json.loads(strjson)
-                print "DEBUG: " + decjson['Slider']['media_type']
-
                 vasset = Asset.objects.get(asset_id=decjson['Slider']['asset_id'])
-                print "ASSET_ID: " + decjson['Slider']['asset_id']
                 vslider.asset = vasset
                 vslider.media_url = decjson['Slider']['media_url']
                 vslider.media_type = decjson['Slider']['media_type']
-
-                print "ASSET_ID: " + decjson['Slider']['media_type']
-
                 vdevice = Device.objects.get(id=decjson['Slider']['target_device_id'])
                 vslider.target_device = vdevice
                 vslider.media_type = decjson['Slider']['target_device_id']
@@ -46,6 +45,24 @@ class SliderController(object):
                 return render(request, 'cawas/error.html', {"message": "No existe Device. (" + e.message + ")"})
             except Asset.DoesNotExist as e:
                 return render(request, 'cawas/error.html', {"message": "No existe Asset. (" + e.message + ")"})
+
+            vimg = Image()
+            try:
+                vimg.name = vslider.slider_id
+                # IMAGEN Portrait
+                if (request.FILES.has_key('ThumbHor')):
+                    if request.FILES['ThumbHor'].name != '':
+                        vimg.portrait = request.FILES['ThumbHor']
+                        extension = os.path.splitext(vimg.portrait.name)[1]
+                        varchivo = pathfilesport.value + vimg.name + extension
+                        vimg.portrait.name = varchivo
+                        if os.path.isfile(varchivo):
+                            os.remove(varchivo)
+                        vimg.save()
+            except Exception as e:
+                return render(request, 'cawas/error.html',
+                              {"message": "Error al Guardar La Imagen. (" + e.message + ")."})
+
 
 
             # METADATA

@@ -118,5 +118,60 @@ http://backend.zolechamedia.net/v1/episodes?lang=es&serie_id=S00114
 
 
 -------------------------
-Bloque
+Bloque Despublicacion
+    B00013
+    http://backend.zolechamedia.net/v1/blocks?lang=es
+    {"count": 4, "items": [{"lang": "es", "block_name": "Te como el conejo", "block_id": "B00013", "channel": "Venus",
+    "target": "app_mobile"}, {"lang": "es", "block_name": "La Poronga Ricoteada", "block_id": "B00014", "channel": "Sextreme", "target": "app_mobile"}, {"lang": "es", "block_name": "Flens", "block_id": "B00015", "channel": "Venus", "target": "app_mobile"}, {"lang": "es", "block_name": "El Bloque de Sole", "block_id": "B00016", "channel": "Penthouse", "target": "app_mobile"}]}
 
+
+    Activated = false => OK
+    publishqueue assets relacionado => OK
+    desasociar assets a bloque => OK
+
+    Despues de la despublicacion
+    {"count": 3, "items": [{"lang": "es", "block_name": "La Poronga Ricoteada", "block_id": "B00014", "channel": "Sextreme", "target": "app_mobile"}, {"lang": "es", "block_name": "Flens", "block_id": "B00015", "channel": "Venus", "target": "app_mobile"}, {"lang": "es", "block_name": "El Bloque de Sole", "block_id": "B00016", "channel": "Penthouse", "target": "app_mobile"}]}
+
+
+Bloque Publicacion
+    publishqueue del bloque => OK
+    publishqueue de los assets => OK
+
+
+
+---------------------------------------
+* Tarea: Grabar, Grabar y publicar
+Girl =>
+    add grabar => OK
+    add grabar y publicar => OK
+    edit grabar y publicar => OK
+
+Episodes =>
+    add grabar => OK
+    edit grabar y publicar => OK
+    add grabar y publicar =>
+
+
+
+Slider =>
+    add grabar =>
+    edit grabar y publicar =>
+    add grabar y publicar =>
+
+
+Movie =>
+    add grabar =>
+    edit grabar y publicar =>
+    add grabar y publicar =>
+
+
+
+Serie =>
+    add grabar =>
+    edit grabar y publicar =>
+    add grabar y publicar =>
+
+
+
+--------------------------------------
+* Tarea: imagen landscape en slider, misma logica que en girls
