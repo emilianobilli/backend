@@ -558,10 +558,10 @@ class MovieController(object):
         return self.code_return
 
 
-    def publish_all(self, request,param_movie ):
+    def publish_all(self, request,param_movie, param_lang):
         #Publica nuevamente la movie para
 
-        mditems = MovieMetadata.objects.filter(movie=param_movie)
+        mditems = MovieMetadata.objects.filter(movie=param_movie, language=param_lang)
         #Actualizar la fecha de publicacion
         for md in mditems:
             md.publish_date = datetime.datetime.now().strftime('%Y-%m-%d')

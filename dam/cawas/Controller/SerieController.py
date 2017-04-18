@@ -516,10 +516,10 @@ class SerieController(object):
 
 
 
-    def publish_all(self, request, param_serie ):
+    def publish_all(self, request, param_serie, param_lang ):
         #Publica nuevamente la movie para
 
-        mditems = SerieMetadata.objects.filter(serie=param_serie)
+        mditems = SerieMetadata.objects.filter(serie=param_serie, language=param_lang)
         #Actualizar la fecha de publicacion
         for md in mditems:
             md.publish_date = datetime.datetime.now().strftime('%Y-%m-%d')

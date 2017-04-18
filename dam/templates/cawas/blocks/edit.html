@@ -1,6 +1,7 @@
 {% extends "cawas/base.html" %}
+
 {% block extra_head %}
-<script src="/static/js/bloques.js"></script>
+    <script src="/static/js/bloques.js"></script>
 {% endblock %}
 
 {% block subheader %}
@@ -140,9 +141,11 @@
                     <div class="col-xs-12 col-md-6 col-lg-6 form-group">
                         <div class="form-group has-feedback" id="channelSelect">
                             <label class="label-left" for="device">Dispositivo: *</label>
-                            <div class="helpright"><span class="glyphicon glyphicon-question-sign" data-toggle="tooltip" title="Seleccione en qué dispositivo debe mostrarse el bloque"></span></div>
+                            <div class="helpright">
+                                <span class="glyphicon glyphicon-question-sign" data-toggle="tooltip" title="Seleccione en qué dispositivo debe mostrarse el bloque">
 
-                            <!-- ------------------Reemplazar por listado de dispositivos ----------------- -->
+                                </span>
+                            </div>
 
                             <select type="text" class="form-control" name="device" id="deviceSelect">
                                 {% for item in vdevices %}

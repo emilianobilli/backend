@@ -212,10 +212,14 @@ class BlockController(object):
         vseries = Serie.objects.all()
         vgirls = Girl.objects.all()
         vlanguages = Language.objects.all()
+        vdevices = Device.objects.all()
+
+
 
         context = {'message': message, 'vchannels': vchannels,
                    'vgirls': vgirls, 'vlanguages': vlanguages,
                    'vseries': vseries, 'vblock': vblock,
+                   'vdevices':vdevices,
                    'vmovienotselect': vmovienotselect, 'vgirlnotselect': vgirlnotselect,
                    'vepisodenotselect': vepisodenotselect, 'vmovieselect': vmovieselect,
                    'vgirlselect': vgirlselect, 'vepisodeselect': vepisodeselect,
@@ -309,23 +313,23 @@ class BlockController(object):
                 if item.asset_type =="movie":
                     movie = Movie.objects.get(asset=item)
                     ctr = MovieController()
-                    ctr.publish_all(request, param_movie=movie)
+                    ctr.publish_all(request, param_movie=movie, param_lang=block.language)
                     print 'publica movie: '
 
                 if item.asset_type == "serie":
                     serie = Serie.objects.get(asset=item)
                     ctr = SerieController()
-                    ctr.publish_all(request, param_serie=serie)
+                    ctr.publish_all(request, param_serie=serie, param_lang=block.language)
                     print 'publica serie: '
                 if item.asset_type == "episode":
                     episode = Episode.objects.get(asset=item)
                     ctr = EpisodeController()
-                    ctr.publish_all(request, param_episode=episode)
+                    ctr.publish_all(request, param_episode=episode, param_lang=block.language)
                     print 'publica episode: '
                 if item.asset_type == "girl":
                     girl = Girl.objects.get(asset=item)
                     ctr = GirlController()
-                    ctr.publish_all(request, param_girl=girl)
+                    ctr.publish_all(request, param_girl=girl, param_lang=block.language)
                     print 'publica girl: '
 
             # 4 - Realizar delete al backend
@@ -341,6 +345,9 @@ class BlockController(object):
             block.assets = []
             block.activated = False
             block.save()
+
+            # se elimina el bloque de cawas
+            block.delete()
 
             self.code_return = 0
             request.session['list_block_message'] = 'Bloque Despublicado Correctamente '

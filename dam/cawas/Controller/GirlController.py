@@ -428,10 +428,10 @@ class GirlController(object):
 
         return self.code_return
 
-    def publish_all(self, request,param_girl ):
+    def publish_all(self, request,param_girl, param_lang ):
         #Publica nuevamente la Girl para todos los idiomas
 
-        mditems = GirlMetadata.objects.filter(girl=param_girl)
+        mditems = GirlMetadata.objects.filter(girl=param_girl, language=param_lang)
         #Actualizar la fecha de publicacion
         for md in mditems:
             md.publish_date = datetime.datetime.now().strftime('%Y-%m-%d')

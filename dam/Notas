@@ -177,5 +177,48 @@ Block =>
     add grabar y publicar =>
 
 
---------------------------------------
-* Tarea: imagen landscape en slider, misma logica que en girls
+
+-----------------------------------------
+* Tarea:
+    Imagen landscape en slider, misma logica que en girls
+
+
+------------ AJUSTES --------------------
+CATEGORIAS:
+    AMB
+
+
+MOVIE:
+    ordenar alfabeticamente las pornstars
+    boton de guardar y publicar, ajustar a la derecha
+    BOTON cancelar, en todos los abms, debe volver al listado
+
+
+BLOQUE:
+    edicion, combo de dispositivo no funciona
+    alta y edicion, ordenar alfabeticamente momv
+    cuando despublicas, se debe despublicar solo el idioma en el que esta el Bloque
+        ejemplo: si el bloque esta en español, la movie  a despublicar debe estar en español
+    cuando despublicas se debe eliminar de cawas el bloque
+    canal no es obligatorio
+    publicacion de un bloque (manda dos veces en español)
+
+
+
+EPISODE:
+    ID HOUSE - TEMPORADA - NUMERO DE EPISODIO, NOMBRE DE EPISODIO EN EL COMBO DE CARGA DE EPISODIO
+
+
+SLIDER:
+    QUITAR TEXTO DE METADATA
+    ASSET ASOCIADO, PUEDE SER NULO
+
+
+
+
+
+
+
+
+
+

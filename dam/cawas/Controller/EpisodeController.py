@@ -542,10 +542,10 @@ class EpisodeController(object):
         return self.code_return
 
 
-    def publish_all(self, request,param_episode ):
+    def publish_all(self, request,param_episode, param_lang ):
         #Publica nuevamente la Girl para todos los idiomas
 
-        mditems = EpisodeMetadata.objects.filter(episode=param_episode)
+        mditems = EpisodeMetadata.objects.filter(episode=param_episode, language=param_lang)
         #Actualizar la fecha de publicacion
         for md in mditems:
             md.publish_date = datetime.datetime.now().strftime('%Y-%m-%d')
