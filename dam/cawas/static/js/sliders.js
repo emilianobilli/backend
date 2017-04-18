@@ -8,6 +8,8 @@ $( document ).ready(function() {
       format: 'dd-mm-yyyy'
     });
 
+     $( "#ThumbHor" ).change(showPreviewImage_click);
+
 
     console.log( "ready!" );
     var asset_id = $("#asset_id").val();
@@ -199,6 +201,16 @@ $( document ).ready(function() {
         }else{
             okMe("#url");
         }
+
+        // chequea thumbnail horizaontal
+        if(!$('#ThumbHor').val() && !$('#imgantportrait').val()){
+
+            errorMe("#ThumbHor");
+            checkVal++;
+        }else{
+            okMe("#ThumbHor");
+        }
+
 
         // chequea TYPESLIDER
         console.log("#typeslider"+$('#typeslider').val());

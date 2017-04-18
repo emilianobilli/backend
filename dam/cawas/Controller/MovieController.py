@@ -24,11 +24,14 @@ class MovieController(object):
 
         vflag = ''
         message = ''
+        vgrabarypublicar=''
+        ph = PublishHelper()
         if request.method == 'POST':
 
             # parsear JSON
             strjson = request.POST['varsToJSON']
             decjson = json.loads(strjson)
+            vgrabarypublicar = decjson['Movie']['publicar']
 
             # DECLARACION DE OBJECTOS
             mv = Movie()
@@ -43,15 +46,13 @@ class MovieController(object):
             # VALIDAR IMAGEN
             try:
                 img = Image.objects.get(name=vasset.asset_id)
-            except Image.DoesNotExist as e:
-                vflag = "error"
-                img = Image()
-
-            try:
                 pathfilesport = Setting.objects.get(code='image_repository_path_portrait')
                 pathfilesland = Setting.objects.get(code='image_repository_path_landscape')
             except Setting.DoesNotExist as e:
                 return render(request, 'cawas/error.html', {"message": "No Setting. (" + e.message + ")"})
+            except Image.DoesNotExist as e:
+                vflag = "error"
+                img = Image()
 
             # TRATAMIENTO DE IMAGEN Portrait
             img.portrait = request.FILES['ThumbHor']
@@ -93,8 +94,7 @@ class MovieController(object):
                 mv.cast = decjson['Movie']['directors']
 
             mv.display_runtime = decjson['Movie']['display_runtime']
-            # calcular runtime
-            # mv.runtime
+
             mv.save()
 
             # CARGAR GIRLS
@@ -121,13 +121,14 @@ class MovieController(object):
             vasset.asset_type = "movie"
             vasset.save()
 
-            # CARGAR METADATA
+            # GUARDAR METADATA
             vmoviesmetadata = decjson['Movie']['Moviesmetadata']
 
             for item in vmoviesmetadata:
                 try:
                     # CREAR METADATA POR IDIOMA
                     vlanguage = Language.objects.get(code=item['Moviemetadata']['language'])
+                    #si no esta cargada la fecha, se guarda con la fecha de hoy
                     if (item['Moviemetadata']['schedule_date'] != ''):
                         vpublishdate = datetime.datetime.strptime(item['Moviemetadata']['schedule_date'],
                                                                   '%d-%m-%Y').strftime('%Y-%m-%d')
@@ -150,21 +151,6 @@ class MovieController(object):
                     metadatas = MovieMetadata.objects.filter(movie=mv, language=mmd.language)
                     if metadatas.count() < 1:
                         mmd.save()
-                        # Recorrer el publicZone y genera un PublicQueue por cada idioma
-                        ph = PublishHelper()
-                        ph.func_publish_queue(request, vasset.asset_id, vlanguage, 'AS', 'Q', vpublishdate)
-                        #vzones = PublishZone.objects.filter(enabled=True)
-                        #for zone in vzones:
-                            # CREAR COLA DE PUBLICACION
-                        #    vpublish = PublishQueue()
-                        #    vpublish.item_id = vasset.asset_id
-                        #    vpublish.item_lang = vlanguage
-                        #    vpublish.item_type = 'AS'
-                        #    vpublish.status = 'Q'
-                        #    vpublish.publish_zone = zone
-                        #    vpublish.schedule_date = vpublishdate
-                        #    vpublish.save()
-
 
                 except Language.DoesNotExist as e:
                     return render(request, 'cawas/error.html', {"message": "No existe Lenguaje. (" + e.message + ")"})
@@ -172,18 +158,20 @@ class MovieController(object):
                     return render(request, 'cawas/error.html',
                                   {"message": "Error al Guardar metadata. (" + e.message + ")"})
 
-            # COLA DE PUBLICACION PARA IMAGENES
-            try:
-                vzones = PublishZone.objects.filter(enabled=True)
-                for zone in vzones:
-                    imgQueue = ImageQueue()
-                    imgQueue.image = img
-                    imgQueue.publish_zone = zone
-                    imgQueue.schedule_date = datetime.datetime.now()
-                    imgQueue.save()
-            except Exception as e:
-                return render(request, 'cawas/error.html',
-                              {"message": "Error al Generar Cola de Imagen. (" + e.message + ")"})
+
+
+            # PUBLICAR METADATA
+            if vgrabarypublicar == '1':
+                metadatas = MovieMetadata.objects.filter(movie=mv)
+                for mdi in metadatas:
+                    ph.func_publish_queue(request, mdi.movie.asset.asset_id, mdi.language, 'AS', 'Q', mdi.publish_date)
+
+            # PUBLICAR METADATA IMAGEN
+            if vgrabarypublicar == '1':
+                ph.func_publish_image(request, img)
+
+            request.session['list_movie_message'] = 'Guardado Correctamente'
+            request.session['list_movie_flag'] = FLAG_SUCCESS
             vflag = "success"
             message = 'Registrado correctamente'
             # FIN DE POST
@@ -200,6 +188,8 @@ class MovieController(object):
         context = {'title': title, 'assets': assets, 'channels': channels, 'girls': girls, 'categories': categories,
                    'movies': vmovies, 'vlanguages': vlanguages, 'flag': vflag, 'message': message}
         return render(request, 'cawas/movies/add.html', context)
+
+
 
 
 

@@ -47,7 +47,11 @@ $( document ).ready(function() {
 
     };
 
-
+    $("#btngrabarypublicar").click(function(){
+        $("#publicar").val("1");
+        clickedToSubmit=1;
+        checkAll();
+    });
     
     var checkedOnce = 0; //chequea si el formulario se ha intentado enviar alguna vez
     var checkVal=0; //chequea la cantidad de errores en el formulario
@@ -319,6 +323,7 @@ $( document ).ready(function() {
         var elenco_selected = $('#elenco').val();
         var display_runtime = $('#runtime').val();
         var year_selected = $('#releaseYear').val();
+        var publicar = $('#publicar').val();
         countChecked();
         // chequea original Title
         if(original_Title=="" || original_Title==" ")
@@ -506,16 +511,6 @@ $( document ).ready(function() {
                     }else{
                         okMe("#short_desc_"+lang);
                     }
-                    /* check date
-                    var dateCont = $("#date_"+lang).val();
-                    if(dateCont==""){
-                        errorMe("#date_"+lang);
-                        checkVal++;
-                        lengactualok = 0;
-                    }else{
-                        okMe("#date_"+lang);
-                    }
-                    */
 
                     if (lengactualok == 1){
                         lenguajescargados = lenguajescargados + 1 ;
@@ -564,6 +559,7 @@ $( document ).ready(function() {
                     myJSON+='"asset_id":"'+asset_Id+'",';
                     myJSON+='"original_title":"'+original_Title+'",';
                     myJSON+='"channel_id":"'+canal_selected+'",';
+                    myJSON+='"publicar":"'+publicar+'",';
 
                     if (year_selected==''){
                         myJSON+='"year":null,';

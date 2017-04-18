@@ -51,12 +51,12 @@ class GirlController(object):
 
             try:
                 vimg.name = vasset.asset_id
-                # IMAGEN Portrait
+               # IMAGEN Portrait
                 if (request.FILES.has_key('ThumbHor')):
                     if request.FILES['ThumbHor'].name != '':
                         vimg.portrait = request.FILES['ThumbHor']
                         extension = os.path.splitext(vimg.portrait.name)[1]
-                        varchivo = pathfilesport.value + vimg.name + extension
+                        varchivo = pathfilesport.value  + vimg.name + extension
                         vimg.portrait.name = varchivo
                         if os.path.isfile(varchivo):
                             os.remove(varchivo)
@@ -120,8 +120,6 @@ class GirlController(object):
                 except GirlMetadata.DoesNotExist as e:
                     return render(request, 'cawas/error.html',
                                   {"message": "No existe Metadata Para el Chica. (" + e.message + ")"})
-
-
 
             request.session['list_girl_message'] = 'Guardado Correctamente'
             request.session['list_girl_flag'] = FLAG_SUCCESS

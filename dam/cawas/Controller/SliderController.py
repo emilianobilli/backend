@@ -6,6 +6,7 @@ from ..Helpers.PublishHelper import PublishHelper
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from ..Helpers.GlobalValues import *
 from backend_sdk import ApiBackendServer, ApiBackendResource
+from django.db.models import Q
 
 
 class SliderController(object):
@@ -30,9 +31,13 @@ class SliderController(object):
         if request.method == 'POST':
             # VARIABLES
             try:
+                vimg = Image()
+                vimg.save()
                 # Parsear JSON
                 strjson = request.POST['varsToJSON']
                 decjson = json.loads(strjson)
+
+
                 vasset = Asset.objects.get(asset_id=decjson['Slider']['asset_id'])
                 vslider.asset = vasset
                 vslider.media_url = decjson['Slider']['media_url']
@@ -40,30 +45,28 @@ class SliderController(object):
                 vdevice = Device.objects.get(id=decjson['Slider']['target_device_id'])
                 vslider.target_device = vdevice
                 vslider.media_type = decjson['Slider']['target_device_id']
+                vslider.image = vimg
                 vslider.save()
-            except Device.DoesNotExist as e:
-                return render(request, 'cawas/error.html', {"message": "No existe Device. (" + e.message + ")"})
-            except Asset.DoesNotExist as e:
-                return render(request, 'cawas/error.html', {"message": "No existe Asset. (" + e.message + ")"})
 
-            vimg = Image()
-            try:
-                vimg.name = vslider.slider_id
                 # IMAGEN Portrait
                 if (request.FILES.has_key('ThumbHor')):
                     if request.FILES['ThumbHor'].name != '':
                         vimg.portrait = request.FILES['ThumbHor']
                         extension = os.path.splitext(vimg.portrait.name)[1]
+                        vimg.name = vslider.slider_id
                         varchivo = pathfilesport.value + vimg.name + extension
                         vimg.portrait.name = varchivo
                         if os.path.isfile(varchivo):
                             os.remove(varchivo)
                         vimg.save()
-            except Exception as e:
-                return render(request, 'cawas/error.html',
-                              {"message": "Error al Guardar La Imagen. (" + e.message + ")."})
 
+                vslider.image = vimg
+                vslider.save()
 
+            except Device.DoesNotExist as e:
+                return render(request, 'cawas/error.html', {"message": "No existe Device. (" + e.message + ")"})
+            except Asset.DoesNotExist as e:
+                return render(request, 'cawas/error.html', {"message": "No existe Asset. (" + e.message + ")"})
 
             # METADATA
             vslidermetadata = decjson['Slider']['Slidermetadatas']
@@ -88,17 +91,29 @@ class SliderController(object):
                     smd.publish_date = vschedule_date
                     smd.save()
 
-                    # Publica en PublishQueue
-                    ph = PublishHelper()
-                    ph.func_publish_queue(request, vslider.slider_id, vlang, 'AS', 'Q', vschedule_date)
-
                 except Language.DoesNotExist as e:
                     return render(request, 'cawas/error.html',
                                   {"message": "Lenguaje no Existe. (" + str(e.message) + ")"})
                 except Exception as e:
                     return render(request, 'cawas/error.html',
                                   {"message": "Error al Guardar Metadata. (" + str(e.message) + ")"})
+
+            # PUBLICAR METADATA y Publicar Imagen
+            try:
+                ph = PublishHelper()
+                ph.func_publish_image(request, vimg)
+                metadatas = SliderMetadata.objects.filter(slider=vslider)
+                for mdi in metadatas:
+                    # Publica en PublishQueue
+                    ph.func_publish_queue(request, mdi.slider.slider_id, mdi.language, 'AS', 'Q',mdi.publish_date)
+            except SliderMetadata.DoesNotExist as e:
+                return render(request, 'cawas/error.html',
+                              {"message": "No existe Metadata Para el Chica. (" + e.message + ")"})
+
             vflag = "success"
+            request.session['list_slider_message'] = 'Guardado Correctamente'
+            request.session['list_slider_flag'] = FLAG_SUCCESS
+
 
         vassets = Asset.objects.all()
         vsliders = Slider.objects.all()
@@ -127,7 +142,6 @@ class SliderController(object):
 
         try:
             vslider = Slider.objects.get(slider_id=slider_id)
-
             vassets = Asset.objects.all()
             vsliders = Slider.objects.all()
             vlanguages = Language.objects.all()
@@ -247,10 +261,9 @@ class SliderController(object):
             selectestado = request.POST['selectestado']
             # FILTROS
             if titulo != '':
-                sliders = Slider.objects.filter(media_url__icontains=titulo).order_by('slider_id')
+                sliders = Slider.objects.filter(slider_id__icontains=titulo).order_by('slider_id')
                 if selectestado != '':
-                    sliders_list = SliderMetadata.objects.filter(slider__in=sliders,
-                                                                 publish_status=selectestado).order_by('slider_id')
+                    sliders_list = SliderMetadata.objects.filter(slider__in=sliders, publish_status=selectestado).order_by('slider_id')
                 else:
                     sliders_list = SliderMetadata.objects.filter(slider__in=sliders).order_by('slider_id')
             elif selectestado != '':

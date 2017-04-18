@@ -40,7 +40,6 @@ $( document ).ready(function() {
     };
 
   $("#btngrabarypublicar").click(function(){
-
         $("#publicar").val("1");
         clickedToSubmit=1;
         checkAll();
