@@ -24,6 +24,7 @@ class BlockController(object):
         message = ''
         vflag = ''
         vschedule_date = ''
+        vgrabarypublicar = ''
         if request.method == 'POST':
             # VARIABLES
             vblock = Block()
@@ -34,12 +35,12 @@ class BlockController(object):
                 # pathfilesport = Setting.objects.get(code='image_repository_path_portrait')
                 # pathfilesland = Setting.objects.get(code='image_repository_path_landscape')
                 vblock.name = decjson['Block']['name']
+                vgrabarypublicar = decjson['Block']['publicar']
                 vschedule_date = datetime.datetime.strptime(decjson['Block']['publish_date'], '%d-%m-%Y').strftime(
                     '%Y-%m-%d')
                 vblock.publish_date = vschedule_date
                 vblock.language = Language.objects.get(code=decjson['Block']['language'])
                 vblock.channel = Channel.objects.get(pk=decjson['Block']['channel_id'])
-
                 print "Device:" + str(decjson['Block']['target_device_id'])
                 vblock.target_device = Device.objects.get(pk=int(decjson['Block']['target_device_id']))
                 vblock.save()
@@ -60,37 +61,42 @@ class BlockController(object):
                 return render(request, 'cawas/error.html', {"message": "No existe Device. (" + e.message + ")"})
 
             # CARGAR ASSETS
-            vassets = decjson['Block']['assets']
-            for item in vassets:
-                try:
-                    asset_id = item['asset_id']
-                    vasset = Asset.objects.get(asset_id=asset_id)
-                    vblock.assets.add(vasset)
-                    # Publica en PublishQueue
-                    ph = PublishHelper()
-                    ph.func_publish_queue(request, asset_id, vblock.language, 'AS', 'Q', vblock.publish_date)
 
-                except Asset.DoesNotExist as e:
-                    return render(request, 'cawas/error.html',
-                                  {"message": "No existe Asset. " + asset_id + "  (" + e.message + ")"})
+            if vgrabarypublicar == '1':
+                vassets = decjson['Block']['assets']
+                for item in vassets:
+                    try:
+                        asset_id = item['asset_id']
+                        vasset = Asset.objects.get(asset_id=asset_id)
+                        vblock.assets.add(vasset)
+                        # Publica en PublishQueue
+                        ph = PublishHelper()
+                        ph.func_publish_queue(request, asset_id, vblock.language, 'AS', 'Q', vblock.publish_date)
 
-            vblock.save()
-            ph = PublishHelper()
-            ph.func_publish_queue(request, vblock.block_id, vblock.language, 'BL', 'Q', vblock.publish_date)
-            #func_publish_queue(vblock.block_id, vblock.language, 'BL', 'Q', vblock.publish_date)
-            context = {"flag": "success"}
-            return render(request, 'cawas/blocks/add.html', context)
+                    except Asset.DoesNotExist as e:
+                        return render(request, 'cawas/error.html',
+                                      {"message": "No existe Asset. " + asset_id + "  (" + e.message + ")"})
+
+                vblock.save()
+                ph = PublishHelper()
+                ph.func_publish_queue(request, vblock.block_id, vblock.language, 'BL', 'Q', vblock.publish_date)
+                self.code_return = 0
+
+            request.session['list_block_message'] = 'Metadata en ' + vblock.language.name + ' de Bloque ' + vblock.block_id + ' Despublicado Correctamente'
+            request.session['list_block_flag'] = FLAG_SUCCESS
+
+            return render(request, 'cawas/blocks/add.html')
             # Fin datos Bloque
 
         # Variables Para GET
-        vblocks = Block.objects.all()
-        vchannels = Channel.objects.all()
-        vdevices = Device.objects.all()
-        vgirls = Girl.objects.all()
+        vblocks = Block.objects.all().order_by('name')
+        vchannels = Channel.objects.all().order_by('name')
+        vdevices = Device.objects.all().order_by('name')
+        vgirls = Girl.objects.all().order_by('name')
         vlanguages = Language.objects.all()
-        vmovies = Movie.objects.all()
-        vcapitulos = Episode.objects.all()
-        vseries = Serie.objects.all()
+        vmovies = Movie.objects.all().order_by('original_title')
+        vcapitulos = Episode.objects.all().order_by('original_title')
+        vseries = Serie.objects.all().order_by('original_title')
 
         context = {'message': message, 'vblocks': vblocks, 'vchannels': vchannels, 'vdevices': vdevices,
                    'vgirls': vgirls,
@@ -193,8 +199,8 @@ class BlockController(object):
             vblock = Block.objects.get(block_id=block_id)
             vassetselect = vblock.assets.all()
             #
-            vmovienotselect = Movie.objects.exclude(asset__in=vassetselect)
-            vserienotselect = Serie.objects.exclude(asset__in=vassetselect)
+            vmovienotselect = Movie.objects.exclude(asset__in=vassetselect).order_by('original_title')
+            vserienotselect = Serie.objects.exclude(asset__in=vassetselect).order_by('original_title')
             vgirlnotselect = Girl.objects.exclude(asset__in=vassetselect)
             vepisodenotselect = Episode.objects.exclude(asset__in=vassetselect)
 

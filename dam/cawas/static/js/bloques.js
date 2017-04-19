@@ -18,6 +18,11 @@ $( document ).ready(function() {
     // activar los selects con filtro
     $("#bloque-select").select2({placeholder: "Despliega la lista"});
 
+    $("#btngrabarypublicar").click(function(){
+        $("#publicar").val("1");
+        clickedToSubmit=1;
+        checkAll();
+    });
     
     // simular exit con el botón de salir
     $("#getOut").click(function(){
@@ -141,6 +146,7 @@ $( document ).ready(function() {
         var publish_date = $('#date_blq').val().trim();
         var device_selected = $('#deviceSelect').val();
         var asset_selected = [];
+        var publicar = $('#publicar').val();
         
         
         // chequea original Name
@@ -352,6 +358,7 @@ $( document ).ready(function() {
                     myJSON+='"channel_id":'+canal_selected+',';
                     myJSON+='"publish_date":"'+publish_date+'",';
                     myJSON+='"target_device_id":"'+device_selected+'",';
+                    myJSON+='"publicar":"'+publicar+'",';
                     myJSON+='"assets": ';
                     myJSON+= explodeArray(asset_selected, "asset_id");
                     myJSON+='}}';

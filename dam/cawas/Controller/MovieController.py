@@ -179,10 +179,10 @@ class MovieController(object):
         # VARIABLES PARA GET
         # CARGAR VARIABLES USADAS EN FRONT
         assets = Asset.objects.filter(asset_type="unknown")
-        vmovies = Movie.objects.all()
-        channels = Channel.objects.all()
-        girls = Girl.objects.all()
-        categories = Category.objects.all()
+        vmovies = Movie.objects.all().order_by('original_title')
+        channels = Channel.objects.all().order_by('name')
+        girls = Girl.objects.all().order_by('name')
+        categories = Category.objects.all().order_by('original_name')
         vlanguages = Language.objects.all()
         title = 'Nueva Movie'
         context = {'title': title, 'assets': assets, 'channels': channels, 'girls': girls, 'categories': categories,
@@ -375,13 +375,12 @@ class MovieController(object):
             i = len(vmovie.image.landscape.name)
             imgland = vmovie.image.landscape.name[5:i]
 
-            vgirlselected = vmovie.girls.all()
-            vgirlnotselected = Girl.objects.exclude(id__in=vgirlselected)
-            vgirlselected = vmovie.girls.all()
+            vgirlselected = vmovie.girls.all().order_by('name')
+            vgirlnotselected = Girl.objects.exclude(id__in=vgirlselected).order_by('name')
 
             vmoviemetadata = MovieMetadata.objects.filter(movie=vmovie)
-            vcategoryselected = vmovie.category.all()
-            vcategorynotselected = Category.objects.exclude(id__in=vcategoryselected)
+            vcategoryselected = vmovie.category.all().order_by('original_name')
+            vcategorynotselected = Category.objects.exclude(id__in=vcategoryselected).order_by('original_name')
             languages = Language.objects.all()
 
             # nuevo diccionario para completar lenguages y metadata
@@ -409,10 +408,12 @@ class MovieController(object):
 
         # CARGAR VARIABLES USADAS EN FRONT
         assets = Asset.objects.filter(asset_type="unknown")
-        channels = Channel.objects.all()
-        girls = Girl.objects.all()
-        categories = Category.objects.all()
+        channels = Channel.objects.all().order_by('name')
+        girls = Girl.objects.all().order_by('name')
+        categories = Category.objects.all().order_by('original_name')
         languages = Language.objects.all()
+
+
         title = 'Editar Movie'
 
         context = {'title': title, 'assets': assets, 'channels': channels, 'girls': girls, 'categories': categories,

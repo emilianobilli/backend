@@ -128,8 +128,8 @@ class GirlController(object):
 
         if request.method =='GET':
             # Cargar variables para presentar en templates
-            vgirls = Girl.objects.all()
-            vcategories = Category.objects.all()
+            vgirls = Girl.objects.all().order_by('name')
+            vcategories = Category.objects.all().order_by('name')
             vlanguages = Language.objects.all()
 
             vtypegirl = {"pornstar": "Pornstar", "playmate": "Playmate"}
@@ -275,9 +275,9 @@ class GirlController(object):
 
             flag='success'
             message = 'Guardado Correctamente.'
+            request.session['list_girl_message'] = 'Guardado Correctamente'
+            request.session['list_girl_flag'] = FLAG_SUCCESS
 
-        request.session['list_girl_message'] = 'Guardado Correctamente'
-        request.session['list_girl_flag'] = FLAG_SUCCESS
 
         context = { 'vlanguages': vlanguages, 'vgirl':vgirl,
                    'vtypegirl':vtypegirl,'vlangmetadata':vlangmetadata,

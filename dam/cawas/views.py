@@ -219,12 +219,21 @@ def edit_series_view(request, asset_id):
 
 def add_blocks_view(request):
     controller = BlockController()
-    return controller.add(request)
+    if request.method == 'GET':
+        return controller.add(request)
+    if request.method == 'POST':
+        controller.add(request)
+        return redirect(list_blocks_view)
 
 
 def edit_blocks_view(request, block_id):
     controller = BlockController()
-    return controller.edit(request, block_id)
+    if request.method == 'GET':
+        return controller.edit(request, block_id)
+    if request.method == 'POST':
+        controller.edit(request, block_id)
+        return redirect(list_blocks_view)
+
 
 def add_episodes_view(request):
     controller = EpisodeController()
