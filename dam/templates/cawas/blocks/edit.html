@@ -109,6 +109,7 @@
                             <!-- ------------------Reemplazar por listado de canales ----------------- -->
 
                             <select type="text" class="form-control" name="canal" id="canalSelect">
+                                <option value=""></option>
                                 {% for item in vchannels %}
                                     {% if vblock.channel_id == item.id %}
                                         <option value="{{item.id}}" selected>{{item.name}}</option>

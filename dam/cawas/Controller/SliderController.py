@@ -295,7 +295,6 @@ class SliderController(object):
         md.publish_date = datetime.datetime.now().strftime('%Y-%m-%d')
         md.activated = True
         md.save()
-
         ph = PublishHelper()
         ph.func_publish_queue(request, md.slider.slider_id, md.language, 'AS', 'Q', md.publish_date)
         request.session['list_slider_message'] = 'Metadata en ' + md.language.name + ' de Slider ' + md.slider.asset.asset_id + ' Publicada Correctamente'
@@ -331,7 +330,7 @@ class SliderController(object):
             # 3 - Actualizar Activated a False
             slidermetadata.activated=False
             slidermetadata.save()
-
+            #slidermetadata.delete()
             self.code_return = 0
             request.session['list_slider_message'] = 'Metadata en ' + slidermetadata.language.name +' de Slider ' + slidermetadata.slider.slider_id + ' Despublicado Correctamente'
             request.session['list_slider_flag'] = FLAG_SUCCESS
