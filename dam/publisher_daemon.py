@@ -254,8 +254,7 @@ def publish_items():
                 endpoint = job.publish_zone.backend_url
                 ep = ApiBackendResource(endpoint, URLs[str(job.item_type)])
                 try:
-                    print item
-                    if not obj.publish_status:
+                    if not obj.activated:
                         item[0]['publish_date'] = timezone.now().strftime('%s')
                         obj.publish_date = timezone.now()
                         obj.publish_status = True
@@ -264,6 +263,7 @@ def publish_items():
                     job.status = 'D'
                     job.save()
                     obj.save()
+                    print item
                 except ApiBackendException as err:
                     job.status = 'E'
                     job.message = err.value

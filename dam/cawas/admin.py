@@ -70,7 +70,7 @@ class GirlMetadataAdmin(admin.ModelAdmin):
 @admin.register(models.Serie)
 class SerieAdmin(admin.ModelAdmin):
     list_display = ['asset', 'original_title', ]
-    search_fields = ['asset__asset_id']
+    search_fields = ['asset__asset_id', 'original_title']
 
 @admin.register(models.SerieMetadata)
 class SerieMetadataAdmin(admin.ModelAdmin):
@@ -80,7 +80,7 @@ class SerieMetadataAdmin(admin.ModelAdmin):
 @admin.register(models.Episode)
 class EpisodeAdmin(admin.ModelAdmin):
     list_display = ['asset', 'original_title', 'serie', 'chapter', 'season']
-    search_fields = ['asset__asset_id']
+    search_fields = ['asset__asset_id', 'original_title']
 
 
 @admin.register(models.EpisodeMetadata)
@@ -92,7 +92,7 @@ class EpisodeMetadataAdmin(admin.ModelAdmin):
 @admin.register(models.Movie)
 class MovieAdmin(admin.ModelAdmin):
     list_display = ['asset', 'original_title']
-    search_fields = ['asset__asset_id']
+    search_fields = ['asset__asset_id', 'original_title']
 
 
 @admin.register(models.MovieMetadata)
