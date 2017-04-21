@@ -1,7 +1,7 @@
 import os, datetime, json
 from LogController import LogController
 from django.shortcuts import render,redirect
-from ..models import Asset, Setting, Slider, SliderMetadata, Category, Language, Device, Image, Girl, PublishZone, Channel, PublishQueue, ImageQueue
+from ..models import Asset, Setting, Slider,  Category, Language, Device, Image, Girl, PublishZone, Channel, PublishQueue, ImageQueue
 from ..Helpers.PublishHelper import PublishHelper
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from ..Helpers.GlobalValues import *
@@ -37,15 +37,20 @@ class SliderController(object):
                 strjson = request.POST['varsToJSON']
                 decjson = json.loads(strjson)
 
-
                 vasset = Asset.objects.get(asset_id=decjson['Slider']['asset_id'])
                 vslider.asset = vasset
-                vslider.media_url = decjson['Slider']['media_url']
                 vslider.media_type = decjson['Slider']['media_type']
                 vdevice = Device.objects.get(id=decjson['Slider']['target_device_id'])
                 vslider.target_device = vdevice
-                vslider.media_type = decjson['Slider']['target_device_id']
                 vslider.image = vimg
+                vslider.text = decjson['Slider']['text']
+                vslider.language = Language.objects.get(code=decjson['Slider']['language'])
+                if (decjson['Slider']['publish_date'] != ''):
+                    vschedule_date = datetime.datetime.strptime(decjson['Slider']['publish_date'],'%d-%m-%Y').strftime('%Y-%m-%d')
+                else:
+                    vschedule_date = datetime.datetime.now().strftime('%Y-%m-%d')
+
+                vslider.publish_date = vschedule_date
                 vslider.save()
 
                 # IMAGEN Portrait
@@ -67,8 +72,11 @@ class SliderController(object):
                 return render(request, 'cawas/error.html', {"message": "No existe Device. (" + e.message + ")"})
             except Asset.DoesNotExist as e:
                 return render(request, 'cawas/error.html', {"message": "No existe Asset. (" + e.message + ")"})
+            except Language.DoesNotExist as e:
+                return render(request, 'cawas/error.html', {"message": "No existe Lenguaje. (" + e.message + ")"})
 
             # METADATA
+            '''
             vslidermetadata = decjson['Slider']['Slidermetadatas']
             print decjson['Slider']['Slidermetadatas']
 
@@ -76,7 +84,7 @@ class SliderController(object):
             # SliderMetadata.objects.filter(slider=vslider).delete()
             for item in vslidermetadata:
                 try:
-                    smd = SliderMetadata()
+                    #smd = SliderMetadata()
 
                     if (item['Slidermetadata']['schedule_date'] != ''):
                         vschedule_date = datetime.datetime.strptime(item['Slidermetadata']['schedule_date'],
@@ -85,11 +93,11 @@ class SliderController(object):
                         vschedule_date = datetime.datetime.now().strftime('%Y-%m-%d')
 
                     vlang = Language.objects.get(code=item['Slidermetadata']['language'])
-                    smd.language = vlang
-                    smd.text = item['Slidermetadata']['text']
-                    smd.slider = vslider
-                    smd.publish_date = vschedule_date
-                    smd.save()
+                    #smd.language = vlang
+                    #smd.text = item['Slidermetadata']['text']
+                    #smd.slider = vslider
+                    #smd.publish_date = vschedule_date
+                    #smd.save()
 
                 except Language.DoesNotExist as e:
                     return render(request, 'cawas/error.html',
@@ -99,6 +107,7 @@ class SliderController(object):
                                   {"message": "Error al Guardar Metadata. (" + str(e.message) + ")"})
 
             # PUBLICAR METADATA y Publicar Imagen
+
             try:
                 ph = PublishHelper()
                 ph.func_publish_image(request, vimg)
@@ -109,7 +118,7 @@ class SliderController(object):
             except SliderMetadata.DoesNotExist as e:
                 return render(request, 'cawas/error.html',
                               {"message": "No existe Metadata Para el Chica. (" + e.message + ")"})
-
+            '''
             vflag = "success"
             request.session['list_slider_message'] = 'Guardado Correctamente'
             request.session['list_slider_flag'] = FLAG_SUCCESS
@@ -141,6 +150,11 @@ class SliderController(object):
         vslider = Slider()
 
         try:
+            pathfilesport = Setting.objects.get(code='image_repository_path_portrait')
+        except Setting.DoesNotExist as e:
+            return render(request, 'cawas/error.html', {"message": "No Setting. (" + e.message + ")"})
+
+        try:
             vslider = Slider.objects.get(slider_id=slider_id)
             vassets = Asset.objects.all()
             vsliders = Slider.objects.all()
@@ -148,19 +162,11 @@ class SliderController(object):
             vdevices = Device.objects.all()
             vtypes = {"image": "Image", "video": "Video"}
 
+            i = len(vslider.image.landscape.name)
+            imgland = vslider.image.landscape.name[5:i]
+
             # nuevo diccionario para completar lenguages y metadata
             vlangmetadata = []
-            for itemlang in vlanguages:
-                try:
-                    vslidermetadata = SliderMetadata.objects.get(slider=vslider, language=itemlang)
-                    vlangmetadata.append({
-                        'checked': True, 'code': itemlang.code, 'name': itemlang.name,
-                        'text': vslidermetadata.text, 'publish_date': vslidermetadata.publish_date
-                    })
-                except SliderMetadata.DoesNotExist as a:
-                    vlangmetadata.append(
-                        {'checked': False, 'code': itemlang.code, 'name': itemlang.name, 'text': '', 'text': '',
-                         'publish_date': ''})
 
         except Slider.DoesNotExist as e:
             return render(request, 'cawas/error.html', {"message": "No Existe Slider. (" + str(e.message) + ")"})
@@ -173,12 +179,38 @@ class SliderController(object):
                 decjson = json.loads(strjson)
                 vasset = Asset.objects.get(asset_id=decjson['Slider']['asset_id'])
                 vslider.asset = vasset
-                vslider.media_url = decjson['Slider']['media_url']
                 vslider.media_type = decjson['Slider']['media_type']
                 vdevice = Device.objects.get(id=decjson['Slider']['target_device_id'])
                 vslider.target_device = vdevice
-                vslider.media_type = decjson['Slider']['target_device_id']
+                vslider.image = vimg
+                vslider.text = decjson['Slider']['text']
+                vslider.language = Language.objects.get(code=decjson['Slider']['language'])
+                if (decjson['Slider']['publish_date'] != ''):
+                    vschedule_date = datetime.datetime.strptime(decjson['Slider']['publish_date'], '%d-%m-%Y').strftime(
+                        '%Y-%m-%d')
+                else:
+                    vschedule_date = datetime.datetime.now().strftime('%Y-%m-%d')
+
+                vslider.publish_date = vschedule_date
                 vslider.save()
+                vimg = Image()
+                # IMAGEN Portrait
+                if (request.FILES.has_key('ThumbHor')):
+                    if request.FILES['ThumbHor'].name != '':
+                        vimg.portrait = request.FILES['ThumbHor']
+                        extension = os.path.splitext(vimg.portrait.name)[1]
+                        vimg.name = vslider.slider_id
+                        varchivo = pathfilesport.value + vimg.name + extension
+                        vimg.portrait.name = varchivo
+                        if os.path.isfile(varchivo):
+                            os.remove(varchivo)
+                        vimg.save()
+
+                vslider.image = vimg
+                vslider.save()
+
+
+
             except Device.DoesNotExist as e:
                 return render(request, 'cawas/error.html', {"message": "No existe Device. (" + e.message + ")"})
             except Asset.DoesNotExist as e:
@@ -189,42 +221,9 @@ class SliderController(object):
             print decjson['Slider']['Slidermetadatas']
             vflag = "success"
 
-            # SliderMetadata.objects.filter(slider=vslider).delete()
-            for item in vslidermetadata:
-                try:
-                    smd = SliderMetadata()
-
-                    print "DEBUG1: " + item['Slidermetadata']['schedule_date']
-                    if (item['Slidermetadata']['schedule_date'] != ''):
-                        vschedule_date = datetime.datetime.strptime(item['Slidermetadata']['schedule_date'],
-                                                                    '%d-%m-%Y').strftime('%Y-%m-%d')
-                    else:
-                        vschedule_date = datetime.datetime.now().strftime('%Y-%m-%d')
-
-                    vlang = Language.objects.get(code=item['Slidermetadata']['language'])
-                    smd.language = vlang
-                    smd.text = item['Slidermetadata']['text']
-                    smd.slider = vslider
-                    smd.publish_date = vschedule_date
-                    metadatas = SliderMetadata.objects.filter(slider=vslider, language=vlang)
-                    if metadatas.count() < 1:
-                        smd.save()
-                        # Publica en PublishQueue
-                        ph = PublishHelper()
-                        ph.func_publish_queue(request, vslider.slider_id, vlang, 'AS', 'Q', vschedule_date)
-                    vflag = "success"
-                except Language.DoesNotExist as e:
-                    return render(request, 'cawas/error.html',
-                                  {"message": "Lenguaje no Existe. (" + str(e.message) + ")"})
-                except Exception as e:
-                    return render(request, 'cawas/error.html',
-                                  {"message": "Error al Guardar Metadata. (" + str(e.message) + ")"})
-                vflag = "success"
-                request.session['list_slider_message'] = 'Guardado Correctamente'
-                request.session['list_slider_flag'] = FLAG_SUCCESS
 
         if request.method == 'GET':
-            context = {'vtypes': vtypes, 'vassets': vassets, 'vsliders': vsliders,
+            context = {'vtypes': vtypes, 'vassets': vassets, 'vsliders': vsliders, 'imgland':imgland,
                        'vlanguages': vlanguages, 'vdevices': vdevices, 'flag': vflag, 'vslider': vslider,
                        'vlangmetadata': vlangmetadata, 'message':message, 'flag':vflag}
             return render(request, 'cawas/sliders/edit.html', context)
@@ -261,18 +260,17 @@ class SliderController(object):
             selectestado = request.POST['selectestado']
             # FILTROS
             if titulo != '':
-                sliders = Slider.objects.filter(slider_id__icontains=titulo).order_by('slider_id')
                 if selectestado != '':
-                    sliders_list = SliderMetadata.objects.filter(slider__in=sliders, publish_status=selectestado).order_by('slider_id')
+                    sliders_list = Slider.objects.filter(slider_id__icontains=titulo, publish_status=selectestado).order_by('slider_id')
                 else:
-                    sliders_list = SliderMetadata.objects.filter(slider__in=sliders).order_by('slider_id')
+                    sliders_list = Slider.objects.filter(slider_id__icontains=titulo).order_by('slider_id')
             elif selectestado != '':
-                sliders_list = SliderMetadata.objects.filter(publish_status=selectestado).order_by('slider_id')
+                sliders_list = Slider.objects.filter(publish_status=selectestado).order_by('slider_id')
             else:
-                sliders_list = SliderMetadata.objects.all().order_by('slider_id')
+                sliders_list = Slider.objects.all().order_by('slider_id')
 
         if sliders_list is None:
-            sliders_list = SliderMetadata.objects.all().order_by('slider_id')
+            sliders_list = Slider.objects.all().order_by('slider_id')
 
         paginator = Paginator(sliders_list, 20)  # Show 25 contacts per page
         try:
@@ -291,13 +289,16 @@ class SliderController(object):
 
 
     def publish(self, request, id):
+        '''
         md = SliderMetadata.objects.get(id=id)
+
         md.publish_date = datetime.datetime.now().strftime('%Y-%m-%d')
         md.activated = True
         md.save()
         ph = PublishHelper()
         ph.func_publish_queue(request, md.slider.slider_id, md.language, 'AS', 'Q', md.publish_date)
-        request.session['list_slider_message'] = 'Metadata en ' + md.language.name + ' de Slider ' + md.slider.asset.asset_id + ' Publicada Correctamente'
+        '''
+        #request.session['list_slider_message'] = 'Metadata en ' + md.language.name + ' de Slider ' + md.slider.asset.asset_id + ' Publicada Correctamente'
         request.session['list_slider_flag'] = FLAG_SUCCESS
         self.code_return = 0
 
@@ -309,13 +310,13 @@ class SliderController(object):
             return redirect(lc.login_view(request))
 
         try:
-            slidermetadata = SliderMetadata.objects.get(id=id)
-            vasset_id = slidermetadata.slider.slider_id
+            #slidermetadata = SliderMetadata.objects.get(id=id)
+            #vasset_id = slidermetadata.slider.slider_id
 
             # 1 - VERIFICAR, si estado de publicacion esta en Q, se debe eliminar
-            publishs = PublishQueue.objects.filter(item_id=vasset_id, status='Q')
-            if publishs.count > 0:
-                publishs.delete()
+            #publishs = PublishQueue.objects.filter(item_id=vasset_id, status='Q')
+            #if publishs.count > 0:
+            #    publishs.delete()
 
             # 2 - Realizar delete al backend
             setting = Setting.objects.get(code='backend_slider_url')
@@ -323,21 +324,21 @@ class SliderController(object):
             #SE COMENTA PARA
             for zone in vzones:
                 abr = ApiBackendResource(zone.backend_url, setting.value)
-                param = {"slider_id": slidermetadata.slider.slider_id,
-                         "lang": slidermetadata.language.code}
-                abr.delete(param)
+                #param = {"slider_id": slidermetadata.slider.slider_id,
+                #         "lang": slidermetadata.language.code}
+              #  abr.delete(param)
 
             # 3 - Actualizar Activated a False
-            slidermetadata.activated=False
-            slidermetadata.save()
+            #slidermetadata.activated=False
+            #slidermetadata.save()
             #slidermetadata.delete()
             self.code_return = 0
-            request.session['list_slider_message'] = 'Metadata en ' + slidermetadata.language.name +' de Slider ' + slidermetadata.slider.slider_id + ' Despublicado Correctamente'
+            #request.session['list_slider_message'] = 'Metadata en ' + slidermetadata.language.name +' de Slider ' + slidermetadata.slider.slider_id + ' Despublicado Correctamente'
             request.session['list_slider_flag'] = FLAG_SUCCESS
         except PublishZone.DoesNotExist as e:
             return render(request, 'cawas/error.html', {"message": "PublishZone no Existe. (" + str(e.message) + ")"})
-        except SliderMetadata.DoesNotExist as e:
-            return render(request, 'cawas/error.html',
-                          {"message": "Metadata de Slider no Existe. (" + str(e.message) + ")"})
+        #except SliderMetadata.DoesNotExist as e:
+        #    return render(request, 'cawas/error.html',
+        #                  {"message": "Metadata de Slider no Existe. (" + str(e.message) + ")"})
 
         return self.code_return

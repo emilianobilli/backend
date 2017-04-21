@@ -190,9 +190,19 @@ $( document ).ready(function() {
         var url = $('#url').val();
         var typeslider_selected = $('#typeslider option:selected');
         var device_selected = $('#devices option:selected');
+        var idioma_selected = $('#idiomaSelect').val();
+        var publish_date = $('#date_blq').val();
+        var text = $("#text").val();
 
 
 
+        // chequea thumbnail vertical
+        if(!$('#ThumbHor').val() && !$('#imgantlandscape').val()){
+            errorMe("#ThumbHor");
+            checkVal++;
+        }else{
+            okMe("#ThumbHor");
+        }
         // chequea original Title
         if(url=="" || url==" ")
         {
@@ -209,6 +219,15 @@ $( document ).ready(function() {
             checkVal++;
         }else{
             okMe("#ThumbHor");
+        }
+
+        //Valida idioma
+        if (idioma_selected =="0" || idioma_selected ==""){
+            errorMe("#idiomaSelect");
+            checkVal++;
+        }else{
+            okMe("#idiomaSelect");
+            idioma_selected=$('#idiomaSelect').val();
         }
 
 
@@ -242,6 +261,7 @@ $( document ).ready(function() {
 
 
         // chequeo de idiomas (tit_; desc_; date_)
+        /*
         if(langQ==0){
             errorMe("#pickLang");
             checkVal++;
@@ -249,6 +269,7 @@ $( document ).ready(function() {
             okMe("#pickLang");
             checkLangs(langDesc);
         }
+        */
 
         if(checkVal>0){
             if(checkedOnce<1){// envía por primera vez y tiene error
@@ -326,8 +347,8 @@ $( document ).ready(function() {
                 var lengactualok = 1;
                 for(i=0; i<lngth; i++){
                     var lang=arr[i];
-
-                    var text = $("#text_"+lang).val();
+                    /*
+                    var text = $("#text_"+lang).val().trim();
                     if(text==""){
                         errorMe("#text_"+lang);
                         checkVal++;
@@ -335,6 +356,7 @@ $( document ).ready(function() {
                     }else{
                         okMe("#text_"+lang);
                     }
+                    */
 
                     // check date
                     var dateCont = $("#date_"+lang).val();
@@ -366,17 +388,17 @@ $( document ).ready(function() {
 
                 for(i=0; i<lngth; i++){
                     var lang=arr[i];
-                    var text = $("#text_"+lang).val();
                     var fechapub = $("#date_"+lang).val().trim();
-
                     myLangs += '{"Slidermetadata":';
                     myLangs += '{"language": "'+lang+'",';
+    /*
                     if (text==''){
                         myLangs+='"text":null,';
                        }else{
                         myLangs+='"text":"'+text+'",';
                     }
-					myLangs += '"schedule_date":"'+fechapub+'"';
+	*/
+                    myLangs += '"schedule_date":"'+fechapub+'"';
                     myLangs += '}}';
                     if(i<lngth-1){
                         myLangs += ',';
@@ -393,19 +415,26 @@ $( document ).ready(function() {
                     var myJSON = '';
                     myJSON+='{"Slider":{';
                     myJSON+='"asset_id":"'+asset_Id+'",';
-                    myJSON+='"media_url":"'+url+'",';
+                    //myJSON+='"text":"'+text+'",';
+                    if (text=='' ){
+                        myJSON+='"text":null,';
+                       }else{
+                        myJSON+='"text":"'+text+'",';
+                    }
+                    myJSON+='"publish_date":"'+publish_date+'",';
+                    myJSON+='"language":"'+idioma_selected+'",';
                     myJSON+='"media_type":"'+typeslider_selected+'",';
                     myJSON+='"target_device_id":"'+device_selected+'",';
-
                     if (typeslider_selected=='' ){
-                        myJSON+='"type_slider":null,';
+                        myJSON+='"type_slider":null';
                        }else{
-                        myJSON+='"type_slider":"'+typeslider_selected+'",';
+                        myJSON+='"type_slider":"'+typeslider_selected+'"';
                     }
-                    myJSON+='"Slidermetadatas":[';
-                    myJSON+= addSliderMetadata(langDesc);
-                    myJSON+=']}}';
+                    //myJSON+='"Slidermetadatas":[';
+                    //myJSON+= addSliderMetadata(langDesc);
 
+                    //myJSON+=']}}';
+                    myJSON+='}}';
                     console.log(myJSON);
                     $("#varsToJSON").val(myJSON);
                     $("#sliderForm").submit();

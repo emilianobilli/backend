@@ -148,7 +148,14 @@ $( document ).ready(function() {
         var asset_selected = [];
         var publicar = $('#publicar').val();
         
-        
+         // chequea thumbnail vertical
+        if(!$('#ThumbHor').val() && !$('#imgantlandscape').val()){
+            errorMe("#ThumbHor");
+            checkVal++;
+        }else{
+            okMe("#ThumbHor");
+        }
+
         // chequea original Name
         if(original_name=="" || original_name==" ")
         {

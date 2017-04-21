@@ -572,19 +572,16 @@ $( document ).ready(function() {
                     }else{
                         myJSON+='"girls":'+myGirls+',';
                     }
-
                     if (elenco_selected==''){
                         myJSON+='"cast":null,';
                     }else{
                         myJSON+='"cast":"'+elenco_selected+'",';
                     }
-
                     if (director_selected==''){
                         myJSON+='"directors":null,';
                        }else{
                         myJSON+='"directors":"'+director_selected+'",';
                     }
-
                     myJSON+='"display_runtime": "'+display_runtimeJSON+'",';
                     myJSON+='"categories":'+myCategories+',';
                     myJSON+='"Moviesmetadata": [';

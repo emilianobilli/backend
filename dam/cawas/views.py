@@ -13,7 +13,7 @@ from Controller.BlockController import BlockController
 from Controller.SliderController import SliderController
 
 from Controller.LogController import LogController
-from models import Channel, Device, Slider, SliderMetadata, Episode, EpisodeMetadata, ImageQueue, PublishQueue, \
+from models import Channel, Device, Slider,  Episode, EpisodeMetadata, ImageQueue, PublishQueue, \
     Block, Serie, SerieMetadata, Movie, MovieMetadata, CategoryMetadata, PublishZone,Girl, GirlMetadata, Asset, Language, Category, Image, Setting
 from django.contrib.auth import authenticate, login, logout
 #from ..backend_sdk import ApiBackendResource

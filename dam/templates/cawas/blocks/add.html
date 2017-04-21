@@ -120,19 +120,16 @@
 
             <!-- Row 2: Canal & fecha publicación -->
             <div class="row form-row">
-
                    <div class="col-xs-12 col-md-4 col-lg-4 form-group">
                         <div class="form-group has-feedback" id="langSelect">
                             <label class="label-left" for="langS">Idioma: *</label>
                             <div class="helpright"><span class="glyphicon glyphicon-question-sign" data-toggle="tooltip" title="Selecciona el idioma. Cada bloque debe darse de alta en su idioma aunque sea exactamente igual"></span></div>
-
                             <select type="text" class="form-control" name="canal" id="idiomaSelect">
 
                                 {% for item in vlanguages %}
                                      <option value="{{item.code}}">{{ item.name}}</option>
                                 {% endfor %}
                             </select>
-
                             <span class="glyphicon form-control-feedback"></span>
                         </div>
                     </div>
