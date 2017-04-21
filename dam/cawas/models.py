@@ -248,8 +248,6 @@ class Asset(models.Model):
         return dict
 
 
-
-
 class Slider(models.Model):
     TYPE = (
         ("image", "Image"),
@@ -260,6 +258,12 @@ class Slider(models.Model):
     image             = models.ForeignKey(Image, blank=True, null=True)
     asset             = models.ForeignKey(Asset, blank=True, null=True)
     target_device     = models.ForeignKey(Device)
+    language          = models.ForeignKey(Language)
+    text              = models.CharField(max_length=256, blank=True, help_text="Texto asociado al Slider")
+    publish_date      = models.DateTimeField(auto_now=False, auto_now_add=False, blank=True, null=True)
+    publish_status    = models.BooleanField(default=False)
+    activated         = models.BooleanField(default=False)
+
 
     def save(self, *args, **kwargs):
         super(Slider, self).save(*args, **kwargs)
@@ -291,28 +295,6 @@ class Slider(models.Model):
         if self.asset is not None:
             dict["linked_asset_id"]   = self.asset.asset_id
             dict["linked_asset_type"] = self.asset.asset_type
-
-        return dict
-
-
-class SliderMetadata(models.Model):
-    slider            = models.ForeignKey(Slider)
-    language          = models.ForeignKey(Language)
-    text              = models.CharField(max_length=256, blank=True, help_text="Texto asociado al Slider")
-    modification_date = models.DateTimeField(auto_now=True)
-    publish_date      = models.DateTimeField(auto_now=False, auto_now_add=False, blank=True, null=True)
-    publish_status    = models.BooleanField(default=False)
-    activated         = models.BooleanField(default=False)
-
-    class Meta:
-        unique_together = ('slider', 'language',)
-
-    def __unicode__(self):
-        return ('%s:%s') % (self.slider.slider_id, self.language)
-
-    def toDict(self):
-        dict = {}
-
         dict["lang"] = self.language.code
         dict["text"] = self.text
 

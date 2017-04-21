@@ -51,7 +51,7 @@ def block_serializer(block_id):
     return ret
 
 
-def slider_serializer(slider_id, lang=''):
+def slider_serializer(slider_id):
     ret = []
     try:
         slider = Slider.objects.get(slider_id=slider_id)
@@ -59,23 +59,7 @@ def slider_serializer(slider_id, lang=''):
         msg = "Slider with ID %s does not exist" % slider_id
         raise SerializerException(msg)
 
-    slider_dict = slider.toDict()
-
-    if lang == '':
-        metadata_list = SliderMetadata.objects.filter(slider=slider)
-    else:
-        try:
-            language = Language.objects.get(code=lang)
-        except ObjectDoesNotExist:
-            msg = "Language code %s does not exist for slider ID %s" % (lang, slider_id)
-            raise SerializerException(msg)
-        metadata_list = SliderMetadata.objects.filter(slider=slider, language=language)
-
-    if len(metadata_list) == 0:
-        ret.append(slider_dict)
-    else:
-        for metadata in metadata_list:
-            ret.append(dict(slider_dict.items() + metadata.toDict().items()))
+    ret.append(slider.toDict())
 
     return ret
 

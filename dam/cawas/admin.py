@@ -110,12 +110,7 @@ class BlockAdmin(admin.ModelAdmin):
 @admin.register(models.Slider)
 class SliderAdmin(admin.ModelAdmin):
     readonly_fields = ('slider_id',)
-    list_display = ['slider_id', 'media_type']
-
-
-@admin.register(models.SliderMetadata)
-class SliderMetadataAdmin(admin.ModelAdmin):
-    list_display = ['slider', 'language']
+    list_display = ['slider_id', 'media_type', 'language']
 
 
 @admin.register(models.Device)

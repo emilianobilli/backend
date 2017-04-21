@@ -27,13 +27,13 @@ try:
 except ImporterException as err:
     print err.value
 """
-
+"""
 try:
     #import_episode('jsons/episode.json.pt')
     import_episode('jsons/episode.json', True)
 except ImporterException as err:
     print err.value
-
+"""
 
 """
 girls_list = Girl.objects.all()
