@@ -275,10 +275,6 @@ class Slider(models.Model):
                 id = "0" + id
 
             self.slider_id = "L%s" % (id)
-        metadata = SliderMetadata.objects.filter(slider=self)
-        for m in metadata:
-            m.modification_date = timezone.now()
-            m.save()
         super(Slider, self).save(*args, **kwargs)
 
     def __unicode__(self):
