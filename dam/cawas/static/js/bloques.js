@@ -178,14 +178,7 @@ $( document ).ready(function() {
         }
         
         
-        // chequea canal
-        if (canal_selected =="0" || canal_selected ==""){
-            errorMe("#canalSelect");
-            checkVal++;
-        }else{
-            okMe("#canalSelect");
-            canal_selected=$('#canalSelect').val();
-        }
+
         
         // chequea publish_date
         if(publish_date=="" || publish_date==" ")
@@ -268,11 +261,7 @@ $( document ).ready(function() {
                 }
                 $(theField).parent().addClass('has-error');
                 $(theField).next(".glyphicon").addClass('glyphicon-remove');
-                if(theField=="#canalSelect"){
-                    console.log("canalSelect selected");
-                    $("#channelSelect").children(".select2-selection--single").css("display","none");
-                        //.css("border","1px #ff0000 solid!important");
-                }
+
                 
             }
         
@@ -355,7 +344,11 @@ $( document ).ready(function() {
                     myJSON+='"block_id":"'+block_id+'",';
                     myJSON+='"name":"'+original_name+'",';
                     myJSON+='"language":"'+idioma_selected+'",';
-                    myJSON+='"channel_id":'+canal_selected+',';
+                    if (canal_selected==''){
+                        myJSON+='"channel_id":null,';
+                       }else{
+                        myJSON+='"channel_id":"'+canal_selected+'",';
+                    }
                     myJSON+='"publish_date":"'+publish_date+'",';
                     myJSON+='"target_device_id":"'+device_selected+'",';
                     myJSON+='"publicar":"'+publicar+'",';

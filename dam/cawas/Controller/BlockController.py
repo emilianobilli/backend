@@ -25,27 +25,40 @@ class BlockController(object):
         vflag = ''
         vschedule_date = ''
         vgrabarypublicar = ''
+        print 'Debug1'
         if request.method == 'POST':
             # VARIABLES
             vblock = Block()
             # Parsear JSON
             try:
+                print 'Debug2'
                 strjson = request.POST['varsToJSON']
                 decjson = json.loads(strjson)
-                # pathfilesport = Setting.objects.get(code='image_repository_path_portrait')
-                # pathfilesland = Setting.objects.get(code='image_repository_path_landscape')
                 vblock.name = decjson['Block']['name']
+                print 'Debug3'
                 vgrabarypublicar = decjson['Block']['publicar']
                 vschedule_date = datetime.datetime.strptime(decjson['Block']['publish_date'], '%d-%m-%Y').strftime(
                     '%Y-%m-%d')
                 vblock.publish_date = vschedule_date
                 vblock.language = Language.objects.get(code=decjson['Block']['language'])
-                vblock.channel = Channel.objects.get(pk=decjson['Block']['channel_id'])
-                print "Device:" + str(decjson['Block']['target_device_id'])
+
+                if decjson['Block']['channel_id'] is not None:
+                    vblock.channel = Channel.objects.get(pk=decjson['Block']['channel_id'])
+
+
                 vblock.target_device = Device.objects.get(pk=int(decjson['Block']['target_device_id']))
                 vblock.save()
-                # vblock.target_device = Device.objects.get(pk=decjson['Block']['target_device_id'])
+                vassets = decjson['Block']['assets']
+                for item in vassets:
+                    try:
+                        asset_id = item['asset_id']
+                        vasset = Asset.objects.get(asset_id=asset_id)
+                        vblock.assets.add(vasset)
+                    except Asset.DoesNotExist as e:
+                        return render(request, 'cawas/error.html',
+                                      {"message": "No existe Asset. " + asset_id + "  (" + e.message + ")"})
 
+                vblock.save()
             except Setting.DoesNotExist as e:
                 return render(request, 'cawas/error.html', {"message": "No Existe Setting. (" + e.message + ")"})
             except Serie.DoesNotExist as e:
@@ -56,19 +69,19 @@ class BlockController(object):
             except Language.DoesNotExist as e:
                 return render(request, 'cawas/error.html', {"message": "No existe LENGUAJE. (" + e.message + ")"})
             except Channel.DoesNotExist as e:
+                request.session['list_block_message'] = 'No existe Canal.'
+                request.session['list_block_flag'] = FLAG_ALERT
                 return render(request, 'cawas/error.html', {"message": "No existe Channel. (" + e.message + ")"})
             except Device.DoesNotExist as e:
                 return render(request, 'cawas/error.html', {"message": "No existe Device. (" + e.message + ")"})
 
             # CARGAR ASSETS
-
             if vgrabarypublicar == '1':
                 vassets = decjson['Block']['assets']
                 for item in vassets:
                     try:
                         asset_id = item['asset_id']
                         vasset = Asset.objects.get(asset_id=asset_id)
-                        vblock.assets.add(vasset)
                         # Publica en PublishQueue
                         ph = PublishHelper()
                         ph.func_publish_queue(request, asset_id, vblock.language, 'AS', 'Q', vblock.publish_date)
@@ -82,7 +95,7 @@ class BlockController(object):
                 ph.func_publish_queue(request, vblock.block_id, vblock.language, 'BL', 'Q', vblock.publish_date)
                 self.code_return = 0
 
-            request.session['list_block_message'] = 'Metadata en ' + vblock.language.name + ' de Bloque ' + vblock.block_id + ' Despublicado Correctamente'
+            request.session['list_block_message'] = 'Guardado Correctamente.'
             request.session['list_block_flag'] = FLAG_SUCCESS
 
             return render(request, 'cawas/blocks/add.html')
@@ -98,8 +111,7 @@ class BlockController(object):
         vcapitulos = Episode.objects.all().order_by('original_title')
         vseries = Serie.objects.all().order_by('original_title')
 
-        context = {'message': message, 'vblocks': vblocks, 'vchannels': vchannels, 'vdevices': vdevices,
-                   'vgirls': vgirls,
+        context = {'message': message, 'vblocks': vblocks, 'vchannels': vchannels, 'vdevices': vdevices, 'vgirls': vgirls,
                    'vlanguages': vlanguages, 'vseries': vseries,
                    'vmovies': vmovies, 'vcapitulos': vcapitulos}
         return render(request, 'cawas/blocks/add.html', context)
@@ -176,21 +188,22 @@ class BlockController(object):
             # Publicacion
             for item in assetall:
                 try:
-                    # asset_id = item['asset_id']
-                    # vasset = Asset.objects.get(asset_id=item)
-                    # vblock.assets.add(vasset)
                     ph = PublishHelper()
-                    ph.func_publish_queue(request, asset_id, vblock.language, 'AS', 'Q', vblock.publish_date)
-                    #func_publish_queue(item, vblock.language, 'AS', 'Q', vblock.publish_date)
+                    print item
+                    ph.func_publish_queue(request, item, vblock.language, 'AS', 'Q', vblock.publish_date)
                 except Asset.DoesNotExist as e:
                     return render(request, 'cawas/error.html', {"message": "No existe Asset. (" + e.message + ")"})
 
-            # Publica en PublishQueue
+
 
             #func_publish_queue(vblock.block_id, vblock.language, 'BL', 'Q', vblock.publish_date)
             ph = PublishHelper()
             ph.func_publish_queue(request, vblock.block_id, vblock.language, 'BL', 'Q', vblock.publish_date)
             context = {"flag": "success"}
+            self.code_return = 0
+            request.session['list_block_message'] = 'Guardado Correctamente.'
+            request.session['list_block_flag'] = FLAG_SUCCESS
+
             return render(request, 'cawas/blocks/edit.html', context)
             # Fin datos Bloque
 
@@ -213,7 +226,6 @@ class BlockController(object):
             return render(request, 'cawas/error.html', {"message": "No existe Bloque2. (" + e.message + ")"})
 
         # Variables Para GET
-
         vchannels = Channel.objects.all()
         vseries = Serie.objects.all()
         vgirls = Girl.objects.all()
@@ -348,15 +360,15 @@ class BlockController(object):
                 abr.delete(param)
 
             # 3 - Actualizar Activated a False
-            block.assets = []
-            block.activated = False
-            block.save()
+            #block.assets = []
+            #block.activated = False
+            #block.save()
 
             # se elimina el bloque de cawas
             block.delete()
 
             self.code_return = 0
-            request.session['list_block_message'] = 'Bloque Despublicado Correctamente '
+            request.session['list_block_message'] = 'Bloque Eliminado Correctamente '
             request.session['list_block_flag'] = FLAG_SUCCESS
 
         except PublishZone.DoesNotExist as e:
@@ -376,7 +388,7 @@ class BlockController(object):
         vpublish_date = datetime.datetime.now().strftime('%Y-%m-%d')
         block.publish_date = vpublish_date
         block.save()
-       # ENCOLA LOS ASSETS QUE CORRESPONDEN AL BLOQUE
+       # ENCOLA LOS ASSETS QUE CORRESPONDEN AL BLOQUE, SOLO en el IDIOMA QUE SE SELECCIONO
         vassets = block.assets.all()
         for item in vassets:
             try:
