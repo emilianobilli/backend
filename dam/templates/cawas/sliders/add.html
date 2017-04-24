@@ -106,14 +106,12 @@
                   class="content-picker sliderChoose"
                   id="sliderForm">
                     <div class="row form-row">
-                    <div class="col-xs-4 col-md-4 col-lg-4 form-group">
+                     <div class="col-xs-4 col-md-4 col-lg-4 form-group">
                        <div class="form-group has-feedback imgUpload">
-                            <label class="label-left" for="ThumbHor" id="ThumbHorTit">Asociar imagen landscape: *</label>
-                            <input type="hidden" id="imgantlandscape" value="{{vslider.image.landscape.name}}" disabled></input>
-                            <input type="file" class="form-control" name="ThumbHor" id="ThumbHor" accept="image/*"
-                                value="{{ vslider.image.landscape.name }}">
+                            <label class="label-left" for="ThumbHor" id="ThumbHorTit">Imagen Landscape: *</label>
+                            <input type="file" class="form-control" name="ThumbHor" id="ThumbHor" accept="image/*">
                             <span class="glyphicon form-control-feedback"></span>
-                            <img id="imageH" src="{{ imgland }}"/>
+                            <img id="imageH"/>
                         </div>
                     </div>
                     </div>
@@ -172,6 +170,7 @@
                    <div class="form-group has-feedback">
                    <label class="label-left" for="slider-select">Asset Asociado: *</label>
                       <select id="slider-select" class="form-control" id="assets">
+                           <option id="0" value="0"> Ninguno </option>
                         {% for item in vassets %}
                             <option id="{{ item.asset_id }}" value="{{ item.asset_id }}">{{ item.asset_id }} </option>
                         {% endfor %}

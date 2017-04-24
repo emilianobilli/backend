@@ -59,13 +59,13 @@
                   class="content-picker sliderChoose"  id="sliderForm">
                     <div class="row form-row">
                      <div class="col-xs-4 col-md-4 col-lg-4 form-group">
-                       <div class="form-group has-feedback imgUpload">
-                            <label class="label-left" for="ThumbHor" id="ThumbHorTit">Asociar imagen landscape: *</label>
+                        <div class="form-group has-feedback imgUpload">
+                            <label class="label-left" for="ThumbVer" id="ThumbVerTit">Asociar imagen landscape: *</label>
                             <input type="hidden" id="imgantlandscape" value="{{vslider.image.landscape.name}}" disabled></input>
-                            <input type="file" class="form-control" name="ThumbHor" id="ThumbHor" accept="image/*"
+                            <input type="file" class="form-control" name="ThumbVer" id="ThumbVer" accept="image/*"
                                 value="{{ vslider.image.landscape.name }}">
                             <span class="glyphicon form-control-feedback"></span>
-                            <img id="imageH" src="{{ imgland }}"/>
+                            <img id="imageV" src="{{ imgland }}"/>
                         </div>
                       </div>
                     </div>
@@ -140,7 +140,9 @@
                    <div class="form-group has-feedback">
                    <label class="label-left" for="slider-select">Asset Asociado: *</label>
                       <select id="slider-select" class="form-control" id="assets">
+                           <option id="" value="">vacio </option>
                         {% for item in vassets %}
+
                           {% if vslider.asset.asset_id == vassets.asset_id %}
                                 <option selected id="{{ item.asset_id }}" value="{{ item.asset_id }}">{{ item.asset_id }} </option>
                           {% else %}

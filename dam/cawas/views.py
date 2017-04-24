@@ -286,7 +286,7 @@ def add_asset_view(request):
             vasset.asset_type = "unknown"
             vasset.save()
             message = "Asset Generado Correctamente"
-
+            return HttpResponse('Asset Generado Correctamente', status=200)
     except ValueError, e:
         message = "Error al leer archivo JSON. (" + e.message + ")"
         return render(request, 'cawas/error.html', {"message": message})

@@ -8,7 +8,10 @@ $( document ).ready(function() {
       format: 'dd-mm-yyyy'
     });
 
-     $( "#ThumbHor" ).change(showPreviewImage_click);
+
+    $( "#ThumbHor" ).change(showPreviewImage_click);
+    $( "#ThumbVer" ).change(showPreviewImage_click);
+
 
 
     console.log( "ready!" );
@@ -25,6 +28,7 @@ $( document ).ready(function() {
         $("#myModal-ERROR").modal();
     }
     
+    $( "#ThumbHor" ).change(showPreviewImage_click);
 
     var countChecked = function() {
     langQ = $("input:checked" ).length;
@@ -196,13 +200,6 @@ $( document ).ready(function() {
 
 
 
-        // chequea thumbnail vertical
-        if(!$('#ThumbHor').val() && !$('#imgantlandscape').val()){
-            errorMe("#ThumbHor");
-            checkVal++;
-        }else{
-            okMe("#ThumbHor");
-        }
         // chequea original Title
         if(url=="" || url==" ")
         {
@@ -213,8 +210,7 @@ $( document ).ready(function() {
         }
 
         // chequea thumbnail horizaontal
-        if(!$('#ThumbHor').val() && !$('#imgantportrait').val()){
-
+        if(!$('#ThumbHor').val() && !$('#imgantlandscape').val()){
             errorMe("#ThumbHor");
             checkVal++;
         }else{
