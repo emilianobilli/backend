@@ -258,22 +258,20 @@ class SliderController(object):
         return render(request, 'cawas/sliders/list.html', context)
 
 
-
-
     def publish(self, request, id):
-        '''
-        md = SliderMetadata.objects.get(id=id)
+        try:
+            vslider = Slider.objects.get(id=id)
+            # publicar
+            ph = PublishHelper()
+            ph.func_publish_queue(request, vslider.slider_id, vslider.language, 'AS', 'Q', vslider.publish_date)
+            ph.func_publish_image(request, vslider.image)
 
-        md.publish_date = datetime.datetime.now().strftime('%Y-%m-%d')
-        md.activated = True
-        md.save()
-        ph = PublishHelper()
-        ph.func_publish_queue(request, md.slider.slider_id, md.language, 'AS', 'Q', md.publish_date)
-        '''
-        #request.session['list_slider_message'] = 'Metadata en ' + md.language.name + ' de Slider ' + md.slider.asset.asset_id + ' Publicada Correctamente'
+        except Slider.DoesNotExist as e:
+            return render(request, 'cawas/error.html', {"message": "No Existe Slider. (" + str(e.message) + ")"})
+
+        request.session['list_slider_message'] = 'Slider ' + vslider.slider.slider_id + ' Publicada Correctamente'
         request.session['list_slider_flag'] = FLAG_SUCCESS
         self.code_return = 0
-
 
     #Despublicar
     def unpublish(self, request, id):

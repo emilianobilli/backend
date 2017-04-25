@@ -9,7 +9,7 @@ from Controller.SerieController import SerieController
 from Controller.GirlController import GirlController
 from Controller.EpisodeController import EpisodeController
 from Controller.BlockController import BlockController
-
+from Controller.CategoryController import CategoryController
 from Controller.SliderController import SliderController
 
 from Controller.LogController import LogController
@@ -380,6 +380,10 @@ def unpublish_sliders_view(request, id):
     if controller.code_return == RETURN_OK:
         return redirect(list_sliders_view)
 
+def list_category_view(request):
+    gc = CategoryController()
+    return gc.list(request)
+
 
 # Listados
 def list_movies_view(request):
@@ -415,137 +419,28 @@ def list_sliders_view(request):
     gc = SliderController()
     return gc.list(request)
 
-
+def list_categories_view(request):
+    gc = CategoryController()
+    return gc.list(request)
 
 
 #<CRUD CATEGORIES>
 def add_category_view(request):
-    # AUTENTICACION DE USUARIO
-    if not request.user.is_authenticated:
-        return redirect(login_view)
-
-    # VARIABLES LOCALES
-    message = ''
-    vg_pathfiles = 'cawas/static/files/categories/'
-
+    controller = CategoryController()
+    if request.method == 'GET':
+        return controller.add(request)
     if request.method == 'POST':
-        #VARIABLES
-        vcategory = Category()
-        vimg = Image()
-
-        # Parsear JSON
-        strjson = request.POST['strjson']
-        decjson = json.loads(strjson)
-
-        # TRATAMIENTO DE IMAGEN: nombre de imagen = a Asset_id
-        if not (request.FILES['imagehor'] is None):
-            vimg.portrait = request.FILES['imagehor']
-            vimg.name = request.FILES['imagehor'].name
-            varchivo = vg_pathfiles + vimg.name + '.jpg'
-            vimg.portrait.name = varchivo
-            if os.path.isfile(varchivo):
-                os.remove(varchivo)
-            try:
-                if not (Image.objects.filter(name=vimg.name).exists()): #si no esta en la base de datos, se crea IMAGE
-                    #borra fisicamente imagen si existe
-                    vimg.save()
-                    vcategory.image = vimg
-                else:
-                    vcategory.image = Image.objects.get(name=vimg.name)  #se mantiene la imagen actual
-            except IntegrityError  as e:
-                message = "IMAGE - Ya existe una imagen con el mismo nombre. (" + e.message + ")"
-                return render(request, 'cawas/error.html', {"message": message})
-
-        # Datos de Category
-        vcategory.original_name = decjson['Category']['original_name']
-        vcategory.order = int(decjson['Category']['orden'])
-        vcategory.save()
-        message = 'Categoria - Registrado Correctamente'
-
-        # BORRAR Y CREAR METADATA
-        vcategorymetadatas = decjson['Category']['Categorymetadatas']
-        for item in vcategorymetadatas:
-            cmd = CategoryMetadata()
-            try:
-                vlanguage = Language.objects.get(code=item['Categorymetadata']['language'])
-            except Language.DoesNotExist as e:
-                return render(request, 'cawas/error.html', {"message": "No existe LANGUAGE. (" + e.message + ")"})
-            cmd.name = item['Categorymetadata']['name']
-            cmd.category = vcategory
-            cmd.language = vlanguage
-            cmd.save()
-
-    context = {'message': message}
-    return render(request, 'cawas/pruebas/subir_img.html', context)
+        controller.add(request)
+        return redirect(list_categories_view)
 
 
-def edit_category_view(request):
-    # AUTENTICACION DE USUARIO
-    if not request.user.is_authenticated:
-        return redirect(login_view)
-
-    # VARIABLES LOCALES
-    message = ''
-    vg_pathfiles = 'cawas/static/files/categories/'
-
+def edit_category_view(request, category_id):
+    controller = CategoryController()
+    if request.method == 'GET':
+        return controller.edit(request, category_id)
     if request.method == 'POST':
-        # VARIABLES
-        vcategory = Category()
-        vimg = Image()
-
-        # Parsear JSON
-        strjson = request.POST['strjson']
-        decjson = json.loads(strjson)
-
-        # Leer CATEGORY desde category_id
-        try:
-            vcategory = Category.objects.get(category_id=decjson['Category']['category_id'])
-        except Category.DoesNotExist as e:
-            return render(request, 'cawas/error.html', {"message": "No existe Categoria. (" + e.message + ")"})
-
-        # TRATAMIENTO DE IMAGEN: nombre de imagen = a Asset_id
-        if not (request.FILES['imagehor'] is None):
-            vimg.portrait = request.FILES['imagehor']
-            vimg.name = request.FILES['imagehor'].name
-            varchivo = vg_pathfiles + vimg.name + '.jpg'
-            try:
-                if not (Image.objects.filter(name=vimg.name).exists()):
-                    #borra fisicamente imagen si existe
-                    if os.path.isfile(varchivo):
-                        os.remove(varchivo)
-                    vimg.save()
-                    vcategory.image = vimg
-            except IntegrityError  as e:
-                message = "IMAGE - Ya existe una imagen con el mismo nombre. (" + e.message + ")"
-                return render(request, 'cawas/error.html', {"message": message})
-
-        # Datos de Category
-        vcategory.original_name = decjson['Category']['original_name']
-        vcategory.order = int(decjson['Category']['orden'])
-        vcategory.save()
-        message = 'Categoria - Registrado Correctamente'
-
-        # BORRAR Y CREAR METADATA
-        vcategorymetadatas = decjson['Category']['Categorymetadatas']
-        cmds = CategoryMetadata.objects.filter(category=vcategory)
-        cmds.delete()
-        for item in vcategorymetadatas:
-            cmd = CategoryMetadata()
-            try:
-                vlanguage = Language.objects.get(code=item['Categorymetadata']['language'])
-            except Language.DoesNotExist as e:
-                message = "No existe LANGUAGE. (" + e.message + ")"
-                return render(request, 'cawas/error.html', {"message": message})
-            cmd.name = item['Categorymetadata']['name']
-            cmd.category = vcategory
-            cmd.language = vlanguage
-            cmd.save()
-
-        context = {"flag": "success"}
-        return render(request, 'cawas/categories/edit.html', context)
-
-    context = {'message': message}
-    return render(request, 'cawas/pruebas/subir_img.html', context)
+        controller.edit(request, category_id)
+        return redirect(list_categories_view)
 
 #</CRUD CATEGORIES>
 

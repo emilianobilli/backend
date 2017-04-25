@@ -32,9 +32,7 @@ class CategoryController(object):
             decjson = json.loads(strjson)
             vimg = Image()
             vcategory = Category()
-
             try:
-
                 pathfilesland = Setting.objects.get(code='image_repository_path_landscape')
                 vcategory.original_name = decjson['Category']['original_name']
                 vgrabarypublicar = decjson['Category']['publicar']
@@ -82,10 +80,10 @@ class CategoryController(object):
                     metadatas = CategoryMetadata.objects.filter(category=vcategory)
                     for mdi in metadatas:
                         # Publica en PublishQueue
-                        ph.func_publish_queue(request, mdi.category.asset.asset_id, mdi.language, 'AS', 'Q', vschedule_date)
+                        ph.func_publish_queue(request, mdi.category.category_id, mdi.language, 'AS', 'Q', vschedule_date)
                 except CategoryMetadata.DoesNotExist as e:
                     return render(request, 'cawas/error.html',
-                                  {"message": "No existe Metadata Para el Chica. (" + e.message + ")"})
+                                  {"message": "No existe Metadata de Categoria. (" + e.message + ")"})
 
             request.session['list_category_message'] = 'Guardado Correctamente'
             request.session['list_category_flag'] = FLAG_SUCCESS
@@ -94,22 +92,21 @@ class CategoryController(object):
 
         if request.method =='GET':
             # Cargar variables para presentar en templates
-            vcategorys = Category.objects.all().order_by('name')
             vcategories = Category.objects.all().order_by('name')
             vlanguages = Language.objects.all()
 
             vtypecategory = {"pornstar": "Pornstar", "playmate": "Playmate"}
-            context = {'vcategorys': vcategorys, 'vcategories': vcategories, 'vlanguages': vlanguages,
+            context = { 'vcategories': vcategories, 'vlanguages': vlanguages,
                        'vtypecategory': vtypecategory
                        }
-            return render(request, 'cawas/categorys/add.html', context)
+            return render(request, 'cawas/categories/add.html', context)
 
 
 
 
     #EDICION DE GIRL
-    def edit(self, request, asset_id):
-     #AUTENTICACION DE USUARIO
+    def edit(self, request, category_id):
+        #AUTENTICACION DE USUARIO
         if not request.user.is_authenticated:
             lc = LogController()
             return redirect(lc.login_view(request))
@@ -122,8 +119,8 @@ class CategoryController(object):
             vlangmetadata = []
             pathfilesport = Setting.objects.get(code='image_repository_path_portrait')
             pathfilesland = Setting.objects.get(code='image_repository_path_landscape')
-            vasset = Asset.objects.get(asset_id=asset_id)
-            vcategory = Category.objects.get(asset=vasset)
+            #vasset = Asset.objects.get(asset_id=asset_id)
+            vcategory = Category.objects.get(category_id=category_id)
             vtypecategory = {"pornstar": "Pornstar", "playmate": "Playmate"}
             vlanguages = Language.objects.all()
         # carga imagenes
@@ -137,11 +134,9 @@ class CategoryController(object):
                 try:
                     vcategorymetadata = CategoryMetadata.objects.get(category=vcategory, language=itemlang)
                     vlangmetadata.append(
-                        {'checked': True, 'code': itemlang.code, 'name': itemlang.name,
-                         'description': vcategorymetadata.description,
-                         'nationality': vcategorymetadata.nationality})
+                        {'checked': True, 'code': itemlang.code, 'name': itemlang.name})
                 except CategoryMetadata.DoesNotExist as a:
-                    vlangmetadata.append({'checked': False, 'code': itemlang.code, 'name': itemlang.name, 'description': '', 'nationality': ''})
+                    vlangmetadata.append({'checked': False, 'code': itemlang.code, 'name': itemlang.name})
         except Setting.DoesNotExist as e:
             return render(request, 'cawas/error.html', {"message": "No Setting. (" + e.message + ")"})
         except Category.DoesNotExist as e:
@@ -223,8 +218,7 @@ class CategoryController(object):
 
                 vschedule_date = datetime.datetime.now().strftime('%Y-%m-%d')
                 gmd.language = vlanguage
-                gmd.description = item['Categorymetadata']['description']
-                gmd.nationality = item['Categorymetadata']['nationality']
+                gmd.name = item['Categorymetadata']['name']
                 gmd.publish_date = vschedule_date
                 gmd.category = vcategory
 
@@ -251,7 +245,7 @@ class CategoryController(object):
                    'flag':flag,
                    'message':message}
         # checks:
-        return render(request, 'cawas/categorys/edit.html', context)
+        return render(request, 'cawas/categories/edit.html', context)
 
 
 
@@ -266,7 +260,7 @@ class CategoryController(object):
         flag = ''
         page = request.GET.get('page')
         request.POST.get('page')
-        categorys_list = None
+        categories_list = None
 
         if request.session.has_key('list_category_message'):
             if request.session['list_category_message'] != '':
@@ -289,31 +283,29 @@ class CategoryController(object):
 
             #FILTROS
             if titulo != '':
-                categorys_sel = Category.objects.filter(name__icontains=titulo)
+                categories_sel = Category.objects.filter(original_name__icontains=titulo)
             else:
-                categorys_sel = Category.objects.all()
+                categories_sel = Category.objects.all()
 
             if selectestado != '':
-                categorys_list = CategoryMetadata.objects.filter(category__in=categorys_sel, publish_status=selectestado).order_by('category_id')
+                categories_list = CategoryMetadata.objects.filter(category__in=categories_sel, publish_status=selectestado).order_by('category_id')
             else:
-                categorys_list = CategoryMetadata.objects.filter(category__in=categorys_sel).order_by('category_id')
+                categories_list = CategoryMetadata.objects.filter(category__in=categories_sel).order_by('category_id')
 
 
-        if categorys_list is None:
-            categorys_list = CategoryMetadata.objects.all().order_by('category_id')
+        if categories_list is None:
+            categories_list = CategoryMetadata.objects.all()
 
-        paginator = Paginator(categorys_list, 20)  # Show 25 contacts per page
+        paginator = Paginator(categories_list, 20)  # Show 25 contacts per page
         try:
-            categorys = paginator.page(page)
+            categories = paginator.page(page)
         except PageNotAnInteger:
-            # If page is not an integer, deliver first page.
-            categorys = paginator.page(1)
+            categories = paginator.page(1)
         except EmptyPage:
-            # If page is out of range (e.g. 9999), deliver last page of results.
-            categorys = paginator.page(paginator.num_pages)
+            categories = paginator.page(paginator.num_pages)
 
-        context = {'message': message,'flag':flag, 'registros': categorys,  'usuario': usuario}
-        return render(request, 'cawas/categorys/list.html', context)
+        context = {'message': message, 'flag':flag, 'registros':categories, 'usuario':usuario}
+        return render(request, 'cawas/categories/list.html', context)
 
 
 
@@ -334,14 +326,14 @@ class CategoryController(object):
 
             # Buscar todas Movies con esa chica
             category = categorymetadata.category
-            movies = Movie.objects.filter(categorys__in=[category])
+            movies = Category.objects.filter(categorys__in=[category])
             for movie in movies:
                 # Quitar la asocicacion de Chica-Movie
                 movie.categorys.remove(category)
                 movie.save()
 
                 # Las movies modificadas, volver a publicarlas PublishQueue
-                metadatas = MovieMetadata.objects.filter(movie=movie)
+                metadatas = CategoryMetadata.objects.filter(movie=movie)
                 for metadata in metadatas:
                     ph = PublishHelper()
                     ph.func_publish_queue(request, movie.asset.asset_id, metadata.language, 'AS', 'Q', metadata.publish_date)

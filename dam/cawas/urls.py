@@ -22,7 +22,9 @@ urlpatterns = [
     url(r'^girls/publish/(?P<id>\w*)$', views.publish_girls_view, name='publish_girls'),
 
     url(r'^categories/add/$', views.add_category_view, name='add_categories'),
-    url(r'^categories/edit/(?P<asset_id>\d*)/$', views.edit_category_view, name='edit_categories'),
+    url(r'^categories/edit/(?P<category_id>\w*)/$', views.edit_category_view, name='edit_categories'),
+    url(r'^categories/list/$', views.list_category_view, name='list_categories'),
+
 
     url(r'^series/add/$', views.add_series_view, name='add_series'),
     url(r'^series/edit/(?P<asset_id>\w*)/$', views.edit_series_view, name='edit_series'),
