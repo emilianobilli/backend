@@ -111,6 +111,7 @@ class SliderController(object):
         vasset = Asset()
         vslider = Slider()
         vimg = Image()
+        imgland = ''
         try:
             pathfilesland = Setting.objects.get(code='image_repository_path_landscape')
         except Setting.DoesNotExist as e:
