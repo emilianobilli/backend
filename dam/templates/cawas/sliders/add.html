@@ -103,17 +103,16 @@
 
             <!-- Last Row : Buttons -->
             <form method="post" action="" name="slider-completeForm" enctype="multipart/form-data"
-                  class="content-picker sliderChoose"
-                  id="sliderForm">
+                  class="content-picker sliderChoose" id="sliderForm">
                     <div class="row form-row">
-                     <div class="col-xs-4 col-md-4 col-lg-4 form-group">
-                       <div class="form-group has-feedback imgUpload">
+                        <div class="col-xs-4 col-md-4 col-lg-4 form-group">
+                        <div class="form-group has-feedback imgUpload">
                             <label class="label-left" for="ThumbHor" id="ThumbHorTit">Imagen Landscape: *</label>
                             <input type="file" class="form-control" name="ThumbHor" id="ThumbHor" accept="image/*">
                             <span class="glyphicon form-control-feedback"></span>
                             <img id="imageH"/>
                         </div>
-                    </div>
+                        </div>
                     </div>
                 <input type="hidden" name="varsToJSON" id="varsToJSON" value="">
             </form>
@@ -172,7 +171,7 @@
                       <select id="slider-select" class="form-control" id="assets">
                            <option id="0" value="0"> Ninguno </option>
                         {% for item in vassets %}
-                            <option id="{{ item.asset_id }}" value="{{ item.asset_id }}">{{ item.asset_id }} </option>
+                            <option id="{{ item.asset_id }}" value="{{ item.asset_id }}">{{ item.asset_type }} - {{ item.asset_id }}  </option>
                         {% endfor %}
                       </select>
                    </div>

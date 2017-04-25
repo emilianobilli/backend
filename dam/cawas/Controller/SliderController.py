@@ -59,16 +59,7 @@ class SliderController(object):
                         vslider.image = vimg
                         vslider.save()
                         print 'debug5'
-                        # Luego de tener e ID de Slider se renombra la imagen
-                        #vimg.name = vslider.slider_id
-                        #varchivo = pathfilesland.value + vimg.name + extension
-                        #print varchivo
-                        #vimg.landscape.name = varchivo
-                        #if os.path.isfile(varchivo):
-                        #    os.remove(varchivo)
-                        #vimg.save()
-                        #vslider.image = vimg
-                        #vslider.save()
+
 
 
                 if (decjson['Slider']['publish_date'] != ''):
@@ -89,50 +80,7 @@ class SliderController(object):
             except Language.DoesNotExist as e:
                 return render(request, 'cawas/error.html', {"message": "No existe Lenguaje. (" + e.message + ")"})
 
-            # METADATA
-            '''
-            vslidermetadata = decjson['Slider']['Slidermetadatas']
-            print decjson['Slider']['Slidermetadatas']
 
-
-            # SliderMetadata.objects.filter(slider=vslider).delete()
-            for item in vslidermetadata:
-                try:
-                    #smd = SliderMetadata()
-
-                    if (item['Slidermetadata']['schedule_date'] != ''):
-                        vschedule_date = datetime.datetime.strptime(item['Slidermetadata']['schedule_date'],
-                                                                    '%d-%m-%Y').strftime('%Y-%m-%d')
-                    else:
-                        vschedule_date = datetime.datetime.now().strftime('%Y-%m-%d')
-
-                    vlang = Language.objects.get(code=item['Slidermetadata']['language'])
-                    #smd.language = vlang
-                    #smd.text = item['Slidermetadata']['text']
-                    #smd.slider = vslider
-                    #smd.publish_date = vschedule_date
-                    #smd.save()
-
-                except Language.DoesNotExist as e:
-                    return render(request, 'cawas/error.html',
-                                  {"message": "Lenguaje no Existe. (" + str(e.message) + ")"})
-                except Exception as e:
-                    return render(request, 'cawas/error.html',
-                                  {"message": "Error al Guardar Metadata. (" + str(e.message) + ")"})
-
-            # PUBLICAR METADATA y Publicar Imagen
-
-            try:
-                ph = PublishHelper()
-                ph.func_publish_image(request, vimg)
-                metadatas = SliderMetadata.objects.filter(slider=vslider)
-                for mdi in metadatas:
-                    # Publica en PublishQueue
-                    ph.func_publish_queue(request, mdi.slider.slider_id, mdi.language, 'AS', 'Q',mdi.publish_date)
-            except SliderMetadata.DoesNotExist as e:
-                return render(request, 'cawas/error.html',
-                              {"message": "No existe Metadata Para el Chica. (" + e.message + ")"})
-            '''
             vflag = "success"
             request.session['list_slider_message'] = 'Guardado Correctamente'
             request.session['list_slider_flag'] = FLAG_SUCCESS
@@ -164,7 +112,6 @@ class SliderController(object):
         vslider = Slider()
         vimg = Image()
         try:
-            #pathfilesport = Setting.objects.get(code='image_repository_path_portrait')
             pathfilesland = Setting.objects.get(code='image_repository_path_landscape')
         except Setting.DoesNotExist as e:
             return render(request, 'cawas/error.html', {"message": "No Setting. (" + e.message + ")"})
@@ -176,13 +123,15 @@ class SliderController(object):
             vlanguages = Language.objects.all()
             vdevices = Device.objects.all()
             vtypes = {"image": "Image", "video": "Video"}
+
             if vslider.image is not None:
                 i = len(vslider.image.landscape.name)
                 imgland = vslider.image.landscape.name[5:i]
 
-
         except Slider.DoesNotExist as e:
             return render(request, 'cawas/error.html', {"message": "No Existe Slider. (" + str(e.message) + ")"})
+        except Image.DoesNotExist as e:
+            imgland = ''
 
         if request.method == 'POST':
             # VARIABLES
@@ -190,14 +139,16 @@ class SliderController(object):
                 # Parsear JSON
                 strjson = request.POST['varsToJSON']
                 decjson = json.loads(strjson)
+
+                vslider = Slider.objects.get(slider_id=slider_id)
+
                 if decjson['Slider']['asset_id'] is not None:
-                    print 'debug1'
-                    vasset = Asset.objects.get(asset_id=decjson['Slider']['asset_id'])
-                    vslider.asset = vasset
-                    print 'debug2'
+                    if Asset.objects.filter(asset_id=decjson['Slider']['asset_id']).exists():
+                        vasset = Asset.objects.get(asset_id=decjson['Slider']['asset_id'])
+                        vslider.asset = vasset
+
                 vslider.media_type = decjson['Slider']['media_type']
                 vdevice = Device.objects.get(id=decjson['Slider']['target_device_id'])
-                print 'debug3'
                 vslider.target_device = vdevice
                 vslider.text = decjson['Slider']['text']
                 vslider.language = Language.objects.get(code=decjson['Slider']['language'])
@@ -210,30 +161,36 @@ class SliderController(object):
 
                 if Image.objects.filter(name=vslider.slider_id).exists():
                     vimg = Image.objects.get(name=vslider.slider_id)
-
-
-                print 'debug4'
-                if (request.FILES.has_key('ThumbHor')):
-                    if request.FILES['ThumbHor'].name != '':
-                        vimg.landscape = request.FILES['ThumbHor']
-                        extension = os.path.splitext(vimg.landscape.name)[1]
-                        varchivo = pathfilesland.value + vimg.name + extension
-                        vimg.landscape.name = varchivo
-                        if os.path.isfile(varchivo):
-                            os.remove(varchivo)
-                vslider.image = vimg
-                vslider.save()
-                request.session['list_slider_message'] = 'Guardado Correctamente'
-                request.session['list_slider_flag'] = FLAG_SUCCESS
-
+                else:
+                    vimg = Image()
 
             except Device.DoesNotExist as e:
                 return render(request, 'cawas/error.html', {"message": "No existe Device. (" + e.message + ")"})
             except Asset.DoesNotExist as e:
                 return render(request, 'cawas/error.html', {"message": "No existe Asset. (" + e.message + ")"})
-            except Image.DoesNotExist as e:
-                img = Image()
-            vflag = "success"
+
+            # IMAGEN Portrait
+            if (request.FILES.has_key('ThumbHor')):
+                if request.FILES['ThumbHor'].name != '':
+                    vimg.landscape = request.FILES['ThumbHor']
+                    extension = os.path.splitext(vimg.landscape.name)[1]
+                    vimg.name = vslider.slider_id
+                    varchivo = pathfilesland.value + vimg.name + extension
+                    vimg.landscape.name = varchivo
+                    if os.path.isfile(varchivo):
+                        os.remove(varchivo)
+
+            vimg.save()
+            vslider.image = vimg
+            vslider.save()
+
+            # publicar
+            ph = PublishHelper()
+            ph.func_publish_queue(request, vslider.slider_id, vslider.language, 'AS', 'Q', vslider.publish_date)
+            ph.func_publish_image(request, vslider.image)
+
+            request.session['list_slider_message'] = 'Guardado Correctamente'
+            request.session['list_slider_flag'] = FLAG_SUCCESS
 
 
 

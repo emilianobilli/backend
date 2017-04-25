@@ -57,18 +57,22 @@
             <!-- Last Row : Buttons -->
             <form method="post" action="" name="slider-completeForm" enctype="multipart/form-data"
                   class="content-picker sliderChoose"  id="sliderForm">
-                    <div class="row form-row">
-                     <div class="col-xs-4 col-md-4 col-lg-4 form-group">
+
+                <div class="row form-row">
+
+                        <div class="col-xs-4 col-md-4 col-lg-4 form-group">
                         <div class="form-group has-feedback imgUpload">
-                            <label class="label-left" for="ThumbVer" id="ThumbVerTit">Asociar imagen landscape: *</label>
+                            <label class="label-left" for="ThumbHor" id="ThumbHorTit">Imagen Landscape: *</label>
                             <input type="hidden" id="imgantlandscape" value="{{vslider.image.landscape.name}}" disabled></input>
-                            <input type="file" class="form-control" name="ThumbVer" id="ThumbVer" accept="image/*"
-                                value="{{ vslider.image.landscape.name }}">
+                            <input type="file" class="form-control" name="ThumbHor" id="ThumbHor" accept="image/*"
+                            value="{{ vslider.image.landscape.name }}">
                             <span class="glyphicon form-control-feedback"></span>
-                            <img id="imageV" src="{{ imgland }}"/>
+                            <img id="imageH" src="{{ imgland }}"/>
                         </div>
-                      </div>
-                    </div>
+                        </div>
+                </div>
+
+
                 <input type="hidden" name="varsToJSON" id="varsToJSON" value="">
             </form>
 
@@ -190,7 +194,7 @@
                     </div>
 
                     <div class="col-xs-4 col-md-4 col-lg-4">
-                        <button class="btn btn-primary btn-block form-control" type="button" id="sendBut">Grabar slider</button>
+                        <button class="btn btn-primary btn-block form-control" type="button" id="sendBut">Grabar y Publicar</button>
                     </div>
                     <div class="col-xs-4 col-md-4 col-lg-4">
                     </div>

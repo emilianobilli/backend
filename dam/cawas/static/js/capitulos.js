@@ -297,7 +297,7 @@ $( document ).ready(function() {
         video.src = path;
         console.log(video.src);
         video.load();
-        video.play();
+        //video.play();
     }
     
     function showPreviewImage_click(e) {
