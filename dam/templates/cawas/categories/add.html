@@ -97,9 +97,7 @@
                         </span>
                     </div>
                     <div class="form-group has-feedback">
-                      
-                      
-                        <!-- pegar en "value" el ID nuevo -->
+
                         <input type="hidden" name="newID" vlaue="">
                         <label class="label-left" for="orginalName">Nombre: *</label>
                         <input type="text" class="form-control" name="orginalName" id="orginalName" required autofocus><span class="glyphicon form-control-feedback"></span>
@@ -108,7 +106,7 @@
             </div>
             
             <!-- Form manda imagenes y vars en un JSON hecho string -->
-                <form method="post" action="" name="girl-completeForm"  class="content-picker movieChoose" id="girlForm" enctype="multipart/form-data">
+                <form method="post" action="" name="category-completeForm"  class="content-picker movieChoose" id="categoryForm" enctype="multipart/form-data">
                 
             <!-- 2 Row : Images -->
                 <div class="row form-row">
@@ -118,8 +116,7 @@
                             <input type="file" class="form-control" name="ThumbHor" id="ThumbHor" accept="image/*">
                             <span class="glyphicon form-control-feedback"></span>
                             <img id="imageH"/>
-                            
-                            
+
                         </div>
                     </div>
                     <div class="col-xs-4 col-md-4 col-lg-4 form-group" >
@@ -172,20 +169,19 @@
                            <div class="form-group has-feedback">
                             <div class="helpright"><span class="glyphicon glyphicon-question-sign" data-toggle="tooltip"
                                                          title="La descripción para los thumbnails mostrará los primeros 50 caracteres. Al ingresar en la categoria se verá completa."></span></div>
-                            <label class="label-left" for="short_desc_{{item.code}}">Descripción corta: *</label>
-                           <textarea class="form-control" name="short_desc_{{item.code}}" id="short_desc_{{item.code}}"></textarea>
+                            <label class="label-left" for="name_{{item.code}}">Nombre: *</label>
+                           <textarea class="form-control" name="name_{{item.code}}" id="name_{{item.code}}"></textarea>
                            <span class="glyphicon form-control-feedback"></span>
                            </div>
                        </div>
-                       
                        <div class="col-xs-12 col-md-12 col-lg-12 form-group inlang">
                            <div class="form-group has-feedback">
-                            <label class="label-left" for="nacionalidad_{{item.code}}">Nacionalidad:</label>
-                            <input type="text" class="form-control" name="nacionalidad_{{item.code}}" id="nacionalidad_{{item.code}}">
-                            <span class="glyphicon form-control-feedback"></span>
+                                <div class="helpright"><span class="glyphicon glyphicon-question-sign" data-toggle="tooltip" title="Al ingresar una fecha, el sistema publicará la movie en español en esa fecha."></span></div>
+                                <label class="label-left" for="date_{{item.code}}">Fecha de Publicación</label>
+                                <input type="text" class="form-control datePick" name="date_{{item.code}}" id="date_{{item.code}}">
+                                <span class="glyphicon form-control-feedback"></span>
                            </div>
                        </div>
-                        
                 </div>
             </div>
             {% endfor %}
@@ -203,8 +199,6 @@
                 </div>
 
             </div>
-
-
             </form>
         
         </div>

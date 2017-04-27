@@ -35,7 +35,7 @@ class CategoryController(object):
             try:
                 pathfilesland = Setting.objects.get(code='image_repository_path_landscape')
                 vcategory.original_name = decjson['Category']['original_name']
-                vgrabarypublicar = decjson['Category']['publicar']
+                #vgrabarypublicar = decjson['Category']['publicar']
                 vcategory.save()
                 if (request.FILES.has_key('ThumbHor')):
                     if request.FILES['ThumbHor'].name != '':
@@ -64,7 +64,6 @@ class CategoryController(object):
                     gmd = CategoryMetadata.objects.get(category=vcategory, language=vlanguage)
                 except CategoryMetadata.DoesNotExist as e:
                     gmd = CategoryMetadata()
-
                 vschedule_date = datetime.datetime.now().strftime('%Y-%m-%d')
                 gmd.language = vlanguage
                 gmd.name = item['Categorymetadata']['name']
@@ -92,7 +91,7 @@ class CategoryController(object):
 
         if request.method =='GET':
             # Cargar variables para presentar en templates
-            vcategories = Category.objects.all().order_by('name')
+            vcategories = Category.objects.all().order_by('original_name')
             vlanguages = Language.objects.all()
 
             vtypecategory = {"pornstar": "Pornstar", "playmate": "Playmate"}
@@ -134,9 +133,9 @@ class CategoryController(object):
                 try:
                     vcategorymetadata = CategoryMetadata.objects.get(category=vcategory, language=itemlang)
                     vlangmetadata.append(
-                        {'checked': True, 'code': itemlang.code, 'name': itemlang.name})
+                        {'checked': True, 'code': itemlang.code, 'idioma':itemlang.name ,'name': vcategorymetadata.name, 'publish_date':vcategorymetadata.publish_date})
                 except CategoryMetadata.DoesNotExist as a:
-                    vlangmetadata.append({'checked': False, 'code': itemlang.code, 'name': itemlang.name})
+                    vlangmetadata.append({'checked': False, 'code': itemlang.code,'idioma':itemlang.name, 'name':'' , 'publish_date':'' })
         except Setting.DoesNotExist as e:
             return render(request, 'cawas/error.html', {"message": "No Setting. (" + e.message + ")"})
         except Category.DoesNotExist as e:
@@ -159,10 +158,8 @@ class CategoryController(object):
 
             # Leer GIRL desde AssetID
             try:
-                vasset = Asset.objects.get(asset_id=decjson['Category']['asset_id'])
-                vcategory = Category.objects.get(asset=vasset)
-                #verificar imagen
-                vimg = Image.objects.get(name=vasset.asset_id)
+                vcategory = Category.objects.get(category_id=category_id)
+                vimg = Image.objects.get(name=vcategory.category_id)
 
             except Asset.DoesNotExist as e:
                 return render(request, 'cawas/error.html', {"message": "Asset no Existe. (" + e.message + ")"})
@@ -172,23 +169,24 @@ class CategoryController(object):
                 vimg = Image()
 
             # IMAGEN Portrait
+            vimg.name = vcategory.category_id
+
             if (request.FILES.has_key('ThumbHor')):
                 if request.FILES['ThumbHor'].name != '':
-                    vimg.portrait = request.FILES['ThumbHor']
-                    extension = os.path.splitext(vimg.portrait.name)[1]
-                    vimg.name = vasset.asset_id
-                    varchivo = pathfilesport.value + vimg.name + extension
-                    vimg.portrait.name = varchivo
+                    vimg.landscape = request.FILES['ThumbHor']
+                    extension = os.path.splitext(vimg.landscape.name)[1]
+                    varchivo = pathfilesland.value + vimg.name + extension
+                    vimg.landscape.name = varchivo
                     if os.path.isfile(varchivo):
                         os.remove(varchivo)
 
             # IMAGEN Landscape
             if (request.FILES.has_key('ThumbVer')):
                 if request.FILES['ThumbVer'].name != '':
-                    vimg.landscape = request.FILES['ThumbVer']
-                    extension = os.path.splitext(vimg.landscape.name)[1]
-                    varchivo = pathfilesland.value + vimg.name + extension
-                    vimg.landscape.name = varchivo
+                    vimg.portrait = request.FILES['ThumbVer']
+                    extension = os.path.splitext(vimg.portrait.name)[1]
+                    varchivo = pathfilesport.value + vimg.name + extension
+                    vimg.portrait.name = varchivo
                     if os.path.isfile(varchivo):
                         os.remove(varchivo)
 
@@ -197,10 +195,6 @@ class CategoryController(object):
             #Actualiza Category
             try:
                 vcategory.name = decjson['Category']['name']
-                vcategory.type = decjson['Category']['type_category']
-                vcategory.birth_date = datetime.datetime.strptime(decjson['Category']['birth_date'], '%d-%m-%Y').strftime('%Y-%m-%d')
-                vcategory.height = decjson['Category']['height']
-                vcategory.weight = decjson['Category']['weight']
                 vcategory.image = vimg
                 vcategory.save()
             except Exception as e:
@@ -283,9 +277,9 @@ class CategoryController(object):
 
             #FILTROS
             if titulo != '':
-                categories_sel = Category.objects.filter(original_name__icontains=titulo)
+                categories_sel = Category.objects.filter(original_name__icontains=titulo).order_by('oringinal_name')
             else:
-                categories_sel = Category.objects.all()
+                categories_sel = Category.objects.all().order_by('oringinal_name')
 
             if selectestado != '':
                 categories_list = CategoryMetadata.objects.filter(category__in=categories_sel, publish_status=selectestado).order_by('category_id')

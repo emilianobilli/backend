@@ -24,7 +24,7 @@ $( document ).ready(function() {
 
     };
     // activar los selects con filtro
-    $("#chica-select").select2({placeholder: "Despliega la lista"});
+    $("#categoria-select").select2({placeholder: "Despliega la lista"});
 
     $("#btnsearch").click(function(){
            $("#searchForID").submit();
@@ -43,9 +43,9 @@ $( document ).ready(function() {
 
     // Toma el ID de la chica seleccionada en la lista
    // Toma el nombre de la movie seleccionada en la lista
-    $( "#category-select" ).change(function() {
+    $( "#categoria-select" ).change(function() {
 
-        $( "#category-select option:selected" ).each(function() {
+        $( "#categoria-select option:selected" ).each(function() {
             clickedTextID = $(this).val();
             if(clickedTextID >0 )
             {
@@ -94,12 +94,10 @@ $( document ).ready(function() {
     }
     
     /*---- DATE PICKER ----*/
-    $('#birthDate').dcalendarpicker({
-     // default: mm/dd/yyyy
-
+    $('.datePick').dcalendarpicker({
       format: 'dd-mm-yyyy'
-
     });
+
 
     // checkbox idiomas detecta lo que se chequea y muestra el módulo de idioma
     $("input[type=checkbox]").on('change', function () {
@@ -151,7 +149,7 @@ $( document ).ready(function() {
         checkVal = 0;
         var asset_Id = $('#categoriaID').val();
         var original_name = $('#orginalName').val();
-        var birth_date = $('#birthDate').val().trim();
+
         var publicar = $('#publicar').val();
         
         countChecked();
@@ -180,16 +178,7 @@ $( document ).ready(function() {
             okMe("#ThumbVer");
         }
 
-        // chequea categoria
-        console.log("#category"+$('#category').val());
-        if ( $('#category').val()=="0" || $('#category').val()==0)
-        {
-            errorMe("#category");
-            checkVal++;
-        }else{
-            okMe("#category");
-            category_selected=$('#category').val();
-        }
+
 
         // chequeo de idiomas (tit_; desc_; date_)
         if(langQ==0){
@@ -292,11 +281,13 @@ $( document ).ready(function() {
                 
                 for(i=0; i<lngth; i++){
                     var lang=arr[i];
-
+                    var fechapub = $("#date_"+lang).val().trim();
                     var name = $("#name_"+lang).val().trim();
-                    myLangs += '{"Girlmetadata":';
+
+                    myLangs += '{"Categorymetadata":';
                     myLangs += '{"language": "'+lang+'",';
                     myLangs += '"name": "'+name+'",';
+                    myLangs += '"date":"'+fechapub+'"';
 
                     myLangs += '}}';
                     if(i<lngth-1){
@@ -309,10 +300,10 @@ $( document ).ready(function() {
         
             function submitJson(){
                 if(checkVal==0){
-                    
+
                     var myJSON = '';
                     myJSON+='{"Category":{';
-                    myJSON+='"original_name":"'+category_selected+'",';
+                    myJSON+='"original_name":"'+original_name+'",';
                     myJSON+='"publicar":"'+publicar+'",';
                     myJSON+='"Categorymetadatas": [';
                     myJSON+= addCategoryMetadata(langDesc);

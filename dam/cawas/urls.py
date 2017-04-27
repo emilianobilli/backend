@@ -23,7 +23,7 @@ urlpatterns = [
 
     url(r'^categories/add/$', views.add_category_view, name='add_categories'),
     url(r'^categories/edit/(?P<category_id>\w*)/$', views.edit_category_view, name='edit_categories'),
-    url(r'^categories/list/$', views.list_category_view, name='list_categories'),
+    url(r'^categories/list/$', views.list_categories_view, name='list_categories'),
 
 
     url(r'^series/add/$', views.add_series_view, name='add_series'),
