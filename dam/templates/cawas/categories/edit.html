@@ -159,7 +159,8 @@
                                             </span>
                                         </div>
                                         <label class="label-left" for="date_{{item.code}}">Fecha de Publicación</label>
-                                        <input type="text" class="form-control datePick"
+                                        <input type="text"
+                                               class="form-control datePick"
                                                name="date_{{item.code}}" id="date_{{item.code}}"
                                                value="{{ item.publish_date|date:'d-m-Y' }}">
                                         <span class="glyphicon form-control-feedback"></span>
@@ -179,7 +180,8 @@
             <!-- Last Row : Buttons -->
             <div class="row form-row">
                 <div class="col-xs-offset-2 col-xs-4 col-md-4 col-lg-4 ">
-                    <button class="btn btn-primary btn-block form-control" type="submit" id="sendBut">Grabar y Publicar</button>
+                    <input type="hidden" class="form-control" name="publicar" id="publicar" value="1">
+                    <button class="btn btn-primary btn-block form-control" type="submit"  id="btngrabarypublicar">Grabar y Publicar</button>
                 </div>
             </div>
             </form>

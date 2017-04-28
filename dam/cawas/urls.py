@@ -24,7 +24,8 @@ urlpatterns = [
     url(r'^categories/add/$', views.add_category_view, name='add_categories'),
     url(r'^categories/edit/(?P<category_id>\w*)/$', views.edit_category_view, name='edit_categories'),
     url(r'^categories/list/$', views.list_categories_view, name='list_categories'),
-
+    url(r'^categories/unpublish/(?P<id>\w*)$', views.unpublish_categories_view, name='unpublish_categories'),
+    url(r'^categories/publish/(?P<id>\w*)$', views.publish_categories_view, name='publish_categories'),
 
     url(r'^series/add/$', views.add_series_view, name='add_series'),
     url(r'^series/edit/(?P<asset_id>\w*)/$', views.edit_series_view, name='edit_series'),

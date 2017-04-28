@@ -64,7 +64,11 @@ class CategoryController(object):
                     gmd = CategoryMetadata.objects.get(category=vcategory, language=vlanguage)
                 except CategoryMetadata.DoesNotExist as e:
                     gmd = CategoryMetadata()
-                vschedule_date = datetime.datetime.now().strftime('%Y-%m-%d')
+
+                if (item['Categorymetadata']['date'] is None):
+                    vschedule_date = datetime.datetime.now().strftime('%Y-%m-%d')
+                else:
+                    vschedule_date = item['Categorymetadata']['date']
                 gmd.language = vlanguage
                 gmd.name = item['Categorymetadata']['name']
                 gmd.publish_date = vschedule_date
@@ -111,10 +115,8 @@ class CategoryController(object):
             return redirect(lc.login_view(request))
 
 
-        #VARIABLES PARA GET - CARGAR GIRL
+        #VARIABLES PARA GET - CARGA CATEGORIA
         try:
-            message = ''
-            flag = ''
             vlangmetadata = []
             pathfilesport = Setting.objects.get(code='image_repository_path_portrait')
             pathfilesland = Setting.objects.get(code='image_repository_path_landscape')
@@ -155,7 +157,7 @@ class CategoryController(object):
             # Parsear JSON
             strjson = request.POST['varsToJSON']
             decjson = json.loads(strjson)
-
+            print 'debug1'
             # Leer GIRL desde AssetID
             try:
                 vcategory = Category.objects.get(category_id=category_id)
@@ -191,53 +193,48 @@ class CategoryController(object):
                         os.remove(varchivo)
 
             vimg.save()
-
+            print 'debug2'
             #Actualiza Category
-            try:
-                vcategory.name = decjson['Category']['name']
-                vcategory.image = vimg
-                vcategory.save()
-            except Exception as e:
-                return render(request, 'cawas/error.html', {"message": "Error al Guardar Category. (" + str(e.message) + ")."})
 
+            vcategory.name = decjson['Category']['original_name']
+            vcategory.image = vimg
+            vcategory.save()
+            print 'debug3'
 
-            #BORRAR Y CREAR METADATA
             vcategorymetadatas = decjson['Category']['Categorymetadatas']
+            print vcategorymetadatas
             for item in vcategorymetadatas:
+                print 'debug4'
                 vlanguage = Language.objects.get(code=item['Categorymetadata']['language'])
+                #Solo se agrega la metadata nueva. No se modifica la existente.
                 try:
                     gmd = CategoryMetadata.objects.get(category=vcategory, language=vlanguage)
                 except CategoryMetadata.DoesNotExist as e:
                     gmd = CategoryMetadata()
-
-                vschedule_date = datetime.datetime.now().strftime('%Y-%m-%d')
-                gmd.language = vlanguage
-                gmd.name = item['Categorymetadata']['name']
-                gmd.publish_date = vschedule_date
-                gmd.category = vcategory
-
-                metadatas = CategoryMetadata.objects.filter(category=vcategory, language=vlanguage)
-                # Si no existe METADATA, se genera
-                if metadatas.count() < 1:
+                    if (item['Categorymetadata']['date'] is None ):
+                        vschedule_date = datetime.datetime.now().strftime('%Y-%m-%d')
+                    else:
+                        vschedule_date = datetime.datetime.strptime(item['Categorymetadata']['date'],'%d-%m-%Y').strftime('%Y-%m-%d')
+                    gmd.language = vlanguage
+                    gmd.name = item['Categorymetadata']['name']
+                    gmd.publish_date = vschedule_date
+                    gmd.category = vcategory
                     gmd.save()
 
-                # Publica en PublishQueue
+            #En Edicion, siempre se Publica Metadata
+            metadatas = CategoryMetadata.objects.filter(category=vcategory)
+            for item in metadatas:
                 ph = PublishHelper()
-                ph.func_publish_queue(request, vasset.asset_id, vlanguage, 'AS', 'Q', vschedule_date)
-                # Publica en PublishImage
+                ph.func_publish_queue(request, item.category.category_id, item.language, 'AS', 'Q', item.publish_date)
                 ph.func_publish_image(request, vimg)
 
-            flag='success'
-            message = 'Guardado Correctamente.'
             request.session['list_category_message'] = 'Guardado Correctamente'
             request.session['list_category_flag'] = FLAG_SUCCESS
-
 
         context = { 'vlanguages': vlanguages, 'vcategory':vcategory,
                    'vtypecategory':vtypecategory,'vlangmetadata':vlangmetadata,
                    'imgport':imgport, 'imgland':imgland,
-                   'flag':flag,
-                   'message':message}
+                   }
         # checks:
         return render(request, 'cawas/categories/edit.html', context)
 
@@ -303,7 +300,6 @@ class CategoryController(object):
 
 
 
-
     def unpublish(self, request, id):
         if not request.user.is_authenticated:
             lc = LogController()
@@ -311,29 +307,13 @@ class CategoryController(object):
 
         try:
             categorymetadata = CategoryMetadata.objects.get(id=id)
-            vasset_id = categorymetadata.category.asset.asset_id
 
             # 1 - VERIFICAR, si estado de publicacion esta en Q, se debe eliminar
-            publishs = PublishQueue.objects.filter(item_id=vasset_id, status='Q')
+            publishs = PublishQueue.objects.filter(item_id=categorymetadata.category.category_id, status='Q')
             if publishs.count > 0:
                 publishs.delete()
 
-            # Buscar todas Movies con esa chica
-            category = categorymetadata.category
-            movies = Category.objects.filter(categorys__in=[category])
-            for movie in movies:
-                # Quitar la asocicacion de Chica-Movie
-                movie.categorys.remove(category)
-                movie.save()
-
-                # Las movies modificadas, volver a publicarlas PublishQueue
-                metadatas = CategoryMetadata.objects.filter(movie=movie)
-                for metadata in metadatas:
-                    ph = PublishHelper()
-                    ph.func_publish_queue(request, movie.asset.asset_id, metadata.language, 'AS', 'Q', metadata.publish_date)
-                    print 'asset_id Despublicacion: '+ movie.asset.asset_id
-
-            #  Realizar delete al backend
+            #Realizar delete al backend
             setting = Setting.objects.get(code='backend_asset_url')
             vzones = PublishZone.objects.filter(enabled=True)
             for zone in vzones:
@@ -341,13 +321,11 @@ class CategoryController(object):
                 param = {"asset_id": categorymetadata.category.asset.asset_id,
                           "asset_type": "category",
                           "lang": categorymetadata.language.code}
-                #print 'param: ' + param
                 abr.delete(param)
 
-            #  Actualizar Activated a False
+            #Actualizar Activated a False
             categorymetadata.activated = False
             categorymetadata.save()
-
 
             self.code_return = 0
             request.session['list_category_message'] = 'Metadata en ' + categorymetadata.language.name + ' de Chica ' + categorymetadata.category.asset.asset_id + ' Despublicado Correctamente'
@@ -358,27 +336,30 @@ class CategoryController(object):
         except CategoryMetadata.DoesNotExist as e:
             return render(request, 'cawas/error.html',
                           {"message": "Metadata de Category no Existe. (" + str(e.message) + ")"})
-
         return self.code_return
-
-
 
 
 
     def publish(self, request, id):
-
-        gmd = CategoryMetadata.objects.get(id=id)
-        gmd.publish_date = datetime.datetime.now().strftime('%Y-%m-%d')
-        gmd.activated = True
-        gmd.save()
-        ph = PublishHelper()
-        ph.func_publish_queue(request, gmd.category.asset.asset_id, gmd.language, 'AS', 'Q', datetime.datetime.now().strftime('%Y-%m-%d'))
-        ph.func_publish_image(request,gmd.category.image)
-        request.session['list_category_message'] = 'Metadata en ' + gmd.language.name + ' de Chica ' + gmd.category.asset.asset_id + ' Publicada Correctamente'
-        request.session['list_category_flag'] = FLAG_SUCCESS
-        self.code_return = 0
+        try:
+            gmd = CategoryMetadata.objects.get(id=id)
+            gmd.publish_date = datetime.datetime.now().strftime('%Y-%m-%d')
+            gmd.activated = True
+            gmd.save()
+            ph = PublishHelper()
+            ph.func_publish_queue(request, gmd.category.category_id, gmd.language, 'AS', 'Q', datetime.datetime.now().strftime('%Y-%m-%d'))
+            ph.func_publish_image(request,gmd.category.image)
+            request.session['list_category_message'] = 'Metadata en ' + gmd.language.name + ' de Chica ' + gmd.category.asset.asset_id + ' Publicada Correctamente'
+            request.session['list_category_flag'] = FLAG_SUCCESS
+            self.code_return = 0
+        except CategoryMetadata.DoesNotExist as e:
+            request.session['list_category_message'] = 'Error en Despublicacion '+  e.message
+            request.session['list_category_flag'] = FLAG_ALERT
+            self.code_return = -1
 
         return self.code_return
+
+
 
     def publish_all(self, request,param_category, param_lang ):
         #Publica nuevamente la Category para todos los idiomas
@@ -396,3 +377,5 @@ class CategoryController(object):
             self.code_return = 0
 
         return self.code_return
+
+

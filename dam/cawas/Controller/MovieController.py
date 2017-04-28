@@ -130,8 +130,7 @@ class MovieController(object):
                     vlanguage = Language.objects.get(code=item['Moviemetadata']['language'])
                     #si no esta cargada la fecha, se guarda con la fecha de hoy
                     if (item['Moviemetadata']['schedule_date'] != ''):
-                        vpublishdate = datetime.datetime.strptime(item['Moviemetadata']['schedule_date'],
-                                                                  '%d-%m-%Y').strftime('%Y-%m-%d')
+                        vpublishdate = datetime.datetime.strptime(item['Moviemetadata']['schedule_date'],'%d-%m-%Y').strftime('%Y-%m-%d')
                     else:
                         vpublishdate = datetime.datetime.now().strftime('%Y-%m-%d')
 

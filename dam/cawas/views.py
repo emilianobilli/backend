@@ -106,14 +106,35 @@ def menu_view (request):
 
     # si hizo click en menu_view.cargar_contenido
     if request.method == 'POST':
-        idassetstype = request.POST['selassetstypes']
-        #redireccionar segun tipo de contenido
-        if(int(idassetstype) == 1):
-            return redirect(add_movies_view)
+        id = request.POST['inputid']
+        #Buscar en Movie, Girl, Category
+        if (Asset.objects.filter(asset_id=id).count() > 0 ):
+            asset = Asset.objects.get(asset_id=id)
+            if asset.asset_type =='movie':
+                return redirect(edit_movies_view(request, asset.asset_id))
+            if asset.asset_type == 'episode':
+                return redirect(edit_episodes_view(request, asset.asset_id))
+            if asset.asset_type == 'girl':
+                return redirect(edit_girls_view(request, asset.asset_id))
+
+
+        if (Serie.objects.filter(serie_id = id).count() > 0 ):
+            return redirect(edit_series_view(request, id))
+
+        if (Category.objects.filter(category_id = id).count() > 0 ):
+            return redirect(edit_category_view(request, id))
+
+        if (Block.objects.filter(block_id = id).count() > 0 ):
+            return redirect(edit_blocks_view(request, id))
+
+        if (Slider.objects.filter(slider_id=id).count() > 0):
+            return redirect(edit_sliders_view(request, id))
 
     title = 'Menu Principal'
     context = {'title': title, 'assetstypes':assetstypes, 'message': message ,  'idassetstype': idassetstype}
     return render(request, 'cawas/menu.html', context)
+
+
 
 
 def logout_view(request):
@@ -296,17 +317,21 @@ def add_asset_view(request):
 
 
 
+
+
+
 #Funciones de Despublicacion
+def unpublish_categories_view(request, id):
+    controller = CategoryController()
+    controller.unpublish(request, id)
+    if controller.code_return == RETURN_OK:
+        return redirect(list_categories_view)
+
+
+
 def unpublish_movies_view(request, id):
     controller = MovieController()
     controller.unpublish(request, id)
-    if controller.code_return == RETURN_OK:
-        return redirect(list_movies_view)
-
-
-def publish_movies_view(request, id):
-    controller = MovieController()
-    controller.publish(request, id)
     if controller.code_return == RETURN_OK:
         return redirect(list_movies_view)
 
@@ -317,20 +342,48 @@ def unpublish_girls_view(request, id):
     if controller.code_return == RETURN_OK:
         return redirect(list_girls_view)
 
+# Funciones de Despublicacion
+def unpublish_series_view(request, id):
+    controller = SerieController()
+    controller.unpublish(request, id)
+    if controller.code_return == RETURN_OK:
+        return redirect(list_series_view)
+
+# Funciones de Despublicacion
+def unpublish_blocks_view(request, id):
+    controller = BlockController()
+    controller.unpublish(request, id)
+    if controller.code_return == RETURN_OK:
+        return redirect(list_blocks_view)
+
+# Funciones de Despublicacion
+def unpublish_episodes_view(request, id):
+    controller = EpisodeController()
+    controller.unpublish(request, id)
+    if controller.code_return == RETURN_OK:
+        return redirect(list_episodes_view)
+
+
+def unpublish_sliders_view(request, id):
+    controller = SliderController()
+    controller.unpublish(request, id)
+    if controller.code_return == RETURN_OK:
+        return redirect(list_sliders_view)
+
+
+
+#Publicaciones
+def publish_movies_view(request, id):
+    controller = MovieController()
+    controller.publish(request, id)
+    if controller.code_return == RETURN_OK:
+        return redirect(list_movies_view)
 
 def publish_girls_view(request, id):
     controller = GirlController()
     controller.publish(request, id)
     if controller.code_return == RETURN_OK:
         return redirect(list_girls_view)
-
-
-#Funciones de Despublicacion
-def unpublish_series_view(request, id):
-    controller = SerieController()
-    controller.unpublish(request, id)
-    if controller.code_return == RETURN_OK:
-        return redirect(list_series_view)
 
 def publish_series_view(request, id):
     controller = SerieController()
@@ -339,26 +392,12 @@ def publish_series_view(request, id):
         return redirect(list_series_view)
 
 
-#Funciones de Despublicacion
-def unpublish_blocks_view(request, id):
-    controller = BlockController()
-    controller.unpublish(request, id)
-    if controller.code_return == RETURN_OK:
-        return redirect(list_blocks_view)
-
 def publish_blocks_view(request, id):
     controller = BlockController()
     controller.publish(request, id)
     if controller.code_return == RETURN_OK:
         return redirect(list_blocks_view)
 
-
-#Funciones de Despublicacion
-def unpublish_episodes_view(request, id):
-    controller = EpisodeController()
-    controller.unpublish(request, id)
-    if controller.code_return == RETURN_OK:
-        return redirect (list_episodes_view)
 
 def publish_episodes_view(request, id):
     controller = EpisodeController()
@@ -372,13 +411,12 @@ def publish_sliders_view(request, id):
     if controller.code_return == RETURN_OK:
         return redirect(list_sliders_view)
 
-
-#Funciones de Despublicacion
-def unpublish_sliders_view(request, id):
-    controller = SliderController()
-    controller.unpublish(request, id)
+def publish_categories_view(request, id):
+    controller = CategoryController()
+    controller.publish(request, id)
     if controller.code_return == RETURN_OK:
-        return redirect(list_sliders_view)
+        return redirect(list_categories_view)
+
 
 def list_category_view(request):
     gc = CategoryController()
