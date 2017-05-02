@@ -78,7 +78,7 @@ def login_view(request):
     return render(request, 'cawas/login.html', context)
 
 
-def menu_view (request):
+def menu_view(request):
     if not request.user.is_authenticated:
         return redirect(login_view)
 
@@ -103,32 +103,39 @@ def menu_view (request):
         (7, "Sliders")
     )
     # </Definir Variables>
-
+    #  008360
     # si hizo click en menu_view.cargar_contenido
-    if request.method == 'POST':
-        id = request.POST['inputid']
-        #Buscar en Movie, Girl, Category
-        if (Asset.objects.filter(asset_id=id).count() > 0 ):
-            asset = Asset.objects.get(asset_id=id)
-            if asset.asset_type =='movie':
-                return redirect(edit_movies_view(request, asset.asset_id))
-            if asset.asset_type == 'episode':
-                return redirect(edit_episodes_view(request, asset.asset_id))
-            if asset.asset_type == 'girl':
-                return redirect(edit_girls_view(request, asset.asset_id))
+    if request.method == 'GET':
+        if 'inputid' in request.GET:
+            id = request.GET['inputid']
+            print 'Episode: ' + id
 
+            #print id
+            #Buscar en Movie, Girl, Category
+            if (Asset.objects.filter(asset_id=id).count() > 0 ):
+                asset = Asset.objects.get(asset_id=id)
+                if asset.asset_type =='movie':
+                    return redirect(edit_movies_view(request, asset.asset_id))
 
-        if (Serie.objects.filter(serie_id = id).count() > 0 ):
-            return redirect(edit_series_view(request, id))
+                if asset.asset_type == 'episode':
+                    id = '008360'
+                    print 'asset.asset_id ' + id
+                    return redirect(edit_episodes_view(request, id))
 
-        if (Category.objects.filter(category_id = id).count() > 0 ):
-            return redirect(edit_category_view(request, id))
+                if asset.asset_type == 'girl':
+                    return redirect(edit_girls_view(request, asset.asset_id))
 
-        if (Block.objects.filter(block_id = id).count() > 0 ):
-            return redirect(edit_blocks_view(request, id))
+                if asset.asset_type == 'serie':
+                    return redirect(edit_series_view(request, asset.asset_id))
 
-        if (Slider.objects.filter(slider_id=id).count() > 0):
-            return redirect(edit_sliders_view(request, id))
+            if (Category.objects.filter(category_id = id).count() > 0 ):
+                 redirect(edit_category_view(request, id))
+
+            if (Block.objects.filter(block_id = id).count() > 0 ):
+                 redirect(edit_blocks_view(request, id))
+
+            if (Slider.objects.filter(slider_id=id).count() > 0):
+                 redirect(edit_sliders_view(request, id))
 
     title = 'Menu Principal'
     context = {'title': title, 'assetstypes':assetstypes, 'message': message ,  'idassetstype': idassetstype}

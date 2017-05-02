@@ -6,6 +6,8 @@ from ..Helpers.PublishHelper import PublishHelper
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from ..Helpers.GlobalValues import *
 from backend_sdk import ApiBackendServer, ApiBackendResource
+from django.db.models import Q
+
 
 class SerieController(object):
     code_return = 0
@@ -388,14 +390,16 @@ class SerieController(object):
             selectestado = request.POST['selectestado']
             # FILTROS
             if titulo != '':
-                if selectestado != '':
-                    series_list = SerieMetadata.objects.filter(title__icontains=titulo, publish_status=selectestado).order_by('serie_id')
-                else:
-                    series_list = SerieMetadata.objects.filter(title__icontains=titulo).order_by('serie_id')
-            elif selectestado != '':
-                series_list = SerieMetadata.objects.filter(publish_status=selectestado).order_by('serie_id')
+                assets = Asset.objects.filter(asset_id__icontains=titulo)
+                series_sel = Serie.objects.filter(Q(original_title__icontains=titulo) | Q(asset__in=assets))
             else:
-                series_list = SerieMetadata.objects.all().order_by('serie_id')
+                series_sel = Serie.objects.all()
+
+            if selectestado != '':
+                series_list = SerieMetadata.objects.filter(serie__in=series_sel, publish_status=selectestado).order_by('serie_id')
+            else:
+                series_list = SerieMetadata.objects.filter(serie__in=series_sel).order_by('serie_id')
+
 
         if series_list is None:
             series_list = SerieMetadata.objects.all().order_by('serie_id')

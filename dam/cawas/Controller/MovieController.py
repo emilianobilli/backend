@@ -6,6 +6,7 @@ from ..Helpers.PublishHelper import PublishHelper
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from ..Helpers.GlobalValues import *
 from backend_sdk import ApiBackendServer, ApiBackendResource
+from django.db.models import Q
 
 
 class MovieController(object):
@@ -453,7 +454,8 @@ class MovieController(object):
             selectestado = request.POST['selectestado']
 
             if titulo != '':
-                movies_sel = Movie.objects.filter(original_title__icontains=titulo)
+                assets = Asset.objects.filter(asset_id__icontains=titulo)
+                movies_sel = Movie.objects.filter(Q(original_title__icontains=titulo)|Q(asset__in=assets))
             else:
                 movies_sel = Movie.objects.all()
 

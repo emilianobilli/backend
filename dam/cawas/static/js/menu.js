@@ -16,11 +16,9 @@ $( document ).ready(function() {
         }else{
             $( "#searchForID" ).submit();
         }
-        
     })
     
-    
-    
+
     // navega desde el selector de conenidos al value+".html" de cada option
     $("#content-select").change(function() {
         var clickedVal;

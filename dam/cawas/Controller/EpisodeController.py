@@ -6,6 +6,7 @@ from ..Helpers.PublishHelper import PublishHelper
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from ..Helpers.GlobalValues import *
 from backend_sdk import ApiBackendServer, ApiBackendResource
+from django.db.models import Q
 
 class EpisodeController(object):
     code_return = 0
@@ -214,16 +215,20 @@ class EpisodeController(object):
         vschedule_date = ''
         vasset = Asset()
         vepisode = Episode()
+        #inputid = request.GET['inputid']
+
+        #print 'Episode: ' + inputid
+        #008360
 
         try:
             vasset = Asset.objects.get(asset_id=episode_id)
-            print "episode: " + episode_id
+            #print "episode: " + episode_id
             vepisode = Episode.objects.get(asset=vasset)
             i = len(vepisode.image.portrait.name)
             imgport = vepisode.image.portrait.name[5:i]
             i = len(vepisode.image.landscape.name)
             imgland = vepisode.image.landscape.name[5:i]
-            print "episodio " + vepisode.original_title
+            #print "episodio " + vepisode.original_title
 
         except Asset.DoesNotExist as e:
             return render(request, 'cawas/error.html', {"message": "No Existe Asset1. (" + e.message + ")"})
@@ -232,8 +237,6 @@ class EpisodeController(object):
 
         if request.method == 'POST':
             # VARIABLES
-
-
             try:
                 pathfilesport = Setting.objects.get(code='image_repository_path_portrait')
                 pathfilesland = Setting.objects.get(code='image_repository_path_landscape')
@@ -455,16 +458,18 @@ class EpisodeController(object):
             titulo = request.POST['inputTitulo']
             selectestado = request.POST['selectestado']
             # FILTROS
+            #Q(name__icontains=titulo) | Q(block_id__icontains=titulo)
             if titulo != '':
-                if selectestado != '':
-                    episodes_list = EpisodeMetadata.objects.filter(title__icontains=titulo,
-                                                                   publish_status=selectestado).order_by('episode_id')
-                else:
-                    episodes_list = EpisodeMetadata.objects.filter(title__icontains=titulo).order_by('episode_id')
-            elif selectestado != '':
-                episodes_list = EpisodeMetadata.objects.filter(publish_status=selectestado).order_by('episode_id')
+                assets = Asset.objects.filter(asset_id__icontains=titulo)
+                episodes_sel = Episode.objects.filter(Q(original_title__icontains=titulo)|Q(asset__in=assets))
             else:
-                episodes_list = EpisodeMetadata.objects.all().order_by('episode_id')
+                episodes_sel = Episode.objects.all()
+
+            if selectestado != '':
+                episodes_list = EpisodeMetadata.objects.filter(episode__in=episodes_sel, publish_status=selectestado).order_by('episode_id')
+            else:
+                episodes_list = EpisodeMetadata.objects.filter(episode__in=episodes_sel).order_by('episode_id')
+
 
         if episodes_list is None:
             episodes_list = EpisodeMetadata.objects.all().order_by('episode_id')

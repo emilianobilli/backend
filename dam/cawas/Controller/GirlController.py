@@ -7,7 +7,7 @@ from backend_sdk import ApiBackendServer, ApiBackendResource
 from ..Helpers.GlobalValues import *
 from ..Helpers.PublishHelper import PublishHelper
 from ..models import Asset, Setting, Movie,MovieMetadata, Girl, GirlMetadata, Category, Language, Image,PublishZone, PublishQueue
-
+from django.db.models import Q
 
 #ApiBackendResource, ApiBackendException,ApiBackendServer
 class GirlController(object):
@@ -323,7 +323,8 @@ class GirlController(object):
 
             #FILTROS
             if titulo != '':
-                girls_sel = Girl.objects.filter(name__icontains=titulo)
+                assets = Asset.objects.filter(asset_id__icontains=titulo)
+                girls_sel = Girl.objects.filter(Q(name__icontains=titulo)|Q(asset__in=assets))
             else:
                 girls_sel = Girl.objects.all()
 

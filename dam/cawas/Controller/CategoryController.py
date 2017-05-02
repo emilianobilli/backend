@@ -7,7 +7,7 @@ from backend_sdk import ApiBackendServer, ApiBackendResource
 from ..Helpers.GlobalValues import *
 from ..Helpers.PublishHelper import PublishHelper
 from ..models import Asset, Setting,  Category, Language ,PublishZone, PublishQueue,Image, CategoryMetadata
-
+from django.db.models import Q
 
 #ApiBackendResource, ApiBackendException,ApiBackendServer
 class CategoryController(object):
@@ -274,7 +274,8 @@ class CategoryController(object):
 
             #FILTROS
             if titulo != '':
-                categories_sel = Category.objects.filter(original_name__icontains=titulo).order_by('oringinal_name')
+                #Q(original_name__icontains=titulo)|Q(category_id__icontains=titulo)
+                categories_sel = Category.objects.filter(Q(original_name__icontains=titulo)|Q(category_id__icontains=titulo)).order_by('oringinal_name')
             else:
                 categories_sel = Category.objects.all().order_by('oringinal_name')
 
