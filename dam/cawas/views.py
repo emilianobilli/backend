@@ -4,6 +4,7 @@ from django.shortcuts import render,redirect
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from django.db import IntegrityError
 from django.http import  HttpResponse
+from django.core.urlresolvers import reverse
 from Controller.MovieController import MovieController
 from Controller.SerieController import SerieController
 from Controller.GirlController import GirlController
@@ -115,29 +116,34 @@ def menu_view(request):
             print 'episode_id '+ id
             #Buscar en Movie, Girl, Category
             if (Asset.objects.filter(asset_id=id).count() > 0 ):
-                print 'debug-tieneasset'
                 asset = Asset.objects.get(asset_id=id)
                 if asset.asset_type =='movie':
-                    return redirect(edit_movies_view(request, asset.asset_id))
+                    #return redirect(edit_movies_view(request, asset.asset_id))
+                    return redirect(edit_movies_view, asset_id=asset.asset_id)
 
                 if asset.asset_type == 'episode':
-                    return redirect(edit_episodes_view(request, id))
+                    #return redirect(edit_episodes_view(request, id))
+                    return redirect(edit_episodes_view, episode_id=asset.asset_id)
 
                 if asset.asset_type == 'girl':
                     print 'isgirl'
-                    return redirect(edit_girls_view(request, asset.asset_id))
+                    #return redirect(edit_girls_view(request, asset.asset_id))
+                    return redirect(edit_girls_view, asset_id=asset.asset_id)
 
                 if asset.asset_type == 'serie':
-                    return redirect(edit_series_view(request, asset.asset_id))
+                    print 'ingreso a serie'+ asset.asset_id
+                    return redirect(edit_series_view, asset_id=asset.asset_id)
+
 
             if (Category.objects.filter(category_id = id).count() > 0 ):
-                 redirect(edit_category_view(request, id))
+                 category = Category.objects.get(category_id=id)
+                 return redirect(edit_category_view(request, category_id=category.category_id))
 
             if (Block.objects.filter(block_id = id).count() > 0 ):
-                 redirect(edit_blocks_view(request, id))
+                return redirect(edit_blocks_view(request, block_id=id))
 
             if (Slider.objects.filter(slider_id=id).count() > 0):
-                 redirect(edit_sliders_view(request, id))
+                return redirect(edit_sliders_view(request, slider_id=id))
 
     title = 'Menu Principal'
     context = {'title': title, 'assetstypes':assetstypes, 'message': message ,  'idassetstype': idassetstype}
