@@ -108,21 +108,23 @@ def menu_view(request):
     if request.method == 'GET':
         if 'inputid' in request.GET:
             id = request.GET['inputid']
-            print 'Episode: ' + id
+            request.session['search_id'] = id
 
-            #print id
+            #id = unicode.upper(id)
+
+            print 'episode_id '+ id
             #Buscar en Movie, Girl, Category
             if (Asset.objects.filter(asset_id=id).count() > 0 ):
+                print 'debug-tieneasset'
                 asset = Asset.objects.get(asset_id=id)
                 if asset.asset_type =='movie':
                     return redirect(edit_movies_view(request, asset.asset_id))
 
                 if asset.asset_type == 'episode':
-                    id = '008360'
-                    print 'asset.asset_id ' + id
                     return redirect(edit_episodes_view(request, id))
 
                 if asset.asset_type == 'girl':
+                    print 'isgirl'
                     return redirect(edit_girls_view(request, asset.asset_id))
 
                 if asset.asset_type == 'serie':

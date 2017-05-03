@@ -219,6 +219,9 @@ class EpisodeController(object):
 
         #print 'Episode: ' + inputid
         #008360
+        if request.session['search_id'] is not None:
+            episode_id = request.session['search_id']
+
 
         try:
             vasset = Asset.objects.get(asset_id=episode_id)
