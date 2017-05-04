@@ -403,11 +403,32 @@ class BlockController(object):
             try:
                 asset_id = item.asset_id
                 ph = PublishHelper()
+                if (PublishQueue.objects.filter(item_id=item.asset_id, status='Q').count() < 1 ):
+                    if (item.asset_type=='movie'):
+                        registro = Movie.objects.get(asset = item)
+                        ph.func_publish_image(request, registro.image)
+
+                    if (item.asset_type=='girl'):
+                        print 'isgirl' + item.asset_id
+                        registro = Girl.objects.get(asset = item)
+                        ph.func_publish_image(request, registro.image)
+
+                    if (item.asset_type=='episode'):
+                        registro = Episode.objects.get(asset = item)
+                        ph.func_publish_image(request, registro.image)
+
+                    if (item.asset_type=='serie'):
+                        registro = Serie.objects.get(asset = item)
+                        ph.func_publish_image(request, registro.image)
+
                 ph.func_publish_queue(request, asset_id, block.language, 'AS', 'Q', block.publish_date)
 
             except Asset.DoesNotExist as e:
                 return render(request, 'cawas/error.html',
                               {"message": "No existe Asset. " + asset_id + "  (" + e.message + ")"})
+            except Girl.DoesNotExist as e:
+                return render(request, 'cawas/error.html',
+                              {"message": "No existe Chica. " + asset_id + "  (" + e.message + ")"})
 
         ph = PublishHelper()
         ph.func_publish_queue(request, block.block_id, block.language, 'BL', 'Q', block.publish_date)

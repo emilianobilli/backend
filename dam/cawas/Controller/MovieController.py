@@ -482,6 +482,10 @@ class MovieController(object):
 
         return render(request, 'cawas/movies/list.html', context)
 
+
+
+
+
     def unpublish(self, request, id):
         # Despublicar
         if not request.user.is_authenticated:
