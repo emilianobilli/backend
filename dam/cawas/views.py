@@ -134,15 +134,12 @@ def menu_view(request):
 
 
             if (Category.objects.filter(category_id=id).count() > 0 ):
-                 category = Category.objects.get(category_id=id)
                  return redirect(edit_category_view, category_id=id)
 
             if (Block.objects.filter(block_id = id).count() > 0 ):
                 return redirect(edit_blocks_view, block_id=id)
 
             if (Slider.objects.filter(slider_id=id).count() > 0):
-                #slider = Slider.objects.get(slider_id=id)
-                print 'slider:' + slider.slider_id
                 return redirect(edit_sliders_view, slider_id=id)
 
     title = 'Menu Principal'
