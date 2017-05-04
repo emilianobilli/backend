@@ -68,7 +68,8 @@ class CategoryController(object):
                 if (item['Categorymetadata']['date'] is None):
                     vschedule_date = datetime.datetime.now().strftime('%Y-%m-%d')
                 else:
-                    vschedule_date = item['Categorymetadata']['date']
+                    vschedule_date = datetime.datetime.strptime(item['Categorymetadata']['date'], '%d-%m-%Y').strftime('%Y-%m-%d')
+
                 gmd.language = vlanguage
                 gmd.name = item['Categorymetadata']['name']
                 gmd.publish_date = vschedule_date
@@ -134,8 +135,7 @@ class CategoryController(object):
                 vcategorymetadata = None
                 try:
                     vcategorymetadata = CategoryMetadata.objects.get(category=vcategory, language=itemlang)
-                    vlangmetadata.append(
-                        {'checked': True, 'code': itemlang.code, 'idioma':itemlang.name ,'name': vcategorymetadata.name, 'publish_date':vcategorymetadata.publish_date})
+                    vlangmetadata.append({'checked': True, 'code': itemlang.code, 'idioma':itemlang.name ,'name': vcategorymetadata.name, 'publish_date':vcategorymetadata.publish_date})
                 except CategoryMetadata.DoesNotExist as a:
                     vlangmetadata.append({'checked': False, 'code': itemlang.code,'idioma':itemlang.name, 'name':'' , 'publish_date':'' })
         except Setting.DoesNotExist as e:
@@ -172,7 +172,6 @@ class CategoryController(object):
 
             # IMAGEN Portrait
             vimg.name = vcategory.category_id
-
             if (request.FILES.has_key('ThumbHor')):
                 if request.FILES['ThumbHor'].name != '':
                     vimg.landscape = request.FILES['ThumbHor']
@@ -211,10 +210,12 @@ class CategoryController(object):
                     gmd = CategoryMetadata.objects.get(category=vcategory, language=vlanguage)
                 except CategoryMetadata.DoesNotExist as e:
                     gmd = CategoryMetadata()
-                    if (item['Categorymetadata']['date'] is None ):
+
+                    if (item['Categorymetadata']['date'] is None):
                         vschedule_date = datetime.datetime.now().strftime('%Y-%m-%d')
                     else:
                         vschedule_date = datetime.datetime.strptime(item['Categorymetadata']['date'],'%d-%m-%Y').strftime('%Y-%m-%d')
+
                     gmd.language = vlanguage
                     gmd.name = item['Categorymetadata']['name']
                     gmd.publish_date = vschedule_date
@@ -309,19 +310,25 @@ class CategoryController(object):
         try:
             categorymetadata = CategoryMetadata.objects.get(id=id)
 
+            if not categorymetadata.activated:
+                categorymetadata.delete()
+                self.code_return = 0
+                request.session['list_category_message'] = 'Categoria Eliminada Correctamente '
+                request.session['list_category_flag'] = FLAG_SUCCESS
+                return self.code_return
+
             # 1 - VERIFICAR, si estado de publicacion esta en Q, se debe eliminar
             publishs = PublishQueue.objects.filter(item_id=categorymetadata.category.category_id, status='Q')
             if publishs.count > 0:
                 publishs.delete()
 
             #Realizar delete al backend
-            setting = Setting.objects.get(code='backend_asset_url')
+            setting = Setting.objects.get(code='backend_category_url')
             vzones = PublishZone.objects.filter(enabled=True)
             for zone in vzones:
                 abr = ApiBackendResource(zone.backend_url, setting.value)
-                param = {"asset_id": categorymetadata.category.asset.asset_id,
-                          "asset_type": "category",
-                          "lang": categorymetadata.language.code}
+                param = {"category_id": categorymetadata.category.category_id,
+                         "lang": categorymetadata.language.code}
                 abr.delete(param)
 
             #Actualizar Activated a False
@@ -329,7 +336,7 @@ class CategoryController(object):
             categorymetadata.save()
 
             self.code_return = 0
-            request.session['list_category_message'] = 'Metadata en ' + categorymetadata.language.name + ' de Chica ' + categorymetadata.category.asset.asset_id + ' Despublicado Correctamente'
+            request.session['list_category_message'] = 'Metadata en ' + categorymetadata.language.name + ' de Chica ' + categorymetadata.category.category_id + ' Despublicado Correctamente'
             request.session['list_category_flag'] = FLAG_SUCCESS
 
         except PublishZone.DoesNotExist as e:
@@ -345,12 +352,12 @@ class CategoryController(object):
         try:
             gmd = CategoryMetadata.objects.get(id=id)
             gmd.publish_date = datetime.datetime.now().strftime('%Y-%m-%d')
-            gmd.activated = True
+            #gmd.activated = True
             gmd.save()
             ph = PublishHelper()
             ph.func_publish_queue(request, gmd.category.category_id, gmd.language, 'AS', 'Q', datetime.datetime.now().strftime('%Y-%m-%d'))
             ph.func_publish_image(request,gmd.category.image)
-            request.session['list_category_message'] = 'Metadata en ' + gmd.language.name + ' de Chica ' + gmd.category.asset.asset_id + ' Publicada Correctamente'
+            request.session['list_category_message'] = 'Metadata en ' + gmd.language.name + ' de Categoria ' + gmd.category.category_id + ' Publicada Correctamente'
             request.session['list_category_flag'] = FLAG_SUCCESS
             self.code_return = 0
         except CategoryMetadata.DoesNotExist as e:

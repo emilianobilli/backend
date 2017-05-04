@@ -261,7 +261,7 @@ class SliderController(object):
 
     def publish(self, request, id):
         try:
-            vslider = Slider.objects.get(id=id)
+            vslider = Slider.objects.get(slider_id=id)
             # publicar
             ph = PublishHelper()
             ph.func_publish_queue(request, vslider.slider_id, vslider.language, 'AS', 'Q', vslider.publish_date)
@@ -270,9 +270,11 @@ class SliderController(object):
         except Slider.DoesNotExist as e:
             return render(request, 'cawas/error.html', {"message": "No Existe Slider. (" + str(e.message) + ")"})
 
-        request.session['list_slider_message'] = 'Slider ' + vslider.slider.slider_id + ' Publicada Correctamente'
+        request.session['list_slider_message'] = 'Slider ' + vslider.slider_id + ' Publicada Correctamente'
         request.session['list_slider_flag'] = FLAG_SUCCESS
         self.code_return = 0
+
+
 
     #Despublicar
     def unpublish(self, request, id):
@@ -281,13 +283,20 @@ class SliderController(object):
             return redirect(lc.login_view(request))
 
         try:
-            #slidermetadata = SliderMetadata.objects.get(id=id)
-            #vasset_id = slidermetadata.slider.slider_id
+            if (Slider.objects.filter(slider_id=id).count() > 0 ):
+                slider = Slider.objects.get(slider_id=id)
+
+            if not slider.activated:
+                slider.delete()
+                self.code_return = 0
+                request.session['list_slider_message'] = 'Slider Eliminado Correctamente '
+                request.session['list_slider_flag'] = FLAG_SUCCESS
+                return self.code_return
 
             # 1 - VERIFICAR, si estado de publicacion esta en Q, se debe eliminar
-            #publishs = PublishQueue.objects.filter(item_id=vasset_id, status='Q')
-            #if publishs.count > 0:
-            #    publishs.delete()
+            publishs = PublishQueue.objects.filter(item_id=slider.slider_id, status='Q')
+            if publishs.count > 0:
+                publishs.delete()
 
             # 2 - Realizar delete al backend
             setting = Setting.objects.get(code='backend_slider_url')
@@ -295,21 +304,18 @@ class SliderController(object):
             #SE COMENTA PARA
             for zone in vzones:
                 abr = ApiBackendResource(zone.backend_url, setting.value)
-                #param = {"slider_id": slidermetadata.slider.slider_id,
-                #         "lang": slidermetadata.language.code}
-              #  abr.delete(param)
+                param = {"slider_id": slider.slider_id,
+                         "lang": slider.language.code}
+                abr.delete(param)
 
             # 3 - Actualizar Activated a False
-            #slidermetadata.activated=False
-            #slidermetadata.save()
-            #slidermetadata.delete()
+            slider.activated=False
+            slider.save()
+            slider.delete()
             self.code_return = 0
-            #request.session['list_slider_message'] = 'Metadata en ' + slidermetadata.language.name +' de Slider ' + slidermetadata.slider.slider_id + ' Despublicado Correctamente'
+            request.session['list_slider_message'] = 'Slider en ' + slider.language.name +' de Slider ' + slider.slider_id + ' Despublicado Correctamente'
             request.session['list_slider_flag'] = FLAG_SUCCESS
         except PublishZone.DoesNotExist as e:
             return render(request, 'cawas/error.html', {"message": "PublishZone no Existe. (" + str(e.message) + ")"})
-        #except SliderMetadata.DoesNotExist as e:
-        #    return render(request, 'cawas/error.html',
-        #                  {"message": "Metadata de Slider no Existe. (" + str(e.message) + ")"})
 
         return self.code_return

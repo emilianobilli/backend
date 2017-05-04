@@ -144,7 +144,11 @@
                             {% endif %}
 
                             {% if item.activated == 0 %}
-                                <div class="tb-cell"><a href="/blocks/publish/{{ item.id}}" class="btn-success btn tb-btn">Publicar</a></div>
+                                <div class="tb-cell">
+                                    <a href="/blocks/publish/{{ item.id}}" class="btn-success btn tb-btn">Publicar</a>
+
+                                    <a href="/blocks/unpublish/{{ item.id}}" class="btn-warning btn tb-btn">Eliminar</a>
+                                </div>
                             {% else %}
                                <div class="tb-cell"><a href="/blocks/unpublish/{{ item.id}}" class="btn-warning btn tb-btn">Eliminar</a></div>
                             {% endif %}

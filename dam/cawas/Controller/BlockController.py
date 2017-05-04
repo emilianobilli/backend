@@ -315,6 +315,15 @@ class BlockController(object):
         try:
             block = Block.objects.get(id=id)
             #1 - quitar la asociacion
+
+            #Si el Bloque no fue publicado, se elimina de cawas y sus relaciones
+            if not block.activated:
+                block.delete()
+                self.code_return=0
+                request.session['list_block_message'] = 'Bloque Eliminado Correctamente '
+                request.session['list_block_flag'] = FLAG_SUCCESS
+                return self.code_return
+
             assetsblock = block.assets.all()
 
             #print 'assetblock: ' + str(assetsblock)
@@ -368,7 +377,7 @@ class BlockController(object):
             block.delete()
 
             self.code_return = 0
-            request.session['list_block_message'] = 'Bloque Eliminado Correctamente '
+            request.session['list_block_message'] = 'Bloque Eliminado y Despublicado Correctamente '
             request.session['list_block_flag'] = FLAG_SUCCESS
 
         except PublishZone.DoesNotExist as e:

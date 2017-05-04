@@ -10,7 +10,7 @@
         <div class="notifications">
             {% if user.is_authenticated %}
                   <a href="{% url 'menu_view' %}"><span class="glyphicon glyphicon-home GLY-med">
-                               </span> &nbsp;volver al menú</a>
+                               </span> &nbsp;Inicio</a>
                  <button class="btn btn-lg btn-primary btn-block logOFF" type="button" id="exitBtn" data-toggle="modal" data-target="#myModal">LOG-OUT</button>
             {% endif %}
         </div>
@@ -147,9 +147,12 @@
                             {% endif %}
 
                             {% if item.activated == 0  %}
-                             <div class="tb-cell"><a href="/sliders/publish/{{ item.id}}"class="btn-success btn tb-btn">Publicar</a></div>
+                             <div class="tb-cell">
+                                 <a href="/sliders/publish/{{ item.slider_id}}"class="btn-success btn tb-btn">Publicar</a>
+                                 <a href="/sliders/unpublish/{{ item.slider_id}}"class="btn-warning btn tb-btn">Eliminar</a>
+                             </div>
                                   {% else %}
-                             <div class="tb-cell"><a href="/sliders/unpublish/{{ item.id}}" class="btn-warning btn tb-btn">Eliminar</a></div>
+                             <div class="tb-cell"><a href="/sliders/unpublish/{{ item.slider_id}}" class="btn-warning btn tb-btn">Eliminar</a></div>
                             {% endif %}
                         </div>
 

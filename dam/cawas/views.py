@@ -111,8 +111,6 @@ def menu_view(request):
             id = request.GET['inputid']
             request.session['search_id'] = id
 
-            #id = unicode.upper(id)
-
             print 'episode_id '+ id
             #Buscar en Movie, Girl, Category
             if (Asset.objects.filter(asset_id=id).count() > 0 ):
@@ -135,15 +133,17 @@ def menu_view(request):
                     return redirect(edit_series_view, asset_id=asset.asset_id)
 
 
-            if (Category.objects.filter(category_id = id).count() > 0 ):
+            if (Category.objects.filter(category_id=id).count() > 0 ):
                  category = Category.objects.get(category_id=id)
-                 return redirect(edit_category_view(request, category_id=category.category_id))
+                 return redirect(edit_category_view, category_id=id)
 
             if (Block.objects.filter(block_id = id).count() > 0 ):
-                return redirect(edit_blocks_view(request, block_id=id))
+                return redirect(edit_blocks_view, block_id=id)
 
             if (Slider.objects.filter(slider_id=id).count() > 0):
-                return redirect(edit_sliders_view(request, slider_id=id))
+                #slider = Slider.objects.get(slider_id=id)
+                print 'slider:' + slider.slider_id
+                return redirect(edit_sliders_view, slider_id=id)
 
     title = 'Menu Principal'
     context = {'title': title, 'assetstypes':assetstypes, 'message': message ,  'idassetstype': idassetstype}
