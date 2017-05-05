@@ -42,6 +42,12 @@ PID_FILE = './pid/image_daemon.pid'
 #+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 # Load Settings
 #+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+try:
+    PORTRAIT_PATH = Setting.objects.get(code="s3_images_portrait").value
+    LANDSCAPE_PATH = Setting.objects.get(code="s3_images_landscape").value
+except ObjectDoesNotExist as e:
+    logging.error('Error loading settings: %s' % e.message)
+
 
 class UploaderException(Exception):
     def __init__(self, value):
@@ -135,11 +141,6 @@ class DaemonMain(Daemon):
 if __name__ == "__main__":
     daemon = DaemonMain(PID_FILE, stdout=LOG_FILE, stderr=ERR_FILE)
 
-    try:
-        PORTRAIT_PATH = Setting.objects.get(code="s3_images_portrait").value
-        LANDSCAPE_PATH = Setting.objects.get(code="s3_images_landscape").value
-    except ObjectDoesNotExist as e:
-        logging.error('Error loading settings: %s' % e.message)
 
     if len(argv) == 2:
         if 'start'     == argv[1]:
