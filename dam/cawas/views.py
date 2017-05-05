@@ -100,8 +100,10 @@ def menu_view(request):
         (2, "Serie"),
         (3, "Bloques"),
         (4, "Chicas"),
+        (5, "Categorias"),
         (6, "Capitulos"),
         (7, "Sliders")
+
     )
     # </Definir Variables>
     #  008360

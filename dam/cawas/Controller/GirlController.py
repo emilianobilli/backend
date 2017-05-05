@@ -52,9 +52,9 @@ class GirlController(object):
             #try:
             vimg.name = vasset.asset_id
             # IMAGEN Portrait
-            if (request.FILES.has_key('ThumbHor')):
-                if request.FILES['ThumbHor'].name != '':
-                    vimg.portrait = request.FILES['ThumbHor']
+            if (request.FILES.has_key('ThumbVer')):
+                if request.FILES['ThumbVer'].name != '':
+                    vimg.portrait = request.FILES['ThumbVer']
                     extension = os.path.splitext(vimg.portrait.name)[1]
                     varchivo = pathfilesport.value  + vimg.name + extension
                     vimg.portrait.name = varchivo
@@ -62,9 +62,9 @@ class GirlController(object):
                         os.remove(varchivo)
 
             # IMAGEN Landscape
-            if (request.FILES.has_key('ThumbVer')):
-                if request.FILES['ThumbVer'].name != '':
-                    vimg.landscape = request.FILES['ThumbVer']
+            if (request.FILES.has_key('ThumbHor')):
+                if request.FILES['ThumbHor'].name != '':
+                    vimg.landscape = request.FILES['ThumbHor']
                     extension = os.path.splitext(vimg.landscape.name)[1]
                     varchivo = pathfilesland.value + vimg.name + extension
                     vimg.landscape.name = varchivo
@@ -215,9 +215,9 @@ class GirlController(object):
                 vimg = Image()
 
             # IMAGEN Portrait
-            if (request.FILES.has_key('ThumbHor')):
-                if request.FILES['ThumbHor'].name != '':
-                    vimg.portrait = request.FILES['ThumbHor']
+            if (request.FILES.has_key('ThumbVer')):
+                if request.FILES['ThumbVer'].name != '':
+                    vimg.portrait = request.FILES['ThumbVer']
                     extension = os.path.splitext(vimg.portrait.name)[1]
                     vimg.name = vasset.asset_id
                     varchivo = pathfilesport.value + vimg.name + extension
@@ -226,9 +226,9 @@ class GirlController(object):
                         os.remove(varchivo)
 
             # IMAGEN Landscape
-            if (request.FILES.has_key('ThumbVer')):
-                if request.FILES['ThumbVer'].name != '':
-                    vimg.landscape = request.FILES['ThumbVer']
+            if (request.FILES.has_key('ThumbHor')):
+                if request.FILES['ThumbHor'].name != '':
+                    vimg.landscape = request.FILES['ThumbHor']
                     extension = os.path.splitext(vimg.landscape.name)[1]
                     varchivo = pathfilesland.value + vimg.name + extension
                     vimg.landscape.name = varchivo
@@ -392,6 +392,7 @@ class GirlController(object):
             vzones = PublishZone.objects.filter(enabled=True)
             for zone in vzones:
                 abr = ApiBackendResource(zone.backend_url, setting.value, api_key)
+                #abr = ApiBackendResource(zone.backend_url, setting.value)
                 param = {"asset_id": girlmetadata.girl.asset.asset_id,
                           "asset_type": "girl",
                           "lang": girlmetadata.language.code}

@@ -34,9 +34,12 @@ class CategoryController(object):
             vcategory = Category()
             try:
                 pathfilesland = Setting.objects.get(code='image_repository_path_landscape')
+                pathfilesport = Setting.objects.get(code='image_repository_path_portrait')
                 vcategory.original_name = decjson['Category']['original_name']
-                #vgrabarypublicar = decjson['Category']['publicar']
+                vgrabarypublicar = decjson['Category']['publicar']
                 vcategory.save()
+
+
                 if (request.FILES.has_key('ThumbHor')):
                     if request.FILES['ThumbHor'].name != '':
                         vimg.name = vcategory.category_id
@@ -48,8 +51,23 @@ class CategoryController(object):
                             os.remove(varchivo)
                         vimg.save()
                         vcategory.image = vimg
-                        vcategory.save()
-                        print 'debug1'
+
+                if (request.FILES.has_key('ThumbVer')):
+                    if request.FILES['ThumbVer'].name != '':
+                        vimg.name = vcategory.category_id
+                        vimg.portrait = request.FILES['ThumbVer']
+                        extension = os.path.splitext(vimg.portrait.name)[1]
+                        varchivo = pathfilesport.value + vimg.name + extension
+                        vimg.portrait.name = varchivo
+                        if os.path.isfile(varchivo):
+                            os.remove(varchivo)
+                        vimg.save()
+                        vcategory.image = vimg
+
+                vcategory.save()
+                print 'debug1'
+
+
             except Setting.DoesNotExist as e:
                 return render(request, 'cawas/error.html', {"message": "No Setting. (" + e.message + ")"})
             except Exception as e:
@@ -328,6 +346,7 @@ class CategoryController(object):
             vzones = PublishZone.objects.filter(enabled=True)
             for zone in vzones:
                 abr = ApiBackendResource(zone.backend_url, setting.value, api_key)
+                #abr = ApiBackendResource(zone.backend_url, setting.value)
                 param = {"category_id": categorymetadata.category.category_id,
                          "lang": categorymetadata.language.code}
                 abr.delete(param)
@@ -337,7 +356,7 @@ class CategoryController(object):
             categorymetadata.save()
 
             self.code_return = 0
-            request.session['list_category_message'] = 'Metadata en ' + categorymetadata.language.name + ' de Chica ' + categorymetadata.category.category_id + ' Despublicado Correctamente'
+            request.session['list_category_message'] = 'Metadata en ' + categorymetadata.language.name + ' de Categoria ' + categorymetadata.category.category_id + ' Despublicado Correctamente'
             request.session['list_category_flag'] = FLAG_SUCCESS
 
         except PublishZone.DoesNotExist as e:
@@ -353,7 +372,7 @@ class CategoryController(object):
         try:
             gmd = CategoryMetadata.objects.get(id=id)
             gmd.publish_date = datetime.datetime.now().strftime('%Y-%m-%d')
-            #gmd.activated = True
+
             gmd.save()
             ph = PublishHelper()
             ph.func_publish_queue(request, gmd.category.category_id, gmd.language, 'AS', 'Q', datetime.datetime.now().strftime('%Y-%m-%d'))
