@@ -297,6 +297,8 @@ def publisher_main():
             publish_items()
         except ApiBackendException as err:
             print err.value
+        except PublisherException as err:
+            print err.value
 
         time.sleep(30)
 
