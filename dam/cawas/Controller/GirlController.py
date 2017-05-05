@@ -42,55 +42,58 @@ class GirlController(object):
             # parsear JSON
             strjson = request.POST['varsToJSON']
             decjson = json.loads(strjson)
-
+            print 'debug1'
             # VARIABLES - (esta logica pasa al controlador)
             vgirl = Girl()
             vasset = Asset()
             vasset.asset_type = "girl"
             vasset.save()
+            print 'debug2'
+            #try:
+            vimg.name = vasset.asset_id
+            # IMAGEN Portrait
+            if (request.FILES.has_key('ThumbHor')):
+                if request.FILES['ThumbHor'].name != '':
+                    vimg.portrait = request.FILES['ThumbHor']
+                    extension = os.path.splitext(vimg.portrait.name)[1]
+                    varchivo = pathfilesport.value  + vimg.name + extension
+                    vimg.portrait.name = varchivo
+                    if os.path.isfile(varchivo):
+                        os.remove(varchivo)
 
-            try:
-                vimg.name = vasset.asset_id
-               # IMAGEN Portrait
-                if (request.FILES.has_key('ThumbHor')):
-                    if request.FILES['ThumbHor'].name != '':
-                        vimg.portrait = request.FILES['ThumbHor']
-                        extension = os.path.splitext(vimg.portrait.name)[1]
-                        varchivo = pathfilesport.value  + vimg.name + extension
-                        vimg.portrait.name = varchivo
-                        if os.path.isfile(varchivo):
-                            os.remove(varchivo)
+            # IMAGEN Landscape
+            if (request.FILES.has_key('ThumbVer')):
+                if request.FILES['ThumbVer'].name != '':
+                    vimg.landscape = request.FILES['ThumbVer']
+                    extension = os.path.splitext(vimg.landscape.name)[1]
+                    varchivo = pathfilesland.value + vimg.name + extension
+                    vimg.landscape.name = varchivo
+                    if os.path.isfile(varchivo):
+                        os.remove(varchivo)
+            vimg.save()
+            print 'debug3'
+            # CREAR GIRL
+            vgirl.asset = vasset
+            vgirl.name = decjson['Girl']['name']
+            vgirl.type = decjson['Girl']['type_girl']
+            vgrabarypublicar = decjson['Girl']['publicar']
+            if (decjson['Girl']['birth_date'] is not None):
+                vgirl.birth_date = datetime.datetime.strptime(decjson['Girl']['birth_date'], '%d-%m-%Y').strftime(
+                    '%Y-%m-%d')
+            else:
+                vgirl.birth_date = datetime.datetime.now().strftime('%Y-%m-%d')
 
-                # IMAGEN Landscape
-                if (request.FILES.has_key('ThumbVer')):
-                    if request.FILES['ThumbVer'].name != '':
-                        vimg.landscape = request.FILES['ThumbVer']
-                        extension = os.path.splitext(vimg.landscape.name)[1]
-                        varchivo = pathfilesland.value + vimg.name + extension
-                        vimg.landscape.name = varchivo
-                        if os.path.isfile(varchivo):
-                            os.remove(varchivo)
-                vimg.save()
-
-                # CREAR GIRL
-                vgirl.asset = vasset
-                vgirl.name = decjson['Girl']['name']
-                vgirl.type = decjson['Girl']['type_girl']
-                vgrabarypublicar = decjson['Girl']['publicar']
-                if (decjson['Girl']['birth_date'] is not None):
-                    vgirl.birth_date = datetime.datetime.strptime(decjson['Girl']['birth_date'], '%d-%m-%Y').strftime(
-                        '%Y-%m-%d')
-                else:
-                    vgirl.birth_date = datetime.datetime.now().strftime('%Y-%m-%d')
-
-                vgirl.height = decjson['Girl']['height']
-                vgirl.weight = decjson['Girl']['weight']
-                vgirl.image = vimg
-                vgirl.save()
-            except Exception as e:
-                return render(request, 'cawas/error.html', {"message": "Error al Guardar Girl. (" + e.message + ")."})
+            vgirl.height = decjson['Girl']['height']
+            vgirl.weight = decjson['Girl']['weight']
+            vgirl.image = vimg
+            print 'debug4'
+            vgirl.save()
+            print 'debug5'
+            #except Exception as e:
+            #    return render(request, 'cawas/error.html', {"message": "Error al Guardar Girl. (" + e.message + ")."})
 
             # CREAR METADATA
+            print 'debug6'
             vgirlmetadatas = decjson['Girl']['Girlmetadatas']
             for item in vgirlmetadatas:
                 vlanguage = Language.objects.get(code=item['Girlmetadata']['language'])
@@ -108,6 +111,7 @@ class GirlController(object):
                 gmd.girl = vgirl
                 gmd.save()
 
+            print 'debug7'
             #PUBLICAR METADATA
             if vgrabarypublicar == '1':
                 try:

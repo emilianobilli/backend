@@ -99,5 +99,6 @@ class ApiBackendResource(object):
     def update(self, item):
         return self.server.post(self.url, {"action":"add", "item":item})
 
+
     def delete(self, item):
         return self.server.delete(self.url, {"action":"del", "item":item})
