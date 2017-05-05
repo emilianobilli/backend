@@ -126,6 +126,7 @@ def uploader_main():
             upload_images()
         except UploaderException as err:
             print err.value
+            exit(2)
 
         time.sleep(30)
 
