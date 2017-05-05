@@ -100,4 +100,3 @@ class ApiBackendResource(object):
 
     def delete(self, apikey, item):
         return self.server.delete(self.url, self.apikey, {"action":"del", "item":item})
-
