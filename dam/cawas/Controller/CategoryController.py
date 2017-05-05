@@ -324,9 +324,10 @@ class CategoryController(object):
 
             #Realizar delete al backend
             setting = Setting.objects.get(code='backend_category_url')
+            api_key = Setting.objects.get(code='backend_api_key')
             vzones = PublishZone.objects.filter(enabled=True)
             for zone in vzones:
-                abr = ApiBackendResource(zone.backend_url, setting.value)
+                abr = ApiBackendResource(zone.backend_url, setting.value, api_key)
                 param = {"category_id": categorymetadata.category.category_id,
                          "lang": categorymetadata.language.code}
                 abr.delete(param)

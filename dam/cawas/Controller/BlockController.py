@@ -361,9 +361,10 @@ class BlockController(object):
 
             # 4 - Realizar delete al backend
             setting = Setting.objects.get(code='backend_block_url')
+            api_key = Setting.objects.get(code='backend_api_key')
             vzones = PublishZone.objects.filter(enabled=True)
             for zone in vzones:
-                abr = ApiBackendResource(zone.backend_url, setting.value)
+                abr = ApiBackendResource(zone.backend_url, setting.value, api_key)
                 param = {"block_id": block.block_id,
                          "lang": block.language.code}
                 abr.delete(param)
@@ -386,7 +387,9 @@ class BlockController(object):
         except Block.DoesNotExist as e:
             return render(request, 'cawas/error.html',
                           {"message": "Metadata de Slider no Existe. (" + str(e.message) + ")"})
-
+        except Setting.DoesNotExist as e:
+            return render(request, 'cawas/error.html',
+                          {"message": "No existe Setting. (" + str(e.message) + ")"})
         return self.code_return
 
 

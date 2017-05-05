@@ -507,9 +507,10 @@ class EpisodeController(object):
 
             # 2 - Realizar delete al backend
             setting = Setting.objects.get(code='backend_asset_url')
+            api_key = Setting.objects.get(code='backend_api_key')
             vzones = PublishZone.objects.filter(enabled=True)
             for zone in vzones:
-                abr = ApiBackendResource(zone.backend_url,  setting.value)
+                abr = ApiBackendResource(zone.backend_url, setting.value, api_key)
                 param = {"asset_id": episodemetadata.episode.asset.asset_id,
                          "asset_type": "show",
                          "lang": episodemetadata.language.code}

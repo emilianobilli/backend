@@ -300,10 +300,11 @@ class SliderController(object):
 
             # 2 - Realizar delete al backend
             setting = Setting.objects.get(code='backend_slider_url')
+            api_key = Setting.objects.get(code='backend_api_key')
             vzones = PublishZone.objects.filter(enabled=True)
             #SE COMENTA PARA
             for zone in vzones:
-                abr = ApiBackendResource(zone.backend_url, setting.value)
+                abr = ApiBackendResource(zone.backend_url, setting.value, api_key)
                 param = {"slider_id": slider.slider_id,
                          "lang": slider.language.code}
                 abr.delete(param)
