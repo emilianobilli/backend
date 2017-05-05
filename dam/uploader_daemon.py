@@ -39,16 +39,6 @@ ERR_FILE = './log/image_daemon.err'
 PID_FILE = './pid/image_daemon.pid'
 
 
-#+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-# Load Settings
-#+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-try:
-    PORTRAIT_PATH = Setting.objects.get(code="s3_images_portrait").value
-    LANDSCAPE_PATH = Setting.objects.get(code="s3_images_landscape").value
-except ObjectDoesNotExist as e:
-    logging.error('Error loading settings: %s' % e.message)
-
-
 class UploaderException(Exception):
     def __init__(self, value):
         self.value = value
@@ -58,6 +48,16 @@ class UploaderException(Exception):
 
 
 def upload_images():
+
+    try:
+        PORTRAIT_PATH = Setting.objects.get(code="s3_images_portrait").value
+        LANDSCAPE_PATH = Setting.objects.get(code="s3_images_landscape").value
+    except ObjectDoesNotExist as e:
+        msg = 'Error loading settings: %s' % e.message
+        logging.error(msg)
+        raise UploaderException(msg)
+
+
     jobs = ImageQueue.objects.filter(status='Q').order_by('priority')
 
     for job in jobs:

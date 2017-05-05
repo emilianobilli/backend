@@ -174,6 +174,19 @@ def publish_channel(job):
 
 def publish_items():
 
+    try:
+        URLs = {}
+        URLs['BL'] = Setting.objects.get(code="backend_block_url").value
+        URLs['SL'] = Setting.objects.get(code="backend_slider_url").value
+        URLs['AS'] = Setting.objects.get(code="backend_asset_url").value
+        URLs['CH'] = Setting.objects.get(code="backend_channel_url").value
+        URLs['CA'] = Setting.objects.get(code="backend_category_url").value
+        APIKEY = Setting.objects.get(code="backend_api_key").value
+    except ObjectDoesNotExist as e:
+        msg = 'Error loading settings: %s' % e.message
+        logging.error(msg)
+        raise PublisherException(msg)
+
     jobs = PublishQueue.objects.filter(status='Q')
 
     for job in jobs:
@@ -298,18 +311,6 @@ class DaemonMain(Daemon):
 
 if __name__ == "__main__":
     daemon = DaemonMain(PID_FILE, stdout=LOG_FILE, stderr=ERR_FILE)
-
-    try:
-        URLs = {}
-        URLs['BL'] = Setting.objects.get(code="backend_block_url").value
-        URLs['SL'] = Setting.objects.get(code="backend_slider_url").value
-        URLs['AS'] = Setting.objects.get(code="backend_asset_url").value
-        URLs['CH'] = Setting.objects.get(code="backend_channel_url").value
-        URLs['CA'] = Setting.objects.get(code="backend_category_url").value
-        APIKEY = Setting.objects.get(code="backend_api_key").value
-    except ObjectDoesNotExist as e:
-        logging.error('Error loading settings: %s' % e.message)
-        exit(2)
 
     if len(argv) == 2:
         if 'start'     == argv[1]:
