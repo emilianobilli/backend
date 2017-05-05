@@ -42,9 +42,6 @@ PID_FILE = './pid/image_daemon.pid'
 #+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 # Load Settings
 #+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-PORTRAIT_PATH  = Setting.objects.get(code="s3_images_portrait").value
-LANDSCAPE_PATH = Setting.objects.get(code="s3_images_landscape").value
-
 
 class UploaderException(Exception):
     def __init__(self, value):
@@ -72,14 +69,18 @@ def upload_images():
                         job.status = 'U'
                         job.save()
                         s3.upload(src_path, filename, job.publish_zone.s3_bucket, dest_path)
+                        logging.info("File %s uploaded successfully", % img)
                     else:
                         job.status = 'E'
-                        job.message = "File does not exist: %s" % img
+                        msg = "File does not exist: %s" % img
+                        job.message = msg
                         job.save()
+                        logging.error('upload_images(): %s' % msg)
                 except S3UploadException as err:
                     job.status = 'E'
                     job.message = str(err)
                     job.save()
+                    logging.error('upload_images(): %s' % str(err))
 
             if job.image.landscape.name != '' and job.status != 'E':
                 try:
@@ -91,14 +92,18 @@ def upload_images():
                         job.status = 'U'
                         job.save()
                         s3.upload(src_path, filename, job.publish_zone.s3_bucket, dest_path)
+                        logging.info("File %s uploaded successfully", % img)
                     else:
                         job.status = 'E'
-                        job.message = "File does not exist: %s" % img
+                        msg = "File does not exist: %s" % img
+                        job.message = msg
                         job.save()
+                        logging.error('upload_images(): %s' % msg)
                 except S3UploadException as err:
                     job.status = 'E'
                     job.message = str(err)
                     job.save()
+                    logging.error('upload_images(): %s' % str(err))
 
             if job.status != 'E':
                 job.status = 'D'
@@ -129,6 +134,13 @@ class DaemonMain(Daemon):
 
 if __name__ == "__main__":
     daemon = DaemonMain(PID_FILE, stdout=LOG_FILE, stderr=ERR_FILE)
+
+    try:
+        PORTRAIT_PATH = Setting.objects.get(code="s3_images_portrait").value
+        LANDSCAPE_PATH = Setting.objects.get(code="s3_images_landscape").value
+    except ObjectDoesNotExist as e:
+        logging.error('Error loading settings: %s' % e.message)
+
     if len(argv) == 2:
         if 'start'     == argv[1]:
             daemon.start()

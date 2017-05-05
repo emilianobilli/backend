@@ -33,17 +33,6 @@ ERR_FILE = './log/publisher.err'
 PID_FILE = './pid/publisher.pid'
 
 
-#+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-# Load Settings
-#+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-URLs={}
-URLs['BL'] = Setting.objects.get(code="backend_block_url").value
-URLs['SL'] = Setting.objects.get(code="backend_slider_url").value
-URLs['AS'] = Setting.objects.get(code="backend_asset_url").value
-URLs['CH'] = Setting.objects.get(code="backend_channel_url").value
-URLs['CA'] = Setting.objects.get(code="backend_category_url").value
-
-
 class PublisherException(Exception):
     def __init__(self, value):
         self.value = value
@@ -71,11 +60,13 @@ def publish_episode(asset, lang):
         episode = Episode.objects.get(asset=asset)
     except ObjectDoesNotExist:
         msg = "Episode with asset ID %s does not exist" % asset.asset_id
+        logging.error(msg)
         raise PublisherException(msg)
     try:
         metadata = EpisodeMetadata.objects.get(episode=episode, language=lang)
     except ObjectDoesNotExist:
         msg = "Episode with asset ID %s has not %s metadata" % (asset.asset_id, lang.name)
+        logging.error(msg)
         raise PublisherException(msg)
     return metadata
 
@@ -85,11 +76,13 @@ def publish_serie(asset, lang):
         serie = Serie.objects.get(asset=asset)
     except ObjectDoesNotExist:
         msg = "Serie with asset ID %s does not exist" % asset.asset_id
+        logging.error(msg)
         raise PublisherException(msg)
     try:
         metadata = SerieMetadata.objects.get(serie=serie, language=lang)
     except ObjectDoesNotExist:
         msg = "Serie with asset ID %s has not %s metadata" % (asset.asset_id, lang.name)
+        logging.error(msg)
         raise PublisherException(msg)
     return metadata
 
@@ -99,11 +92,13 @@ def publish_girl(asset, lang):
         girl = Girl.objects.get(asset=asset)
     except ObjectDoesNotExist:
         msg = "Girl with asset ID %s does not exist" % asset.asset_id
+        logging.error(msg)
         raise PublisherException(msg)
     try:
         metadata = GirlMetadata.objects.get(girl=girl, language=lang)
     except ObjectDoesNotExist:
         msg = "Girl with asset ID %s has not %s metadata" % (asset.asset_id, lang.name)
+        logging.error(msg)
         raise PublisherException(msg)
     return metadata
 
@@ -113,6 +108,7 @@ def publish_asset(job):
         asset = Asset.objects.get(asset_id=job.item_id)
     except ObjectDoesNotExist:
         msg = "Asset with ID %s does not exist" % job.item_id
+        logging.error(msg)
         raise PublisherException(msg)
     if asset.asset_type == 'movie':
         return publish_movie(asset, job.item_lang)
@@ -129,11 +125,13 @@ def publish_slider(job):
         slider = Slider.objects.get(slider_id=job.item_id)
     except ObjectDoesNotExist:
         msg = "Slider with ID %s does not exist" % job.item_id
+        logging.error(msg)
         raise PublisherException(msg)
     try:
         metadata = SliderMetadata.objects.get(slider=slider, language=job.item_lang)
     except ObjectDoesNotExist:
         msg = "Slider with ID %s has not %s metadata" % (job.item_id, job.item_lang.name)
+        logging.error(msg)
         raise PublisherException(msg)
     return metadata
 
@@ -143,6 +141,7 @@ def publish_block(job):
         block = Block.objects.get(block_id=job.item_id, language=job.item_lang)
     except ObjectDoesNotExist:
         msg = "Block with ID %s and language %s does not exist" % (job.item_id, job.item_lang.name)
+        logging.error(msg)
         raise PublisherException(msg)
     return block
 
@@ -152,11 +151,13 @@ def publish_category(job):
         category = Category.objects.get(category_id=job.item_id)
     except ObjectDoesNotExist:
         msg = "Category with ID %s does not exist" % job.item_id
+        logging.error(msg)
         raise PublisherException(msg)
     try:
         metadata = CategoryMetadata.objects.get(category=category, language=job.item_lang)
     except ObjectDoesNotExist:
         msg = "Category with ID %s has not %s metadata" % (job.item_id, job.item_lang.name)
+        logging.error(msg)
         raise PublisherException(msg)
     return metadata
 
@@ -166,6 +167,7 @@ def publish_channel(job):
         channel = Channel.objects.get(name=job.item_id, language=job.item_lang)
     except ObjectDoesNotExist:
         msg = "Channel with ID %s and language %s does not exist" % (job.item_id, job.item_lang.name)
+        logging.error(msg)
         raise PublisherException(msg)
     return channel
 
@@ -252,7 +254,7 @@ def publish_items():
 
             if job.status != 'E':
                 endpoint = job.publish_zone.backend_url
-                ep = ApiBackendResource(endpoint, URLs[str(job.item_type)])
+                ep = ApiBackendResource(endpoint, URLs[str(job.item_type)], APIKEY)
                 try:
                     if not obj.activated:
                         item[0]['publish_date'] = timezone.now().strftime('%s')
@@ -264,11 +266,12 @@ def publish_items():
                     job.save()
                     obj.save()
                     print item
+                    logging.info('publish_item(): Published item: %s' % item)
                 except ApiBackendException as err:
                     job.status = 'E'
                     job.message = err.value
                     job.save()
-
+                    logging.error('publish_item(): %s' % err.value)
 
 def publisher_main():
 
@@ -295,6 +298,19 @@ class DaemonMain(Daemon):
 
 if __name__ == "__main__":
     daemon = DaemonMain(PID_FILE, stdout=LOG_FILE, stderr=ERR_FILE)
+
+    try:
+        URLs = {}
+        URLs['BL'] = Setting.objects.get(code="backend_block_url").value
+        URLs['SL'] = Setting.objects.get(code="backend_slider_url").value
+        URLs['AS'] = Setting.objects.get(code="backend_asset_url").value
+        URLs['CH'] = Setting.objects.get(code="backend_channel_url").value
+        URLs['CA'] = Setting.objects.get(code="backend_category_url").value
+        APIKEY = Setting.objects.get(code="backend_api_key").value
+    except ObjectDoesNotExist as e:
+        logging.error('Error loading settings: %s' % e.message)
+
+
     if len(argv) == 2:
         if 'start'     == argv[1]:
             daemon.start()
