@@ -345,7 +345,7 @@ class CategoryController(object):
             api_key = Setting.objects.get(code='backend_api_key')
             vzones = PublishZone.objects.filter(enabled=True)
             for zone in vzones:
-                abr = ApiBackendResource(zone.backend_url, setting.value, api_key)
+                abr = ApiBackendResource(zone.backend_url, setting.value, api_key.value)
                 #abr = ApiBackendResource(zone.backend_url, setting.value)
                 param = {"category_id": categorymetadata.category.category_id,
                          "lang": categorymetadata.language.code}

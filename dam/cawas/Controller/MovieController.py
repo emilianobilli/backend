@@ -502,21 +502,6 @@ class MovieController(object):
                 publishs.delete()
 
             # Buscar todas Movies con esa chica
-            #girl = md.movie
-            #movies = Movie.objects.filter(girls__in=[girl])
-            #for movie in movies:
-            #    # Quitar la asocicacion de Chica-Movie
-            #    movie.girls.remove(girl)
-            #    movie.save()
-
-                # Las movies modificadas, volver a publicarlas PublishQueue
-            #    metadatas = MovieMetadata.objects.filter(movie=movie)
-            #    for metadata in metadatas:
-            #        ph = PublishHelper()
-            #        ph.func_publish_queue(request, movie.asset.asset_id, metadata.language, 'AS', 'Q',
-            #                              metadata.publish_date)
-            #        print 'asset_id Despublicacion: ' + movie.asset.asset_id
-
             # Realizar delete al backend
             setting = Setting.objects.get(code='backend_asset_url')
             api_key = Setting.objects.get(code='backend_api_key')
@@ -526,7 +511,6 @@ class MovieController(object):
                 param = {"asset_id": md.movie.asset.asset_id,
                          "asset_type": "show",
                          "lang": md.language.code}
-                # print 'param: ' + param
                 abr.delete(param)
 
             # Actualizar Activated a False
