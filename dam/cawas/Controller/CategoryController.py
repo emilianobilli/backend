@@ -101,7 +101,7 @@ class CategoryController(object):
                     metadatas = CategoryMetadata.objects.filter(category=vcategory)
                     for mdi in metadatas:
                         # Publica en PublishQueue
-                        ph.func_publish_queue(request, mdi.category.category_id, mdi.language, 'AS', 'Q', vschedule_date)
+                        ph.func_publish_queue(request, mdi.category.category_id, mdi.language, 'CA', 'Q', vschedule_date)
                 except CategoryMetadata.DoesNotExist as e:
                     return render(request, 'cawas/error.html',
                                   {"message": "No existe Metadata de Categoria. (" + e.message + ")"})
@@ -243,7 +243,7 @@ class CategoryController(object):
             metadatas = CategoryMetadata.objects.filter(category=vcategory)
             for item in metadatas:
                 ph = PublishHelper()
-                ph.func_publish_queue(request, item.category.category_id, item.language, 'AS', 'Q', item.publish_date)
+                ph.func_publish_queue(request, item.category.category_id, item.language, 'CA', 'Q', item.publish_date)
                 ph.func_publish_image(request, vimg)
 
             request.session['list_category_message'] = 'Guardado Correctamente'
@@ -380,7 +380,7 @@ class CategoryController(object):
 
             gmd.save()
             ph = PublishHelper()
-            ph.func_publish_queue(request, gmd.category.category_id, gmd.language, 'AS', 'Q', datetime.datetime.now().strftime('%Y-%m-%d'))
+            ph.func_publish_queue(request, gmd.category.category_id, gmd.language, 'CA', 'Q', datetime.datetime.now().strftime('%Y-%m-%d'))
             ph.func_publish_image(request,gmd.category.image)
             request.session['list_category_message'] = 'Metadata en ' + gmd.language.name + ' de Categoria ' + gmd.category.category_id + ' Publicada Correctamente'
             request.session['list_category_flag'] = FLAG_SUCCESS
@@ -405,7 +405,7 @@ class CategoryController(object):
             md.save()
             #Dejar en cola de publicacion para cada idioma
             ph = PublishHelper()
-            ph.func_publish_queue(request, md.category.asset.asset_id, md.language, 'AS', 'Q', md.publish_date)
+            ph.func_publish_queue(request, md.category.asset.asset_id, md.language, 'CA', 'Q', md.publish_date)
             ph.func_publish_image(request, md.category.image)
             self.code_return = 0
 

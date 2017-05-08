@@ -187,7 +187,7 @@ class SliderController(object):
 
             # publicar
             ph = PublishHelper()
-            ph.func_publish_queue(request, vslider.slider_id, vslider.language, 'AS', 'Q', vslider.publish_date)
+            ph.func_publish_queue(request, vslider.slider_id, vslider.language, 'SL', 'Q', vslider.publish_date)
             ph.func_publish_image(request, vslider.image)
 
             request.session['list_slider_message'] = 'Guardado Correctamente'
@@ -264,7 +264,7 @@ class SliderController(object):
             vslider = Slider.objects.get(slider_id=id)
             # publicar
             ph = PublishHelper()
-            ph.func_publish_queue(request, vslider.slider_id, vslider.language, 'AS', 'Q', vslider.publish_date)
+            ph.func_publish_queue(request, vslider.slider_id, vslider.language, 'SL', 'Q', vslider.publish_date)
             ph.func_publish_image(request, vslider.image)
 
         except Slider.DoesNotExist as e:
