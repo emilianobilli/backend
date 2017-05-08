@@ -423,7 +423,7 @@ class SerieController(object):
         #Publicar la Serie
         md = SerieMetadata.objects.get(id=id)
         md.publish_date = datetime.datetime.now().strftime('%Y-%m-%d')
-        md.activated = True
+        #md.activated = True
         md.save()
 
         ph = PublishHelper()
@@ -469,7 +469,7 @@ class SerieController(object):
 
             for zone in vzones:
                 abr = ApiBackendResource(zone.backend_url, setting.value, api_key.value)
-                param = {"asset_id": seriemetadata.serie.asset.asset_id,
+                param = {"asset_id": seriemetadata.serie.serie_id,
                          "asset_type": "show",
                          "lang": seriemetadata.language.code}
                 abr.delete(param)
@@ -494,9 +494,8 @@ class SerieController(object):
                         for zone in vzones:
                             abr = ApiBackendResource(zone.backend_url, setting.value, api_key.value)
                             param = {"asset_id": episodemetadata.episode.asset.asset_id,
-                                     "asset_type": "show",
                                      "lang": episodemetadata.language.code}
-                            abr.delete(param, api_key.value)
+                            abr.delete(param)
                         episodemetadata.activated = False
                         episodemetadata.save()
                 except Exception as e:
@@ -525,7 +524,7 @@ class SerieController(object):
 
 
     def publish_all(self, request, param_serie, param_lang ):
-        #Publica nuevamente la movie para
+
 
         mditems = SerieMetadata.objects.filter(serie=param_serie, language=param_lang)
         #Actualizar la fecha de publicacion
@@ -538,5 +537,6 @@ class SerieController(object):
             ph.func_publish_queue(request, md.serie.asset.asset_id, md.language, 'AS', 'Q', md.publish_date)
             ph.func_publish_image(request, md.serie.image)
             self.code_return = 0
+
 
         return self.code_return

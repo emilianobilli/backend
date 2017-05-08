@@ -426,7 +426,7 @@ class GirlController(object):
 
         gmd = GirlMetadata.objects.get(id=id)
         gmd.publish_date = datetime.datetime.now().strftime('%Y-%m-%d')
-        gmd.activated = True
+        #gmd.activated = True
         gmd.save()
         ph = PublishHelper()
         ph.func_publish_queue(request, gmd.girl.asset.asset_id, gmd.language, 'AS', 'Q', datetime.datetime.now().strftime('%Y-%m-%d'))
