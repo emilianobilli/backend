@@ -212,6 +212,11 @@ class Components(object):
 class Backend(object):
     def __init__(self, config):
 
+        if 'languages' in config:
+            self.lang       = config['languages']
+        else:
+            return None # Ojo con el error
+
         if 'shows' in config:
             self.shows      = dynamodbCollection(config['shows'])
 
@@ -219,7 +224,12 @@ class Backend(object):
             self.girls      = dynamodbCollection(config['girls'])
 
         if 'search_domain' in config:
-            self.domain     = cloudsearchCollection(config['search_domain'])
+            self.domain     = {}
+            for lang in self.lang:
+                try:
+                    self.domain[lang]  = cloudsearchCollection(config['search_domain'][lang])
+                except:
+                    return None # Ojo con el error
 
         if 'views' in config:
             self.views      = Views(config['views']['table_name'],config['views']['commit_index'])
@@ -532,10 +542,14 @@ class Backend(object):
             en una respuesta http
         '''
         try:
-            ret    = self.domain.query(fqset,exclude,start,size, sort)
-            ret    = self.__modify_ranking(ret)
-            ret    = self.__add_cdn_images(ret, img)
-            status = 200
+            if lang in self.lang:
+                ret    = self.domain[lang].query(fqset,exclude,start,size, sort)
+                ret    = self.__modify_ranking(ret)
+                ret    = self.__add_cdn_images(ret, img)
+                status = 200
+            else:
+                ret = {'status': 'failure', 'messaage': 'Invalid language %s' % lang}
+                status = 422
         except CollectionException as  e:
             ret    = {'status': 'failure', 'message': str(e)}
             status = 422
@@ -557,10 +571,14 @@ class Backend(object):
             en una respuesta http
         '''
         try:
-            ret    = self.domain.search(q,exclude,start,size)
-            ret    = self.__modify_ranking(ret)
-            ret    = self.__add_cdn_images(ret, img)
-            status = 200
+            if lang in self.lang:
+                ret    = self.domain[lang].search(q,exclude,start,size)
+                ret    = self.__modify_ranking(ret)
+                ret    = self.__add_cdn_images(ret, img)
+                status = 200
+            else:
+                ret = {'status': 'failure', 'messaage': 'Invalid language %s' % lang}
+                status = 422
         except CollectionException as  e:
             ret    = {'status': 'failure', 'message': str(e)}
             status = 422
@@ -721,7 +739,7 @@ class Backend(object):
             return None
 
     def __update_asset_field(self,where,item):
-        if 'lang' in item:
+        if 'lang' in item and item['lang'] in self.lang:
             lang = item['lang']
             try:
                 doc  = where.get(item)
@@ -731,7 +749,7 @@ class Backend(object):
                         if k != 'lang' or k != 'asset_id':
                             Item[k] = item[k]
                     
-                    self.domain.add(Item)
+                    self.domain[lang].add(Item)
                     ret = where.add(Item)
                     status = 201
                 else:
@@ -751,12 +769,12 @@ class Backend(object):
                 status = 500
         else:
             status = 422
-            ret    = {'status': 'failure', 'message': 'Mandatory parameter not found in item (lang)'}
+            ret    = {'status': 'failure', 'message': 'Mandatory parameter not found in item (lang) or is Incorrect'}
 
         return {'status': status, 'body': ret}
 
     def __add_asset(self,where,item,inmutable_fields=[]):
-        if 'lang' in item:
+        if 'lang' in item and item['lang'] in self.lang:
             lang = item['lang']
             try:
                 doc  = where.get(item)
@@ -771,7 +789,7 @@ class Backend(object):
 
                 item['enabled'] = 1
 
-                self.domain.add(item)
+                self.domain[lang].add(item)
                 ret = where.add(item)
                 status = 201
 
@@ -789,12 +807,12 @@ class Backend(object):
                 status = 500
         else:
             status = 422
-            ret    = {'status': 'failure', 'message': 'Mandatory parameter not found in item (lang)'}
+            ret    = {'status': 'failure', 'message': 'Mandatory parameter not found in item (lang) or is Incorrect'}
 
         return {'status': status, 'body': ret}
 
     def __disable_asset(self,where,item):
-        if 'lang' in item:
+        if 'lang' in item and item['lang'] in self.lang:
             lang = item['lang']
             try:
                 doc  = where.get(item)
@@ -804,7 +822,7 @@ class Backend(object):
                     ret = {'status': 'failure', 'message': 'Unable to find item to delete'}
                 else:
                     Item['enabled'] = 0
-                    self.domain.delete(item)
+                    self.domain[lang].delete(item)
                     ret    = where.add(Item)
                     status = 204
             except CollectionException as e:
@@ -818,7 +836,7 @@ class Backend(object):
                 ret    = {'status': 'failure', 'message': str(e)}
         else:
             status = 422
-            ret    = {'status': 'failure', 'message': 'Mandatory parameter not found in item (lang)'}
+            ret    = {'status': 'failure', 'message': 'Mandatory parameter not found in item (lang) or is Incorrect'}
 
         return {'status': status, 'body': ret}
 
@@ -841,7 +859,7 @@ class Backend(object):
         return ret
 
     def suggest(self, args):
-        if 'lang' in args:
+        if 'lang' in args and args['lang'] in self.lang:
             if 'asset_id' in args:
                 lang     = args['lang']
                 asset_id = args['asset_id']
