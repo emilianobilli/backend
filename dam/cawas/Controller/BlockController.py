@@ -29,6 +29,7 @@ class BlockController(object):
         if request.method == 'POST':
             # VARIABLES
             vblock = Block()
+
             # Parsear JSON
             try:
                 print 'Debug2'
@@ -382,14 +383,19 @@ class BlockController(object):
             request.session['list_block_flag'] = FLAG_SUCCESS
 
         except PublishZone.DoesNotExist as e:
-            return render(request, 'cawas/error.html',
-                          {"message": "PublishZone no Existe. (" + str(e.message) + ")"})
+            request.session['list_block_message'] = "Error al despublicar (" + str(e.value) + ")"
+            request.session['list_block_flag'] = FLAG_ALERT
+            self.code_return = -1
+
         except Block.DoesNotExist as e:
-            return render(request, 'cawas/error.html',
-                          {"message": "Metadata de Slider no Existe. (" + str(e.message) + ")"})
+            request.session['list_block_message'] = "Error al despublicar (" + str(e.value) + ")"
+            request.session['list_block_flag'] = FLAG_ALERT
+            self.code_return = -1
         except Setting.DoesNotExist as e:
-            return render(request, 'cawas/error.html',
-                          {"message": "No existe Setting. (" + str(e.message) + ")"})
+            request.session['list_block_message'] = "Error al despublicar (" + str(e.value) + ")"
+            request.session['list_block_flag'] = FLAG_ALERT
+            self.code_return = -1
+
         except ApiBackendException as e:
             request.session['list_block_message'] = "Error al despublicar (" + str(e.value) + ")"
             request.session['list_block_flag'] = FLAG_ALERT

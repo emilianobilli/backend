@@ -421,27 +421,30 @@ class SerieController(object):
 
     def publish(self, request, id):
         #Publicar la Serie
-        md = SerieMetadata.objects.get(id=id)
-        md.publish_date = datetime.datetime.now().strftime('%Y-%m-%d')
-        #md.activated = True
-        md.save()
+        try:
 
-        ph = PublishHelper()
-        ph.func_publish_queue(request, md.serie.asset.asset_id, md.language, 'AS', 'Q',datetime.datetime.now().strftime('%Y-%m-%d'))
+            md = SerieMetadata.objects.get(id=id)
+            md.publish_date = datetime.datetime.now().strftime('%Y-%m-%d')
+            md.save()
 
-        #Publicar los episodios de la serie
-        episodes = Episode.objects.filter(serie=md.serie)
-        for e in episodes:
-            #recorrer la metadata en el idioma que se selecciono la serie
-            episodemetadatas = EpisodeMetadata.objects.filter(episode=e, language=md.language)
-            for em in episodemetadatas:
-                ph = PublishHelper()
-                ph.func_publish_queue(request, em.episode.asset.asset_id, em.language, 'AS', 'Q', datetime.datetime.now().strftime('%Y-%m-%d'))
-                ph.func_publish_image(request, em.episode.image)
-        request.session['list_serie_message'] = 'Serie en ' + md.language.name + ' de Publicada Correctamente'
-        request.session['list_serie_flag'] = FLAG_SUCCESS
-        self.code_return = 0
+            ph = PublishHelper()
+            ph.func_publish_queue(request, md.serie.asset.asset_id, md.language, 'AS', 'Q',datetime.datetime.now().strftime('%Y-%m-%d'))
 
+            #Publicar los episodios de la serie
+            episodes = Episode.objects.filter(serie=md.serie)
+            for e in episodes:
+                #recorrer la metadata en el idioma que se selecciono la serie
+                episodemetadatas = EpisodeMetadata.objects.filter(episode=e, language=md.language)
+                for em in episodemetadatas:
+                    ph = PublishHelper()
+                    ph.func_publish_queue(request, em.episode.asset.asset_id, em.language, 'AS', 'Q', datetime.datetime.now().strftime('%Y-%m-%d'))
+                    ph.func_publish_image(request, em.episode.image)
+            request.session['list_serie_message'] = 'Serie en ' + md.language.name + ' de Publicada Correctamente'
+            request.session['list_serie_flag'] = FLAG_SUCCESS
+            self.code_return = 0
+        except Exception as e:
+            request.session['list_serie_message'] = "Error al despublicar (" + str(e.value) + ")"
+            request.session['list_serie_flag'] = FLAG_ALERT
         return self.code_return
 
 
@@ -469,8 +472,8 @@ class SerieController(object):
 
             for zone in vzones:
                 abr = ApiBackendResource(zone.backend_url, setting.value, api_key.value)
-                param = {"asset_id": seriemetadata.serie.serie_id,
-                         "asset_type": "show",
+                param = {"asset_id": seriemetadata.serie.asset.asset_id,
+                         "asset_type":"show",
                          "lang": seriemetadata.language.code}
                 abr.delete(param)
 
@@ -494,12 +497,16 @@ class SerieController(object):
                         for zone in vzones:
                             abr = ApiBackendResource(zone.backend_url, setting.value, api_key.value)
                             param = {"asset_id": episodemetadata.episode.asset.asset_id,
+                                     "asset_type": "show",
                                      "lang": episodemetadata.language.code}
                             abr.delete(param)
                         episodemetadata.activated = False
                         episodemetadata.save()
                 except Exception as e:
-                    return render(request, 'cawas/error.html', {"message": "No existe Episode. (" + e.message + ")"})
+                    request.session['list_serie_message'] = "Error al Despublicar (" + str(e.value) + ")"
+                    request.session['list_serie_flag'] = FLAG_ALERT
+                    self.code_return = -1
+                    return self.code_return
 
             # 3 - Actualizar Activated a False
             seriemetadata.activated = False
@@ -510,11 +517,16 @@ class SerieController(object):
             request.session['list_serie_flag'] = FLAG_SUCCESS
 
         except PublishZone.DoesNotExist as e:
-            return render(request, 'cawas/error.html',
-                          {"message": "PublishZone no Existe. (" + str(e.message) + ")"})
+            request.session['list_serie_message'] = "Error al Publicar (" + str(e.value) + ")"
+            request.session['list_serie_flag'] = FLAG_ALERT
+            self.code_return = -1
+            return self.code_return
+
         except SerieMetadata.DoesNotExist as e:
-            return render(request, 'cawas/error.html',
-                          {"message": "Metadata de Serie no Existe. (" + str(e.message) + ")"})
+            request.session['list_serie_message'] = "Error al Publicar (" + str(e.value) + ")"
+            request.session['list_serie_flag'] = FLAG_ALERT
+            self.code_return = -1
+            return self.code_return
         except ApiBackendException as e:
             request.session['list_serie_message'] = "Error al despublicar (" + str(e.value) + ")"
             request.session['list_serie_flag'] = FLAG_ALERT
