@@ -5,7 +5,7 @@ from ..models import Asset, Setting, Movie, MovieMetadata, MovieMetadata, Catego
 from ..Helpers.PublishHelper import PublishHelper
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from ..Helpers.GlobalValues import *
-from ..backend_sdk import ApiBackendServer, ApiBackendResource
+from ..backend_sdk import ApiBackendServer, ApiBackendResource, ApiBackendException
 from django.db.models import Q
 
 
@@ -507,11 +507,11 @@ class MovieController(object):
             api_key = Setting.objects.get(code='backend_api_key')
             vzones = PublishZone.objects.filter(enabled=True)
             for zone in vzones:
-                abr = ApiBackendResource(zone.backend_url, setting.value, api_key)
+                abr = ApiBackendResource(zone.backend_url, setting.value, api_key.value)
                 param = {"asset_id": md.movie.asset.asset_id,
                          "asset_type": "show",
                          "lang": md.language.code}
-                abr.delete(param)
+                abr.delete(param, api_key.value)
 
             # Actualizar Activated a False
             md.activated = False
@@ -526,6 +526,9 @@ class MovieController(object):
         except MovieMetadata.DoesNotExist as e:
             return render(request, 'cawas/error.html',
                           {"message": "Metadata de Movie no Existe. (" + str(e.message) + ")"})
+        except ApiBackendException as e:
+            request.session['list_movie_message'] = "Error al despublicar (" + str(e.value) + ")"
+            request.session['list_movie_flag'] = FLAG_ALERT
 
         return self.code_return
 

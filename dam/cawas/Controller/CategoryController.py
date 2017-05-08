@@ -3,7 +3,7 @@ import os, datetime, json
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from django.shortcuts import render, redirect
 from LogController import LogController
-from ..backend_sdk import ApiBackendServer, ApiBackendResource
+from ..backend_sdk import ApiBackendServer, ApiBackendResource, ApiBackendException
 from ..Helpers.GlobalValues import *
 from ..Helpers.PublishHelper import PublishHelper
 from ..models import Asset, Setting,  Category, Language ,PublishZone, PublishQueue,Image, CategoryMetadata
@@ -347,9 +347,9 @@ class CategoryController(object):
             for zone in vzones:
                 abr = ApiBackendResource(zone.backend_url, setting.value, api_key.value)
                 #abr = ApiBackendResource(zone.backend_url, setting.value)
-                param = {"category_id": categorymetadata.category.category_id,
+                param = {"category_name": categorymetadata.category.original_name,
                          "lang": categorymetadata.language.code}
-                abr.delete(param)
+                abr.delete(param, api_key.value)
 
             #Actualizar Activated a False
             categorymetadata.activated = False
@@ -360,10 +360,17 @@ class CategoryController(object):
             request.session['list_category_flag'] = FLAG_SUCCESS
 
         except PublishZone.DoesNotExist as e:
-            return render(request, 'cawas/error.html', {"message": "PublishZone no Existe. (" + str(e.message) + ")"})
+            request.session['list_category_message'] = "PublishZone no Existe. (" + str(e.message) + ")"
+            request.session['list_category_flag'] = FLAG_ALERT
+
         except CategoryMetadata.DoesNotExist as e:
-            return render(request, 'cawas/error.html',
-                          {"message": "Metadata de Category no Existe. (" + str(e.message) + ")"})
+            request.session['list_category_message'] = "Metadata de Category no Existe. (" + str(e.message) + ")"
+            request.session['list_category_flag'] = FLAG_ALERT
+
+        except ApiBackendException as e:
+            request.session['list_category_message'] = "Error al despublicar (" + str(e.value) + ")"
+            request.session['list_category_flag'] = FLAG_ALERT
+
         return self.code_return
 
 

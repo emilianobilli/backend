@@ -3,7 +3,7 @@ import os, datetime, json
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from django.shortcuts import render, redirect
 from LogController import LogController
-from ..backend_sdk import ApiBackendServer, ApiBackendResource
+from ..backend_sdk import ApiBackendServer, ApiBackendResource, ApiBackendException
 from ..Helpers.GlobalValues import *
 from ..Helpers.PublishHelper import PublishHelper
 from ..models import Asset, Setting, Movie,MovieMetadata, Girl, GirlMetadata, Category, Language, Image,PublishZone, PublishQueue
@@ -391,13 +391,12 @@ class GirlController(object):
             api_key = Setting.objects.get(code='backend_api_key')
             vzones = PublishZone.objects.filter(enabled=True)
             for zone in vzones:
-                abr = ApiBackendResource(zone.backend_url, setting.value, api_key)
-                #abr = ApiBackendResource(zone.backend_url, setting.value)
+                abr = ApiBackendResource(zone.backend_url, setting.value, api_key.value)
                 param = {"asset_id": girlmetadata.girl.asset.asset_id,
                           "asset_type": "girl",
                           "lang": girlmetadata.language.code}
                 #print 'param: ' + param
-                abr.delete(param)
+                abr.delete(param, api_key.value)
 
             #  Actualizar Activated a False
             girlmetadata.activated = False
@@ -413,6 +412,9 @@ class GirlController(object):
         except GirlMetadata.DoesNotExist as e:
             return render(request, 'cawas/error.html',
                           {"message": "Metadata de Girl no Existe. (" + str(e.message) + ")"})
+        except ApiBackendException as e:
+            request.session['list_girl_message'] = "Error al despublicar (" + str(e.value) + ")"
+            request.session['list_girl_flag'] = FLAG_ALERT
 
         return self.code_return
 

@@ -5,7 +5,7 @@ from ..models import Asset, Setting, Serie, SerieMetadata, Category, Episode, Ep
 from ..Helpers.PublishHelper import PublishHelper
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from ..Helpers.GlobalValues import *
-from ..backend_sdk import ApiBackendServer, ApiBackendResource
+from ..backend_sdk import ApiBackendServer, ApiBackendResource, ApiBackendException
 from django.db.models import Q
 
 
@@ -468,11 +468,11 @@ class SerieController(object):
             vzones = PublishZone.objects.filter(enabled=True)
 
             for zone in vzones:
-                abr = ApiBackendResource(zone.backend_url, setting.value, api_key)
+                abr = ApiBackendResource(zone.backend_url, setting.value, api_key.value)
                 param = {"asset_id": seriemetadata.serie.asset.asset_id,
                          "asset_type": "show",
                          "lang": seriemetadata.language.code}
-                abr.delete(param)
+                abr.delete(param,api_key.value)
 
 
             #Obtener los episodios que pertenecen a esta serie
@@ -492,11 +492,11 @@ class SerieController(object):
                             publishs.delete()
 
                         for zone in vzones:
-                            abr = ApiBackendResource(zone.backend_url, setting.value, api_key)
+                            abr = ApiBackendResource(zone.backend_url, setting.value, api_key.value)
                             param = {"asset_id": episodemetadata.episode.asset.asset_id,
                                      "asset_type": "show",
                                      "lang": episodemetadata.language.code}
-                            abr.delete(param)
+                            abr.delete(param, api_key.value)
                         episodemetadata.activated = False
                         episodemetadata.save()
                 except Exception as e:
@@ -516,6 +516,9 @@ class SerieController(object):
         except SerieMetadata.DoesNotExist as e:
             return render(request, 'cawas/error.html',
                           {"message": "Metadata de Serie no Existe. (" + str(e.message) + ")"})
+        except ApiBackendException as e:
+            request.session['list_serie_message'] = "Error al despublicar (" + str(e.value) + ")"
+            request.session['list_serie_flag'] = FLAG_ALERT
 
         return self.code_return
 

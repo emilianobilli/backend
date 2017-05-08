@@ -63,7 +63,7 @@ class ApiBackendServer(object):
             raise ApiBackendException(cont['message'])
 
 
-    def delete(self, url, apikey, body):
+    def delete(self, url, body, apikey):
         method = 'POST'
         header = {'Content-type': 'application/json', 'X-PRIVATE-APIKEY': apikey}
 
@@ -83,20 +83,23 @@ class ApiBackendServer(object):
             return content
         else:
             cont = json.loads(content)
+            print 'debug2' + response['status']
+            print 'debug2' + cont['message']
             raise ApiBackendException(cont['message'])
 
 
 class ApiBackendResource(object):
+
     def __init__(self, server, url, apikey):
         self.server = ApiBackendServer(server)
         self.url = url
         self.apikey = apikey
 
-    def add(self, item):
-        return self.server.post(self.url, self.apikey, {"action":"add", "item":item})
+    def add(self,  item, apikey):
+        return self.server.post(self.url, {"action":"add", "item":item}, apikey)
 
-    def update(self, apikey, item):
-        return self.server.post(self.url, self.apikey, {"action":"add", "item":item})
+    def update(self, item, api_key):
+        return self.server.post(self.url,  {"action":"add", "item":item}, api_key)
 
-    def delete(self, apikey, item):
-        return self.server.delete(self.url, self.apikey, {"action":"del", "item":item})
+    def delete(self,  item, api_key):
+        return self.server.delete(self.url, {"action":"del", "item":item}, api_key)

@@ -5,7 +5,7 @@ from ..models import Asset, Setting, Girl, Block, Category, Language, Image,Publ
 from ..Helpers.PublishHelper import PublishHelper
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from ..Helpers.GlobalValues import *
-from ..backend_sdk import ApiBackendServer, ApiBackendResource
+from ..backend_sdk import ApiBackendServer, ApiBackendResource, ApiBackendException
 from django.db.models import Q
 
 class EpisodeController(object):
@@ -510,11 +510,11 @@ class EpisodeController(object):
             api_key = Setting.objects.get(code='backend_api_key')
             vzones = PublishZone.objects.filter(enabled=True)
             for zone in vzones:
-                abr = ApiBackendResource(zone.backend_url, setting.value, api_key)
+                abr = ApiBackendResource(zone.backend_url, setting.value, api_key.value)
                 param = {"asset_id": episodemetadata.episode.asset.asset_id,
                          "asset_type": "show",
                          "lang": episodemetadata.language.code}
-                abr.delete(param)
+                abr.delete(param, api_key.value)
             #Se deberia hacer algo con las Series?
 
             # 3 - Actualizar Activated a False
@@ -530,6 +530,9 @@ class EpisodeController(object):
         except EpisodeMetadata.DoesNotExist as e:
             return render(request, 'cawas/error.html',
                           {"message": "Metadata de Capitulo no Existe. (" + str(e.message) + ")"})
+        except ApiBackendException as e:
+            request.session['list_episode_message'] = "Error al despublicar (" + str(e.value) + ")"
+            request.session['list_episode_flag'] = FLAG_ALERT
 
         return self.code_return
 

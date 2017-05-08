@@ -9,7 +9,7 @@ from SerieController import SerieController
 from GirlController import GirlController
 from EpisodeController import EpisodeController
 from ..Helpers.GlobalValues import *
-from ..backend_sdk import ApiBackendServer, ApiBackendResource
+from ..backend_sdk import ApiBackendServer, ApiBackendResource, ApiBackendException
 from django.db.models import Q
 
 class BlockController(object):
@@ -364,10 +364,10 @@ class BlockController(object):
             api_key = Setting.objects.get(code='backend_api_key')
             vzones = PublishZone.objects.filter(enabled=True)
             for zone in vzones:
-                abr = ApiBackendResource(zone.backend_url, setting.value, api_key)
+                abr = ApiBackendResource(zone.backend_url, setting.value, api_key.value)
                 param = {"block_id": block.block_id,
                          "lang": block.language.code}
-                abr.delete(param)
+                abr.delete(param, api_key.value)
 
             # 3 - Actualizar Activated a False
             #block.assets = []
@@ -390,6 +390,10 @@ class BlockController(object):
         except Setting.DoesNotExist as e:
             return render(request, 'cawas/error.html',
                           {"message": "No existe Setting. (" + str(e.message) + ")"})
+        except ApiBackendException as e:
+            request.session['list_block_message'] = "Error al despublicar (" + str(e.value) + ")"
+            request.session['list_block_flag'] = FLAG_ALERT
+
         return self.code_return
 
 

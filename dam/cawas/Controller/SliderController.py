@@ -5,7 +5,7 @@ from ..models import Asset, Setting, Slider,  Category, Language, Device, Image,
 from ..Helpers.PublishHelper import PublishHelper
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from ..Helpers.GlobalValues import *
-from ..backend_sdk import ApiBackendServer, ApiBackendResource
+from ..backend_sdk import ApiBackendServer, ApiBackendResource, ApiBackendException
 from django.db.models import Q
 
 
@@ -304,10 +304,10 @@ class SliderController(object):
             vzones = PublishZone.objects.filter(enabled=True)
             #SE COMENTA PARA
             for zone in vzones:
-                abr = ApiBackendResource(zone.backend_url, setting.value, api_key)
+                abr = ApiBackendResource(zone.backend_url, setting.value, api_key.value)
                 param = {"slider_id": slider.slider_id,
                          "lang": slider.language.code}
-                abr.delete(param)
+                abr.delete(param, api_key.value)
 
             # 3 - Actualizar Activated a False
             slider.activated=False
@@ -318,5 +318,8 @@ class SliderController(object):
             request.session['list_slider_flag'] = FLAG_SUCCESS
         except PublishZone.DoesNotExist as e:
             return render(request, 'cawas/error.html', {"message": "PublishZone no Existe. (" + str(e.message) + ")"})
+        except ApiBackendException as e:
+            request.session['list_slider_message'] = "Error al despublicar (" + str(e.value) + ")"
+            request.session['list_slider_flag'] = FLAG_ALERT
 
         return self.code_return
