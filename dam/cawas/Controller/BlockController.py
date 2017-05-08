@@ -9,7 +9,7 @@ from SerieController import SerieController
 from GirlController import GirlController
 from EpisodeController import EpisodeController
 from ..Helpers.GlobalValues import *
-from ....backend_sdk import ApiBackendServer, ApiBackendResource, ApiBackendException
+from ..backend_sdk import ApiBackendServer, ApiBackendResource, ApiBackendException
 from django.db.models import Q
 
 class BlockController(object):
