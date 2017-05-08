@@ -5,7 +5,7 @@ from ..models import Asset, Setting, Movie, MovieMetadata, MovieMetadata, Catego
 from ..Helpers.PublishHelper import PublishHelper
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from ..Helpers.GlobalValues import *
-from backend_sdk import ApiBackendServer, ApiBackendResource
+from ..backend_sdk import ApiBackendServer, ApiBackendResource
 from django.db.models import Q
 
 

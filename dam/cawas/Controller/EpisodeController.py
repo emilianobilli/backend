@@ -5,7 +5,7 @@ from ..models import Asset, Setting, Girl, Block, Category, Language, Image,Publ
 from ..Helpers.PublishHelper import PublishHelper
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from ..Helpers.GlobalValues import *
-from backend_sdk import ApiBackendServer, ApiBackendResource
+from ..backend_sdk import ApiBackendServer, ApiBackendResource
 from django.db.models import Q
 
 class EpisodeController(object):

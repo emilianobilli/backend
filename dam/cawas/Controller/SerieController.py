@@ -5,7 +5,7 @@ from ..models import Asset, Setting, Serie, SerieMetadata, Category, Episode, Ep
 from ..Helpers.PublishHelper import PublishHelper
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from ..Helpers.GlobalValues import *
-from backend_sdk import ApiBackendServer, ApiBackendResource
+from ..backend_sdk import ApiBackendServer, ApiBackendResource
 from django.db.models import Q
 
 
@@ -492,7 +492,7 @@ class SerieController(object):
                             publishs.delete()
 
                         for zone in vzones:
-                            abr = ApiBackendResource(zone.backend_url, setting.value)
+                            abr = ApiBackendResource(zone.backend_url, setting.value, api_key)
                             param = {"asset_id": episodemetadata.episode.asset.asset_id,
                                      "asset_type": "show",
                                      "lang": episodemetadata.language.code}
