@@ -9,7 +9,7 @@ from SerieController import SerieController
 from GirlController import GirlController
 from EpisodeController import EpisodeController
 from ..Helpers.GlobalValues import *
-from ..backend_sdk import ApiBackendServer, ApiBackendResource, ApiBackendException
+from ....backend_sdk import ApiBackendServer, ApiBackendResource, ApiBackendException
 from django.db.models import Q
 
 class BlockController(object):
@@ -367,7 +367,7 @@ class BlockController(object):
                 abr = ApiBackendResource(zone.backend_url, setting.value, api_key.value)
                 param = {"block_id": block.block_id,
                          "lang": block.language.code}
-                abr.delete(param, api_key.value)
+                abr.delete(api_key.value, param)
 
             # 3 - Actualizar Activated a False
             #block.assets = []

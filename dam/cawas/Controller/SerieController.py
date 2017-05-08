@@ -472,7 +472,7 @@ class SerieController(object):
                 param = {"asset_id": seriemetadata.serie.asset.asset_id,
                          "asset_type": "show",
                          "lang": seriemetadata.language.code}
-                abr.delete(param,api_key.value)
+                abr.delete(api_key.value, param)
 
 
             #Obtener los episodios que pertenecen a esta serie

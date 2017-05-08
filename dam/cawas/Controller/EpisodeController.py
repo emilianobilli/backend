@@ -514,7 +514,7 @@ class EpisodeController(object):
                 param = {"asset_id": episodemetadata.episode.asset.asset_id,
                          "asset_type": "show",
                          "lang": episodemetadata.language.code}
-                abr.delete(param, api_key.value)
+                abr.delete(api_key.value, param)
             #Se deberia hacer algo con las Series?
 
             # 3 - Actualizar Activated a False

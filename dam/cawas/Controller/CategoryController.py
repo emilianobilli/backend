@@ -1,9 +1,8 @@
-
 import os, datetime, json
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from django.shortcuts import render, redirect
 from LogController import LogController
-from ..backend_sdk import ApiBackendServer, ApiBackendResource, ApiBackendException
+from ..backend_sdk import  ApiBackendServer, ApiBackendResource, ApiBackendException
 from ..Helpers.GlobalValues import *
 from ..Helpers.PublishHelper import PublishHelper
 from ..models import Asset, Setting,  Category, Language ,PublishZone, PublishQueue,Image, CategoryMetadata
@@ -346,10 +345,9 @@ class CategoryController(object):
             vzones = PublishZone.objects.filter(enabled=True)
             for zone in vzones:
                 abr = ApiBackendResource(zone.backend_url, setting.value, api_key.value)
-                #abr = ApiBackendResource(zone.backend_url, setting.value)
                 param = {"category_name": categorymetadata.category.original_name,
                          "lang": categorymetadata.language.code}
-                abr.delete(param, api_key.value)
+                abr.delete(api_key.value, param )
 
             #Actualizar Activated a False
             categorymetadata.activated = False

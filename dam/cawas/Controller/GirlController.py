@@ -396,7 +396,7 @@ class GirlController(object):
                           "asset_type": "girl",
                           "lang": girlmetadata.language.code}
                 #print 'param: ' + param
-                abr.delete(param, api_key.value)
+                abr.delete(api_key.value, param)
 
             #  Actualizar Activated a False
             girlmetadata.activated = False
