@@ -367,7 +367,7 @@ class BlockController(object):
                 abr = ApiBackendResource(zone.backend_url, setting.value, api_key.value)
                 param = {"block_id": block.block_id,
                          "lang": block.language.code}
-                abr.delete(api_key.value, param)
+                abr.delete(param)
 
             # 3 - Actualizar Activated a False
             #block.assets = []

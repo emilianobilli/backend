@@ -511,7 +511,7 @@ class MovieController(object):
                 param = {"asset_id": md.movie.asset.asset_id,
                          "asset_type": "show",
                          "lang": md.language.code}
-                abr.delete(api_key.value, param)
+                abr.delete(param)
 
             # Actualizar Activated a False
             md.activated = False

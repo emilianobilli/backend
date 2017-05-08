@@ -347,7 +347,7 @@ class CategoryController(object):
                 abr = ApiBackendResource(zone.backend_url, setting.value, api_key.value)
                 param = {"category_name": categorymetadata.category.original_name,
                          "lang": categorymetadata.language.code}
-                abr.delete(api_key.value, param )
+                abr.delete(param)
 
             #Actualizar Activated a False
             categorymetadata.activated = False
