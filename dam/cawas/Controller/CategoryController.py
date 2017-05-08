@@ -201,12 +201,12 @@ class CategoryController(object):
                 vimg = Image.objects.get(name=vcategory.category_id)
 
             except Asset.DoesNotExist as e:
-                request.session['list_category_message'] = "Error al Guardar Categoria. (" + e.value + ")"
+                request.session['list_category_message'] = "Error al Guardar Categoria. (" + e.message + ")"
                 request.session['list_category_flag'] = FLAG_ALERT
                 self.code_return = -1
                 return self.code_return
             except CategoryMetadata.DoesNotExist as e:
-                request.session['list_category_message'] = "Error al Guardar Categoria. (" + e.value + ")"
+                request.session['list_category_message'] = "Error al Guardar Categoria. (" + e.message + ")"
                 request.session['list_category_flag'] = FLAG_ALERT
                 self.code_return = -1
                 return self.code_return
@@ -384,15 +384,15 @@ class CategoryController(object):
             request.session['list_category_flag'] = FLAG_SUCCESS
 
         except PublishZone.DoesNotExist as e:
-            request.session['list_category_message'] = "PublishZone no Existe. (" + str(e.value) + ")"
+            request.session['list_category_message'] = "PublishZone no Existe. (" + str(e.message) + ")"
             request.session['list_category_flag'] = FLAG_ALERT
 
         except CategoryMetadata.DoesNotExist as e:
-            request.session['list_category_message'] = "Metadata de Category no Existe. (" + str(e.value) + ")"
+            request.session['list_category_message'] = "Metadata de Category no Existe. (" + str(e.message) + ")"
             request.session['list_category_flag'] = FLAG_ALERT
 
         except ApiBackendException as e:
-            request.session['list_category_message'] = "Error al despublicar (" + str(e.value) + ")"
+            request.session['list_category_message'] = "Error al despublicar (" + str(e.message) + ")"
             request.session['list_category_flag'] = FLAG_ALERT
 
         return self.code_return
@@ -412,7 +412,7 @@ class CategoryController(object):
             request.session['list_category_flag'] = FLAG_SUCCESS
             self.code_return = 0
         except CategoryMetadata.DoesNotExist as e:
-            request.session['list_category_message'] = 'Error en Despublicacion '+  e.value
+            request.session['list_category_message'] = 'Error en Despublicacion '+ str(e.message)
             request.session['list_category_flag'] = FLAG_ALERT
             self.code_return = -1
 
