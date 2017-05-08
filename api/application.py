@@ -17,7 +17,8 @@ from keys   import CAWAS
 application = Flask(__name__)
 
 
-backend = Backend({"girls":
+backend = Backend({"languages": ['es','pt'], 
+                    "girls":
                         {"database": {
                             "table": "Girls",
                             "pk": "lang",
@@ -85,14 +86,25 @@ backend = Backend({"girls":
                         "views" : {'table_name': 'Views', 'commit_index':'lala'},
                         "asset_type": {'database': {'table': 'AssetType', 'pk': 'asset_id', 'schema': {'asset_id': 'S', 'asset_type':'S'}}},
                         "vote": {'database': {'table': 'Vote', 'pk': 'asset_id', 'sk':'username', 'schema': {'asset_id': 'S', 'username':'S', 'voted':'N'}}},
-                        "search_domain": {"domain": {
-                                        "id_field": "asset_id",
-                                        "filter_query" : '',
-                                        "schema": ["channel","asset_id", "title","summary_short","display_runtime","seasons","season","episode","episodes","categories","show_type","year","serie_id","girls_id","name", "image_big", "image_landscape", "image_portrait", "views", "ranking", "asset_type", "blocks", "publish_date", "class", "summary_long", "nationality"],
-                                        "return_fields": ["asset_id", "name", "title", "ranking", "views","display_runtime", "summary_short" ,"categories", "image_landscape", "image_portrait", "channel", "show_type","asset_type", "year", "seasons", "class","episodes", "episode", "serie_id"],
-                                        "name" : "eshotgodomain",
-                                    }}
+                        "search_domain": {'es' : {"domain": {
+                                                        "id_field": "asset_id",
+                                                        "filter_query" : '',
+                                                        "schema": ["channel","asset_id", "title","summary_short","display_runtime","seasons","season","episode","episodes","categories","show_type","year","serie_id","girls_id","name", "image_big", "image_landscape", "image_portrait", "views", "ranking", "asset_type", "blocks", "publish_date", "class", "summary_long", "nationality"],
+                                                        "return_fields": ["asset_id", "name", "title", "ranking", "views","display_runtime", "summary_short" ,"categories", "image_landscape", "image_portrait", "channel", "show_type","asset_type", "year", "seasons", "class","episodes", "episode", "serie_id"],
+                                                        "name" : "eshotgodomain",
+                                                        }
+                                                 },
+                                          'pt' : {"domain": {
+                                                        "id_field": "asset_id",
+                                                        "filter_query" : '',
+                                                        "schema": ["channel","asset_id", "title","summary_short","display_runtime","seasons","season","episode","episodes","categories","show_type","year","serie_id","girls_id","name", "image_big", "image_landscape", "image_portrait", "views", "ranking", "asset_type", "blocks", "publish_date", "class", "summary_long", "nationality"],
+                                                        "return_fields": ["asset_id", "name", "title", "ranking", "views","display_runtime", "summary_short" ,"categories", "image_landscape", "image_portrait", "channel", "show_type","asset_type", "year", "seasons", "class","episodes", "episode", "serie_id"],
+                                                        "name" : "pthotgodomain",
+                                                        }
+                                                 }
+                                         }
                     })
+
 
 
 components = Components({
@@ -185,11 +197,21 @@ def urlCategories():
         ret = components.query_categories(args)
         return Response(response=dumps(ret['body']), status=ret['status'])
     elif request.method == 'POST':
-        body = loads(request.data)
-        if body['action'] == 'add':
-            ret  = components.add_category(body['item'])
-        elif body['action'] == 'del':
-            ret  = components.del_category(body['item'])
+        if 'X-PRIVATE-APIKEY' in request.headers:
+            private_key = request.headers.get('X-PRIVATE-APIKEY')
+            if private_key == CAWAS:
+                body = loads(request.data)
+                if body['action'] == 'add':
+                    ret  = components.add_category(body['item'])
+                elif body['action'] == 'del':
+                    ret  = components.del_category(body['item'])
+            else:
+                ret['status'] = 401
+                ret['body']   = {'status': 'failure', 'message': 'Unauthorized'}
+        else:
+            ret['status'] = 422
+            ret['body']   = {'status': 'failure', 'message': 'Missing Header'}
+
         return Response(response=dumps(ret['body']), status=ret['status'])
 
 @application.route('/v1/sliders/',    methods=['GET', 'POST'])
@@ -203,11 +225,21 @@ def urlSliders():
         ret = components.query_sliders(args)
         return Response(response=dumps(ret['body']), status=ret['status'])
     elif request.method == 'POST':
-        body = loads(request.data)
-        if body['action'] == 'add':
-            ret  = components.add_slider(body['item'])
-        elif body['action'] == 'del':
-            ret  = components.del_slider(body['item'])
+        if 'X-PRIVATE-APIKEY' in request.headers:
+            private_key = request.headers.get('X-PRIVATE-APIKEY')
+            if private_key == CAWAS:
+                body = loads(request.data)
+                if body['action'] == 'add':
+                    ret  = components.add_slider(body['item'])
+                elif body['action'] == 'del':
+                    ret  = components.del_slider(body['item'])
+            else:
+                ret['status'] = 401
+                ret['body']   = {'status': 'failure', 'message': 'Unauthorized'}
+        else:
+            ret['status'] = 422
+            ret['body']   = {'status': 'failure', 'message': 'Missing Header'}
+
         return Response(response=dumps(ret['body']), status=ret['status'])
 
 @application.route('/v1/blocks/',     methods=['GET', 'POST'])
@@ -221,11 +253,22 @@ def urlBlocks():
         ret = components.query_blocks(args)
         return Response(response=dumps(ret['body']), status=ret['status'])
     elif request.method == 'POST':
-        body = loads(request.data)
-        if body['action'] == 'add':
-            ret  = components.add_block(body['item'])
-        elif body['action'] == 'del':
-            ret  = components.del_block(body['item'])
+        if 'X-PRIVATE-APIKEY' in request.headers:
+            private_key = request.headers.get('X-PRIVATE-APIKEY')
+            if private_key == CAWAS:
+                body = loads(request.data)
+                if body['action'] == 'add':
+                    ret  = components.add_block(body['item'])
+                elif body['action'] == 'del':
+                    ret  = components.del_block(body['item'])
+            else:
+                ret['status'] = 401
+                ret['body']   = {'status': 'failure', 'message': 'Unauthorized'}
+        else:
+            ret['status'] = 422
+            ret['body']   = {'status': 'failure', 'message': 'Missing Header'}
+
+
         return Response(response=dumps(ret['body']), status=ret['status'])
 
 
@@ -239,13 +282,24 @@ def urlChannels():
         ret = components.query_channels(args)
         return Response(response=dumps(ret['body']), status=ret['status'])
     elif request.method == 'POST':
-        body = loads(request.data)
-        if body['action'] == 'add':
-            body['item']['lang'] = 'none'
-            ret  = components.add_channel(body['item'])
-        elif body['action'] == 'del':
-            body['item']['lang'] = 'none'
-            ret  = components.del_channel(body['item'])
+        if 'X-PRIVATE-APIKEY' in request.headers:
+            private_key = request.headers.get('X-PRIVATE-APIKEY')
+            if private_key == CAWAS:
+                body = loads(request.data)
+                if body['action'] == 'add':
+                    body['item']['lang'] = 'none'
+                    ret  = components.add_channel(body['item'])
+                elif body['action'] == 'del':
+                    body['item']['lang'] = 'none'
+                    ret  = components.del_channel(body['item'])
+            else:
+                ret['status'] = 401
+                ret['body']   = {'status': 'failure', 'message': 'Unauthorized'}
+        else:
+            ret['status'] = 422
+            ret['body']   = {'status': 'failure', 'message': 'Missing Header'}
+
+
         return Response(response=dumps(ret['body']), status=ret['status'])
 
 
@@ -390,8 +444,8 @@ def urlAssetBlock(block_id):
 def urlAuthorize():
     #
     # Falta mecanismo de validacion
-    if 'MA-API-KEY' in request.headers:
-        ma_api_key = request.headers.get('MA-API-KEY')
+    if 'X-MA-API-KEY' in request.headers:
+        ma_api_key = request.headers.get('X-MA-API-KEY')
         if MA != ma_api_key:
             ret = {}
             ret['status'] = 401
@@ -423,15 +477,27 @@ def urlAuthorize():
 @application.route('/v1/private/assets/', methods=['POST'])
 @cross_origin()
 def urlAsset():
-    print request.method
     if request.method == 'POST':
-        body = loads(request.data)
-        if body['action']   == 'add':
-            ret  = backend.add_asset(body['item'])
-        elif body['action'] == 'del':
-            ret  = backend.disable_asset(body['item'])
-        elif body['action'] == 'update':
-            ret  = backend.update_asset(body['item'])
+        if 'X-PRIVATE-APIKEY' in request.headers:
+            private_key = request.headers.get('X-PRIVATE-APIKEY')
+            if private_key == CAWAS:
+                body = loads(request.data)
+                if body['action']   == 'add':
+                    ret  = backend.add_asset(body['item'])
+                elif body['action'] == 'del':
+                    ret  = backend.disable_asset(body['item'])
+                elif body['action'] == 'update':
+                    ret  = backend.update_asset(body['item'])
+            else:
+                ret = {}
+                ret['status'] = 401
+                ret['body']   = {'status': 'failure', 'message': 'Unauthorized'}
+        else:
+            ret = {}
+            ret['status'] = 422
+            ret['body']   = {'status': 'failure', 'message': 'Missing Header'}
+
+        
         return Response(response=dumps(ret['body']), status=ret['status'])
     
 @application.route('/v1/private/addview/<string:asset_id>', methods=['PUT'])
