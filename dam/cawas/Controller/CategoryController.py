@@ -68,9 +68,15 @@ class CategoryController(object):
 
 
             except Setting.DoesNotExist as e:
-                return render(request, 'cawas/error.html', {"message": "No Setting. (" + e.message + ")"})
+                request.session['list_category_message'] = "Error al Guardar Category. (" + e.message + ")"
+                request.session['list_category_flag'] = FLAG_ALERT
+                self.code_return = -1
+                return self.code_return
             except Exception as e:
-                return render(request, 'cawas/error.html', {"message": "Error al Guardar Category. (" + e.message + ")."})
+                request.session['list_category_message'] = "Error al Guardar Category. (" + e.message + ")"
+                request.session['list_category_flag'] = FLAG_ALERT
+                self.code_return = -1
+                return self.code_return
 
             # CREAR METADATA
             vcategorymetadatas = decjson['Category']['Categorymetadatas']
@@ -156,16 +162,30 @@ class CategoryController(object):
                 except CategoryMetadata.DoesNotExist as a:
                     vlangmetadata.append({'checked': False, 'code': itemlang.code,'idioma':itemlang.name, 'name':'' , 'publish_date':'' })
         except Setting.DoesNotExist as e:
-            return render(request, 'cawas/error.html', {"message": "No Setting. (" + e.message + ")"})
+            request.session['list_category_message'] = "Error al Guardar Categoria. (" + e.message + ")"
+            request.session['list_category_flag'] = FLAG_ALERT
+            self.code_return = -1
+            return self.code_return
         except Category.DoesNotExist as e:
-            return render(request, 'cawas/error.html', {"message": "Asset no se encuentra Vinculado a Category. (" + e.message + ")"})
+            request.session['list_category_message'] = "Error al Guardar Categoria. (" + e.message + ")"
+            request.session['list_category_flag'] = FLAG_ALERT
+            self.code_return = -1
+            return self.code_return
         except Asset.DoesNotExist as e:
-            return render(request, 'cawas/error.html', {"message": "Asset no Existe. (" + e.message + ")"})
+            request.session['list_category_message'] = "Error al Guardar Categoria. (" + e.message + ")"
+            request.session['list_category_flag'] = FLAG_ALERT
+            self.code_return = -1
+            return self.code_return
         except Category.DoesNotExist as e:
-            return render(request, 'cawas/error.html', {"message": "Categoria no Existe. (" + e.message + ")"})
+            request.session['list_category_message'] = "Error al Guardar Categoria. (" + e.message + ")"
+            request.session['list_category_flag'] = FLAG_ALERT
+            self.code_return = -1
+            return self.code_return
         except CategoryMetadata.DoesNotExist as e:
-            return render(request, 'cawas/error.html', {"message": "CategoryMetaData No Existe . (" + e.message + ")"})
-
+            request.session['list_category_message'] = "Error al Guardar Categoria. (" + e.message + ")"
+            request.session['list_category_flag'] = FLAG_ALERT
+            self.code_return = -1
+            return self.code_return
 
         if request.method == 'POST':
             #VARIABLES
@@ -181,9 +201,15 @@ class CategoryController(object):
                 vimg = Image.objects.get(name=vcategory.category_id)
 
             except Asset.DoesNotExist as e:
-                return render(request, 'cawas/error.html', {"message": "Asset no Existe. (" + e.message + ")"})
+                request.session['list_category_message'] = "Error al Guardar Categoria. (" + e.message + ")"
+                request.session['list_category_flag'] = FLAG_ALERT
+                self.code_return = -1
+                return self.code_return
             except CategoryMetadata.DoesNotExist as e:
-                return render(request, 'cawas/error.html', {"message": "CategoryMetaData No Existe . (" + e.message + ")"})
+                request.session['list_category_message'] = "Error al Guardar Categoria. (" + e.message + ")"
+                request.session['list_category_flag'] = FLAG_ALERT
+                self.code_return = -1
+                return self.code_return
             except Image.DoesNotExist as e:
                 vimg = Image()
 
