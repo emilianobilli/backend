@@ -153,6 +153,10 @@ class SerieController(object):
             request.session['list_episode_flag'] = FLAG_ALERT
             return self.code_return
 
+        self.code_return = 0
+        request.session['list_serie_message'] = 'Guardado Correctamente'
+        request.session['list_serie_flag'] = FLAG_SUCCESS
+
         context = {'message': message, 'flag':flag,'vgirls': vgirls, 'vlanguages': vlanguages, 'vcategories': vcategories,
                    'vchannels': vchannels, 'vseries': vseries,'flag':flag}
         return render(request, 'cawas/series/add.html', context)
@@ -287,7 +291,7 @@ class SerieController(object):
                     smd.save()
                     # Publica en PublishQueue
                     ph = PublishHelper()
-                    ph.func_publish_queue(request, vasset.asset_id, smd.language, 'AS', 'Q', vschedule_date)
+                    ph.func_publish_queue(request, vserie.asset.asset_id, smd.language, 'AS', 'Q', vschedule_date)
                     ph.func_publish_image(request, vimg)
 
                 # Fin de POST
@@ -343,6 +347,11 @@ class SerieController(object):
             request.session['list_serie_message'] = 'Error: ' + e.message
             request.session['list_serie_flag'] = FLAG_ALERT
             return self.code_return
+
+        self.code_return = 0
+        request.session['list_serie_message'] = 'Guardado Correctamente'
+        request.session['list_serie_flag'] = FLAG_SUCCESS
+
         context = {'message': message, 'vgirls': vgirls,
                    'vlanguages': vlanguages,
                    'vcategories': vcategories,
@@ -421,7 +430,7 @@ class SerieController(object):
             # If page is out of range (e.g. 9999), deliver last page of results.
             series = paginator.page(paginator.num_pages)
 
-        context = {'message': message, 'flag':flag, 'registros': series, 'titulo': titulo, 'usuario': usuario}
+        context = {'message':message, 'flag':flag, 'registros': series, 'titulo': titulo, 'usuario': usuario}
         return render(request, 'cawas/series/list.html', context)
 
 
@@ -450,9 +459,10 @@ class SerieController(object):
             request.session['list_serie_flag'] = FLAG_SUCCESS
             self.code_return = 0
         except Exception as e:
-            request.session['list_serie_message'] = "Error al despublicar (" + str(e.value) + ")"
+            self.code_return = -1
+            request.session['list_serie_message'] = "Error al despublicar (" + str(e.message) + ")"
             request.session['list_serie_flag'] = FLAG_ALERT
-        return self.code_return
+            return self.code_return
 
 
 

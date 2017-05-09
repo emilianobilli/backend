@@ -250,6 +250,7 @@ def add_series_view(request):
         controller.add(request)
         return redirect(list_series_view)
 
+
 def edit_series_view(request, asset_id):
     #AUTENTICACION DE USUARIO
     controller = SerieController()
