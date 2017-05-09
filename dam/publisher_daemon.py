@@ -222,7 +222,7 @@ def publish_items():
                     job.message = err.value
                     job.save()
                 try:
-                    item = slider_serializer(job.item_id, job.item_lang.code)
+                    item = slider_serializer(job.item_id)
                 except SerializerException as err:
                     job.status = 'E'
                     job.message = err.value
