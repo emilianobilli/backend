@@ -128,13 +128,7 @@ def publish_slider(job):
         msg = "Slider with ID %s does not exist" % job.item_id
         logging.error(msg)
         raise PublisherException(msg)
-    try:
-        metadata = SliderMetadata.objects.get(slider=slider, language=job.item_lang)
-    except ObjectDoesNotExist:
-        msg = "Slider with ID %s has not %s metadata" % (job.item_id, job.item_lang.name)
-        logging.error(msg)
-        raise PublisherException(msg)
-    return metadata
+    return slider
 
 
 def publish_block(job):
@@ -183,6 +177,7 @@ def publish_items():
         URLs['CH'] = Setting.objects.get(code="backend_channel_url").value
         URLs['CA'] = Setting.objects.get(code="backend_category_url").value
         APIKEY = Setting.objects.get(code="backend_api_key").value
+        CDNURL = Setting.objects.get(code="image_cdn_landscape").value
     except ObjectDoesNotExist as e:
         msg = 'Error loading settings: %s' % e.message
         logging.error(msg)
@@ -228,7 +223,8 @@ def publish_items():
                     job.message = err.value
                     job.save()
                 try:
-                    item = slider_serializer(job.item_id, job.item_lang.code)
+                    item = slider_serializer(job.item_id)
+                    item[0]['media_url'] = "%s%s" % (CDNURL, item[0]['media_url'])
                 except SerializerException as err:
                     job.status = 'E'
                     job.message = err.value
