@@ -37,7 +37,10 @@ class SerieController(object):
                 pathfilesport = Setting.objects.get(code='image_repository_path_portrait')
                 pathfilesland = Setting.objects.get(code='image_repository_path_landscape')
             except Setting.DoesNotExist as e:
-                return render(request, 'cawas/error.html', {"message": "No Setting. (" + e.message + ")"})
+                self.code_return = -1
+                request.session['list_serie_message'] = 'Error: ' + e.message
+                request.session['list_serie_flag'] = FLAG_ALERT
+                return self.code_return
 
             # IMAGEN Portrait
             if (request.FILES.has_key('ThumbHor')):
@@ -78,7 +81,10 @@ class SerieController(object):
                     g = Girl.objects.get(pk=item['girl_id'])
                     vserie.girls.add(g)
                 except Girl.DoesNotExist as e:
-                    return render(request, 'cawas/error.html', {"message": "No existe Girl. (" + e.message + ")"})
+                    self.code_return = -1
+                    request.session['list_serie_message'] = 'Error: ' + e.message
+                    request.session['list_serie_flag'] = FLAG_ALERT
+                    return self.code_return
 
             # CARGAR CATEGORIES
             vcategories = decjson['Serie']['categories']
@@ -86,13 +92,19 @@ class SerieController(object):
                 try:
                     vserie.category.add(Category.objects.get(pk=item['category_id']))
                 except Category.DoesNotExist as e:
-                    return render(request, 'cawas/error.html', {"message": "No existe Category. (" + e.message + ")"})
+                    self.code_return = -1
+                    request.session['list_serie_message'] = 'Error: ' + e.message
+                    request.session['list_serie_flag'] = FLAG_ALERT
+                    return self.code_return
 
             # Channel
             try:
                 vserie.channel = Channel.objects.get(pk=decjson['Serie']['channel_id'])
             except Channel.DoesNotExist as e:
-                return render(request, 'cawas/error.html', {"message": "No existe Channel. (" + e.message + ")"})
+                self.code_return = -1
+                request.session['list_serie_message'] = 'Error: ' + e.message
+                request.session['list_serie_flag'] = FLAG_ALERT
+                return self.code_return
 
             vserie.save()
             message = 'Registrado Correctamente'
@@ -105,7 +117,10 @@ class SerieController(object):
                 try:
                     smd.language = Language.objects.get(code=item['Seriemetadata']['language'])
                 except Language.DoesNotExist as e:
-                    return render(request, 'cawas/error.html', {"message": "No existe LANGUAGE. (" + e.message + ")"})
+                    self.code_return = -1
+                    request.session['list_serie_message'] = 'Error No existe Lenguaje ' + e.message
+                    request.session['list_serie_flag'] = FLAG_ALERT
+                    return self.code_return
 
                 vschedule_date = datetime.datetime.now().strftime('%Y-%m-%d')
                 smd.title = item['Seriemetadata']['title']
@@ -113,8 +128,8 @@ class SerieController(object):
                 smd.summary_long = item['Seriemetadata']['summary_long']
                 smd.serie = vserie
                 smd.publish_date = vschedule_date
-
                 smd.save()
+
                 # Publica en PublishQueue
                 ph = PublishHelper()
                 ph.func_publish_queue(request, vasset.asset_id, smd.language, 'AS', 'Q', vschedule_date)
@@ -132,17 +147,11 @@ class SerieController(object):
             vchannels = Channel.objects.all()
             vseries = Serie.objects.all()
 
-
-        except Serie.DoesNotExist as e:
-            return render(request, 'cawas/error.html', {"message": "Serie No Existe . (" + e.message + ")"})
-        except Girl.DoesNotExist as e:
-            return render(request, 'cawas/error.html', {"message": "Girl No Existe . (" + e.message + ")"})
-        except Category.DoesNotExist as e:
-            return render(request, 'cawas/error.html', {"message": "Categoria no Existe. (" + e.message + ")"})
-        except Channel.DoesNotExist as e:
-            return render(request, 'cawas/error.html', {"message": "Canal no Existe. (" + e.message + ")"})
-        except GirlMetadata.DoesNotExist as e:
-            return render(request, 'cawas/error.html', {"message": "GirlMetaData No Existe . (" + e.message + ")"})
+        except Exception as e:
+            self.code_return = -1
+            request.session['list_serie_message'] = 'Error: ' + e.message
+            request.session['list_episode_flag'] = FLAG_ALERT
+            return self.code_return
 
         context = {'message': message, 'flag':flag,'vgirls': vgirls, 'vlanguages': vlanguages, 'vcategories': vcategories,
                    'vchannels': vchannels, 'vseries': vseries,'flag':flag}
@@ -174,16 +183,11 @@ class SerieController(object):
                 vimg = Image.objects.get(name=vasset.asset_id)
                 pathfilesport = Setting.objects.get(code='image_repository_path_portrait')
                 pathfilesland = Setting.objects.get(code='image_repository_path_landscape')
-            except Setting.DoesNotExist as e:
-                return render(request, 'cawas/error.html', {"message": "No Existe Setting. (" + e.message + ")"})
-            except Asset.DoesNotExist as e:
-                return render(request, 'cawas/error.html', {"message": "No Existe Asset. (" + e.message + ")"})
-            except Serie.DoesNotExist as e:
-                return render(request, 'cawas/error.html', {"message": "No Existe Serie. (" + e.message + ")"})
-            except Image.DoesNotExist as e:
-                return render(request, 'cawas/error.html',
-                              {"message": "No Existe Imagen Asociada a la Serie. (" + e.message + ")"})
-
+            except Exception as e:
+                self.code_return = -1
+                request.session['list_serie_message'] = 'Error: ' + e.message
+                request.session['list_serie_flag'] = FLAG_ALERT
+                return self.code_return
             # IMAGEN Portrait
             if (request.FILES.has_key('ThumbHor')):
                 if request.FILES['ThumbHor'].name != '':
@@ -223,7 +227,10 @@ class SerieController(object):
                     g = Girl.objects.get(pk=item['girl_id'])
                     vserie.girls.add(g)
                 except Girl.DoesNotExist as e:
-                    return render(request, 'cawas/error.html', {"message": "No existe Girl. (" + e.message + ")"})
+                    self.code_return = -1
+                    request.session['list_serie_message'] = 'Error: ' + e.message
+                    request.session['list_serie_flag'] = FLAG_ALERT
+                    return self.code_return
 
             # CARGAR CATEGORIES
             vcategories = decjson['Serie']['categories']
@@ -231,13 +238,19 @@ class SerieController(object):
                 try:
                     vserie.category.add(Category.objects.get(pk=item['category_id']))
                 except Category.DoesNotExist as e:
-                    return render(request, 'cawas/error.html', {"message": "No existe Category. (" + e.message + ")"})
+                    self.code_return = -1
+                    request.session['list_serie_message'] = 'Error: ' + e.message
+                    request.session['list_serie_flag'] = FLAG_ALERT
+                    return self.code_return
 
             # Channel
             try:
                 vserie.channel = Channel.objects.get(pk=decjson['Serie']['channel_id'])
             except Channel.DoesNotExist as e:
-                return render(request, 'cawas/error.html', {"message": "No existe Channel. (" + e.message + ")"})
+                self.code_return = -1
+                request.session['list_serie_message'] = 'Error: ' + e.message
+                request.session['list_serie_flag'] = FLAG_ALERT
+                return self.code_return
 
             vserie.save()
             message = 'Categoria - Registrado Correctamente'
@@ -255,7 +268,10 @@ class SerieController(object):
                 except SerieMetadata.DoesNotExist as e:
                     smd = SerieMetadata()
                 except Language.DoesNotExist as e:
-                    return render(request, 'cawas/error.html', {"message": "No existe LANGUAGE. (" + e.message + ")"})
+                    self.code_return = -1
+                    request.session['list_serie_message'] = 'Error: ' + e.message
+                    request.session['list_serie_flag'] = FLAG_ALERT
+                    return self.code_return
 
                 vschedule_date = datetime.datetime.now().strftime('%Y-%m-%d')
                 smd.language = vlanguage
@@ -322,20 +338,11 @@ class SerieController(object):
                                           'summary_short': '',
                                           'summary_long': ''})
 
-
-        except Asset.DoesNotExist as e:
-            return render(request, 'cawas/error.html', {"message": "Asset No Existe . (" + e.message + ")"})
-        except Serie.DoesNotExist as e:
-            return render(request, 'cawas/error.html', {"message": "Serie No Existe . (" + e.message + ")"})
-        except Girl.DoesNotExist as e:
-            return render(request, 'cawas/error.html', {"message": "Girl No Existe . (" + e.message + ")"})
-        except Category.DoesNotExist as e:
-            return render(request, 'cawas/error.html', {"message": "Categoria no Existe. (" + e.message + ")"})
-        except Channel.DoesNotExist as e:
-            return render(request, 'cawas/error.html', {"message": "Canal no Existe. (" + e.message + ")"})
-        except GirlMetadata.DoesNotExist as e:
-            return render(request, 'cawas/error.html', {"message": "GirlMetaData No Existe . (" + e.message + ")"})
-
+        except Exception as e:
+            self.code_return = -1
+            request.session['list_serie_message'] = 'Error: ' + e.message
+            request.session['list_serie_flag'] = FLAG_ALERT
+            return self.code_return
         context = {'message': message, 'vgirls': vgirls,
                    'vlanguages': vlanguages,
                    'vcategories': vcategories,
