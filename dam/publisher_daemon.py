@@ -128,13 +128,7 @@ def publish_slider(job):
         msg = "Slider with ID %s does not exist" % job.item_id
         logging.error(msg)
         raise PublisherException(msg)
-    try:
-        metadata = SliderMetadata.objects.get(slider=slider, language=job.item_lang)
-    except ObjectDoesNotExist:
-        msg = "Slider with ID %s has not %s metadata" % (job.item_id, job.item_lang.name)
-        logging.error(msg)
-        raise PublisherException(msg)
-    return metadata
+    return slider
 
 
 def publish_block(job):
