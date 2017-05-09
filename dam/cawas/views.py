@@ -244,13 +244,20 @@ def edit_girls_view(request, asset_id):
 def add_series_view(request):
     # AUTENTICACION DE USUARIO
     controller = SerieController()
-    return controller.add(request)
+    if request.method == 'GET':
+        return controller.add(request)
+    if request.method == 'POST':
+        controller.add(request)
+        return redirect(list_series_view)
 
 def edit_series_view(request, asset_id):
-    # AUTENTICACION DE USUARIO
+    #AUTENTICACION DE USUARIO
     controller = SerieController()
-    return controller.edit(request, asset_id)
-
+    if request.method == 'GET':
+        return controller.edit(request, asset_id)
+    if request.method == 'POST':
+        controller.edit(request, asset_id)
+        return redirect(list_series_view)
 
 def add_blocks_view(request):
     controller = BlockController()
