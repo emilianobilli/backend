@@ -167,8 +167,20 @@ class EpisodeController(object):
                     for mdi in metadatas:
                         ph.func_publish_queue(request, mdi.episode.asset.asset_id, mdi.language, 'AS', 'Q', vschedule_date)
                 except EpisodeMetadata.DoesNotExist as e:
-                    return render(request, 'cawas/error.html',
-                                  {"message": "No existe Metadata Para el Chica. (" + e.message + ")"})
+                    self.code_return = -1
+                    request.session['list_episode_message'] = 'Error al Publicar el Episodio' + e.message
+                    request.session['list_episode_flag'] = FLAG_ALERT
+                    return self.code_return
+
+                # Se vuelve a publicar la SERIE
+                try:
+                    ph = PublishHelper()
+                    ph.func_publish_queue(request, vasset.asset_id, vlang, 'AS', 'Q', vschedule_date)
+                except Exception as e:
+                    self.code_return = -1
+                    request.session['list_episode_message'] = 'Error al Republicar la SERIE' + e.message
+                    request.session['list_episode_flag'] = FLAG_ALERT
+                    return self.code_return
 
             vflag = "success"
             message ='Guardado Correctamente'
@@ -233,10 +245,15 @@ class EpisodeController(object):
             #print "episodio " + vepisode.original_title
 
         except Asset.DoesNotExist as e:
-            return render(request, 'cawas/error.html', {"message": "No Existe Asset1. (" + e.message + ")"})
+            request.session['list_episode_message'] = 'No Existe Asset' +  str(e.message)
+            request.session['list_episode_flag'] = FLAG_SUCCESS
+            self.code_return = -1
+            return self.code_return
         except Setting.DoesNotExist as e:
-            return render(request, 'cawas/error.html', {"message": "No Existe Episode. (" + e.message + ")"})
-
+            request.session['list_episode_message'] = 'No Existe Espisodio ' + str(e.message)
+            request.session['list_episode_flag'] = FLAG_SUCCESS
+            self.code_return = -1
+            return self.code_return
         if request.method == 'POST':
             # VARIABLES
             try:
@@ -338,7 +355,7 @@ class EpisodeController(object):
                     return render(request, 'cawas/error.html', {"message": "No existe Categoria. (" + e.message + ")"})
             vepisode.save()
 
-            #EpisodeMetadata.objects.filter(episode=vepisode).delete()
+
             vepisodemetadata = decjson['Episode']['Episodemetadatas']
             for item in vepisodemetadata:
                 try:
@@ -370,10 +387,25 @@ class EpisodeController(object):
                     ph.func_publish_image(request, vimg)
 
                 except Language.DoesNotExist as e:
-                    return render(request, 'cawas/error.html', {"message": "Lenguaje no Existe. (" + e.message + ")"})
+                    self.code_return = -1
+                    request.session['list_episode_message'] = 'Lenguaje no Existe ' + e.message
+                    request.session['list_episode_flag'] = FLAG_ALERT
+                    return self.code_return
                 except Exception as e:
-                    return render(request, 'cawas/error.html',
-                                  {"message": "Error al Guardar Episode Metadata. (" + str(e.message) + ")"})
+                    self.code_return = -1
+                    request.session['list_episode_message'] = 'Error al Guardar Episode Metadata ' + e.message
+                    request.session['list_episode_flag'] = FLAG_ALERT
+                    return self.code_return
+
+            #Se vuelve a publicar la SERIE
+            try:
+                ph = PublishHelper()
+                ph.func_publish_queue(request, vasset.asset_id, vlang, 'AS', 'Q', vschedule_date)
+            except Exception as e:
+                self.code_return = -1
+                request.session['list_episode_message'] = 'Error al Republicar la SERIE' + e.message
+                request.session['list_episode_flag'] = FLAG_ALERT
+                return self.code_return
 
             vflag = "success"
             message = 'Guardado Correctamente'
@@ -423,12 +455,6 @@ class EpisodeController(object):
                    'vchannels': vchannels, 'vlangmetadata': vlangmetadata, 'vseries': vseries
                    }
 
-        # Episode >
-        # Asset >
-        # Imagenes >
-        # Metadata >
-        # categorias >
-        # girls >
         return render(request, 'cawas/episodes/edit.html', context)
 
 
