@@ -166,16 +166,16 @@ class EpisodeController(object):
                     metadatas = EpisodeMetadata.objects.filter(episode=vepisode)
                     for mdi in metadatas:
                         ph.func_publish_queue(request, mdi.episode.asset.asset_id, mdi.language, 'AS', 'Q', vschedule_date)
+
+                        # Se vuelve a publicar la SERIE en el idioma del Episodio publicado
+                        ph = PublishHelper()
+                        ph.func_publish_queue(request, vepisode.serie.asset.asset_id, vlang, 'AS', 'Q', vschedule_date)
+
                 except EpisodeMetadata.DoesNotExist as e:
                     self.code_return = -1
                     request.session['list_episode_message'] = 'Error al Publicar el Episodio' + e.message
                     request.session['list_episode_flag'] = FLAG_ALERT
                     return self.code_return
-
-                # Se vuelve a publicar la SERIE
-                try:
-                    ph = PublishHelper()
-                    ph.func_publish_queue(request, vasset.asset_id, vlang, 'AS', 'Q', vschedule_date)
                 except Exception as e:
                     self.code_return = -1
                     request.session['list_episode_message'] = 'Error al Republicar la SERIE' + e.message
@@ -386,6 +386,11 @@ class EpisodeController(object):
                     ph.func_publish_queue(request, vasset.asset_id, vlang, 'AS', 'Q', vschedule_date)
                     ph.func_publish_image(request, vimg)
 
+
+                    # Se vuelve a publicar la SERIE en el idioma del Episodio publicado
+                    ph = PublishHelper()
+                    ph.func_publish_queue(request, vepisode.serie.asset.asset_id, vlang, 'AS', 'Q', vschedule_date)
+
                 except Language.DoesNotExist as e:
                     self.code_return = -1
                     request.session['list_episode_message'] = 'Lenguaje no Existe ' + e.message
@@ -397,15 +402,6 @@ class EpisodeController(object):
                     request.session['list_episode_flag'] = FLAG_ALERT
                     return self.code_return
 
-            #Se vuelve a publicar la SERIE
-            try:
-                ph = PublishHelper()
-                ph.func_publish_queue(request, vasset.asset_id, vlang, 'AS', 'Q', vschedule_date)
-            except Exception as e:
-                self.code_return = -1
-                request.session['list_episode_message'] = 'Error al Republicar la SERIE' + e.message
-                request.session['list_episode_flag'] = FLAG_ALERT
-                return self.code_return
 
             vflag = "success"
             message = 'Guardado Correctamente'
@@ -564,18 +560,31 @@ class EpisodeController(object):
 
 
     def publish(self, request, id):
-        md = EpisodeMetadata.objects.get(id=id)
-        md.publish_date = datetime.datetime.now().strftime('%Y-%m-%d')
-        md.activated = True
-        md.save()
 
-        ph = PublishHelper()
-        ph.func_publish_queue(request, md.episode.asset.asset_id, md.language, 'AS', 'Q', datetime.datetime.now().strftime('%Y-%m-%d'))
-        ph.func_publish_image(request, md.episode.image)
+        try:
+            md = EpisodeMetadata.objects.get(id=id)
+            md.publish_date = datetime.datetime.now().strftime('%Y-%m-%d')
+            md.activated = True
+            md.save()
+
+            #Publica el Episodio
+            ph = PublishHelper()
+            ph.func_publish_queue(request, md.episode.asset.asset_id, md.language, 'AS', 'Q', datetime.datetime.now().strftime('%Y-%m-%d'))
+            ph.func_publish_image(request, md.episode.image)
+
+            #Republica la imagen
+            # Se vuelve a publicar la SERIE en el idioma del Episodio publicado
+            ph = PublishHelper()
+            ph.func_publish_queue(request, md.episode.serie.asset.asset_id, md.language, 'AS', 'Q', datetime.datetime.now().strftime('%Y-%m-%d'))
+        except Exception as e:
+            self.code_return = -1
+            request.session['list_episode_message'] = 'Error al Guardar Episode Metadata ' + e.message
+            request.session['list_episode_flag'] = FLAG_ALERT
+            return self.code_return
+
         request.session['list_episode_message'] = 'Metadata en ' + md.language.name + ' de Capitulo ' + md.episode.asset.asset_id + ' Publicada Correctamente'
         request.session['list_episode_flag'] = FLAG_SUCCESS
         self.code_return = 0
-
         return self.code_return
 
 
