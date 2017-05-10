@@ -12,6 +12,14 @@ $( document ).ready(function() {
      $("#btnsearch").click(function(){
            $("#searchForID").submit();
     });
+
+    $("#btngrabarypublicar").click(function(){
+
+        $("#publicar").val("1");
+        clickedToSubmit=1;
+        checkAll();
+    });
+
     
     var checkedOnce = 0; //chequea si el formulario se ha intentado enviar alguna vez
     var checkVal=0; //chequea la cantidad de errores en el formulario
@@ -255,6 +263,7 @@ $( document ).ready(function() {
         var director_selected = $('#director').val();
         var elenco_selected = $('#elenco').val();
         var year_selected = $('#releaseYear').val();
+        var publicar = $('#publicar').val();
          countChecked();
         // chequea original Title
         if(original_Title=="" || original_Title==" ")
@@ -491,6 +500,7 @@ $( document ).ready(function() {
                     myJSON+='"directors":"'+director_selected+'",';
                     myJSON+='"girls":'+myGirls+',';                    
                     myJSON+='"categories":'+myCategories+',';
+                    myJSON+='"publicar":"'+publicar+'",';
                     myJSON+='"Seriemetadatas": [';
                     myJSON+= addSerieMetadata(langDesc);
                     myJSON+=']}}';

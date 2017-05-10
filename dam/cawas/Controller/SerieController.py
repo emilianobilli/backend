@@ -21,6 +21,7 @@ class SerieController(object):
         # VARIABLES LOCALES
         message = ''
         flag = ''
+        vgrabarypublicar = ''
         if request.method == 'POST':
             # VARIABLES
             vserie = Serie()
@@ -130,10 +131,6 @@ class SerieController(object):
                 smd.publish_date = vschedule_date
                 smd.save()
 
-                # Publica en PublishQueue
-                ph = PublishHelper()
-                ph.func_publish_queue(request, vasset.asset_id, smd.language, 'AS', 'Q', vschedule_date)
-                ph.func_publish_image(request, vimg)
 
             flag = 'success'
 
@@ -157,8 +154,8 @@ class SerieController(object):
         request.session['list_serie_message'] = 'Guardado Correctamente'
         request.session['list_serie_flag'] = FLAG_SUCCESS
 
-        context = {'message': message, 'flag':flag,'vgirls': vgirls, 'vlanguages': vlanguages, 'vcategories': vcategories,
-                   'vchannels': vchannels, 'vseries': vseries,'flag':flag}
+        context = {'message': message, 'flag':flag, 'vgirls': vgirls, 'vlanguages': vlanguages, 'vcategories': vcategories,
+                   'vchannels': vchannels, 'vseries': vseries, 'flag':flag}
         return render(request, 'cawas/series/add.html', context)
 
 
@@ -173,6 +170,7 @@ class SerieController(object):
         # VARIABLES LOCALES
         message = ''
         flag = ''
+        vgrabarypublicar=''
         if request.method == 'POST':
             # VARIABLES
             vserie = Serie()
@@ -214,7 +212,7 @@ class SerieController(object):
                         os.remove(varchivo)
             vimg.save()
             # FIN IMAGEN
-
+            vgrabarypublicar = decjson['Serie']['publicar']
             # Datos de Serie
             vserie.asset = vasset
             vserie.original_title = decjson['Serie']['original_title']
@@ -259,12 +257,8 @@ class SerieController(object):
             vserie.save()
             message = 'Categoria - Registrado Correctamente'
 
-            # Fin datos serie
-
             # BORRAR Y CREAR METADATA
-
             vseriemetadatas = decjson['Serie']['Seriemetadatas']
-            #SerieMetadata.objects.filter(serie=vserie).delete()
             for item in vseriemetadatas:
                 try:
                     vlanguage = Language.objects.get(code=item['Seriemetadata']['language'])
@@ -284,16 +278,21 @@ class SerieController(object):
                 smd.summary_long = item['Seriemetadata']['summary_long']
                 smd.serie = vserie
                 smd.publish_date = vschedule_date
-
+                smd.save()
                 metadatas = SerieMetadata.objects.filter(serie=vserie, language=smd.language)
                 # Si no existe METADATA, se genera
                 if metadatas.count() < 1:
-                    smd.save()
                     # Publica en PublishQueue
-                    ph = PublishHelper()
-                    ph.func_publish_queue(request, vserie.asset.asset_id, smd.language, 'AS', 'Q', vschedule_date)
-                    ph.func_publish_image(request, vimg)
-
+                    if vgrabarypublicar == '1':
+                        if (Episode.objects.filter(serie=vserie).count() > 0):
+                            ph = PublishHelper()
+                            ph.func_publish_queue(request, vserie.asset.asset_id, smd.language, 'AS', 'Q',vschedule_date)
+                            ph.func_publish_image(request, vimg)
+                        else:
+                            self.code_return = -1
+                            request.session['list_serie_message'] = 'No se puede Publicar Serie sin Episodios asignados '
+                            request.session['list_serie_flag'] = FLAG_ALERT
+                            return self.code_return
                 # Fin de POST
             flag = "success"
 
