@@ -174,7 +174,7 @@ class EpisodeController(object):
                         if (PublishQueue.objects.filter(item_id=mdi.episode.serie.asset.asset_id,status__in=['Q', 'D']).count() < 1):
                             ph = PublishHelper()
                             ph.func_publish_queue(request, vepisode.serie.asset.asset_id, vlang, 'AS', 'Q', vschedule_date)
-
+                            ph.func_publish_image(request, vepisode.serie.image)
                 except EpisodeMetadata.DoesNotExist as e:
                     self.code_return = -1
                     request.session['list_episode_message'] = 'Error al Publicar el Episodio' + e.message
@@ -393,6 +393,7 @@ class EpisodeController(object):
                     if (PublishQueue.objects.filter(item_id=vepisode.serie.asset.asset_id,status__in=['Q', 'D']).count() < 1):
                         ph = PublishHelper()
                         ph.func_publish_queue(request, vepisode.serie.asset.asset_id, vlang, 'AS', 'Q', vschedule_date)
+                        ph.func_publish_image(request, vepisode.serie.image)
 
                 except Language.DoesNotExist as e:
                     self.code_return = -1
@@ -579,7 +580,7 @@ class EpisodeController(object):
             if (PublishQueue.objects.filter(item_id=md.episode.serie.asset.asset_id, status__in=['Q','D']).count() < 1):
                 ph = PublishHelper()
                 ph.func_publish_queue(request, md.episode.serie.asset.asset_id, md.language, 'AS', 'Q', datetime.datetime.now().strftime('%Y-%m-%d'))
-
+                ph.func_publish_image(request, md.vepisode.serie.image)
             request.session['list_serie_message'] = 'Episodio en ' + md.language.name + ' de Publicada Correctamente'
             request.session['list_serie_flag'] = FLAG_SUCCESS
             self.code_return = 0
