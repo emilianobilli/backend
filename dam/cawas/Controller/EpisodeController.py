@@ -564,7 +564,7 @@ class EpisodeController(object):
         try:
             md = EpisodeMetadata.objects.get(id=id)
             md.publish_date = datetime.datetime.now().strftime('%Y-%m-%d')
-            md.activated = True
+            #md.activated = True
             md.save()
 
             #Publica el Episodio
@@ -595,7 +595,6 @@ class EpisodeController(object):
         #Actualizar la fecha de publicacion
         for md in mditems:
             md.publish_date = datetime.datetime.now().strftime('%Y-%m-%d')
-            md.activated = True
             md.save()
             #Dejar en cola de publicacion para cada idioma
             ph = PublishHelper()
