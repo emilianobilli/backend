@@ -283,16 +283,15 @@ class SerieController(object):
                 # Si no existe METADATA, se genera
                 if metadatas.count() < 1:
                     # Publica en PublishQueue
-                    if vgrabarypublicar == '1':
-                        if (Episode.objects.filter(serie=vserie).count() > 0):
-                            ph = PublishHelper()
-                            ph.func_publish_queue(request, vserie.asset.asset_id, smd.language, 'AS', 'Q',vschedule_date)
-                            ph.func_publish_image(request, vimg)
-                        else:
-                            self.code_return = -1
-                            request.session['list_serie_message'] = 'No se puede Publicar Serie sin Episodios asignados '
-                            request.session['list_serie_flag'] = FLAG_ALERT
-                            return self.code_return
+                    if (Episode.objects.filter(serie=vserie).count() > 0):
+                        ph = PublishHelper()
+                        ph.func_publish_queue(request, vserie.asset.asset_id, smd.language, 'AS', 'Q',vschedule_date)
+                        ph.func_publish_image(request, vimg)
+                    else:
+                        self.code_return = -1
+                        request.session['list_serie_message'] = 'No se puede Publicar Serie sin Episodios asignados '
+                        request.session['list_serie_flag'] = FLAG_ALERT
+                        return self.code_return
                 # Fin de POST
             flag = "success"
 
