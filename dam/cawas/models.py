@@ -653,6 +653,7 @@ class Block(models.Model):
     channel           = models.ForeignKey(Channel, blank=True, null=True)
     assets            = models.ManyToManyField(Asset, blank=True)
     target_device     = models.ForeignKey(Device)
+    order             = models.IntegerField(help_text="Orden del bloque")
     modification_date = models.DateTimeField(auto_now=True)
     publish_date      = models.DateTimeField(auto_now=False, auto_now_add=False, blank=True, null=True)
     publish_status    = models.BooleanField(default=False)
@@ -682,5 +683,7 @@ class Block(models.Model):
         dict["target"] = self.target_device.name
         if self.channel is not None:
             dict["channel"] = self.channel.name
+        if self.order is not None:
+            dict["order"] = self.order
 
         return dict
