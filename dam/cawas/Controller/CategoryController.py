@@ -73,7 +73,7 @@ class CategoryController(object):
                 self.code_return = -1
                 return self.code_return
             except Exception as e:
-                request.session['list_category_message'] = "Error al Guardar Category. (" + e.message + ")"
+                request.session['list_category_message'] = "Error al Guardar Category. (" + str(e.message) + ")"
                 request.session['list_category_flag'] = FLAG_ALERT
                 self.code_return = -1
                 return self.code_return
@@ -407,7 +407,7 @@ class CategoryController(object):
             gmd.save()
             ph = PublishHelper()
             ph.func_publish_queue(request, gmd.category.category_id, gmd.language, 'CA', 'Q', datetime.datetime.now().strftime('%Y-%m-%d'))
-            ph.func_publish_image(request,gmd.category.image)
+            ph.func_publish_image(request, gmd.category.image)
             request.session['list_category_message'] = 'Metadata en ' + gmd.language.name + ' de Categoria ' + gmd.category.category_id + ' Publicada Correctamente'
             request.session['list_category_flag'] = FLAG_SUCCESS
             self.code_return = 0
