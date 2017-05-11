@@ -32,20 +32,17 @@ class BlockController(object):
 
             # Parsear JSON
             try:
-                print 'Debug2'
                 strjson = request.POST['varsToJSON']
                 decjson = json.loads(strjson)
                 vblock.name = decjson['Block']['name']
-                print 'Debug3'
+                vblock.order = decjson['Block']['order']
                 vgrabarypublicar = decjson['Block']['publicar']
-                vschedule_date = datetime.datetime.strptime(decjson['Block']['publish_date'], '%d-%m-%Y').strftime(
-                    '%Y-%m-%d')
+                vschedule_date = datetime.datetime.strptime(decjson['Block']['publish_date'], '%d-%m-%Y').strftime('%Y-%m-%d')
                 vblock.publish_date = vschedule_date
                 vblock.language = Language.objects.get(code=decjson['Block']['language'])
 
                 if decjson['Block']['channel_id'] is not None:
                     vblock.channel = Channel.objects.get(pk=decjson['Block']['channel_id'])
-
 
                 vblock.target_device = Device.objects.get(pk=int(decjson['Block']['target_device_id']))
                 vblock.save()
@@ -61,20 +58,20 @@ class BlockController(object):
 
                 vblock.save()
             except Setting.DoesNotExist as e:
-                return render(request, 'cawas/error.html', {"message": "No Existe Setting. (" + e.message + ")"})
-            except Serie.DoesNotExist as e:
-                return render(request, 'cawas/error.html', {"message": "No Existe Serie. (" + e.message + ")"})
-            except Image.DoesNotExist as e:
-                return render(request, 'cawas/error.html',
-                              {"message": "No Existe Imagen Asociada a la Serie. (" + e.message + ")"})
-            except Language.DoesNotExist as e:
-                return render(request, 'cawas/error.html', {"message": "No existe LENGUAJE. (" + e.message + ")"})
-            except Channel.DoesNotExist as e:
-                request.session['list_block_message'] = 'No existe Canal.'
+                self.code_return = -1
+                request.session['list_block_message'] = 'Error: No existe Configuracion. ' + e.message
                 request.session['list_block_flag'] = FLAG_ALERT
-                return render(request, 'cawas/error.html', {"message": "No existe Channel. (" + e.message + ")"})
-            except Device.DoesNotExist as e:
-                return render(request, 'cawas/error.html', {"message": "No existe Device. (" + e.message + ")"})
+                return self.code_return
+            except Image.DoesNotExist as e:
+                self.code_return = -1
+                request.session['list_block_message'] = 'Error: No Existe imagen asociada a la serie. ' + e.message
+                request.session['list_block_flag'] = FLAG_ALERT
+                return self.code_return
+            except Exception as e:
+                self.code_return = -1
+                request.session['list_block_message'] = 'Error: ' + e.message
+                request.session['list_block_flag'] = FLAG_ALERT
+                return self.code_return
 
             # CARGAR ASSETS
             if vgrabarypublicar == '1':
@@ -138,6 +135,7 @@ class BlockController(object):
                 decjson = json.loads(strjson)
                 vblock = Block.objects.get(block_id=decjson['Block']['block_id'])
                 vblock.name = decjson['Block']['name']
+                vblock.order = decjson['Block']['order']
                 vschedule_date = datetime.datetime.strptime(decjson['Block']['publish_date'], '%d-%m-%Y').strftime(
                     '%Y-%m-%d')
                 vblock.publish_date = vschedule_date

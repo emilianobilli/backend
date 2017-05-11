@@ -99,8 +99,6 @@
                         <span class="idLegend"></span>
                     </div>
                     <div class="form-group has-feedback">
-
-
                         <!-- pegar en "value" el ID nuevo -->
                         <input type="hidden" name="newID" vlaue="" id="newID">
                         <label class="label-left" for="orginalName">Nombre: *</label>
@@ -180,6 +178,15 @@
                             </select>
 
                             <!-- ------------------  Fin de listado de dispositivos  ----------------- -->
+                            <span class="glyphicon form-control-feedback"></span>
+                        </div>
+                    </div>
+
+
+                    <div class="col-xs-12 col-md-4 col-lg-4 form-group">
+                        <div class="form-group has-feedback">
+                            <label class="label-left" for="order">Nro de Orden: *</label>
+                            <input type="number" class="form-control" name="order" id="order" min="1" max="999" oninput="maxLengthCheck(this)" >
                             <span class="glyphicon form-control-feedback"></span>
                         </div>
                     </div>

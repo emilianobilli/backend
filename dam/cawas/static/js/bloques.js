@@ -147,8 +147,17 @@ $( document ).ready(function() {
         var device_selected = $('#deviceSelect').val();
         var asset_selected = [];
         var publicar = $('#publicar').val();
-        
+        var order = $('#order').val();
 
+
+        // Order
+        if(order=="" || order==" ")
+        {
+            errorMe("#order");
+            checkVal++;
+        }else{
+            okMe("#order");
+        }
 
         // chequea original Name
         if(original_name=="" || original_name==" ")
@@ -353,6 +362,7 @@ $( document ).ready(function() {
                     myJSON+='"publish_date":"'+publish_date+'",';
                     myJSON+='"target_device_id":"'+device_selected+'",';
                     myJSON+='"publicar":"'+publicar+'",';
+                    myJSON+='"order":'+order+', ';
                     myJSON+='"assets": ';
                     myJSON+= explodeArray(asset_selected, "asset_id");
                     myJSON+='}}';
