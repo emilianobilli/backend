@@ -83,9 +83,22 @@ def menu_view(request):
     if not request.user.is_authenticated:
         return redirect(login_view)
 
+    message = ''
+    flag = ''
+
+    if request.session.has_key('list_menu_message'):
+        if request.session['list_menu_message'] != '':
+            message = request.session['list_menu_message']
+            request.session['list_menu_message'] = ''
+
+    if request.session.has_key('list_menu_flag'):
+        if request.session['list_menu_flag'] != '':
+            flag = request.session['list_menu_flag']
+            request.session['list_menu_flag'] = ''
+
     #<Definir Variables>
     idassetstype = 0
-    message = ''
+
     contentypes = (
         (1, "MOVIE"),
         (2, "BLOQUES"),
@@ -103,8 +116,8 @@ def menu_view(request):
         (5, "Categorias"),
         (6, "Capitulos"),
         (7, "Sliders")
-
     )
+
     # </Definir Variables>
     #  008360
     # si hizo click en menu_view.cargar_contenido
@@ -144,8 +157,12 @@ def menu_view(request):
             if (Slider.objects.filter(slider_id=id).count() > 0):
                 return redirect(edit_sliders_view, slider_id=id)
 
+            request.session['list_menu_flag'] = FLAG_ALERT
+            request.session['list_menu_message'] = 'ID "'+ id + '" No Existe.'
+            return redirect(menu_view)
+
     title = 'Menu Principal'
-    context = {'title': title, 'assetstypes':assetstypes, 'message': message ,  'idassetstype': idassetstype}
+    context = {'message': message, 'flag':flag,'title': title, 'assetstypes':assetstypes,  'idassetstype': idassetstype}
     return render(request, 'cawas/menu.html', context)
 
 
