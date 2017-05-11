@@ -145,21 +145,11 @@ class BlockController(object):
 
                 vblock.target_device_id = int(decjson['Block']['target_device_id'])
                 vblock.save()
-            except Setting.DoesNotExist as e:
-                return render(request, 'cawas/error.html', {"message": "No Existe Setting. (" + e.message + ")"})
-            except Serie.DoesNotExist as e:
-                return render(request, 'cawas/error.html', {"message": "No Existe Serie. (" + e.message + ")"})
-            except Image.DoesNotExist as e:
-                return render(request, 'cawas/error.html',
-                              {"message": "No Existe Imagen Asociada a la Serie. (" + e.message + ")"})
-            except Language.DoesNotExist as e:
-                return render(request, 'cawas/error.html', {"message": "No existe LENGUAJE. (" + e.message + ")"})
-            except Channel.DoesNotExist as e:
-                return render(request, 'cawas/error.html', {"message": "No existe Channel. (" + e.message + ")"})
-            except Device.DoesNotExist as e:
-                return render(request, 'cawas/error.html', {"message": "No existe Device. (" + e.message + ")"})
-            except Block.DoesNotExist as e:
-                return render(request, 'cawas/error.html', {"message": "No existe Bloque1. (" + e.message + ")"})
+            except Exception as e:
+                self.code_return = -1
+                request.session['list_block_message'] = 'Error: ' + e.message
+                request.session['list_block_flag'] = FLAG_ALERT
+                return self.code_return
 
             # CARGAR NUEVOS ASSETS SELECCIONADOS
             assetall = []
