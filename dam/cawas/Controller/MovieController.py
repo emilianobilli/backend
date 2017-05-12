@@ -153,10 +153,16 @@ class MovieController(object):
                         mmd.save()
 
                 except Language.DoesNotExist as e:
-                    return render(request, 'cawas/error.html', {"message": "No existe Lenguaje. (" + e.message + ")"})
+                    self.code_return = -1
+                    request.session['list_category_message'] = 'Error ' + e.message
+                    request.session['list_category_flag'] = FLAG_ALERT
+                    return self.code_return
+
                 except Exception as e:
-                    return render(request, 'cawas/error.html',
-                                  {"message": "Error al Guardar metadata. (" + e.message + ")"})
+                    self.code_return = -1
+                    request.session['list_category_message'] = 'Error ' + e.message
+                    request.session['list_category_flag'] = FLAG_ALERT
+                    return self.code_return
 
 
 
