@@ -96,9 +96,9 @@ class SliderController(object):
         vlanguages = Language.objects.all()
         vdevices = Device.objects.all()
         vtypes = {"image": "Image", "video": "Video"}
-        basedir = BASE_DIR
+
         context = {'message': message, 'flag': vflag, 'vtypes': vtypes, 'vassets': vassets, 'vsliders': vsliders,
-                   'vlanguages': vlanguages, 'vdevices': vdevices, 'basedir':basedir}
+                   'vlanguages': vlanguages, 'vdevices': vdevices}
         return render(request, 'cawas/sliders/add.html', context)
 
 
