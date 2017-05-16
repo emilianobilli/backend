@@ -13,6 +13,7 @@ from json   import loads
 ##
 from keys   import MA
 from keys   import CAWAS
+from keys   import MA_SIGNATURE
 
 application = Flask(__name__)
 
@@ -144,7 +145,8 @@ components = Components({
                             "media_url": "S",
                             "media_type": "S",
                             "linked_asset_id": "S",
-                            "linked_asset_type": "S"
+                            "linked_asset_type": "S",
+                            "target": "S"
                         },
                     }
                 },
@@ -157,6 +159,7 @@ components = Components({
                             "lang": "S",
                             "block_id": "S",
                             "block_name": "S",
+                            "order": "N",
                             "channel": "S",
                             "target": "S",
                         },
@@ -500,6 +503,10 @@ def urlAsset():
         
         return Response(response=dumps(ret['body']), status=ret['status'])
     
+#--------------------------------------------------------------------------------------------
+# Updates
+#--------------------------------------------------------------------------------------------
+
 @application.route('/v1/private/addview/<string:asset_id>', methods=['PUT'])
 def urlAddView(asset_id):
     ret = backend.add_view(asset_id)
@@ -515,6 +522,20 @@ def urlUpdateRanking(asset_id):
     ret = backend.update_ranking(asset_id)
     return Response(response=dumps(ret['body']), status=ret['status'])
 
+#--------------------------------------------------------------------------------------------
+# JWT Validator
+#--------------------------------------------------------------------------------------------
+@application.route('/v1/private/jwt/<string:token>/', methods=['GET'])
+@application.route('/v1/private/jwt/<string:token>', methods=['GET'])
+def validate_jwt(token):
+    ret = {}
+    try:
+        ret['status'] = 200
+        ret['body']   = dumps(jwt.decode(majwt, MA_SIGNATURE))
+    except Exception as e:
+        ret['status'] = 401
+        ret['body']   = {'status': 'failed', 'message': str(e)}
+    return Response(response=dumps(ret['body']), status=ret['status'])
 #--------------------------------------------------------------------------------------------
 # Ester Egg
 #--------------------------------------------------------------------------------------------

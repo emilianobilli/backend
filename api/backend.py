@@ -201,7 +201,12 @@ class Components(object):
             return self.__query(self.blocks,arg)
 
     def query_sliders(self, arg):
-        return self.__query(self.sliders,arg)
+        if 'target' in arg:
+            qfiller = {}
+            qfilter['target'] = arg['target']
+            return self.__query(self.sliders,arg, qfilter)
+        else:
+            return self.__query(self.sliders,arg)
 
     def query_categories(self, arg):
         return self.__query(self.categories,arg)
