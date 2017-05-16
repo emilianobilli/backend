@@ -202,7 +202,7 @@ class Components(object):
 
     def query_sliders(self, arg):
         if 'target' in arg:
-            qfiller = {}
+            qfilter = {}
             qfilter['target'] = arg['target']
             return self.__query(self.sliders,arg, qfilter)
         else:
