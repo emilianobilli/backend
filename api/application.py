@@ -11,6 +11,7 @@ from json   import loads
 ##
 # Keys
 ##
+import jwt
 from keys   import MA
 from keys   import CAWAS
 from keys   import MA_SIGNATURE
@@ -531,7 +532,7 @@ def validate_jwt(token):
     ret = {}
     try:
         ret['status'] = 200
-        ret['body']   = dumps(jwt.decode(majwt, MA_SIGNATURE))
+        ret['body']   = jwt.decode(token, MA_SIGNATURE)
     except Exception as e:
         ret['status'] = 401
         ret['body']   = {'status': 'failed', 'message': str(e)}
