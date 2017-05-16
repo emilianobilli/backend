@@ -21,8 +21,8 @@ class PublishHelper(object):
                 vpublish.schedule_date = pschedule_date
                 vpublish.save()
             except Exception as e:
-                return render(request, 'cawas/error.html', {"message": "No existe Lenguaje. (" + e.message + ")"})
-
+                request.session['message'] = 'Error ' + e.message
+                return -1
 
     def func_publish_image(self, request, pimg):
         # COLA DE PUBLICACION PARA IMAGENES
@@ -32,7 +32,9 @@ class PublishHelper(object):
                     imgQueue = ImageQueue()
                     imgQueue.image = pimg
                     imgQueue.publish_zone = zone
-                    imgQueue.schedule_date = datetime.datetime.now()
+                    imgQueue.schedule_date = datetime.datetime.now().strftime('%Y-%m-%d')
                     imgQueue.save()
                 except Exception as e:
-                    return render(request , 'cawas/error.html',{"message": "Error al Generar Cola de Imagen. (" + e.message + ")"})
+                    request.session['message'] = 'Error ' + e.message
+                    return -1
+

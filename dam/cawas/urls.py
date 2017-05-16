@@ -10,7 +10,7 @@ urlpatterns = [
     url(r'^$', views.menu_view, name='menu_view'),
 
     url(r'^movies/add/$', views.add_movies_view, name='add_movie'),
-    url(r'^movies/edit/(?P<asset_id>\d*)/$', views.edit_movies_view, name='edit_movie'),
+    url(r'^movies/edit/(?P<asset_id>\w*)/$', views.edit_movies_view, name='edit_movie'),
     url(r'^movies/list/$', views.list_movies_view, name='list_movies'),
     url(r'^movies/unpublish/(?P<id>\d*)/$', views.unpublish_movies_view, name='unpublish_movie'),
     url(r'^movies/publish/(?P<id>\d*)/$', views.publish_movies_view, name='publish_movie'),

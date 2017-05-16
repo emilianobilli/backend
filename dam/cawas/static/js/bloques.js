@@ -1,5 +1,17 @@
 $( document ).ready(function() {
-    
+
+
+    $('#search').multiselect({
+        search: {
+            left: '<input type="text" name="q" class="form-control" placeholder="Buscar..." />',
+            right: '<input type="text" name="q" class="form-control" placeholder="Buscar..." />',
+        },
+        fireSearch: function(value) {
+            return value.length > 3;
+        }
+    });
+
+
     console.log( "ready!" );
     // inicializar tooltips para los íconos de HELP
     $('[data-toggle="tooltip"]').tooltip(); 
@@ -209,31 +221,23 @@ $( document ).ready(function() {
         }
         
          // chequea assets
-        if ( $('#assetDrop li').length < 1 )
+
+        if ( $('#search_to option').length < 1 )
         {
-            errorMe("#assetDrop");
+            errorMe("#search_to");
             checkVal++;
         }else{
-            okMe("#assetDrop");
+            okMe("#search_to");
             asset_selected = [];
-            $('#assetDrop li').each(function(){
-
+            $('#search_to option').each(function(){
                var asset_id_aux = $(this).attr("value"); //val();
-
                if (asset_id_aux != null){
                    asset_selected.push(asset_id_aux);
                }
-
-
             })
-            console.log("asset_selected:"+asset_selected);
+            console.log("search_to_selected:"+asset_selected);
         }
-        
-        
-        
-        
-        
-        
+
                 
         /* -----------  Sending Routine -----------*/
         

@@ -365,27 +365,29 @@ class BlockController(object):
 
             # se elimina el bloque de cawas
             block.delete()
-
             self.code_return = 0
             request.session['list_block_message'] = 'Bloque Eliminado y Despublicado Correctamente '
             request.session['list_block_flag'] = FLAG_SUCCESS
 
         except PublishZone.DoesNotExist as e:
-            request.session['list_block_message'] = "Error al despublicar (" + str(e.value) + ")"
+            request.session['list_block_message'] = "Error al despublicar (" + str(e.message) + ")"
             request.session['list_block_flag'] = FLAG_ALERT
             self.code_return = -1
 
         except Block.DoesNotExist as e:
-            request.session['list_block_message'] = "Error al despublicar (" + str(e.value) + ")"
+            request.session['list_block_message'] = "Error al despublicar (" + str(e.message) + ")"
             request.session['list_block_flag'] = FLAG_ALERT
             self.code_return = -1
         except Setting.DoesNotExist as e:
-            request.session['list_block_message'] = "Error al despublicar (" + str(e.value) + ")"
+            request.session['list_block_message'] = "Error al despublicar (" + str(e.message) + ")"
             request.session['list_block_flag'] = FLAG_ALERT
             self.code_return = -1
 
         except ApiBackendException as e:
             request.session['list_block_message'] = "Error al despublicar (" + str(e.value) + ")"
+            request.session['list_block_flag'] = FLAG_ALERT
+        except Exception as e:
+            request.session['list_block_message'] = "Error al despublicar (" + str(e.message) + ")"
             request.session['list_block_flag'] = FLAG_ALERT
 
         return self.code_return

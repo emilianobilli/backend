@@ -12,8 +12,9 @@
         <link rel="stylesheet" href="{% static 'css/duration-picker.css' %}">
         <link rel="stylesheet" href="{% static 'css/select2.css' %}">
 
-
+        <link rel="stylesheet" href="{% static 'css/style.css' %}">
         <!-- Javascript -->
+
 
         <script src="{% static 'js/jquery.min.js' %}"></script>
         <script src="{% static 'js/jquery-sortable.js' %}"></script>
@@ -22,17 +23,10 @@
         <script src="{% static 'js/select2.min.js' %}"></script>
         <script src="{% static 'js/duration-picker.min.js' %}"></script>
 
+        <script src="{% static 'js/multiselect.min.js' %}"></script>
         {% block extra_head %}
         {% endblock %}
-        <!--/Javascript
 
-        <script src="{% static 'js/series.js' %}"></script>
-        <script src="{% static 'js/series.js' %}"></script>
-        <script src="{% static 'js/bloques.js' %}"></script>
-
-        <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.2.4/jquery.min.js"></script>
-
-        -->
 
 
 
@@ -67,28 +61,32 @@
 }
 </style>
 
-         <script>
-            /*---------------------------------------
-            REEMPLAZAR EL VALOR DE ESTA VARIABLE PARA
-            DAR UN STATUS AL USUARIO LUEGO DEL POST
-            ---------------------------------------*/
 
-            var resultado = ""; // cambiar por "error" si hubo algún problema o por "success" en caso de éxito
+     <script>
+        /*---------------------------------------
+        REEMPLAZAR EL VALOR DE ESTA VARIABLE PARA
+        DAR UN STATUS AL USUARIO LUEGO DEL POST
+        ---------------------------------------*/
 
-
-             //year check
-            function maxLengthCheck(object)
-              {
-                if (object.value.length > 4)
-                  object.value = object.value.slice(0, 4)
-              }
-        </script>
+        var resultado = ""; // cambiar por "error" si hubo algún problema o por "success" en caso de éxito
 
 
+         //year check
+        function maxLengthCheck(object)
+          {
+            if (object.value.length > 4)
+              object.value = object.value.slice(0, 4)
+          }
+
+
+
+    </script>
 
 
     </head>
     <body>
+
+
 
 
 

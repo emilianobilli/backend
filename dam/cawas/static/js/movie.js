@@ -1,6 +1,29 @@
 
 $( document ).ready(function() {
 
+
+    $('#search_girls').multiselect({
+        search: {
+            left: '<input type="text" name="q" class="form-control" placeholder="Buscar..." />',
+            right: '<input type="text" name="q" class="form-control" placeholder="Buscar..." />',
+        },
+        fireSearch: function(value) {
+            return value.length > 3;
+        }
+    });
+
+
+$('#search_category').multiselect({
+        search: {
+            left: '<input type="text" name="q" class="form-control" placeholder="Buscar..." />',
+            right: '<input type="text" name="q" class="form-control" placeholder="Buscar..." />',
+        },
+        fireSearch: function(value) {
+            return value.length > 3;
+        }
+    });
+
+
  // rellena el formulario con los datos recogidos en la variable requestedData
     function completarRuntime(){
         $("#duration-minutes").val(minutos).change();
@@ -193,42 +216,7 @@ $( document ).ready(function() {
     });
     
     
-    /**/
-    $("ul.generoPick").sortable({
-      group: 'generoPick',
-      pullPlaceholder: false,
-      // animation on drop
-      onDrop: function  ($item, container, _super) {
-        var $clonedItem = $('<li/>').css({height: 0});
-        $item.before($clonedItem);
-        $clonedItem.animate({'height': $item.height()});
 
-        $item.animate($clonedItem.position(), function  () {
-          $clonedItem.detach();
-          _super($item, container);
-        });
-      },
-
-      // set $item relative to cursor position
-      onDragStart: function ($item, container, _super) {
-        var offset = $item.offset(),
-            pointer = container.rootGroup.pointer;
-
-        adjustment = {
-          left: pointer.left - offset.left,
-          top: pointer.top - offset.top
-        };
-
-        _super($item, container);
-      },
-      onDrag: function ($item, position) {
-        $item.css({
-          left: position.left - adjustment.left,
-          top: position.top - adjustment.top
-        });
-      }
-    });
-    
     
     /*---- DATE PICKER ----*/
     $('.datePick').dcalendarpicker({
@@ -324,6 +312,8 @@ $( document ).ready(function() {
         var display_runtime = $('#runtime').val();
         var year_selected = $('#releaseYear').val();
         var publicar = $('#publicar').val();
+
+
         countChecked();
         // chequea original Title
         if(original_Title=="" || original_Title==" ")
@@ -349,32 +339,49 @@ $( document ).ready(function() {
         }else{
             okMe("#ThumbVer");
         }
-        
-        // chequea pornstar
-        if ( $('#pornstarDrop li').length > 0 )
+
+
+
+        //search_to_girls
+        if ( $('#search_girls_to option').length < 1 )
         {
-            okMe("#pornstarDrop");
-            pornstars_selected = [];
-            $('#pornstarDrop li').each(function(){
-               pornstars_selected.push($(this).val());
-            })
-            //console.log("pornstars_selected:"+pornstars_selected)
-        }
-        
-        // chequea categorías
-        if ( $('#generoDrop li').length < 1 )
-        {
-            errorMe("#generoDrop");
+            errorMe("#search_girls_to");
             checkVal++;
         }else{
-            okMe("#generoDrop");
-            categories_selected = [];
-            $('#generoDrop li').each(function(){
-              categories_selected.push($(this).val());
+            okMe("#search_girls_to");
+            pornstars_selected = [];
+            $('#search_girls_to option').each(function(){
+               var asset_id_aux = $(this).attr("value"); //val();
+               if (asset_id_aux != null){
+                   pornstars_selected.push(asset_id_aux);
+               }
             })
-            console.log("generoDrop:"+categories_selected)
+            console.log("search_girls_to_selected:"+pornstars_selected);
         }
-        
+
+        //search_category_to
+        if ( $('#search_category_to option').length < 1 )
+        {
+            errorMe("#search_category_to");
+            checkVal++;
+        }else{
+            okMe("#search_category_to");
+            categories_selected = [];
+            $('#search_category_to option').each(function(){
+               var asset_id_aux = $(this).attr("value"); //val();
+               if (asset_id_aux != null){
+                   categories_selected.push(asset_id_aux);
+               }
+            })
+            console.log("search_girls_to_selected:"+categories_selected);
+        }
+
+
+
+
+
+
+
         // chequea canal
         console.log("#canalSelect"+$('#canalSelect').val());
         if ( $('#canalSelect').val()=="0" || $('#canalSelect').val()==0)

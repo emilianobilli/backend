@@ -27,6 +27,8 @@ class MovieController(object):
         message = ''
         vgrabarypublicar=''
         ph = PublishHelper()
+        pathfilesport= ''
+        pathfilesland = ''
         if request.method == 'POST':
 
             # parsear JSON
@@ -42,15 +44,22 @@ class MovieController(object):
             try:
                 vasset = Asset.objects.get(asset_id=decjson['Movie']['asset_id'])
             except Asset.DoesNotExist as e:
-                return render(request, 'cawas/error.html', {"message": "No existe Asset. (" + e.message + ")"})
+                request.session['list_movie_message'] = "Error: No existe asset (" + str(e.message) + ")"
+                request.session['list_movie_flag'] = FLAG_ALERT
+                self.code_return = -1
+
+            #obtiene las variables
+            try:
+                pathfilesport = Setting.objects.get(code='image_repository_path_portrait')
+                pathfilesland = Setting.objects.get(code='image_repository_path_landscape')
+            except Setting.DoesNotExist as e:
+                request.session['list_movie_message'] = "Error: No existe Setting (" + str(e.message) + ")"
+                request.session['list_movie_flag'] = FLAG_ALERT
+                self.code_return = -1
 
             # VALIDAR IMAGEN
             try:
                 img = Image.objects.get(name=vasset.asset_id)
-                pathfilesport = Setting.objects.get(code='image_repository_path_portrait')
-                pathfilesland = Setting.objects.get(code='image_repository_path_landscape')
-            except Setting.DoesNotExist as e:
-                return render(request, 'cawas/error.html', {"message": "No Setting. (" + e.message + ")"})
             except Image.DoesNotExist as e:
                 vflag = "error"
                 img = Image()
@@ -81,7 +90,9 @@ class MovieController(object):
             try:
                 vchannel = Channel.objects.get(pk=decjson['Movie']['channel_id'])
             except Asset.DoesNotExist as e:
-                return render(request, 'cawas/error.html', {"message": "No existe Asset. (" + e.message + ")"})
+                request.session['list_movie_message'] = "Error: No existe Canal (" + str(e.message) + ")"
+                request.session['list_movie_flag'] = FLAG_ALERT
+                self.code_return = -1
 
             mv.asset = vasset
             mv.channel = vchannel
@@ -106,7 +117,9 @@ class MovieController(object):
                         vgirl = Girl.objects.get(pk=item['girl_id'])
                         mv.girls.add(vgirl)
                     except Girl.DoesNotExist as e:
-                        return render(request, 'cawas/error.html', {"message": "No existe Girl. (" + e.message + ")"})
+                        request.session['list_movie_message'] = "Error: No existe Chica (" + str(e.message) + ")"
+                        request.session['list_movie_flag'] = FLAG_ALERT
+                        self.code_return = -1
 
             # CARGAR CATEGORIES
             vcategories = decjson['Movie']['categories']
@@ -116,7 +129,9 @@ class MovieController(object):
                     mv.category.add(vcategory)
                 except Category.DoesNotExist as e:
                     vflag = "error"
-                    return render(request, 'cawas/error.html', {"message": "No existe Categoria. (" + e.message + ")"})
+                    request.session['list_movie_message'] = "Error: No existe Categoria (" + str(e.message) + ")"
+                    request.session['list_movie_flag'] = FLAG_ALERT
+                    self.code_return = -1
 
             # ACTUALIZAR EL ASSET A MOVIE
             vasset.asset_type = "movie"
@@ -170,11 +185,17 @@ class MovieController(object):
             if vgrabarypublicar == '1':
                 metadatas = MovieMetadata.objects.filter(movie=mv)
                 for mdi in metadatas:
-                    ph.func_publish_queue(request, mdi.movie.asset.asset_id, mdi.language, 'AS', 'Q', mdi.publish_date)
+                    if ph.func_publish_queue(request, mdi.movie.asset.asset_id, mdi.language, 'AS', 'Q', mdi.publish_date) == RETURN_ERROR:
+                        request.session['list_movie_message'] = 'Error' + request.session['message']
+                        request.session['list_movie_flag'] = FLAG_ALERT
+                        return RETURN_ERROR
 
             # PUBLICAR METADATA IMAGEN
             if vgrabarypublicar == '1':
-                ph.func_publish_image(request, img)
+                if ph.func_publish_image(request, img) == RETURN_ERROR:
+                    request.session['list_movie_message'] = 'Error' + request.session['message']
+                    request.session['list_movie_flag'] = FLAG_ALERT
+                    return RETURN_ERROR
 
             request.session['list_movie_message'] = 'Guardado Correctamente'
             request.session['list_movie_flag'] = FLAG_SUCCESS
@@ -208,12 +229,16 @@ class MovieController(object):
         vlangmetadata = []
         flag=''
         message= ''
+        pathfilesport = ''
+        pathfilesland = ''
 
         try:
             pathfilesport = Setting.objects.get(code='image_repository_path_portrait')
             pathfilesland = Setting.objects.get(code='image_repository_path_landscape')
         except Setting.DoesNotExist as e:
-            return render(request, 'cawas/error.html', {"message": "No Setting. (" + e.message + ")"})
+            request.session['list_movie_message'] = "Error: No existe Setting (" + str(e.message) + ")"
+            request.session['list_movie_flag'] = FLAG_ALERT
+            self.code_return = -1
 
         # Post Movie - Graba datos
         if request.method == 'POST':
@@ -234,14 +259,20 @@ class MovieController(object):
 
                 vchannel = Channel.objects.get(pk=decjson['Movie']['channel_id'])
             except Asset.DoesNotExist as e:
-                return render(request, 'cawas/error.html', {"message": "No existe Asset. (" + e.message + ")"})
+                request.session['list_movie_message'] = "Error: No existe Asset (" + str(e.message) + ")"
+                request.session['list_movie_flag'] = FLAG_ALERT
+                self.code_return = -1
             except Movie.DoesNotExist as e:
-                return render(request, 'cawas/error.html',
-                              {"message": "No existe Movie asociado al Asset. (" + e.message + ")"})
+                request.session['list_movie_message'] = "Error: No existe Movie asociada al Asset (" + str(e.message) + ")"
+                request.session['list_movie_flag'] = FLAG_ALERT
+                self.code_return = -1
+
             except Image.DoesNotExist as e:
                 img = Image()
             except Asset.DoesNotExist as e:
-                return render(request, 'cawas/error.html', {"message": "No existe Asset. (" + e.message + ")"})
+                request.session['list_movie_message'] = "Error: No existe Asset (" + str(e.message) + ")"
+                request.session['list_movie_flag'] = FLAG_ALERT
+                self.code_return = -1
 
             # IMAGEN Portrait
             if (request.FILES.has_key('ThumbHor')):
@@ -280,51 +311,58 @@ class MovieController(object):
             mv.display_runtime = decjson['Movie']['display_runtime']
             # calcular runtime
             # mv.runtime
-            mv.save()
 
             # CARGAR GIRLS
             if (decjson['Movie']['girls'] is not None):
+
                 vgirls = decjson['Movie']['girls']
+                mv.girls = []
+                mv.save()
                 for item in vgirls:
                     try:
-                        vgirl = Girl.objects.get(pk=item['girl_id'])
+                        vgirl = Girl.objects.get(id=item['girl_id'])
                         mv.girls.add(vgirl)
                     except Girl.DoesNotExist as e:
-                        return render(request, 'cawas/error.html', {"message": "No existe Girl. (" + e.message + ")"})
-
+                        request.session['list_movie_message'] = "Error: No existe Girl (" + str(e.message) + ")"
+                        request.session['list_movie_flag'] = FLAG_ALERT
+                        self.code_return = -1
+                mv.save()
+            print 'debug1'
             # CARGAR CATEGORIES
             vcategories = decjson['Movie']['categories']
+            mv.category = []
+            mv.save()
             for item in vcategories:
                 try:
-                    vcategory = Category.objects.get(pk=item['category_id'])
+                    vcategory = Category.objects.get(id=item['category_id'])
                     mv.category.add(vcategory)
                 except Category.DoesNotExist as e:
-                    return render(request, 'cawas/error.html', {"message": "No existe Categoria. (" + e.message + ")"})
-
+                    request.session['list_movie_message'] = "Error: No existe Categoria (" + str(e.message) + ")"
+                    request.session['list_movie_flag'] = FLAG_ALERT
+                    self.code_return = -1
+            mv.save()
             # ACTUALIZAR EL ASSET A MOVIE
-            vasset.asset_type = "movie"
-            vasset.save()
-
             # CARGAR METADATA
             vmoviesmetadata = decjson['Movie']['Moviesmetadata']
             # eliminar las movies metadata existentes
 
-
+            mv.save()
             MovieMetadata.objects.filter(movie=mv).delete()
             for item in vmoviesmetadata:
                 if (item['Moviemetadata']['schedule_date'] != ''):
-                    vpublishdate = datetime.datetime.strptime(item['Moviemetadata']['schedule_date'],
-                                                              '%d-%m-%Y').strftime('%Y-%m-%d')
+                    vpublishdate = datetime.datetime.strptime(item['Moviemetadata']['schedule_date'],'%d-%m-%Y').strftime('%Y-%m-%d')
                 else:
                     vpublishdate = datetime.datetime.now().strftime('%Y-%m-%d')
 
+
+                print 'debug2 '+ vpublishdate
                 try:
                     # CREAR METADATA POR IDIOMA
                     vlanguage = Language.objects.get(code=item['Moviemetadata']['language'])
                     try:
                         mmd = MovieMetadata.objects.get(movie=mv, language=vlanguage)
                     except MovieMetadata.DoesNotExist as e:
-                        mmd = MovieMetadata();
+                        mmd = MovieMetadata()
                     mmd.language = vlanguage
                     mmd.movie = mv
                     mmd.title = item['Moviemetadata']['title']
@@ -336,39 +374,34 @@ class MovieController(object):
                     metadatas = MovieMetadata.objects.filter(movie=mv, language=mmd.language)
                     if metadatas.count() < 1:
                         mmd.save()
-                        # Recorrer el publicZone y genera un PublicQueue por cada idioma
-                        vzones = PublishZone.objects.filter(enabled=True)
-                        for zone in vzones:
-                            # CREAR COLA DE PUBLICACION
-                            vpublish = PublishQueue()
-                            vpublish.item_id = vasset.asset_id
-                            vpublish.item_lang = vlanguage
-                            vpublish.item_type = 'AS'
-                            vpublish.status = 'Q'
-                            vpublish.publish_zone = zone
-                            vpublish.schedule_date = vpublishdate
-                            vpublish.save()
 
+                    # CREAR COLA DE PUBLICACION
+                    ph = PublishHelper()
+                    ph.func_publish_queue(request, mmd.movie.asset.asset_id, mmd.language, 'AS', 'Q', vpublishdate)
                 except Language.DoesNotExist as e:
-                    return render(request, 'cawas/error.html', {"message": "No existe Lenguaje. (" + e.message + ")"})
+                    request.session['list_movie_message'] = "Error: No existe Lenguaje (" + str(e.message) + ")"
+                    request.session['list_movie_flag'] = FLAG_ALERT
+                    self.code_return = -1
                 except Exception as e:
-                    return render(request, 'cawas/error.html',
-                                  {"message": "Error al Guardar metadata. (" + e.message + ")"})
+                    request.session['list_movie_message'] = "Error: al Guardar (" + str(e.message) + ")"
+                    request.session['list_movie_flag'] = FLAG_ALERT
+                    self.code_return = -1
 
+            mv.save()
             # COLA DE PUBLICACION PARA IMAGENES
             try:
-                vzones = PublishZone.objects.filter(enabled=True)
-                for zone in vzones:
-                    imgQueue = ImageQueue()
-                    imgQueue.image = img
-                    imgQueue.publish_zone = zone
-                    imgQueue.schedule_date = datetime.datetime.now()
-                    imgQueue.save()
+                ph = PublishHelper()
+                ph.func_publish_image(request, img)
             except Exception as e:
-                return render(request, 'cawas/error.html',
-                              {"message": "Error al Generar Cola de Imagen. (" + e.message + ")"})
-            flag = 'success'
-            message='Guardado Correctamente'
+                request.session['list_movie_message'] = "Error al generar cola de imagen (" + str(e.message) + ")"
+                request.session['list_movie_flag'] = FLAG_ALERT
+                self.code_return = -1
+
+            request.session['list_movie_message'] = 'Guardado Correctamente'
+            request.session['list_movie_flag'] = FLAG_SUCCESS
+            vflag = "success"
+            message = 'Registrado correctamente'
+
 
         # VARIABLES PARA GET - CARGAR MOVIE
         try:
@@ -403,14 +436,24 @@ class MovieController(object):
                                           'descripcion': '', 'fechapub': ''})
 
         except Movie.DoesNotExist as e:
-            return render(request, 'cawas/error.html',
-                          {"message": "Asset no se encuentra Vinculado a Movie. (" + e.message + ")"})
+            request.session['list_movie_message'] = "Asset no se encuentra Vinculado a Movie. (" + e.message + ")"
+            request.session['list_movie_flag'] = FLAG_ALERT
+            self.code_return = -1
+
         except Asset.DoesNotExist as e:
-            return render(request, 'cawas/error.html', {"message": "Asset no Existe. (" + e.message + ")"})
+            request.session['list_movie_message'] = "Error: No existe Asset. (" + e.message + ")"
+            request.session['list_movie_flag'] = FLAG_ALERT
+            self.code_return = -1
+
         except Category.DoesNotExist as e:
-            return render(request, 'cawas/error.html', {"message": "Categoria no Existe. (" + e.message + ")"})
+            request.session['list_movie_message'] = "Error: No existe Categoria. (" + e.message + ")"
+            request.session['list_movie_flag'] = FLAG_ALERT
+            self.code_return = -1
+
         except MovieMetadata.DoesNotExist as e:
-            return render(request, 'cawas/error.html', {"message": "MovieMetaData No Existe . (" + e.message + ")"})
+            request.session['list_movie_message'] = "Error: No existe MovieMetadata. (" + e.message + ")"
+            request.session['list_movie_flag'] = FLAG_ALERT
+            self.code_return = -1
 
         # CARGAR VARIABLES USADAS EN FRONT
         assets = Asset.objects.filter(asset_type="unknown")
@@ -545,7 +588,7 @@ class MovieController(object):
     def publish(self, request, id):
         md = MovieMetadata.objects.get(id=id)
         md.publish_date = datetime.datetime.now().strftime('%Y-%m-%d')
-        md.activated = True
+        #md.activated = True
         md.save()
 
         ph = PublishHelper()
