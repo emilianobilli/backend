@@ -17,3 +17,4 @@ python-dateutil==2.6.0
 s3transfer==0.1.10
 six==1.10.0
 Werkzeug==0.11.15
+PyJWT==1.5.0
