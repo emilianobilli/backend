@@ -21,6 +21,7 @@ class SerieController(object):
         # VARIABLES LOCALES
         message = ''
         flag = ''
+        vgrabarypublicar = ''
         if request.method == 'POST':
             # VARIABLES
             vserie = Serie()
@@ -37,7 +38,10 @@ class SerieController(object):
                 pathfilesport = Setting.objects.get(code='image_repository_path_portrait')
                 pathfilesland = Setting.objects.get(code='image_repository_path_landscape')
             except Setting.DoesNotExist as e:
-                return render(request, 'cawas/error.html', {"message": "No Setting. (" + e.message + ")"})
+                self.code_return = -1
+                request.session['list_serie_message'] = 'Error: ' + e.message
+                request.session['list_serie_flag'] = FLAG_ALERT
+                return self.code_return
 
             # IMAGEN Portrait
             if (request.FILES.has_key('ThumbHor')):
@@ -78,7 +82,10 @@ class SerieController(object):
                     g = Girl.objects.get(pk=item['girl_id'])
                     vserie.girls.add(g)
                 except Girl.DoesNotExist as e:
-                    return render(request, 'cawas/error.html', {"message": "No existe Girl. (" + e.message + ")"})
+                    self.code_return = -1
+                    request.session['list_serie_message'] = 'Error: ' + e.message
+                    request.session['list_serie_flag'] = FLAG_ALERT
+                    return self.code_return
 
             # CARGAR CATEGORIES
             vcategories = decjson['Serie']['categories']
@@ -86,13 +93,19 @@ class SerieController(object):
                 try:
                     vserie.category.add(Category.objects.get(pk=item['category_id']))
                 except Category.DoesNotExist as e:
-                    return render(request, 'cawas/error.html', {"message": "No existe Category. (" + e.message + ")"})
+                    self.code_return = -1
+                    request.session['list_serie_message'] = 'Error: ' + e.message
+                    request.session['list_serie_flag'] = FLAG_ALERT
+                    return self.code_return
 
             # Channel
             try:
                 vserie.channel = Channel.objects.get(pk=decjson['Serie']['channel_id'])
             except Channel.DoesNotExist as e:
-                return render(request, 'cawas/error.html', {"message": "No existe Channel. (" + e.message + ")"})
+                self.code_return = -1
+                request.session['list_serie_message'] = 'Error: ' + e.message
+                request.session['list_serie_flag'] = FLAG_ALERT
+                return self.code_return
 
             vserie.save()
             message = 'Registrado Correctamente'
@@ -105,7 +118,10 @@ class SerieController(object):
                 try:
                     smd.language = Language.objects.get(code=item['Seriemetadata']['language'])
                 except Language.DoesNotExist as e:
-                    return render(request, 'cawas/error.html', {"message": "No existe LANGUAGE. (" + e.message + ")"})
+                    self.code_return = -1
+                    request.session['list_serie_message'] = 'Error No existe Lenguaje ' + e.message
+                    request.session['list_serie_flag'] = FLAG_ALERT
+                    return self.code_return
 
                 vschedule_date = datetime.datetime.now().strftime('%Y-%m-%d')
                 smd.title = item['Seriemetadata']['title']
@@ -113,12 +129,8 @@ class SerieController(object):
                 smd.summary_long = item['Seriemetadata']['summary_long']
                 smd.serie = vserie
                 smd.publish_date = vschedule_date
-
                 smd.save()
-                # Publica en PublishQueue
-                ph = PublishHelper()
-                ph.func_publish_queue(request, vasset.asset_id, smd.language, 'AS', 'Q', vschedule_date)
-                ph.func_publish_image(request, vimg)
+
 
             flag = 'success'
 
@@ -132,20 +144,18 @@ class SerieController(object):
             vchannels = Channel.objects.all()
             vseries = Serie.objects.all()
 
+        except Exception as e:
+            self.code_return = -1
+            request.session['list_serie_message'] = 'Error: ' + e.message
+            request.session['list_episode_flag'] = FLAG_ALERT
+            return self.code_return
 
-        except Serie.DoesNotExist as e:
-            return render(request, 'cawas/error.html', {"message": "Serie No Existe . (" + e.message + ")"})
-        except Girl.DoesNotExist as e:
-            return render(request, 'cawas/error.html', {"message": "Girl No Existe . (" + e.message + ")"})
-        except Category.DoesNotExist as e:
-            return render(request, 'cawas/error.html', {"message": "Categoria no Existe. (" + e.message + ")"})
-        except Channel.DoesNotExist as e:
-            return render(request, 'cawas/error.html', {"message": "Canal no Existe. (" + e.message + ")"})
-        except GirlMetadata.DoesNotExist as e:
-            return render(request, 'cawas/error.html', {"message": "GirlMetaData No Existe . (" + e.message + ")"})
+        self.code_return = 0
+        request.session['list_serie_message'] = 'Guardado Correctamente'
+        request.session['list_serie_flag'] = FLAG_SUCCESS
 
-        context = {'message': message, 'flag':flag,'vgirls': vgirls, 'vlanguages': vlanguages, 'vcategories': vcategories,
-                   'vchannels': vchannels, 'vseries': vseries,'flag':flag}
+        context = {'message': message, 'flag':flag, 'vgirls': vgirls, 'vlanguages': vlanguages, 'vcategories': vcategories,
+                   'vchannels': vchannels, 'vseries': vseries, 'flag':flag}
         return render(request, 'cawas/series/add.html', context)
 
 
@@ -160,6 +170,7 @@ class SerieController(object):
         # VARIABLES LOCALES
         message = ''
         flag = ''
+        vgrabarypublicar=''
         if request.method == 'POST':
             # VARIABLES
             vserie = Serie()
@@ -174,16 +185,11 @@ class SerieController(object):
                 vimg = Image.objects.get(name=vasset.asset_id)
                 pathfilesport = Setting.objects.get(code='image_repository_path_portrait')
                 pathfilesland = Setting.objects.get(code='image_repository_path_landscape')
-            except Setting.DoesNotExist as e:
-                return render(request, 'cawas/error.html', {"message": "No Existe Setting. (" + e.message + ")"})
-            except Asset.DoesNotExist as e:
-                return render(request, 'cawas/error.html', {"message": "No Existe Asset. (" + e.message + ")"})
-            except Serie.DoesNotExist as e:
-                return render(request, 'cawas/error.html', {"message": "No Existe Serie. (" + e.message + ")"})
-            except Image.DoesNotExist as e:
-                return render(request, 'cawas/error.html',
-                              {"message": "No Existe Imagen Asociada a la Serie. (" + e.message + ")"})
-
+            except Exception as e:
+                self.code_return = -1
+                request.session['list_serie_message'] = 'Error: ' + e.message
+                request.session['list_serie_flag'] = FLAG_ALERT
+                return self.code_return
             # IMAGEN Portrait
             if (request.FILES.has_key('ThumbHor')):
                 if request.FILES['ThumbHor'].name != '':
@@ -206,7 +212,7 @@ class SerieController(object):
                         os.remove(varchivo)
             vimg.save()
             # FIN IMAGEN
-
+            vgrabarypublicar = decjson['Serie']['publicar']
             # Datos de Serie
             vserie.asset = vasset
             vserie.original_title = decjson['Serie']['original_title']
@@ -223,7 +229,10 @@ class SerieController(object):
                     g = Girl.objects.get(pk=item['girl_id'])
                     vserie.girls.add(g)
                 except Girl.DoesNotExist as e:
-                    return render(request, 'cawas/error.html', {"message": "No existe Girl. (" + e.message + ")"})
+                    self.code_return = -1
+                    request.session['list_serie_message'] = 'Error: ' + e.message
+                    request.session['list_serie_flag'] = FLAG_ALERT
+                    return self.code_return
 
             # CARGAR CATEGORIES
             vcategories = decjson['Serie']['categories']
@@ -231,23 +240,25 @@ class SerieController(object):
                 try:
                     vserie.category.add(Category.objects.get(pk=item['category_id']))
                 except Category.DoesNotExist as e:
-                    return render(request, 'cawas/error.html', {"message": "No existe Category. (" + e.message + ")"})
+                    self.code_return = -1
+                    request.session['list_serie_message'] = 'Error: ' + e.message
+                    request.session['list_serie_flag'] = FLAG_ALERT
+                    return self.code_return
 
             # Channel
             try:
                 vserie.channel = Channel.objects.get(pk=decjson['Serie']['channel_id'])
             except Channel.DoesNotExist as e:
-                return render(request, 'cawas/error.html', {"message": "No existe Channel. (" + e.message + ")"})
+                self.code_return = -1
+                request.session['list_serie_message'] = 'Error: ' + e.message
+                request.session['list_serie_flag'] = FLAG_ALERT
+                return self.code_return
 
             vserie.save()
             message = 'Categoria - Registrado Correctamente'
 
-            # Fin datos serie
-
             # BORRAR Y CREAR METADATA
-
             vseriemetadatas = decjson['Serie']['Seriemetadatas']
-            #SerieMetadata.objects.filter(serie=vserie).delete()
             for item in vseriemetadatas:
                 try:
                     vlanguage = Language.objects.get(code=item['Seriemetadata']['language'])
@@ -255,7 +266,10 @@ class SerieController(object):
                 except SerieMetadata.DoesNotExist as e:
                     smd = SerieMetadata()
                 except Language.DoesNotExist as e:
-                    return render(request, 'cawas/error.html', {"message": "No existe LANGUAGE. (" + e.message + ")"})
+                    self.code_return = -1
+                    request.session['list_serie_message'] = 'Error: ' + e.message
+                    request.session['list_serie_flag'] = FLAG_ALERT
+                    return self.code_return
 
                 vschedule_date = datetime.datetime.now().strftime('%Y-%m-%d')
                 smd.language = vlanguage
@@ -264,16 +278,20 @@ class SerieController(object):
                 smd.summary_long = item['Seriemetadata']['summary_long']
                 smd.serie = vserie
                 smd.publish_date = vschedule_date
-
+                smd.save()
                 metadatas = SerieMetadata.objects.filter(serie=vserie, language=smd.language)
                 # Si no existe METADATA, se genera
                 if metadatas.count() < 1:
-                    smd.save()
                     # Publica en PublishQueue
-                    ph = PublishHelper()
-                    ph.func_publish_queue(request, vasset.asset_id, smd.language, 'AS', 'Q', vschedule_date)
-                    ph.func_publish_image(request, vimg)
-
+                    if (Episode.objects.filter(serie=vserie).count() > 0):
+                        ph = PublishHelper()
+                        ph.func_publish_queue(request, vserie.asset.asset_id, smd.language, 'AS', 'Q',vschedule_date)
+                        ph.func_publish_image(request, vimg)
+                    else:
+                        self.code_return = -1
+                        request.session['list_serie_message'] = 'No se puede Publicar Serie sin Episodios asignados '
+                        request.session['list_serie_flag'] = FLAG_ALERT
+                        return self.code_return
                 # Fin de POST
             flag = "success"
 
@@ -322,19 +340,15 @@ class SerieController(object):
                                           'summary_short': '',
                                           'summary_long': ''})
 
+        except Exception as e:
+            self.code_return = -1
+            request.session['list_serie_message'] = 'Error: ' + e.message
+            request.session['list_serie_flag'] = FLAG_ALERT
+            return self.code_return
 
-        except Asset.DoesNotExist as e:
-            return render(request, 'cawas/error.html', {"message": "Asset No Existe . (" + e.message + ")"})
-        except Serie.DoesNotExist as e:
-            return render(request, 'cawas/error.html', {"message": "Serie No Existe . (" + e.message + ")"})
-        except Girl.DoesNotExist as e:
-            return render(request, 'cawas/error.html', {"message": "Girl No Existe . (" + e.message + ")"})
-        except Category.DoesNotExist as e:
-            return render(request, 'cawas/error.html', {"message": "Categoria no Existe. (" + e.message + ")"})
-        except Channel.DoesNotExist as e:
-            return render(request, 'cawas/error.html', {"message": "Canal no Existe. (" + e.message + ")"})
-        except GirlMetadata.DoesNotExist as e:
-            return render(request, 'cawas/error.html', {"message": "GirlMetaData No Existe . (" + e.message + ")"})
+        self.code_return = 0
+        request.session['list_serie_message'] = 'Guardado Correctamente'
+        request.session['list_serie_flag'] = FLAG_SUCCESS
 
         context = {'message': message, 'vgirls': vgirls,
                    'vlanguages': vlanguages,
@@ -414,35 +428,39 @@ class SerieController(object):
             # If page is out of range (e.g. 9999), deliver last page of results.
             series = paginator.page(paginator.num_pages)
 
-        context = {'message': message, 'flag':flag, 'registros': series, 'titulo': titulo, 'usuario': usuario}
+        context = {'message':message, 'flag':flag, 'registros': series, 'titulo': titulo, 'usuario': usuario}
         return render(request, 'cawas/series/list.html', context)
 
 
 
     def publish(self, request, id):
         #Publicar la Serie
-        md = SerieMetadata.objects.get(id=id)
-        md.publish_date = datetime.datetime.now().strftime('%Y-%m-%d')
-        md.activated = True
-        md.save()
+        try:
 
-        ph = PublishHelper()
-        ph.func_publish_queue(request, md.serie.asset.asset_id, md.language, 'AS', 'Q',datetime.datetime.now().strftime('%Y-%m-%d'))
+            md = SerieMetadata.objects.get(id=id)
+            md.publish_date = datetime.datetime.now().strftime('%Y-%m-%d')
+            md.save()
 
-        #Publicar los episodios de la serie
-        episodes = Episode.objects.filter(serie=md.serie)
-        for e in episodes:
-            #recorrer la metadata en el idioma que se selecciono la serie
-            episodemetadatas = EpisodeMetadata.objects.filter(episode=e, language=md.language)
-            for em in episodemetadatas:
-                ph = PublishHelper()
-                ph.func_publish_queue(request, em.episode.asset.asset_id, em.language, 'AS', 'Q', datetime.datetime.now().strftime('%Y-%m-%d'))
-                ph.func_publish_image(request, em.episode.image)
-        request.session['list_serie_message'] = 'Serie en ' + md.language.name + ' de Publicada Correctamente'
-        request.session['list_serie_flag'] = FLAG_SUCCESS
-        self.code_return = 0
+            ph = PublishHelper()
+            ph.func_publish_queue(request, md.serie.asset.asset_id, md.language, 'AS', 'Q',datetime.datetime.now().strftime('%Y-%m-%d'))
 
-        return self.code_return
+            #Publicar los episodios de la serie
+            episodes = Episode.objects.filter(serie=md.serie)
+            for e in episodes:
+                #recorrer la metadata en el idioma que se selecciono la serie
+                episodemetadatas = EpisodeMetadata.objects.filter(episode=e, language=md.language)
+                for em in episodemetadatas:
+                    ph = PublishHelper()
+                    ph.func_publish_queue(request, em.episode.asset.asset_id, em.language, 'AS', 'Q', datetime.datetime.now().strftime('%Y-%m-%d'))
+                    ph.func_publish_image(request, em.episode.image)
+            request.session['list_serie_message'] = 'Serie en ' + md.language.name + ' de Publicada Correctamente'
+            request.session['list_serie_flag'] = FLAG_SUCCESS
+            self.code_return = 0
+        except Exception as e:
+            self.code_return = -1
+            request.session['list_serie_message'] = "Error al despublicar (" + str(e.message) + ")"
+            request.session['list_serie_flag'] = FLAG_ALERT
+            return self.code_return
 
 
 
@@ -470,7 +488,7 @@ class SerieController(object):
             for zone in vzones:
                 abr = ApiBackendResource(zone.backend_url, setting.value, api_key.value)
                 param = {"asset_id": seriemetadata.serie.asset.asset_id,
-                         "asset_type": "show",
+                         "asset_type":"show",
                          "lang": seriemetadata.language.code}
                 abr.delete(param)
 
@@ -496,11 +514,14 @@ class SerieController(object):
                             param = {"asset_id": episodemetadata.episode.asset.asset_id,
                                      "asset_type": "show",
                                      "lang": episodemetadata.language.code}
-                            abr.delete(param, api_key.value)
+                            abr.delete(param)
                         episodemetadata.activated = False
                         episodemetadata.save()
                 except Exception as e:
-                    return render(request, 'cawas/error.html', {"message": "No existe Episode. (" + e.message + ")"})
+                    request.session['list_serie_message'] = "Error al Despublicar (" + str(e.value) + ")"
+                    request.session['list_serie_flag'] = FLAG_ALERT
+                    self.code_return = -1
+                    return self.code_return
 
             # 3 - Actualizar Activated a False
             seriemetadata.activated = False
@@ -511,11 +532,16 @@ class SerieController(object):
             request.session['list_serie_flag'] = FLAG_SUCCESS
 
         except PublishZone.DoesNotExist as e:
-            return render(request, 'cawas/error.html',
-                          {"message": "PublishZone no Existe. (" + str(e.message) + ")"})
+            request.session['list_serie_message'] = "Error al Publicar (" + str(e.value) + ")"
+            request.session['list_serie_flag'] = FLAG_ALERT
+            self.code_return = -1
+            return self.code_return
+
         except SerieMetadata.DoesNotExist as e:
-            return render(request, 'cawas/error.html',
-                          {"message": "Metadata de Serie no Existe. (" + str(e.message) + ")"})
+            request.session['list_serie_message'] = "Error al Publicar (" + str(e.value) + ")"
+            request.session['list_serie_flag'] = FLAG_ALERT
+            self.code_return = -1
+            return self.code_return
         except ApiBackendException as e:
             request.session['list_serie_message'] = "Error al despublicar (" + str(e.value) + ")"
             request.session['list_serie_flag'] = FLAG_ALERT
@@ -525,7 +551,7 @@ class SerieController(object):
 
 
     def publish_all(self, request, param_serie, param_lang ):
-        #Publica nuevamente la movie para
+
 
         mditems = SerieMetadata.objects.filter(serie=param_serie, language=param_lang)
         #Actualizar la fecha de publicacion
@@ -538,5 +564,6 @@ class SerieController(object):
             ph.func_publish_queue(request, md.serie.asset.asset_id, md.language, 'AS', 'Q', md.publish_date)
             ph.func_publish_image(request, md.serie.image)
             self.code_return = 0
+
 
         return self.code_return

@@ -79,6 +79,11 @@ class SliderController(object):
                 return render(request, 'cawas/error.html', {"message": "No existe Asset. (" + e.message + ")"})
             except Language.DoesNotExist as e:
                 return render(request, 'cawas/error.html', {"message": "No existe Lenguaje. (" + e.message + ")"})
+            except Exception as e:
+                request.session['list_slider_message'] = "Error al Guardar Slider. (" + e.message + " - " + varchivo +  " )"
+                request.session['list_slider_flag'] = FLAG_ALERT
+                self.code_return = -1
+                return self.code_return
 
 
             vflag = "success"

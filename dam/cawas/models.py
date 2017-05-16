@@ -264,7 +264,6 @@ class Slider(models.Model):
     publish_status    = models.BooleanField(default=False)
     activated         = models.BooleanField(default=False)
 
-
     def save(self, *args, **kwargs):
         super(Slider, self).save(*args, **kwargs)
         if self.slider_id == '':
@@ -291,8 +290,9 @@ class Slider(models.Model):
         if self.asset is not None:
             dict["linked_asset_id"]   = self.asset.asset_id
             dict["linked_asset_type"] = self.asset.asset_type
-        dict["lang"] = self.language.code
-        dict["text"] = self.text
+        dict["target"] = self.target_device.name
+        dict["lang"]   = self.language.code
+        dict["text"]   = self.text
 
         return dict
 
@@ -653,6 +653,7 @@ class Block(models.Model):
     channel           = models.ForeignKey(Channel, blank=True, null=True)
     assets            = models.ManyToManyField(Asset, blank=True)
     target_device     = models.ForeignKey(Device)
+    order             = models.IntegerField(help_text="Orden del bloque")
     modification_date = models.DateTimeField(auto_now=True)
     publish_date      = models.DateTimeField(auto_now=False, auto_now_add=False, blank=True, null=True)
     publish_status    = models.BooleanField(default=False)
@@ -682,5 +683,7 @@ class Block(models.Model):
         dict["target"] = self.target_device.name
         if self.channel is not None:
             dict["channel"] = self.channel.name
+        if self.order is not None:
+            dict["order"] = self.order
 
         return dict
