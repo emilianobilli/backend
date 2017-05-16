@@ -264,7 +264,6 @@ class Slider(models.Model):
     publish_status    = models.BooleanField(default=False)
     activated         = models.BooleanField(default=False)
 
-
     def save(self, *args, **kwargs):
         super(Slider, self).save(*args, **kwargs)
         if self.slider_id == '':
@@ -291,8 +290,9 @@ class Slider(models.Model):
         if self.asset is not None:
             dict["linked_asset_id"]   = self.asset.asset_id
             dict["linked_asset_type"] = self.asset.asset_type
-        dict["lang"] = self.language.code
-        dict["text"] = self.text
+        dict["target"] = self.target_device.name
+        dict["lang"]   = self.language.code
+        dict["text"]   = self.text
 
         return dict
 
