@@ -224,6 +224,8 @@ class SerieController(object):
 
             # CARGAR GIRLS
             vgirls = decjson['Serie']['girls']
+            vserie.girls = []
+            vserie.save()
             for item in vgirls:
                 try:
                     g = Girl.objects.get(pk=item['girl_id'])
@@ -233,8 +235,11 @@ class SerieController(object):
                     request.session['list_serie_message'] = 'Error: ' + e.message
                     request.session['list_serie_flag'] = FLAG_ALERT
                     return self.code_return
+            vserie.save()
 
             # CARGAR CATEGORIES
+            vserie.category = []
+            vserie.save()
             vcategories = decjson['Serie']['categories']
             for item in vcategories:
                 try:
@@ -244,7 +249,7 @@ class SerieController(object):
                     request.session['list_serie_message'] = 'Error: ' + e.message
                     request.session['list_serie_flag'] = FLAG_ALERT
                     return self.code_return
-
+            vserie.save()
             # Channel
             try:
                 vserie.channel = Channel.objects.get(pk=decjson['Serie']['channel_id'])

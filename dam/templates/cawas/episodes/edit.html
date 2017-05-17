@@ -141,65 +141,86 @@
 
                </form>
 
-                <!-- Row : Palymates pick -->
-                <div class="row form-row">
-                    <div class="col-xs-4 col-md-4 col-lg-4 form-group plyMatePick">
-                        <label class="label-left" for="pornstarPick" id="pornstarPickTit">Pornstar / Playmate: </label>
 
-                        <ul class="form-control pornstarPick" id="pornstarPick">
-                          {% for item in vgirlnotselected %}
-                                 <li value="{{item.asset_id}}">{{ item.name }}</li>
-                          {% endfor %}
-                        </ul>
 
-                        <!-- ---------------------- Fin de  listado de pornstars ------------------- -->
 
-                    </div>
-                    <div class="col-xs-4 col-md-4 col-lg-4 form-group plyMateDrop" >
-                       <div class="form-group has-feedback">
-                            <label for="ThumbVer" id="ThumbVerTit">Arrastrar hasta aquí para agregar *</label>
-                            <ul class="form-control pornstarPick" id="pornstarDrop">
-                                {% for item in vgirlselected %}
-                                     <li value="{{item.asset_id}}">{{ item.name }}</li>
-                                {% endfor %}
-                            </ul>
-                            <span class="glyphicon form-control-feedback"></span>
-                        </div>
-                    </div>
-                    <div class="col-xs-4 col-md-4 col-lg-4">
-                    </div>
-                </div>
 
-                <!-- Row : Género pick -->
-                <div class="row form-row">
-                    <div class="col-xs-4 col-md-4 col-lg-4 form-group categoryPick">
-                        <label class="label-left" for="generoPick" id="generoPickTit">Género / Categoría: </label>
+<!-- Seleccion de categoria -->
+<div class="row">
 
-                        <!-- ------------------Reemplazar por listado de géneros ----------------- -->
+    <div class="col-xs-5">
+    <label>Chicas</label>
+        <select name="from[]" id="search_girls" class="form-control searchmultiple" size="10" multiple="multiple">
 
-                        <ul class="form-control generoPick" id="generoPick">
-                            {% for item in vcategorynotselected %}
-                                <li value="{{item.id}}">{{item.original_name}}</li>
-                            {% endfor %}
-                        </ul>
+            <optgroup label="Chicas">
+             {% for item in vgirlnotselected %}
+                 <option value="{{item.id}}">{{item.name}} </option>
+             {% endfor %}
+            </optgroup>
 
-                        <!-- ---------------------- Fin de  listado de géneros ------------------- -->
+        </select>
+    </div>
 
-                    </div>
-                    <div class="col-xs-4 col-md-4 col-lg-4 form-group categoryDrop" >
-                       <div class="form-group has-feedback">
-                            <label for="ThumbVer" id="ThumbVerTit">Arrastrar hasta aquí para agregar *</label>
-                            <ul class="form-control generoPick" id="generoDrop">
-                                 {% for item in vcategoryselected %}
-                                     <li value="{{item.id}}">{{item.original_name}}</li>
-                                 {% endfor %}
-                            </ul>
-                            <span class="glyphicon form-control-feedback"></span>
-                        </div>
-                    </div>
-                    <div class="col-xs-4 col-md-4 col-lg-4">
-                    </div>
-                </div>
+    <div class="col-xs-2">
+        <button type="button" id="search_girls_rightAll" class="btn btn-block"><i class="glyphicon glyphicon-forward"></i></button>
+        <button type="button" id="search_girls_rightSelected" class="btn btn-block"><i class="glyphicon glyphicon-chevron-right"></i></button>
+        <button type="button" id="search_girls_leftSelected" class="btn btn-block"><i class="glyphicon glyphicon-chevron-left"></i></button>
+        <button type="button" id="search_girls_leftAll" class="btn btn-block"><i class="glyphicon glyphicon-backward"></i></button>
+    </div>
+
+    <div class="col-xs-5">
+    <label>Chicas</label>
+        <select name="to[]" id="search_girls_to" class="form-control searchmultiple" size="10" multiple="multiple">
+         <optgroup label="Chicas">
+            {% for item in vgirlselected %}
+                 <option value="{{item.id}}">{{item.name}} </option>
+         {% endfor %}
+
+        </select>
+    </div>
+</div>
+<br>
+<br>
+
+
+<div class="row">
+    <div class="col-xs-5">
+    <label>Categorias</label>
+        <select name="from[]" id="search_category" class="form-control searchmultiple" size="10" multiple="multiple">
+
+            <optgroup label="Categorias">
+              {% for item in vcategorynotselected %}
+                 <option value="{{item.id}}">{{item.original_name}} </option>
+             {% endfor %}
+            </optgroup>
+
+        </select>
+    </div>
+
+    <div class="col-xs-2">
+        <button type="button" id="search_category_rightAll" class="btn btn-block"><i class="glyphicon glyphicon-forward"></i></button>
+        <button type="button" id="search_category_rightSelected" class="btn btn-block"><i class="glyphicon glyphicon-chevron-right"></i></button>
+        <button type="button" id="search_category_leftSelected" class="btn btn-block"><i class="glyphicon glyphicon-chevron-left"></i></button>
+        <button type="button" id="search_category_leftAll" class="btn btn-block"><i class="glyphicon glyphicon-backward"></i></button>
+    </div>
+
+    <div class="col-xs-5">
+    <label>Categorias</label>
+
+        <select name="to[]" id="search_category_to" class="form-control searchmultiple" size="10" multiple="multiple">
+         <optgroup label="Categorias">
+            {% for item in vcategoryselected %}
+                 <option value="{{item.id}}">{{item.original_name}}</option>
+            {% endfor %}
+         </optgroup>
+        </select>
+    </div>
+</div>
+
+
+
+
+
 
                 <!-- Row : Canal pick -->
                 <div class="row form-row">

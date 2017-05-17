@@ -328,6 +328,8 @@ class EpisodeController(object):
 
             # CARGAR ASSETS
             vgirls = decjson['Episode']['girls']
+            vepisode.girls = []
+            vepisode.save()
             for item in vgirls:
                 try:
                     # print item['asset_id']
@@ -341,6 +343,8 @@ class EpisodeController(object):
                     self.code_return = -1
                     return self.code_return
 
+            vepisode.category = []
+            vepisode.save()
             # CARGAR CATEGORY
             vcategories = decjson['Episode']['categories']
             for item in vcategories:
@@ -360,7 +364,6 @@ class EpisodeController(object):
             vepisodemetadata = decjson['Episode']['Episodemetadatas']
             for item in vepisodemetadata:
                 try:
-
                     vlang = Language.objects.get(code=item['Episodemetadata']['language'])
                     try:
                         emd = EpisodeMetadata.objects.get(episode=vepisode, language=vlang)
@@ -541,7 +544,14 @@ class EpisodeController(object):
                          "asset_type": "show",
                          "lang": episodemetadata.language.code}
                 abr.delete(param)
-            #Se deberia hacer algo con las Series?
+            # Se deberia hacer algo con las Series?
+
+            # mostrar cartel de informaion
+            # eliminar episodiometada en los idiomas
+            # eliminar episodio
+            # actulizar asset a unkwon
+            # republicar la serie
+
 
             # 3 - Actualizar Activated a False
             episodemetadata.activated=False
