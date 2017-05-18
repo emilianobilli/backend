@@ -106,7 +106,6 @@ class MovieController(object):
                 mv.cast = decjson['Movie']['directors']
 
             mv.display_runtime = decjson['Movie']['display_runtime']
-
             mv.save()
 
             # CARGAR GIRLS
@@ -313,11 +312,10 @@ class MovieController(object):
             # mv.runtime
 
             # CARGAR GIRLS
+            mv.girls = []
+            mv.save()
             if (decjson['Movie']['girls'] is not None):
-
                 vgirls = decjson['Movie']['girls']
-                mv.girls = []
-                mv.save()
                 for item in vgirls:
                     try:
                         vgirl = Girl.objects.get(id=item['girl_id'])

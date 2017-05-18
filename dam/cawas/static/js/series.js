@@ -315,12 +315,11 @@ $('#search_category').multiselect({
         
         // chequea pornstar
 
+
+
         //search_to_girls
-        if ( $('#search_girls_to option').length < 1 )
+        if ( $('#search_girls_to option').length > 0 )
         {
-            errorMe("#search_girls_to");
-            checkVal++;
-        }else{
             okMe("#search_girls_to");
             pornstars_selected = [];
             $('#search_girls_to option').each(function(){
@@ -331,6 +330,8 @@ $('#search_category').multiselect({
             })
             console.log("search_girls_to_selected:"+pornstars_selected);
         }
+
+
 
         //search_category_to
         if ( $('#search_category_to option').length < 1 )
@@ -531,7 +532,13 @@ $('#search_category').multiselect({
                     myJSON+='"year":'+year_selected+',';
                     myJSON+='"cast":"'+elenco_selected+'",';
                     myJSON+='"directors":"'+director_selected+'",';
-                    myJSON+='"girls":'+myGirls+',';                    
+
+                    if (myGirls=="[]"){
+                        myJSON+='"girls":null,';
+                    }else{
+                        myJSON+='"girls":'+myGirls+',';
+                    }
+
                     myJSON+='"categories":'+myCategories+',';
                     myJSON+='"publicar":"'+publicar+'",';
                     myJSON+='"Seriemetadatas": [';

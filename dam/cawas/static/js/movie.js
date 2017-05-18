@@ -343,11 +343,8 @@ $('#search_category').multiselect({
 
 
         //search_to_girls
-        if ( $('#search_girls_to option').length < 1 )
+        if ( $('#search_girls_to option').length > 0 )
         {
-            errorMe("#search_girls_to");
-            checkVal++;
-        }else{
             okMe("#search_girls_to");
             pornstars_selected = [];
             $('#search_girls_to option').each(function(){

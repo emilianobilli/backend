@@ -76,16 +76,17 @@ class SerieController(object):
             vserie.save()
 
             # CARGAR GIRLS
-            vgirls = decjson['Serie']['girls']
-            for item in vgirls:
-                try:
-                    g = Girl.objects.get(pk=item['girl_id'])
-                    vserie.girls.add(g)
-                except Girl.DoesNotExist as e:
-                    self.code_return = -1
-                    request.session['list_serie_message'] = 'Error: ' + e.message
-                    request.session['list_serie_flag'] = FLAG_ALERT
-                    return self.code_return
+            if (decjson['Serie']['girls'] is not None):
+                vgirls = decjson['Serie']['girls']
+                for item in vgirls:
+                    try:
+                        g = Girl.objects.get(pk=item['girl_id'])
+                        vserie.girls.add(g)
+                    except Girl.DoesNotExist as e:
+                        self.code_return = -1
+                        request.session['list_serie_message'] = 'Error: ' + e.message
+                        request.session['list_serie_flag'] = FLAG_ALERT
+                        return self.code_return
 
             # CARGAR CATEGORIES
             vcategories = decjson['Serie']['categories']
@@ -223,19 +224,22 @@ class SerieController(object):
             vserie.save()
 
             # CARGAR GIRLS
-            vgirls = decjson['Serie']['girls']
+
+
             vserie.girls = []
             vserie.save()
-            for item in vgirls:
-                try:
-                    g = Girl.objects.get(pk=item['girl_id'])
-                    vserie.girls.add(g)
-                except Girl.DoesNotExist as e:
-                    self.code_return = -1
-                    request.session['list_serie_message'] = 'Error: ' + e.message
-                    request.session['list_serie_flag'] = FLAG_ALERT
-                    return self.code_return
-            vserie.save()
+            if (decjson['Serie']['girls'] is not None):
+                vgirls = decjson['Serie']['girls']
+                for item in vgirls:
+                    try:
+                        g = Girl.objects.get(pk=item['girl_id'])
+                        vserie.girls.add(g)
+                    except Girl.DoesNotExist as e:
+                        self.code_return = -1
+                        request.session['list_serie_message'] = 'Error: ' + e.message
+                        request.session['list_serie_flag'] = FLAG_ALERT
+                        return self.code_return
+                vserie.save()
 
             # CARGAR CATEGORIES
             vserie.category = []

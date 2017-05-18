@@ -105,18 +105,18 @@ class EpisodeController(object):
                 return render(request, 'cawas/error.html', {"message": "No existe Device. (" + e.message + ")"})
 
             # CARGAR ASSETS
-            vgirls = decjson['Episode']['girls']
-            for item in vgirls:
-                try:
-                    # print item['asset_id']
-                    asset_id = item['girl_id']
-                    print "AssetId add episode" + asset_id
-                    vgirl = Girl.objects.get(asset_id=item['girl_id'])
-                    vepisode.girls.add(vgirl)
-                except Girl.DoesNotExist as e:
-                    return render(request, 'cawas/error.html', {"message": "No existe Girl. (" + e.message + ")"})
-                except Asset.DoesNotExist as e:
-                    return render(request, 'cawas/error.html', {"message": "No existe Asset. (" + e.message + ")"})
+            if (decjson['Episode']['girls'] is not None):
+                vgirls = decjson['Episode']['girls']
+                for item in vgirls:
+                    try:
+                        asset_id = item['girl_id']
+                        print "AssetId add episode" + asset_id
+                        vgirl = Girl.objects.get(asset_id=item['girl_id'])
+                        vepisode.girls.add(vgirl)
+                    except Girl.DoesNotExist as e:
+                        return render(request, 'cawas/error.html', {"message": "No existe Girl. (" + e.message + ")"})
+                    except Asset.DoesNotExist as e:
+                        return render(request, 'cawas/error.html', {"message": "No existe Asset. (" + e.message + ")"})
 
             # CARGAR CATEGORY
             vcategories = decjson['Episode']['categories']
@@ -327,21 +327,23 @@ class EpisodeController(object):
                 return self.code_return
 
             # CARGAR ASSETS
-            vgirls = decjson['Episode']['girls']
             vepisode.girls = []
             vepisode.save()
-            for item in vgirls:
-                try:
-                    # print item['asset_id']
-                    asset_id = item['girl_id']
-                    print "AssetId add episode" + asset_id
-                    vgirl = Girl.objects.get(asset_id=item['girl_id'])
-                    vepisode.girls.add(vgirl)
-                except Exception as e:
-                    request.session['list_episode_message'] = 'Error al Guardar Episodio: ' + str(e.message)
-                    request.session['list_episode_flag'] = FLAG_ALERT
-                    self.code_return = -1
-                    return self.code_return
+
+            if (decjson['Episode']['girls'] is not None):
+                vgirls = decjson['Episode']['girls']
+                for item in vgirls:
+                    try:
+                        # print item['asset_id']
+                        asset_id = item['girl_id']
+                        print "AssetId add episode" + asset_id
+                        vgirl = Girl.objects.get(asset_id=item['girl_id'])
+                        vepisode.girls.add(vgirl)
+                    except Exception as e:
+                        request.session['list_episode_message'] = 'Error al Guardar Episodio: ' + str(e.message)
+                        request.session['list_episode_flag'] = FLAG_ALERT
+                        self.code_return = -1
+                        return self.code_return
 
             vepisode.category = []
             vepisode.save()
@@ -591,8 +593,8 @@ class EpisodeController(object):
                 ph = PublishHelper()
                 ph.func_publish_queue(request, md.episode.serie.asset.asset_id, md.language, 'AS', 'Q', datetime.datetime.now().strftime('%Y-%m-%d'))
                 ph.func_publish_image(request, md.vepisode.serie.image)
-            request.session['list_serie_message'] = 'Episodio en ' + md.language.name + ' de Publicada Correctamente'
-            request.session['list_serie_flag'] = FLAG_SUCCESS
+            request.session['list_episode_message'] = 'Episodio en ' + md.language.name + ' de Publicada Correctamente'
+            request.session['list_episode_flag'] = FLAG_SUCCESS
             self.code_return = 0
 
         except Exception as e:

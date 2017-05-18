@@ -461,11 +461,8 @@ $('#search_category').multiselect({
 
 
         //search_to_girls
-        if ( $('#search_girls_to option').length < 1 )
+        if ( $('#search_girls_to option').length > 0 )
         {
-            errorMe("#search_girls_to");
-            checkVal++;
-        }else{
             okMe("#search_girls_to");
             pornstars_selected = [];
             $('#search_girls_to option').each(function(){
@@ -476,6 +473,8 @@ $('#search_category').multiselect({
             })
             console.log("search_girls_to_selected:"+pornstars_selected);
         }
+
+
 
         //search_category_to
         if ( $('#search_category_to option').length < 1 )
@@ -708,7 +707,13 @@ $('#search_category').multiselect({
                     myJSON+='"asset_id":"'+asset_Id+'",';
                     myJSON+='"original_title":"'+original_Title+'",';
                     myJSON+='"channel_id":'+canal_selected+',';
-                    myJSON+='"girls":'+myGirls+',';
+
+                    if (myGirls=="[]"){
+                        myJSON+='"girls":null,';
+                    }else{
+                        myJSON+='"girls":'+myGirls+',';
+                    }
+
                     myJSON+='"publicar":"'+publicar+'",';
 
 
