@@ -165,6 +165,7 @@ class CategoryMetadata(models.Model):
     publish_date      = models.DateTimeField(auto_now=False, auto_now_add=False, blank=True, null=True)
     publish_status    = models.BooleanField(default=False)
     activated         = models.BooleanField(default=False)
+    queue_status      = models.CharField(max_length=1, default='', blank=True, help_text="Status del item en PublishQueue")
 
     class Meta:
         unique_together = ('category', 'language',)
@@ -188,6 +189,7 @@ class Channel(models.Model):
     publish_date      = models.DateTimeField(auto_now=False, auto_now_add=False, blank=True, null=True)
     publish_status    = models.BooleanField(default=False)
     activated         = models.BooleanField(default=False)
+    queue_status      = models.CharField(max_length=1, default='', help_text="Status del item en PublishQueue")
 
     def __unicode__(self):
         return self.name
@@ -263,6 +265,7 @@ class Slider(models.Model):
     publish_date      = models.DateTimeField(auto_now=False, auto_now_add=False, blank=True, null=True)
     publish_status    = models.BooleanField(default=False)
     activated         = models.BooleanField(default=False)
+    queue_status      = models.CharField(max_length=1, default='', help_text="Status del item en PublishQueue")
 
     def save(self, *args, **kwargs):
         super(Slider, self).save(*args, **kwargs)
@@ -349,6 +352,7 @@ class GirlMetadata(models.Model):
     publish_date      = models.DateTimeField(auto_now=False, auto_now_add=False, blank=True, null=True)
     publish_status    = models.BooleanField(default=False)
     activated         = models.BooleanField(default=False)
+    queue_status      = models.CharField(max_length=1, default='', help_text="Status del item en PublishQueue")
 
     class Meta:
         unique_together = ('girl', 'language',)
@@ -404,12 +408,21 @@ class Serie(models.Model):
                 dict["image_portrait"] = os.path.basename(self.image.portrait.name)
             if self.image.landscape.name != '':
                 dict["image_landscape"] = os.path.basename(self.image.landscape.name)
-        available_seasons = Episode.objects.filter(serie=self).values_list('season', flat=True).distinct()
-        dict["available_seasons"] = []
-        for aseasons in available_seasons:
-            dict["available_seasons"].append(str(aseasons))
-        dict["seasons"]         = len(available_seasons)
-        dict["episodes"]        = len(Episode.objects.filter(serie=self))
+
+        episodes = Episode.objects.filter(serie=self)
+        metadata_list = EpisodeMetadata.objects.filter(episode__in=episodes, activated=True)
+        episodes_available = []
+        for metadata in metadata_list:
+            if metadata.episode not in episodes_available:
+                print metadata.language.code
+                episodes_available.append(metadata.episode)
+        seasons = []
+        for episode in episodes_available:
+            if str(episode.season) not in seasons:
+                seasons.append(str(episode.season))
+        dict["available_seasons"] = seasons
+        dict["seasons"]  = len(seasons)
+        dict["episodes"] = len(episodes_available)
 
         return dict
 
@@ -424,6 +437,7 @@ class SerieMetadata(models.Model):
     publish_date      = models.DateTimeField(auto_now=False, auto_now_add=False, blank=True, null=True)
     publish_status    = models.BooleanField(default=False)
     activated         = models.BooleanField(default=False)
+    queue_status      = models.CharField(max_length=1, default='', blank=True, help_text="Status del item en PublishQueue")
 
     class Meta:
         unique_together = ('serie', 'language',)
@@ -522,6 +536,7 @@ class EpisodeMetadata(models.Model):
     publish_date      = models.DateTimeField(auto_now=False, auto_now_add=False, blank=True, null=True)
     publish_status    = models.BooleanField(default=False)
     activated         = models.BooleanField(default=False)
+    queue_status      = models.CharField(max_length=1, default='', blank=True, help_text="Status del item en PublishQueue")
 
     class Meta:
         unique_together = ('episode', 'language',)
@@ -613,6 +628,7 @@ class MovieMetadata(models.Model):
     publish_date      = models.DateTimeField(auto_now=False, auto_now_add=False, blank=True, null=True)
     publish_status    = models.BooleanField(default=False)
     activated         = models.BooleanField(default=False)
+    queue_status      = models.CharField(max_length=1, default='', blank=True, help_text="Status del item en PublishQueue")
 
     class Meta:
         unique_together = ('movie', 'language',)
@@ -658,6 +674,7 @@ class Block(models.Model):
     publish_date      = models.DateTimeField(auto_now=False, auto_now_add=False, blank=True, null=True)
     publish_status    = models.BooleanField(default=False)
     activated         = models.BooleanField(default=False)
+    queue_status      = models.CharField(max_length=1, default='', blank=True, help_text="Status del item en PublishQueue")
 
     def save(self, *args, **kwargs):
         super(Block, self).save(*args, **kwargs)
