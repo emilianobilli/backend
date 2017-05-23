@@ -436,7 +436,7 @@ class BlockController(object):
         ph = PublishHelper()
         ph.func_publish_queue(request, block.block_id, block.language, 'BL', 'Q', block.publish_date)
 
-        request.session['list_block_message'] = 'Bloque en ' + block.language.name + ' de Publicada Correctamente'
+        request.session['list_block_message'] = 'Bloque en ' + block.language.name + ' Guardado en Cola de Publicacion'
         request.session['list_block_flag'] = FLAG_SUCCESS
         self.code_return = 0
 

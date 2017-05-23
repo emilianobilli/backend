@@ -70,15 +70,6 @@ class SliderController(object):
                 vslider.publish_date = vschedule_date
                 vslider.save()
 
-
-
-
-            except Device.DoesNotExist as e:
-                return render(request, 'cawas/error.html', {"message": "No existe Device. (" + e.message + ")"})
-            except Asset.DoesNotExist as e:
-                return render(request, 'cawas/error.html', {"message": "No existe Asset. (" + e.message + ")"})
-            except Language.DoesNotExist as e:
-                return render(request, 'cawas/error.html', {"message": "No existe Lenguaje. (" + e.message + ")"})
             except Exception as e:
                 request.session['list_slider_message'] = "Error al Guardar Slider. (" + e.message + " - " + varchivo +  " )"
                 request.session['list_slider_flag'] = FLAG_ALERT
@@ -120,8 +111,10 @@ class SliderController(object):
         try:
             pathfilesland = Setting.objects.get(code='image_repository_path_landscape')
         except Setting.DoesNotExist as e:
-            return render(request, 'cawas/error.html', {"message": "No Setting. (" + e.message + ")"})
-
+            self.code_return = -1
+            request.session['list_slider_message'] = 'No existe Setting '
+            request.session['list_slider_flag'] = FLAG_ALERT
+            return self.code_return
         try:
             vslider = Slider.objects.get(slider_id=slider_id)
             vassets = Asset.objects.all()
@@ -171,9 +164,15 @@ class SliderController(object):
                     vimg = Image()
 
             except Device.DoesNotExist as e:
-                return render(request, 'cawas/error.html', {"message": "No existe Device. (" + e.message + ")"})
+                self.code_return = -1
+                request.session['list_slider_message'] = 'No existe Device '
+                request.session['list_slider_flag'] = FLAG_ALERT
+                return self.code_return
             except Asset.DoesNotExist as e:
-                return render(request, 'cawas/error.html', {"message": "No existe Asset. (" + e.message + ")"})
+                self.code_return = -1
+                request.session['list_slider_message'] = 'No existe Asset '
+                request.session['list_slider_flag'] = FLAG_ALERT
+                return self.code_return
 
             # IMAGEN Portrait
             if (request.FILES.has_key('ThumbHor')):
@@ -275,7 +274,7 @@ class SliderController(object):
         except Slider.DoesNotExist as e:
             return render(request, 'cawas/error.html', {"message": "No Existe Slider. (" + str(e.message) + ")"})
 
-        request.session['list_slider_message'] = 'Slider ' + vslider.slider_id + ' Publicada Correctamente'
+        request.session['list_slider_message'] = 'Slider ' + vslider.slider_id + ' Guardado en Cola de Publicacion'
         request.session['list_slider_flag'] = FLAG_SUCCESS
         self.code_return = 0
 

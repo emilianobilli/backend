@@ -345,33 +345,30 @@ class MovieController(object):
             # eliminar las movies metadata existentes
 
             mv.save()
-            MovieMetadata.objects.filter(movie=mv).delete()
             for item in vmoviesmetadata:
-                if (item['Moviemetadata']['schedule_date'] != ''):
-                    vpublishdate = datetime.datetime.strptime(item['Moviemetadata']['schedule_date'],'%d-%m-%Y').strftime('%Y-%m-%d')
-                else:
-                    vpublishdate = datetime.datetime.now().strftime('%Y-%m-%d')
+                vlanguage = Language.objects.get(code=item['Moviemetadata']['language'])
+                try:
+                    mmd = MovieMetadata.objects.get(movie=mv, language=vlanguage)
+                    print 'encontrado'
+                except MovieMetadata.DoesNotExist as e:
+                    mmd = MovieMetadata()
+                    print 'no lo encontro'
 
-
-                print 'debug2 '+ vpublishdate
                 try:
                     # CREAR METADATA POR IDIOMA
-                    vlanguage = Language.objects.get(code=item['Moviemetadata']['language'])
-                    try:
-                        mmd = MovieMetadata.objects.get(movie=mv, language=vlanguage)
-                    except MovieMetadata.DoesNotExist as e:
-                        mmd = MovieMetadata()
+                    if (item['Moviemetadata']['schedule_date'] != ''):
+                        vpublishdate = datetime.datetime.strptime(item['Moviemetadata']['schedule_date'],'%d-%m-%Y').strftime('%Y-%m-%d')
+                    else:
+                        vpublishdate = datetime.datetime.now().strftime('%Y-%m-%d')
+
                     mmd.language = vlanguage
                     mmd.movie = mv
                     mmd.title = item['Moviemetadata']['title']
                     mmd.summary_short = item['Moviemetadata']['summary_short']
                     mmd.summary_long = item['Moviemetadata']['summary_long']
                     mmd.publish_date = vpublishdate
-
+                    mmd.save()
                     # Si no existe METADATA, se GENERA
-                    metadatas = MovieMetadata.objects.filter(movie=mv, language=mmd.language)
-                    if metadatas.count() < 1:
-                        mmd.save()
 
                     # CREAR COLA DE PUBLICACION
                     ph = PublishHelper()
@@ -592,7 +589,7 @@ class MovieController(object):
         ph = PublishHelper()
         ph.func_publish_queue(request, md.movie.asset.asset_id, md.language, 'AS', 'Q', datetime.datetime.now().strftime('%Y-%m-%d'))
         ph.func_publish_image(request, md.movie.image)
-        request.session['list_movie_message'] = 'Metadata en ' + md.language.name + ' de Movie ' + md.movie.asset.asset_id + ' Publicada Correctamente'
+        request.session['list_movie_message'] = 'Metadata en ' + md.language.name + ' de Movie ' + md.movie.asset.asset_id + ' Guardado en Cola de Publicacion'
         request.session['list_movie_flag'] = FLAG_SUCCESS
         self.code_return = 0
 

@@ -266,11 +266,11 @@ class GirlController(object):
                 gmd.publish_date = vschedule_date
                 gmd.girl = vgirl
 
-                metadatas = GirlMetadata.objects.filter(girl=vgirl, language=vlanguage)
+                #metadatas = GirlMetadata.objects.filter(girl=vgirl, language=vlanguage)
                 # Si no existe METADATA, se genera
-                if metadatas.count() < 1:
-                    gmd.save()
-
+                #if metadatas.count() < 1:
+                #    gmd.save()
+                gmd.save()
                 # Publica en PublishQueue
                 ph = PublishHelper()
                 ph.func_publish_queue(request, vasset.asset_id, vlanguage, 'AS', 'Q', vschedule_date)
@@ -431,7 +431,7 @@ class GirlController(object):
         ph = PublishHelper()
         ph.func_publish_queue(request, gmd.girl.asset.asset_id, gmd.language, 'AS', 'Q', datetime.datetime.now().strftime('%Y-%m-%d'))
         ph.func_publish_image(request,gmd.girl.image)
-        request.session['list_girl_message'] = 'Metadata en ' + gmd.language.name + ' de Chica ' + gmd.girl.asset.asset_id + ' Publicada Correctamente'
+        request.session['list_girl_message'] = 'Metadata en ' + gmd.language.name + ' de Chica ' + gmd.girl.asset.asset_id + ' Guardado en Cola de Publicacion'
         request.session['list_girl_flag'] = FLAG_SUCCESS
         self.code_return = 0
 

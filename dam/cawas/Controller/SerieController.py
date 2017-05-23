@@ -288,19 +288,19 @@ class SerieController(object):
                 smd.serie = vserie
                 smd.publish_date = vschedule_date
                 smd.save()
-                metadatas = SerieMetadata.objects.filter(serie=vserie, language=smd.language)
+                #metadatas = SerieMetadata.objects.filter(serie=vserie, language=smd.language)
                 # Si no existe METADATA, se genera
-                if metadatas.count() < 1:
-                    # Publica en PublishQueue
-                    if (Episode.objects.filter(serie=vserie).count() > 0):
-                        ph = PublishHelper()
-                        ph.func_publish_queue(request, vserie.asset.asset_id, smd.language, 'AS', 'Q',vschedule_date)
-                        ph.func_publish_image(request, vimg)
-                    else:
-                        self.code_return = -1
-                        request.session['list_serie_message'] = 'No se puede Publicar Serie sin Episodios asignados '
-                        request.session['list_serie_flag'] = FLAG_ALERT
-                        return self.code_return
+                #if metadatas.count() < 1:
+                # Publica en PublishQueue
+                if (Episode.objects.filter(serie=vserie).count() > 0):
+                    ph = PublishHelper()
+                    ph.func_publish_queue(request, vserie.asset.asset_id, smd.language, 'AS', 'Q',vschedule_date)
+                    ph.func_publish_image(request, vimg)
+                else:
+                    self.code_return = -1
+                    request.session['list_serie_message'] = 'No se puede Publicar Serie sin Episodios asignados '
+                    request.session['list_serie_flag'] = FLAG_ALERT
+                    return self.code_return
                 # Fin de POST
             flag = "success"
 
@@ -314,6 +314,7 @@ class SerieController(object):
             vseries = Serie.objects.all()
             vasset = Asset.objects.get(asset_id=asset_id)
             vserie = Serie.objects.get(asset=vasset)
+            vepisodes = Episode.objects.filter(serie=vserie)
 
             # carga imagenes
             i = len(vserie.image.portrait.name)
@@ -371,6 +372,7 @@ class SerieController(object):
                    'vgirlselected': vgirlselected,
                    'vcategoryselected': vcategoryselected,
                    'vcategorynotselected': vcategorynotselected,
+                   'vepisodes':vepisodes,
                    'flag':flag
                    }
         # return render(request, 'cawas/pruebas/subir_img.html', context)
@@ -462,7 +464,7 @@ class SerieController(object):
                     ph = PublishHelper()
                     ph.func_publish_queue(request, em.episode.asset.asset_id, em.language, 'AS', 'Q', datetime.datetime.now().strftime('%Y-%m-%d'))
                     ph.func_publish_image(request, em.episode.image)
-            request.session['list_serie_message'] = 'Serie en ' + md.language.name + ' de Publicada Correctamente'
+            request.session['list_serie_message'] = 'Serie en ' + md.language.name + ' Guardado en Cola de Publicacion'
             request.session['list_serie_flag'] = FLAG_SUCCESS
             self.code_return = 0
         except Exception as e:

@@ -69,7 +69,7 @@
                     <div class="col-xs-12 col-md-4 col-lg-4" id="seriess">
                         <div class="form-group has-feedback" id="SeriePick">
                             <label class="label-left" for="serie_id">Elegir Serie a la que pertenece: *</label>
-                               <select type="text" id="serie-id" class="form-control movie-edit" size="6">
+                               <select type="text" id="serie-id" class="form-control movie-edit" size="6" disabled>
                                     {% for item in vseries %}
 
                                         {% if vepisode.serie_id == item.id %}

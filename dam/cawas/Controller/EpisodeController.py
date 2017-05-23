@@ -157,7 +157,8 @@ class EpisodeController(object):
 
                 except Language.DoesNotExist as e:
                     return render(request, 'cawas/error.html', {"message": "Lenguaje no Existe. (" + e.message + ")"})
-
+            request.session['list_episode_message'] = 'Guardado Correctamente'
+            request.session['list_episode_flag'] = FLAG_SUCCESS
             #PUBLICAR METADATA
             if vgrabarypublicar == '1':
                 try:
@@ -177,7 +178,7 @@ class EpisodeController(object):
                             ph.func_publish_image(request, vepisode.serie.image)
                 except EpisodeMetadata.DoesNotExist as e:
                     self.code_return = -1
-                    request.session['list_episode_message'] = 'Error al Publicar el Episodio' + e.message
+                    request.session['list_episode_message'] = 'Error al Publicar el Episodio ' + e.message
                     request.session['list_episode_flag'] = FLAG_ALERT
                     return self.code_return
                 except Exception as e:
@@ -188,8 +189,7 @@ class EpisodeController(object):
 
             vflag = "success"
             message ='Guardado Correctamente'
-            request.session['list_episode_message'] = 'Guardado Correctamente'
-            request.session['list_episode_flag'] = FLAG_SUCCESS
+
             context = {"flag": vflag, 'message':message }
             return render(request, 'cawas/episodes/add.html', context)
             # Fin datos EPISODE
@@ -384,10 +384,7 @@ class EpisodeController(object):
                     emd.summary_long = item['Episodemetadata']['summary_long']
                     emd.publish_date = vschedule_date
                     emd.episode = vepisode
-
-                    metadatas = EpisodeMetadata.objects.filter(episode=vepisode, language=vlang)
-                    if metadatas.count() < 1:
-                        emd.save()
+                    emd.save()
 
                     #Publicar el Episodio
                     ph = PublishHelper()
@@ -504,6 +501,7 @@ class EpisodeController(object):
                 episodes_list = EpisodeMetadata.objects.filter(episode__in=episodes_sel).order_by('episode_id')
 
 
+
         if episodes_list is None:
             episodes_list = EpisodeMetadata.objects.all().order_by('episode_id')
 
@@ -593,7 +591,8 @@ class EpisodeController(object):
                 ph = PublishHelper()
                 ph.func_publish_queue(request, md.episode.serie.asset.asset_id, md.language, 'AS', 'Q', datetime.datetime.now().strftime('%Y-%m-%d'))
                 ph.func_publish_image(request, md.vepisode.serie.image)
-            request.session['list_episode_message'] = 'Episodio en ' + md.language.name + ' de Publicada Correctamente'
+
+            request.session['list_episode_message'] = 'Episodio en ' + md.language.name
             request.session['list_episode_flag'] = FLAG_SUCCESS
             self.code_return = 0
 
@@ -603,7 +602,7 @@ class EpisodeController(object):
             request.session['list_episode_flag'] = FLAG_ALERT
             return self.code_return
 
-        request.session['list_episode_message'] = 'Metadata en ' + md.language.name + ' de Capitulo ' + md.episode.asset.asset_id + ' Publicada Correctamente'
+        request.session['list_episode_message'] = 'Metadata en ' + md.language.name + ' de Capitulo ' + md.episode.asset.asset_id + ' Guardado en Cola de Publicacion'
         request.session['list_episode_flag'] = FLAG_SUCCESS
         self.code_return = 0
         return self.code_return

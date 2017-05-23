@@ -19,6 +19,9 @@
 {% endblock subheader %}
 
 {% block content %}
+
+
+
 <!-- CONTENT -->
         <div class="container">
             <!-- First Row -->
@@ -134,17 +137,20 @@
 
                             <div class="tb-cell"><a href="/girls/edit/{{ item.girl.asset.asset_id}}" class="btn-info btn tb-btn" >Editar</a></div>
                             {% if usuario.is_superuser == true %}
-                                <div class="tb-cell"><a href="/girls/delete/{{ item.girl.asset.asset_id}}" class="btn-danger btn tb-btn">Borrar</a></div>
+                                <div class="tb-cell"><a href="/girls/delete/{{ item.girl.asset.asset_id}}" class="btn-danger btn tb-btn eliminar">Borrar</a></div>
                             {% endif %}
 
                             {% if item.activated == 0  %}
-                               <div class="tb-cell"><a href="/girls/publish/{{ item.id}}"class="btn-success btn tb-btn">Publicar</a></div>
+                               <div class="tb-cell"><a href="/girls/publish/{{ item.id}}" class="btn-success btn tb-btn publicar">Publicar</a></div>
                                  {% else %}
-                               <div class="tb-cell"><a href="/girls/unpublish/{{ item.id}}"class="btn-warning btn tb-btn">Desactivar</a></div>
+                               <div class="tb-cell"><a href="/girls/unpublish/{{ item.id}}" class="btn-warning btn tb-btn desactivar">Desactivar</a></div>
                             {% endif %}
 
                         </div>
                     {% endfor %}
+
+
+
                 </div>
                 <!-- Third Row -->
                  <div class="row">

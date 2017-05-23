@@ -143,11 +143,11 @@
 
                             {% if item.activated == 0 %}
                                 <div class="tb-cell">
-                                    <a href="/series/publish/{{ item.id}}" class="btn-success btn tb-btn">Publicar</a>
-                                    <a href="/series/unpublish/{{ item.id}}" class="btn-warning btn tb-btn">Eliminar</a>
+                                    <a href="/series/publish/{{ item.id}}" class="btn-success btn tb-btn publicar">Publicar</a>
+                                    <a href="/series/unpublish/{{ item.id}}" class="btn-danger btn tb-btn eliminar">Eliminar</a>
                                 </div>
                             {% else %}
-                               <div class="tb-cell"><a href="/series/unpublish/{{ item.id}}" class="btn-warning btn tb-btn">Desactivar</a></div>
+                               <div class="tb-cell"><a href="/series/unpublish/{{ item.id}}" class="btn-warning btn tb-btn desactivar">Desactivar</a></div>
                             {% endif %}
 
 

@@ -13,9 +13,8 @@
         <link rel="stylesheet" href="{% static 'css/select2.css' %}">
 
         <link rel="stylesheet" href="{% static 'css/style.css' %}">
+
         <!-- Javascript -->
-
-
         <script src="{% static 'js/jquery.min.js' %}"></script>
         <script src="{% static 'js/jquery-sortable.js' %}"></script>
         <script src="{% static 'js/bootstrap.min.js' %}"></script>
@@ -23,11 +22,13 @@
         <script src="{% static 'js/select2.min.js' %}"></script>
         <script src="{% static 'js/duration-picker.min.js' %}"></script>
 
+
         <script src="{% static 'js/multiselect.min.js' %}"></script>
+        <script src="{% static 'js/script.js' %}"></script>
+        <link rel="stylesheet" href="//code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
+        <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
         {% block extra_head %}
         {% endblock %}
-
-
 
 
 <style>
@@ -43,7 +44,6 @@
     color: white;
     border-radius: 10px;
 }
-
 
 .closebtn {
     margin-left: 15px;
@@ -78,14 +78,12 @@
               object.value = object.value.slice(0, 4)
           }
 
-
-
     </script>
-
-
     </head>
     <body>
 
+
+<div id="msgconfirm" hidden title="Atención"><p></p></div>
 
 
 <div class="modal fade" id="myModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
@@ -105,6 +103,29 @@
     </div>
   </div>
 </div>
+
+
+
+<!--
+<div class="modal fade" id="confirmation" tabindex="-1" role="dialog" aria-labelledby="lblconfirmation">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+        <h4 class="modal-title" id="lblconfirmation">Confirmar salida</h4>
+      </div>
+      <div class="modal-body">
+        ¿Está seguro que desea salir de esta aplicación?
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-default" data-dismiss="modal">Ok</button>
+        <button type="button" class="btn btn-primary" id="getOut">Cancelar</button>
+      </div>
+    </div>
+  </div>
+</div>
+-->
+
 
 
 

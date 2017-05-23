@@ -408,11 +408,11 @@ class CategoryController(object):
             ph = PublishHelper()
             ph.func_publish_queue(request, gmd.category.category_id, gmd.language, 'CA', 'Q', datetime.datetime.now().strftime('%Y-%m-%d'))
             ph.func_publish_image(request, gmd.category.image)
-            request.session['list_category_message'] = 'Metadata en ' + gmd.language.name + ' de Categoria ' + gmd.category.category_id + ' Publicada Correctamente'
+            request.session['list_category_message'] = 'Metadata en ' + gmd.language.name + ' de Categoria ' + gmd.category.category_id + ' Guardado en Cola de Publicacion'
             request.session['list_category_flag'] = FLAG_SUCCESS
             self.code_return = 0
         except CategoryMetadata.DoesNotExist as e:
-            request.session['list_category_message'] = 'Error en Despublicacion '+ str(e.message)
+            request.session['list_category_message'] = 'Error en Publicacion ' + str(e.message)
             request.session['list_category_flag'] = FLAG_ALERT
             self.code_return = -1
 
