@@ -513,7 +513,11 @@ class Episode(models.Model):
                 dict["image_portrait"] = os.path.basename(self.image.portrait.name)
             if self.image.landscape.name != '':
                 dict["image_landscape"] = os.path.basename(self.image.landscape.name)
-        dict["runtime"]         = self.runtime
+        if self.display_runtime != '':
+            minutes, seconds = self.runtime.split(':')
+            dict["runtime"] = int(seconds) + (int(minutes) * 60)
+        else:
+            dict["runtime"] = 0
         dict["display_runtime"] = self.display_runtime
         if self.chapter > 0:
             dict["episode"]         = self.chapter
@@ -610,7 +614,11 @@ class Movie(models.Model):
                 dict["image_portrait"] = os.path.basename(self.image.portrait.name)
             if self.image.landscape.name != '':
                 dict["image_landscape"] = os.path.basename(self.image.landscape.name)
-        dict["runtime"]         = self.runtime
+        if self.display_runtime != '':
+            minutes, seconds =self.runtime.split(':')
+            dict["runtime"] = int(seconds) + (int(minutes)*60)
+        else:
+            dict["runtime"] = 0
         dict["display_runtime"] = self.display_runtime
         dict["thumbnails"]      = self.thumbnails
 
