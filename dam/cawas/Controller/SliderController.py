@@ -61,6 +61,10 @@ class SliderController(object):
                         print 'debug5'
 
 
+                if decjson['Slider']['text'] is None:
+                    vslider.text = ''
+                else:
+                    vslider.text = decjson['Slider']['text']
 
                 if (decjson['Slider']['publish_date'] != ''):
                     vschedule_date = datetime.datetime.strptime(decjson['Slider']['publish_date'],'%d-%m-%Y').strftime('%Y-%m-%d')
@@ -149,7 +153,11 @@ class SliderController(object):
                 vslider.media_type = decjson['Slider']['media_type']
                 vdevice = Device.objects.get(id=decjson['Slider']['target_device_id'])
                 vslider.target_device = vdevice
-                vslider.text = decjson['Slider']['text']
+                if decjson['Slider']['text'] is None:
+                    vslider.text = ''
+                else:
+                    vslider.text = decjson['Slider']['text']
+
                 vslider.language = Language.objects.get(code=decjson['Slider']['language'])
                 if (decjson['Slider']['publish_date'] != ''):
                     vschedule_date = datetime.datetime.strptime(decjson['Slider']['publish_date'], '%d-%m-%Y').strftime(

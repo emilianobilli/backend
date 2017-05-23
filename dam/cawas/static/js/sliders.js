@@ -343,16 +343,8 @@ $( document ).ready(function() {
                 var lengactualok = 1;
                 for(i=0; i<lngth; i++){
                     var lang=arr[i];
-                    /*
-                    var text = $("#text_"+lang).val().trim();
-                    if(text==""){
-                        errorMe("#text_"+lang);
-                        checkVal++;
-                        lengactualok = 0;
-                    }else{
-                        okMe("#text_"+lang);
-                    }
-                    */
+
+
 
                     // check date
                     var dateCont = $("#date_"+lang).val();
@@ -387,13 +379,13 @@ $( document ).ready(function() {
                     var fechapub = $("#date_"+lang).val().trim();
                     myLangs += '{"Slidermetadata":';
                     myLangs += '{"language": "'+lang+'",';
-    /*
+
                     if (text==''){
                         myLangs+='"text":null,';
                        }else{
                         myLangs+='"text":"'+text+'",';
                     }
-	*/
+
                     myLangs += '"schedule_date":"'+fechapub+'"';
                     myLangs += '}}';
                     if(i<lngth-1){

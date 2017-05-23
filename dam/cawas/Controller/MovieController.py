@@ -64,21 +64,20 @@ class MovieController(object):
                 vflag = "error"
                 img = Image()
 
-            # TRATAMIENTO DE IMAGEN Portrait
-            img.portrait = request.FILES['ThumbHor']
-            extension = os.path.splitext(img.portrait.name)[1]
+            # TRATAMIENTO DE IMAGEN Landscape
+            img.landscape = request.FILES['ThumbHor']
+            extension = os.path.splitext(img.landscape.name)[1]
+            varchivo = pathfilesland.value + img.name + extension
             img.name = vasset.asset_id
-            varchivo = pathfilesport.value + img.name + extension
-            img.portrait.name = varchivo
-
+            img.landscape.name = varchivo
             if os.path.isfile(varchivo):
                 os.remove(varchivo)
 
             # Landscape
-            img.landscape = request.FILES['ThumbVer']
-            extension = os.path.splitext(img.landscape.name)[1]
-            varchivo = pathfilesland.value + img.name + extension
-            img.landscape.name = varchivo
+            img.portrait = request.FILES['ThumbVer']
+            extension = os.path.splitext(img.portrait.name)[1]
+            varchivo = pathfilesport.value + img.name + extension
+            img.portrait.name = varchivo
             # si existe archivo, lo borra
             if os.path.isfile(varchivo):
                 os.remove(varchivo)
@@ -274,21 +273,23 @@ class MovieController(object):
                 self.code_return = -1
 
             # IMAGEN Portrait
-            if (request.FILES.has_key('ThumbHor')):
-                if request.FILES['ThumbHor'].name != '':
-                    img.portrait = request.FILES['ThumbHor']
+            if (request.FILES.has_key('ThumbVer')):
+                if request.FILES['ThumbVer'].name != '':
+                    img.portrait = request.FILES['ThumbVer']
                     extension = os.path.splitext(img.portrait.name)[1]
-                    img.name = vasset.asset_id
                     varchivo = pathfilesport.value + img.name + extension
                     img.portrait.name = varchivo
+                    # si existe archivo, lo borra
                     if os.path.isfile(varchivo):
                         os.remove(varchivo)
 
+
             # IMAGEN Landscape
-            if (request.FILES.has_key('ThumbVer')):
-                if request.FILES['ThumbVer'].name != '':
-                    img.landscape = request.FILES['ThumbVer']
+            if (request.FILES.has_key('ThumbHor')):
+                if request.FILES['ThumbHor'].name != '':
+                    img.landscape = request.FILES['ThumbHor']
                     extension = os.path.splitext(img.landscape.name)[1]
+                    img.name = vasset.asset_id
                     varchivo = pathfilesland.value + img.name + extension
                     img.landscape.name = varchivo
                     if os.path.isfile(varchivo):

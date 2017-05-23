@@ -44,10 +44,10 @@
         </div>
             {% for item in vepisodes %}
             <div class="tb-row">
-                <div class="tb-cell" style="color:white">{{item.asset.asset_id}}</div>
+                <div class="tb-cell" style="color:white"><a href="/episodes/edit/{{item.asset.asset_id}}" style="color:white;font-weight:bold" >{{item.asset.asset_id}}</a></div>
                 <div class="tb-cell" style="color:white">{{item.original_title }}</div>
                 <div class="tb-cell" style="color:white">{{item.season}}</div>
-                <div class="tb-cell" style="color:white">{{item.charper}}</div>
+                <div class="tb-cell" style="color:white">{{item.chapter}}</div>
             </div>
             {% endfor %}
        </div>
