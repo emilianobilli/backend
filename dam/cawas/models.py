@@ -514,7 +514,7 @@ class Episode(models.Model):
             if self.image.landscape.name != '':
                 dict["image_landscape"] = os.path.basename(self.image.landscape.name)
         if self.display_runtime != '':
-            minutes, seconds = self.runtime.split(':')
+            minutes, seconds = self.display_runtime.split(':')
             dict["runtime"] = int(seconds) + (int(minutes) * 60)
         else:
             dict["runtime"] = 0
@@ -615,7 +615,7 @@ class Movie(models.Model):
             if self.image.landscape.name != '':
                 dict["image_landscape"] = os.path.basename(self.image.landscape.name)
         if self.display_runtime != '':
-            minutes, seconds =self.runtime.split(':')
+            minutes, seconds =self.display_runtime.split(':')
             dict["runtime"] = int(seconds) + (int(minutes)*60)
         else:
             dict["runtime"] = 0
