@@ -121,9 +121,11 @@ class GirlController(object):
                     for mdi in metadatas:
                         # Publica en PublishQueue
                         ph.func_publish_queue(request, mdi.girl.asset.asset_id, mdi.language, 'AS', 'Q', vschedule_date)
+                        mdi.queue_status = True
                 except GirlMetadata.DoesNotExist as e:
-                    return render(request, 'cawas/error.html',
-                                  {"message": "No existe Metadata Para el Chica. (" + e.message + ")"})
+                    request.session['list_girl_message'] = 'No existe GirlMetadata ' + e.message
+                    request.session['list_girl_flag'] = FLAG_ALERT
+                    return -1
 
             request.session['list_girl_message'] = 'Guardado Correctamente'
             request.session['list_girl_flag'] = FLAG_SUCCESS
@@ -164,12 +166,12 @@ class GirlController(object):
             vgirl = Girl.objects.get(asset=vasset)
             vtypegirl = {"pornstar": "Pornstar", "playmate": "Playmate"}
             vlanguages = Language.objects.all()
-        # carga imagenes
+            # carga imagenes
             i = len(vgirl.image.portrait.name)
             imgport = vgirl.image.portrait.name[5:i]
             i = len(vgirl.image.landscape.name)
             imgland = vgirl.image.landscape.name[5:i]
-        #Nuevo diccionario para completar lenguages y metadata
+            #Nuevo diccionario para completar lenguages y metadata
             for itemlang in vlanguages:
                 vgirlmetadata = None
                 try:
@@ -181,16 +183,25 @@ class GirlController(object):
                 except GirlMetadata.DoesNotExist as a:
                     vlangmetadata.append({'checked': False, 'code': itemlang.code, 'name': itemlang.name, 'description': '', 'nationality': ''})
         except Setting.DoesNotExist as e:
-            return render(request, 'cawas/error.html', {"message": "No Setting. (" + e.message + ")"})
+            request.session['list_girl_message'] = 'No existe Setting ' + e.message
+            request.session['list_girl_flag'] = FLAG_ALERT
+            return -1
         except Girl.DoesNotExist as e:
-            return render(request, 'cawas/error.html', {"message": "Asset no se encuentra Vinculado a Girl. (" + e.message + ")"})
+            request.session['list_girl_message'] = 'No existe Girl ' + e.message
+            request.session['list_girl_flag'] = FLAG_ALERT
+            return -1
         except Asset.DoesNotExist as e:
-            return render(request, 'cawas/error.html', {"message": "Asset no Existe. (" + e.message + ")"})
+            request.session['list_girl_message'] = 'No existe Asset ' + e.message
+            request.session['list_girl_flag'] = FLAG_ALERT
+            return -1
         except Category.DoesNotExist as e:
-            return render(request, 'cawas/error.html', {"message": "Categoria no Existe. (" + e.message + ")"})
+            request.session['list_girl_message'] = 'No existe Categoria ' + e.message
+            request.session['list_girl_flag'] = FLAG_ALERT
+            return -1
         except GirlMetadata.DoesNotExist as e:
-            return render(request, 'cawas/error.html', {"message": "GirlMetaData No Existe . (" + e.message + ")"})
-
+            request.session['list_girl_message'] = 'No existe Metadata de Categoria ' + e.message
+            request.session['list_girl_flag'] = FLAG_ALERT
+            return -1
 
         if request.method == 'POST':
             #VARIABLES
@@ -208,9 +219,13 @@ class GirlController(object):
                 vimg = Image.objects.get(name=vasset.asset_id)
 
             except Asset.DoesNotExist as e:
-                return render(request, 'cawas/error.html', {"message": "Asset no Existe. (" + e.message + ")"})
+                request.session['list_girl_message'] = 'No existe Asset ' + e.message
+                request.session['list_girl_flag'] = FLAG_ALERT
+                return -1
             except GirlMetadata.DoesNotExist as e:
-                return render(request, 'cawas/error.html', {"message": "GirlMetaData No Existe . (" + e.message + ")"})
+                request.session['list_girl_message'] = 'No existe Girl Metadata ' + e.message
+                request.session['list_girl_flag'] = FLAG_ALERT
+                return -1
             except Image.DoesNotExist as e:
                 vimg = Image()
 
@@ -247,7 +262,9 @@ class GirlController(object):
                 vgirl.image = vimg
                 vgirl.save()
             except Exception as e:
-                return render(request, 'cawas/error.html', {"message": "Error al Guardar Girl. (" + str(e.message) + ")."})
+                request.session['list_girl_message'] = 'Error al Guardar Chica ' + e.message
+                request.session['list_girl_flag'] = FLAG_ALERT
+                return -1
 
 
             #BORRAR Y CREAR METADATA
@@ -265,11 +282,6 @@ class GirlController(object):
                 gmd.nationality = item['Girlmetadata']['nationality']
                 gmd.publish_date = vschedule_date
                 gmd.girl = vgirl
-
-                #metadatas = GirlMetadata.objects.filter(girl=vgirl, language=vlanguage)
-                # Si no existe METADATA, se genera
-                #if metadatas.count() < 1:
-                #    gmd.save()
                 gmd.save()
                 # Publica en PublishQueue
                 ph = PublishHelper()
@@ -277,19 +289,18 @@ class GirlController(object):
                 # Publica en PublishImage
                 ph.func_publish_image(request, vimg)
 
-            flag='success'
-            message = 'Guardado Correctamente.'
-            request.session['list_girl_message'] = 'Guardado Correctamente'
-            request.session['list_girl_flag'] = FLAG_SUCCESS
+                flag = 'success'
+                message = 'Guardado Correctamente.'
+                request.session['list_girl_message'] = 'Guardado Correctamente'
+                request.session['list_girl_flag'] = FLAG_SUCCESS
 
-
-        context = { 'vlanguages': vlanguages, 'vgirl':vgirl,
-                   'vtypegirl':vtypegirl,'vlangmetadata':vlangmetadata,
-                   'imgport':imgport, 'imgland':imgland,
-                   'flag':flag,
-                   'message':message}
-        # checks:
-        return render(request, 'cawas/girls/edit.html', context)
+            context = { 'vlanguages': vlanguages, 'vgirl':vgirl,
+                       'vtypegirl':vtypegirl,'vlangmetadata':vlangmetadata,
+                       'imgport':imgport, 'imgland':imgland,
+                       'flag':flag,
+                       'message':message}
+            # checks:
+            return render(request, 'cawas/girls/edit.html', context)
 
 
 
@@ -405,16 +416,20 @@ class GirlController(object):
 
             self.code_return = 0
             request.session['list_girl_message'] = 'Metadata en ' + girlmetadata.language.name + ' de Chica ' + girlmetadata.girl.asset.asset_id + ' Despublicado Correctamente'
-            request.session['list_girl_flag'] = FLAG_SUCCESS
+            request.session['list_girl_flag'] = FLAG_ALERT
 
         except PublishZone.DoesNotExist as e:
-            return render(request, 'cawas/error.html', {"message": "PublishZone no Existe. (" + str(e.message) + ")"})
-        except GirlMetadata.DoesNotExist as e:
-            return render(request, 'cawas/error.html',
-                          {"message": "Metadata de Girl no Existe. (" + str(e.message) + ")"})
-        except ApiBackendException as e:
-            request.session['list_girl_message'] = "Error al despublicar (" + str(e.value) + ")"
+            request.session['list_girl_message'] = 'No existe PublishZone ' +e.message
             request.session['list_girl_flag'] = FLAG_ALERT
+            return -1
+        except GirlMetadata.DoesNotExist as e:
+            request.session['list_girl_message'] = 'No existe Metadata de Chica ' + e.message
+            request.session['list_girl_flag'] = FLAG_ALERT
+            return -1
+        except ApiBackendException as e:
+            request.session['list_girl_message'] = 'Error al Despublicar ' + e.message
+            request.session['list_girl_flag'] = FLAG_ALERT
+            return -1
 
         return self.code_return
 

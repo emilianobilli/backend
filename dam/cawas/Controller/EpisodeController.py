@@ -153,7 +153,6 @@ class EpisodeController(object):
                     emd.summary_long = item['Episodemetadata']['summary_long']
                     emd.publish_date = vschedule_date
                     emd.episode = vepisode
-                    emd.save()
 
                 except Language.DoesNotExist as e:
                     return render(request, 'cawas/error.html', {"message": "Lenguaje no Existe. (" + e.message + ")"})
@@ -167,6 +166,8 @@ class EpisodeController(object):
                     metadatas = EpisodeMetadata.objects.filter(episode=vepisode)
                     for mdi in metadatas:
                         # Publicar el Episodio
+                        mdi.queue_status = True
+                        mdi.save()
                         ph = PublishHelper()
                         ph.func_publish_queue(request, mdi.episode.asset.asset_id, mdi.language, 'AS', 'Q',vschedule_date)
                         ph.func_publish_image(request, vimg)
@@ -384,8 +385,9 @@ class EpisodeController(object):
                     emd.summary_long = item['Episodemetadata']['summary_long']
                     emd.publish_date = vschedule_date
                     emd.episode = vepisode
+                    emd.queue_status = True
                     emd.save()
-
+                    #
                     #Publicar el Episodio
                     ph = PublishHelper()
                     ph.func_publish_queue(request, vepisode.asset.asset_id, vlang, 'AS', 'Q', vschedule_date)

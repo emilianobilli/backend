@@ -131,10 +131,10 @@ class SerieController(object):
                 smd.serie = vserie
                 smd.publish_date = vschedule_date
                 smd.save()
-
-
             flag = 'success'
-
+            self.code_return = 0
+            request.session['list_serie_message'] = 'Guardado Correctamente'
+            request.session['list_serie_flag'] = FLAG_SUCCESS
 
         # VARIABLES PARA GET - CARGAR GIRL
         try:
@@ -151,9 +151,6 @@ class SerieController(object):
             request.session['list_episode_flag'] = FLAG_ALERT
             return self.code_return
 
-        self.code_return = 0
-        request.session['list_serie_message'] = 'Guardado Correctamente'
-        request.session['list_serie_flag'] = FLAG_SUCCESS
 
         context = {'message': message, 'flag':flag, 'vgirls': vgirls, 'vlanguages': vlanguages, 'vcategories': vcategories,
                    'vchannels': vchannels, 'vseries': vseries, 'flag':flag}
@@ -303,6 +300,9 @@ class SerieController(object):
                     return self.code_return
                 # Fin de POST
             flag = "success"
+            self.code_return = 0
+            request.session['list_serie_message'] = 'Guardado Correctamente'
+            request.session['list_serie_flag'] = FLAG_SUCCESS
 
         # VARIABLES PARA GET - CARGAR GIRL
         try:
@@ -356,9 +356,6 @@ class SerieController(object):
             request.session['list_serie_flag'] = FLAG_ALERT
             return self.code_return
 
-        self.code_return = 0
-        request.session['list_serie_message'] = 'Guardado Correctamente'
-        request.session['list_serie_flag'] = FLAG_SUCCESS
 
         context = {'message': message, 'vgirls': vgirls,
                    'vlanguages': vlanguages,

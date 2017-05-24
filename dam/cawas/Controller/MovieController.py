@@ -158,6 +158,7 @@ class MovieController(object):
                     mmd.summary_short = item['Moviemetadata']['summary_short']
                     mmd.summary_long = item['Moviemetadata']['summary_long']
                     mmd.publish_date = vpublishdate
+                    mmd.queue_status = True
                     mmd.movie = mv
 
                     #Si no existe METADATA, se GENERA
@@ -344,8 +345,8 @@ class MovieController(object):
             # CARGAR METADATA
             vmoviesmetadata = decjson['Movie']['Moviesmetadata']
             # eliminar las movies metadata existentes
-
             mv.save()
+
             for item in vmoviesmetadata:
                 vlanguage = Language.objects.get(code=item['Moviemetadata']['language'])
                 try:
@@ -368,6 +369,7 @@ class MovieController(object):
                     mmd.summary_short = item['Moviemetadata']['summary_short']
                     mmd.summary_long = item['Moviemetadata']['summary_long']
                     mmd.publish_date = vpublishdate
+                    mmd.queue_status = True
                     mmd.save()
                     # Si no existe METADATA, se GENERA
 
@@ -388,15 +390,16 @@ class MovieController(object):
             try:
                 ph = PublishHelper()
                 ph.func_publish_image(request, img)
+                request.session['list_movie_message'] = 'Guardado Correctamente'
+                request.session['list_movie_flag'] = FLAG_SUCCESS
+                vflag = "success"
+                message = 'Registrado correctamente'
+
             except Exception as e:
                 request.session['list_movie_message'] = "Error al generar cola de imagen (" + str(e.message) + ")"
                 request.session['list_movie_flag'] = FLAG_ALERT
                 self.code_return = -1
 
-            request.session['list_movie_message'] = 'Guardado Correctamente'
-            request.session['list_movie_flag'] = FLAG_SUCCESS
-            vflag = "success"
-            message = 'Registrado correctamente'
 
 
         # VARIABLES PARA GET - CARGAR MOVIE

@@ -108,6 +108,7 @@
                         <div class="tb-cell">Idioma</div>
                         <div class="tb-cell">Estado</div>
                         <div class="tb-cell">Activo</div>
+                        <div class="tb-cell">En Cola de Pub.</div>
                         <div class="tb-cell">Fec. Publicación</div>
                         <div class="tb-cell">Acciones</div>
                         {% if usuario.is_superuser == true %}
@@ -134,6 +135,13 @@
                                 {% else %}
                                     <div class="tb-cell">SI</div>
                                 {% endif %}
+
+                                {% if item.queue_status == 0  %}
+                                    <div class="tb-cell">NO</div>
+                                {% else %}
+                                    <div class="tb-cell">SI</div>
+                                {% endif %}
+
                             <div class="tb-cell">{{ item.publish_date|date:'d-m-Y' }}</div>
 
                             <div class="tb-cell"><a href="/series/edit/{{ item.serie.asset.asset_id}}" class="btn-info btn tb-btn" >Editar</a></div>

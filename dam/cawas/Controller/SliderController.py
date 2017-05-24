@@ -72,6 +72,7 @@ class SliderController(object):
                     vschedule_date = datetime.datetime.now().strftime('%Y-%m-%d')
 
                 vslider.publish_date = vschedule_date
+                vslider.queue_status = True
                 vslider.save()
 
             except Exception as e:
@@ -195,6 +196,7 @@ class SliderController(object):
 
             vimg.save()
             vslider.image = vimg
+            vslider.queue_status = True
             vslider.save()
 
             # publicar

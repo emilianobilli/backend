@@ -113,6 +113,7 @@
                         <div class="tb-cell">Idioma</div>
                         <div class="tb-cell">Estado</div>
                         <div class="tb-cell">Activado</div>
+                        <div class="tb-cell">En Cola de Pub.</div>
                         <div class="tb-cell">Fec. Publicación</div>
                         <div class="tb-cell">Acciones</div>
                         {% if usuario.is_superuser == true %}
@@ -136,6 +137,12 @@
                             {% endif %}
 
                             {% if item.activated == 0  %}
+                                <div class="tb-cell">NO</div>
+                            {% else %}
+                                <div class="tb-cell">SI</div>
+                            {% endif %}
+
+                            {% if item.queue_status == 0  %}
                                 <div class="tb-cell">NO</div>
                             {% else %}
                                 <div class="tb-cell">SI</div>

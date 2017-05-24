@@ -97,6 +97,7 @@ class CategoryController(object):
                 gmd.name = item['Categorymetadata']['name']
                 gmd.publish_date = vschedule_date
                 gmd.category = vcategory
+
                 gmd.save()
 
             #PUBLICAR METADATA
@@ -107,6 +108,7 @@ class CategoryController(object):
                     metadatas = CategoryMetadata.objects.filter(category=vcategory)
                     for mdi in metadatas:
                         # Publica en PublishQueue
+                        mdi.queue_status = True
                         ph.func_publish_queue(request, mdi.category.category_id, mdi.language, 'CA', 'Q', vschedule_date)
                 except CategoryMetadata.DoesNotExist as e:
                     return render(request, 'cawas/error.html',
@@ -263,6 +265,7 @@ class CategoryController(object):
                     gmd.name = item['Categorymetadata']['name']
                     gmd.publish_date = vschedule_date
                     gmd.category = vcategory
+                    gmd.queue_status = True
                     gmd.save()
 
             #En Edicion, siempre se Publica Metadata

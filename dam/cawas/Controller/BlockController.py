@@ -40,7 +40,7 @@ class BlockController(object):
                 vschedule_date = datetime.datetime.strptime(decjson['Block']['publish_date'], '%d-%m-%Y').strftime('%Y-%m-%d')
                 vblock.publish_date = vschedule_date
                 vblock.language = Language.objects.get(code=decjson['Block']['language'])
-
+                vblock.queue_status = True
                 if decjson['Block']['channel_id'] is not None:
                     vblock.channel = Channel.objects.get(pk=decjson['Block']['channel_id'])
 
@@ -144,6 +144,7 @@ class BlockController(object):
                 vdevice = Device.objects.get(pk=int(decjson['Block']['target_device_id']))
 
                 vblock.target_device_id = int(decjson['Block']['target_device_id'])
+                vblock.queue_status = True
                 vblock.save()
             except Exception as e:
                 self.code_return = -1
