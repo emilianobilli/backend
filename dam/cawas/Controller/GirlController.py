@@ -121,7 +121,7 @@ class GirlController(object):
                     for mdi in metadatas:
                         # Publica en PublishQueue
                         ph.func_publish_queue(request, mdi.girl.asset.asset_id, mdi.language, 'AS', 'Q', vschedule_date)
-                        mdi.queue_status = True
+                        gmd.queue_status = 'Q'
                 except GirlMetadata.DoesNotExist as e:
                     request.session['list_girl_message'] = 'No existe GirlMetadata ' + e.message
                     request.session['list_girl_flag'] = FLAG_ALERT
@@ -282,6 +282,7 @@ class GirlController(object):
                 gmd.nationality = item['Girlmetadata']['nationality']
                 gmd.publish_date = vschedule_date
                 gmd.girl = vgirl
+                gmd.queue_status = 'Q'
                 gmd.save()
                 # Publica en PublishQueue
                 ph = PublishHelper()
@@ -442,6 +443,7 @@ class GirlController(object):
         gmd = GirlMetadata.objects.get(id=id)
         gmd.publish_date = datetime.datetime.now().strftime('%Y-%m-%d')
         #gmd.activated = True
+        gmd.queue_status = 'Q'
         gmd.save()
         ph = PublishHelper()
         ph.func_publish_queue(request, gmd.girl.asset.asset_id, gmd.language, 'AS', 'Q', datetime.datetime.now().strftime('%Y-%m-%d'))

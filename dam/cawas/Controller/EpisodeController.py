@@ -385,7 +385,7 @@ class EpisodeController(object):
                     emd.summary_long = item['Episodemetadata']['summary_long']
                     emd.publish_date = vschedule_date
                     emd.episode = vepisode
-                    emd.queue_status = True
+                    emd.queue_status = 'Q'
                     emd.save()
                     #
                     #Publicar el Episodio
@@ -580,6 +580,7 @@ class EpisodeController(object):
         try:
             md = EpisodeMetadata.objects.get(id=id)
             md.publish_date = datetime.datetime.now().strftime('%Y-%m-%d')
+            md.queue_status = 'Q'
             md.save()
 
             #Publica el Episodio

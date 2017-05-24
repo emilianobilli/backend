@@ -158,13 +158,12 @@ class MovieController(object):
                     mmd.summary_short = item['Moviemetadata']['summary_short']
                     mmd.summary_long = item['Moviemetadata']['summary_long']
                     mmd.publish_date = vpublishdate
-                    mmd.queue_status = True
                     mmd.movie = mv
 
                     #Si no existe METADATA, se GENERA
-                    metadatas = MovieMetadata.objects.filter(movie=mv, language=mmd.language)
-                    if metadatas.count() < 1:
-                        mmd.save()
+                    #metadatas = MovieMetadata.objects.filter(movie=mv, language=mmd.language)
+                    #if metadatas.count() < 1:
+                    mmd.save()
 
                 except Language.DoesNotExist as e:
                     self.code_return = -1
@@ -184,11 +183,13 @@ class MovieController(object):
             if vgrabarypublicar == '1':
                 metadatas = MovieMetadata.objects.filter(movie=mv)
                 for mdi in metadatas:
+
                     if ph.func_publish_queue(request, mdi.movie.asset.asset_id, mdi.language, 'AS', 'Q', mdi.publish_date) == RETURN_ERROR:
                         request.session['list_movie_message'] = 'Error' + request.session['message']
                         request.session['list_movie_flag'] = FLAG_ALERT
                         return RETURN_ERROR
-
+                    mdi.queue_status = 'Q'
+                    mdi.save()
             # PUBLICAR METADATA IMAGEN
             if vgrabarypublicar == '1':
                 if ph.func_publish_image(request, img) == RETURN_ERROR:
@@ -369,7 +370,7 @@ class MovieController(object):
                     mmd.summary_short = item['Moviemetadata']['summary_short']
                     mmd.summary_long = item['Moviemetadata']['summary_long']
                     mmd.publish_date = vpublishdate
-                    mmd.queue_status = True
+                    mmd.queue_status = 'Q'
                     mmd.save()
                     # Si no existe METADATA, se GENERA
 
@@ -587,7 +588,7 @@ class MovieController(object):
     def publish(self, request, id):
         md = MovieMetadata.objects.get(id=id)
         md.publish_date = datetime.datetime.now().strftime('%Y-%m-%d')
-        #md.activated = True
+        md.queue_status = 'Q'
         md.save()
 
         ph = PublishHelper()

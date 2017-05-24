@@ -130,6 +130,7 @@ class SerieController(object):
                 smd.summary_long = item['Seriemetadata']['summary_long']
                 smd.serie = vserie
                 smd.publish_date = vschedule_date
+                smd.queue_status = 'Q'
                 smd.save()
             flag = 'success'
             self.code_return = 0
@@ -284,6 +285,7 @@ class SerieController(object):
                 smd.summary_long = item['Seriemetadata']['summary_long']
                 smd.serie = vserie
                 smd.publish_date = vschedule_date
+                smd.queue_status = 'Q'
                 smd.save()
                 #metadatas = SerieMetadata.objects.filter(serie=vserie, language=smd.language)
                 # Si no existe METADATA, se genera
@@ -447,6 +449,7 @@ class SerieController(object):
 
             md = SerieMetadata.objects.get(id=id)
             md.publish_date = datetime.datetime.now().strftime('%Y-%m-%d')
+            md.queue_status = 'Q'
             md.save()
 
             ph = PublishHelper()

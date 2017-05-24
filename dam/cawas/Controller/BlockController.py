@@ -87,7 +87,7 @@ class BlockController(object):
                     except Asset.DoesNotExist as e:
                         return render(request, 'cawas/error.html',
                                       {"message": "No existe Asset. " + asset_id + "  (" + e.message + ")"})
-
+                vblock.queue_status = 'Q'
                 vblock.save()
                 ph = PublishHelper()
                 ph.func_publish_queue(request, vblock.block_id, vblock.language, 'BL', 'Q', vblock.publish_date)
@@ -144,7 +144,7 @@ class BlockController(object):
                 vdevice = Device.objects.get(pk=int(decjson['Block']['target_device_id']))
 
                 vblock.target_device_id = int(decjson['Block']['target_device_id'])
-                vblock.queue_status = True
+                vblock.queue_status = 'Q'
                 vblock.save()
             except Exception as e:
                 self.code_return = -1
@@ -400,6 +400,7 @@ class BlockController(object):
         block = Block.objects.get(id = id)
         vpublish_date = datetime.datetime.now().strftime('%Y-%m-%d')
         block.publish_date = vpublish_date
+        block.queue_status = 'Q'
         block.save()
        # ENCOLA LOS ASSETS QUE CORRESPONDEN AL BLOQUE, SOLO en el IDIOMA QUE SE SELECCIONO
         vassets = block.assets.all()

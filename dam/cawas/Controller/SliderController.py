@@ -72,7 +72,7 @@ class SliderController(object):
                     vschedule_date = datetime.datetime.now().strftime('%Y-%m-%d')
 
                 vslider.publish_date = vschedule_date
-                vslider.queue_status = True
+                vslider.queue_status = 'Q'
                 vslider.save()
 
             except Exception as e:
@@ -196,7 +196,7 @@ class SliderController(object):
 
             vimg.save()
             vslider.image = vimg
-            vslider.queue_status = True
+            vslider.queue_status = 'Q'
             vslider.save()
 
             # publicar
@@ -276,6 +276,8 @@ class SliderController(object):
     def publish(self, request, id):
         try:
             vslider = Slider.objects.get(slider_id=id)
+            vslider.queue_status = 'Q'
+            vslider.save()
             # publicar
             ph = PublishHelper()
             ph.func_publish_queue(request, vslider.slider_id, vslider.language, 'SL', 'Q', vslider.publish_date)
