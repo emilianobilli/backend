@@ -142,11 +142,15 @@
                                 <div class="tb-cell">SI</div>
                             {% endif %}
 
-                            {% if item.queue_status == 0  %}
-                                <div class="tb-cell">NO</div>
-                            {% else %}
-                                <div class="tb-cell">SI</div>
-                            {% endif %}
+                            <div class="tb-cell">
+                                {% if item.queue_status == 'Q'  %}
+                                    Queued
+                                {% elif item.queue_status == 'D' %}
+                                    Done
+                                {% elif item.queue_status == 'E' %}
+                                    Error
+                                {% endif %}
+                            </div>
 
                             <div class="tb-cell">{{ item.publish_date|date:'d-m-Y' }}</div>
 
