@@ -37,8 +37,9 @@ $('#search_category').multiselect({
             //segundos = String.format("%02d", estrenoArr[1]);
             minutos = Number(estrenoArr[0]);
             segundos = Number(estrenoArr[1]);
-
     }
+
+
 
 
     $("#btnsearch").click(function(){
@@ -99,6 +100,7 @@ $('#search_category').multiselect({
     leerRuntime();
 
 
+
     $("#runtime").durationPicker({
       minutes: {
         label: ":",
@@ -115,6 +117,8 @@ $('#search_category').multiselect({
       classname: 'form-control',
       responsive: true
     });
+
+
     completarRuntime();
 
     // simular exit con el botón de salir
@@ -394,7 +398,6 @@ $('#search_category').multiselect({
             canal_selected=$('#canalSelect').val();
         }
 
-        
          // chequea display runtime
 
 

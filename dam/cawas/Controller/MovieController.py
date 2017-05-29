@@ -30,7 +30,6 @@ class MovieController(object):
         pathfilesport= ''
         pathfilesland = ''
         if request.method == 'POST':
-
             # parsear JSON
             strjson = request.POST['varsToJSON']
             decjson = json.loads(strjson)
@@ -400,8 +399,6 @@ class MovieController(object):
                 request.session['list_movie_message'] = "Error al generar cola de imagen (" + str(e.message) + ")"
                 request.session['list_movie_flag'] = FLAG_ALERT
                 self.code_return = -1
-
-
 
         # VARIABLES PARA GET - CARGAR MOVIE
         try:

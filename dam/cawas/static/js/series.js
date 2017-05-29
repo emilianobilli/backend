@@ -363,15 +363,7 @@ $('#search_category').multiselect({
              $(".select2-selection--single").css("border","1px #3c763d solid");
             canal_selected=$('#canalSelect').val();
         }
-        
-        // chequea director
-        if(director_selected=="" || director_selected==" ")
-        {
-            errorMe("#director");
-            checkVal++;
-        }else{
-            okMe("#director");
-        }
+
         
         // chequea año de estreno
         if(year_selected=="" || year_selected==" ")
@@ -384,15 +376,7 @@ $('#search_category').multiselect({
         
         
         
-        // chequea elenco
-        if(elenco_selected=="" || elenco_selected==" ")
-        {
-            errorMe("#elenco");
-            checkVal++;
-        }else{
-            okMe("#elenco");
-        }
-        
+
         // chequeo de idiomas (tit_; desc_; date_)
         if(langQ==0){
             errorMe("#pickLang");
@@ -530,9 +514,17 @@ $('#search_category').multiselect({
                     myJSON+='"original_title":"'+original_Title+'",';
                     myJSON+='"channel_id":"'+canal_selected+'",';
                     myJSON+='"year":'+year_selected+',';
-                    myJSON+='"cast":"'+elenco_selected+'",';
-                    myJSON+='"directors":"'+director_selected+'",';
 
+                    if (elenco_selected==''){
+                        myJSON+='"cast":null,';
+                    }else{
+                        myJSON+='"cast":"'+elenco_selected+'",';
+                    }
+                    if (director_selected==''){
+                        myJSON+='"directors":null,';
+                       }else{
+                        myJSON+='"directors":"'+director_selected+'",';
+                    }
                     if (myGirls=="[]"){
                         myJSON+='"girls":null,';
                     }else{

@@ -75,8 +75,14 @@ class SerieController(object):
             vserie.asset = vasset
             vserie.original_title = decjson['Serie']['original_title']
             vserie.year = decjson['Serie']['year']
-            vserie.cast = decjson['Serie']['cast']
-            vserie.directors = decjson['Serie']['directors']
+
+            #vserie.cast = decjson['Serie']['cast']
+            #vserie.directors = decjson['Serie']['directors']
+            if (decjson['Serie']['cast'] is not None):
+                vserie.cast = decjson['Serie']['cast']
+            if (decjson['Serie']['directors'] is not None):
+                vserie.directors = decjson['Serie']['directors']
+
             vserie.image = vimg
             vserie.save()
 
@@ -226,8 +232,16 @@ class SerieController(object):
             vserie.asset = vasset
             vserie.original_title = decjson['Serie']['original_title']
             vserie.year = decjson['Serie']['year']
-            vserie.cast = decjson['Serie']['cast']
-            vserie.directors = decjson['Serie']['directors']
+
+            if (decjson['Serie']['cast'] is not None):
+                vserie.cast = decjson['Serie']['cast']
+            if (decjson['Serie']['directors'] is not None):
+                vserie.directors = decjson['Serie']['directors']
+
+            #vserie.cast = decjson['Serie']['cast']
+            #vserie.directors = decjson['Serie']['directors']
+
+
             vserie.image = vimg
             vserie.save()
 
