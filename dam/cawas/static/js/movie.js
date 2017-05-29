@@ -101,6 +101,8 @@ $('#search_category').multiselect({
 
 
 
+
+
     $("#runtime").durationPicker({
       minutes: {
         label: ":",
@@ -117,8 +119,6 @@ $('#search_category').multiselect({
       classname: 'form-control',
       responsive: true
     });
-
-
     completarRuntime();
 
     // simular exit con el botón de salir
