@@ -69,22 +69,29 @@ class EpisodeController(object):
                 # IMAGEN Portrait
                 if (request.FILES.has_key('ThumbHor')):
                     if request.FILES['ThumbHor'].name != '':
-                        vimg.portrait = request.FILES['ThumbHor']
-                        extension = os.path.splitext(vimg.portrait.name)[1]
-                        varchivo = pathfilesport.value + vimg.name + extension
-                        vimg.portrait.name = varchivo
+                        # TRATAMIENTO DE IMAGEN Landscape
+                        vimg.landscape = request.FILES['ThumbHor']
+                        extension = os.path.splitext(vimg.landscape.name)[1]
+                        varchivo = pathfilesland.value + vimg.name + extension
+                        vimg.name = vasset.asset_id
+                        vimg.landscape.name = varchivo
                         if os.path.isfile(varchivo):
                             os.remove(varchivo)
+
 
                 # IMAGEN Landscape
                 if (request.FILES.has_key('ThumbVer')):
                     if request.FILES['ThumbVer'].name != '':
-                        vimg.landscape = request.FILES['ThumbVer']
-                        extension = os.path.splitext(vimg.landscape.name)[1]
-                        varchivo = pathfilesland.value + vimg.name + extension
-                        vimg.landscape.name = varchivo
+                        # Landscape
+                        vimg.portrait = request.FILES['ThumbVer']
+                        extension = os.path.splitext(vimg.portrait.name)[1]
+                        varchivo = pathfilesport.value + vimg.name + extension
+                        vimg.portrait.name = varchivo
+                        # si existe archivo, lo borra
                         if os.path.isfile(varchivo):
                             os.remove(varchivo)
+
+
                 vimg.save()
                 vepisode.image = vimg
                 vepisode.save()
@@ -209,12 +216,6 @@ class EpisodeController(object):
                    'vlanguages': vlanguages, 'vseries': vseries, 'vmovies': vmovies, 'vcapitulos': vcapitulos,
                    'vassets': vassets}
 
-        # Episode > OK
-        # Asset > OK
-        # Imagenes > OK
-        # Metadata Falta
-        # categorias OK
-        # girls OK
         return render(request, 'cawas/episodes/add.html', context)
 
 
@@ -297,22 +298,30 @@ class EpisodeController(object):
                 # IMAGEN Portrait
                 if (request.FILES.has_key('ThumbHor')):
                     if request.FILES['ThumbHor'].name != '':
-                        vimg.portrait = request.FILES['ThumbHor']
-                        extension = os.path.splitext(vimg.portrait.name)[1]
-                        varchivo = pathfilesport.value + vimg.name + extension
-                        vimg.portrait.name = varchivo
+                        # TRATAMIENTO DE IMAGEN Landscape
+                        vimg.landscape = request.FILES['ThumbHor']
+                        extension = os.path.splitext(vimg.landscape.name)[1]
+                        varchivo = pathfilesland.value + vimg.name + extension
+                        vimg.name = vasset.asset_id
+                        vimg.landscape.name = varchivo
                         if os.path.isfile(varchivo):
                             os.remove(varchivo)
+
 
                 # IMAGEN Landscape
                 if (request.FILES.has_key('ThumbVer')):
                     if request.FILES['ThumbVer'].name != '':
-                        vimg.landscape = request.FILES['ThumbVer']
-                        extension = os.path.splitext(vimg.landscape.name)[1]
-                        varchivo = pathfilesland.value + vimg.name + extension
-                        vimg.landscape.name = varchivo
+                        # Landscape
+                        vimg.portrait = request.FILES['ThumbVer']
+                        extension = os.path.splitext(vimg.portrait.name)[1]
+                        varchivo = pathfilesport.value + vimg.name + extension
+                        vimg.portrait.name = varchivo
+                        # si existe archivo, lo borra
                         if os.path.isfile(varchivo):
                             os.remove(varchivo)
+
+
+
                 vimg.save()
                 vepisode.image = vimg
                 vepisode.save()
@@ -399,6 +408,10 @@ class EpisodeController(object):
                         ph.func_publish_queue(request, vepisode.serie.asset.asset_id, vlang, 'AS', 'Q', vschedule_date)
                         ph.func_publish_image(request, vepisode.serie.image)
 
+                    request.session['list_episode_message'] = 'Guardado Correctamente '
+                    request.session['list_episode_flag'] = FLAG_SUCCESS
+
+
                 except Language.DoesNotExist as e:
                     self.code_return = -1
                     request.session['list_episode_message'] = 'Lenguaje no Existe ' + e.message
@@ -411,10 +424,10 @@ class EpisodeController(object):
                     return self.code_return
 
 
-            vflag = "success"
-            message = 'Guardado Correctamente'
-            context = {"flag": vflag, 'message': message}
-            return render(request, 'cawas/episodes/edit.html', context)
+            #vflag = "success"
+            #message = 'Guardado Correctamente'
+            #context = {"flag": vflag, 'message': message}
+            #return render(request, 'cawas/episodes/edit.html', context)
             # return redirect(menu_view)
             # Fin POST Bloque
 
@@ -498,7 +511,7 @@ class EpisodeController(object):
                 episodes_sel = Episode.objects.all()
 
             if selectestado != '':
-                episodes_list = EpisodeMetadata.objects.filter(episode__in=episodes_sel, publish_status=selectestado).order_by('episode_id')
+                episodes_list = EpisodeMetadata.objects.filter(episode__in=episodes_sel, queue_status=selectestado).order_by('episode_id')
             else:
                 episodes_list = EpisodeMetadata.objects.filter(episode__in=episodes_sel).order_by('episode_id')
 

@@ -1,7 +1,7 @@
 import os, datetime, json
 from LogController import LogController
 from django.shortcuts import render,redirect
-from ..models import Asset, Setting, Slider,  Category, Language, Device, Image, Girl, PublishZone, Channel, PublishQueue, ImageQueue
+from ..models import Asset, Setting, Slider, Movie, Episode, Serie, Girl, Category, Language, Device, Image, Girl, PublishZone, Channel, PublishQueue, ImageQueue
 from ..Helpers.PublishHelper import PublishHelper
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from ..Helpers.GlobalValues import *
@@ -35,6 +35,7 @@ class SliderController(object):
                 # Parsear JSON
                 strjson = request.POST['varsToJSON']
                 decjson = json.loads(strjson)
+                vgrabarypublicar = decjson['Slider']['publicar']
                 if (decjson['Slider']['asset_id']!='0'):
                     vasset = Asset.objects.get(asset_id=decjson['Slider']['asset_id'])
                     vslider.asset = vasset
@@ -74,6 +75,45 @@ class SliderController(object):
                 vslider.publish_date = vschedule_date
                 vslider.queue_status = 'Q'
                 vslider.save()
+                vflag = "success"
+                request.session['list_slider_message'] = 'Guardado Correctamente'
+                request.session['list_slider_flag'] = FLAG_SUCCESS
+
+                # PUBLICAR METADATA
+                if vgrabarypublicar == '1':
+                    ph = PublishHelper()
+                    ph.func_publish_queue(request, vslider.slider_id, vslider.language, 'SL', 'Q', vslider.publish_date)
+                    ph.func_publish_image(request, vslider.image)
+
+                    if vslider.asset is not None:
+                        ph.func_publish_queue(request, vslider.asset.asset_id, vslider.language, 'SL', 'Q', vslider.publish_date)
+
+                    #consultar tipo de asset
+                    # Buscar en Movie, Girl, Category
+                    if (Asset.objects.filter(asset_id=vslider.asset.asset_id).count() > 0):
+                        asset = Asset.objects.get(asset_id=vslider.asset.asset_id)
+                        #imagenes_encoladas = ImageQueue.objects.filter(status='Q', item)
+                        if asset.asset_type == 'movie':
+                            contenido = Movie.objects.get(asset=asset)
+
+                            ph.func_publish_image(request, contenido.image)
+
+                        if asset.asset_type == 'episode':
+                            contenido = Episode.objects.get(asset=asset)
+                            ph.func_publish_image(request, contenido.image)
+
+                        if asset.asset_type == 'girl':
+                            contenido = Girl.objects.get(asset=asset)
+                            ph.func_publish_image(request, contenido.image)
+
+                        if asset.asset_type == 'serie':
+                            contenido = Serie.objects.get(asset=asset)
+                            ph.func_publish_image(request, contenido.image)
+
+                    vflag = "success"
+                    request.session['list_slider_message'] = 'Guardado Correctamente en Cola de Publicacion'
+                    request.session['list_slider_flag'] = FLAG_SUCCESS
+
 
             except Exception as e:
                 request.session['list_slider_message'] = "Error al Guardar Slider. (" + e.message + " - " + varchivo +  " )"
@@ -82,9 +122,6 @@ class SliderController(object):
                 return self.code_return
 
 
-            vflag = "success"
-            request.session['list_slider_message'] = 'Guardado Correctamente'
-            request.session['list_slider_flag'] = FLAG_SUCCESS
 
 
         vassets = Asset.objects.all()
@@ -204,10 +241,9 @@ class SliderController(object):
             ph.func_publish_queue(request, vslider.slider_id, vslider.language, 'SL', 'Q', vslider.publish_date)
             ph.func_publish_image(request, vslider.image)
 
-            request.session['list_slider_message'] = 'Guardado Correctamente'
+            vflag = "success"
+            request.session['list_slider_message'] = 'Guardado Correctamente en Cola de Publicacion'
             request.session['list_slider_flag'] = FLAG_SUCCESS
-
-
 
         if request.method == 'GET':
             context = {'vtypes': vtypes, 'vassets': vassets, 'vsliders': vsliders, 'imgland':imgland,
@@ -248,11 +284,11 @@ class SliderController(object):
             # FILTROS
             if titulo != '':
                 if selectestado != '':
-                    sliders_list = Slider.objects.filter(slider_id__icontains=titulo, publish_status=selectestado).order_by('slider_id')
+                    sliders_list = Slider.objects.filter(slider_id__icontains=titulo, queue_status=selectestado).order_by('slider_id')
                 else:
                     sliders_list = Slider.objects.filter(slider_id__icontains=titulo).order_by('slider_id')
             elif selectestado != '':
-                sliders_list = Slider.objects.filter(publish_status=selectestado).order_by('slider_id')
+                sliders_list = Slider.objects.filter(queue_status=selectestado).order_by('slider_id')
             else:
                 sliders_list = Slider.objects.all().order_by('slider_id')
 

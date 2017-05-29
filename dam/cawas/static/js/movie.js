@@ -33,8 +33,10 @@ $('#search_category').multiselect({
     function leerRuntime(){
             var estreno = ($("#runtime").val());
             var estrenoArr = estreno.split(":");
-            minutos = Number(estrenoArr[0]);
-            segundos = Number(estrenoArr[1]);
+            minutos = String.format("%02d", estrenoArr[0]);
+            segundos = String.format("%02d", estrenoArr[1]);
+            //minutos = Number(estrenoArr[0]);
+            //segundos = Number(estrenoArr[1]);
 
     }
 

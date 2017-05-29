@@ -12,7 +12,11 @@ $( document ).ready(function() {
     $( "#ThumbHor" ).change(showPreviewImage_click);
     $( "#ThumbVer" ).change(showPreviewImage_click);
 
-
+    $("#btngrabarypublicar").click(function(){
+        $("#publicar").val("1");
+        clickedToSubmit=1;
+        checkAll();
+    });
 
     console.log( "ready!" );
     var asset_id = $("#asset_id").val();
@@ -197,6 +201,7 @@ $( document ).ready(function() {
         var idioma_selected = $('#idiomaSelect').val();
         var publish_date = $('#date_blq').val();
         var text = $("#text").val();
+        var publicar = $('#publicar').val();
 
 
 
@@ -256,16 +261,6 @@ $( document ).ready(function() {
 
 
 
-        // chequeo de idiomas (tit_; desc_; date_)
-        /*
-        if(langQ==0){
-            errorMe("#pickLang");
-            checkVal++;
-        }else{
-            okMe("#pickLang");
-            checkLangs(langDesc);
-        }
-        */
 
         if(checkVal>0){
             if(checkedOnce<1){// envía por primera vez y tiene error
@@ -413,6 +408,7 @@ $( document ).ready(function() {
                     myJSON+='"language":"'+idioma_selected+'",';
                     myJSON+='"media_type":"'+typeslider_selected+'",';
                     myJSON+='"target_device_id":"'+device_selected+'",';
+                    myJSON+='"publicar":"'+publicar+'",';
                     if (typeslider_selected=='' ){
                         myJSON+='"type_slider":null';
                        }else{

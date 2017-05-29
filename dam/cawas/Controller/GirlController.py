@@ -154,7 +154,6 @@ class GirlController(object):
             lc = LogController()
             return redirect(lc.login_view(request))
 
-
         #VARIABLES PARA GET - CARGAR GIRL
         try:
             message = ''
@@ -295,13 +294,13 @@ class GirlController(object):
                 request.session['list_girl_message'] = 'Guardado Correctamente'
                 request.session['list_girl_flag'] = FLAG_SUCCESS
 
-            context = { 'vlanguages': vlanguages, 'vgirl':vgirl,
-                       'vtypegirl':vtypegirl,'vlangmetadata':vlangmetadata,
-                       'imgport':imgport, 'imgland':imgland,
-                       'flag':flag,
-                       'message':message}
-            # checks:
-            return render(request, 'cawas/girls/edit.html', context)
+        context = { 'vlanguages': vlanguages, 'vgirl':vgirl,
+                   'vtypegirl':vtypegirl,'vlangmetadata':vlangmetadata,
+                   'imgport':imgport, 'imgland':imgland,
+                   'flag':flag,
+                   'message':message}
+        # checks:
+        return render(request, 'cawas/girls/edit.html', context)
 
 
 
@@ -345,7 +344,7 @@ class GirlController(object):
                 girls_sel = Girl.objects.all()
 
             if selectestado != '':
-                girls_list = GirlMetadata.objects.filter(girl__in=girls_sel, publish_status=selectestado).order_by('girl_id')
+                girls_list = GirlMetadata.objects.filter(girl__in=girls_sel, queue_status=selectestado).order_by('girl_id')
             else:
                 girls_list = GirlMetadata.objects.filter(girl__in=girls_sel).order_by('girl_id')
 

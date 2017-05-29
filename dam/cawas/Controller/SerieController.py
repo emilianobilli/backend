@@ -43,26 +43,31 @@ class SerieController(object):
                 request.session['list_serie_flag'] = FLAG_ALERT
                 return self.code_return
 
+
             # IMAGEN Portrait
             if (request.FILES.has_key('ThumbHor')):
                 if request.FILES['ThumbHor'].name != '':
-                    vimg.portrait = request.FILES['ThumbHor']
-                    extension = os.path.splitext(vimg.portrait.name)[1]
+                    # TRATAMIENTO DE IMAGEN Landscape
+                    vimg.landscape = request.FILES['ThumbHor']
+                    extension = os.path.splitext(vimg.landscape.name)[1]
+                    varchivo = pathfilesland.value + vimg.name + extension
                     vimg.name = vasset.asset_id
-                    varchivo = pathfilesport.value + vimg.name + extension
-                    vimg.portrait.name = varchivo
+                    vimg.landscape.name = varchivo
                     if os.path.isfile(varchivo):
                         os.remove(varchivo)
 
             # IMAGEN Landscape
             if (request.FILES.has_key('ThumbVer')):
                 if request.FILES['ThumbVer'].name != '':
-                    vimg.landscape = request.FILES['ThumbVer']
-                    extension = os.path.splitext(vimg.landscape.name)[1]
-                    varchivo = pathfilesland.value + vimg.name + extension
-                    vimg.landscape.name = varchivo
+                    # Landscape
+                    vimg.portrait = request.FILES['ThumbVer']
+                    extension = os.path.splitext(vimg.portrait.name)[1]
+                    varchivo = pathfilesport.value + vimg.name + extension
+                    vimg.portrait.name = varchivo
+                    # si existe archivo, lo borra
                     if os.path.isfile(varchivo):
                         os.remove(varchivo)
+
             vimg.save()
             # FIN IMAGEN
 
@@ -189,26 +194,31 @@ class SerieController(object):
                 request.session['list_serie_message'] = 'Error: ' + e.message
                 request.session['list_serie_flag'] = FLAG_ALERT
                 return self.code_return
+
             # IMAGEN Portrait
             if (request.FILES.has_key('ThumbHor')):
                 if request.FILES['ThumbHor'].name != '':
-                    vimg.portrait = request.FILES['ThumbHor']
-                    extension = os.path.splitext(vimg.portrait.name)[1]
+                    # TRATAMIENTO DE IMAGEN Landscape
+                    vimg.landscape = request.FILES['ThumbHor']
+                    extension = os.path.splitext(vimg.landscape.name)[1]
+                    varchivo = pathfilesland.value + vimg.name + extension
                     vimg.name = vasset.asset_id
-                    varchivo = pathfilesport.value + vimg.name + extension
-                    vimg.portrait.name = varchivo
+                    vimg.landscape.name = varchivo
                     if os.path.isfile(varchivo):
                         os.remove(varchivo)
 
             # IMAGEN Landscape
             if (request.FILES.has_key('ThumbVer')):
                 if request.FILES['ThumbVer'].name != '':
-                    vimg.landscape = request.FILES['ThumbVer']
-                    extension = os.path.splitext(vimg.landscape.name)[1]
-                    varchivo = pathfilesland.value + vimg.name + extension
-                    vimg.landscape.name = varchivo
+                    # Landscape
+                    vimg.portrait = request.FILES['ThumbVer']
+                    extension = os.path.splitext(vimg.portrait.name)[1]
+                    varchivo = pathfilesport.value + vimg.name + extension
+                    vimg.portrait.name = varchivo
+                    # si existe archivo, lo borra
                     if os.path.isfile(varchivo):
                         os.remove(varchivo)
+
             vimg.save()
             # FIN IMAGEN
             vgrabarypublicar = decjson['Serie']['publicar']
@@ -420,7 +430,7 @@ class SerieController(object):
                 series_sel = Serie.objects.all()
 
             if selectestado != '':
-                series_list = SerieMetadata.objects.filter(serie__in=series_sel, publish_status=selectestado).order_by('serie_id')
+                series_list = SerieMetadata.objects.filter(serie__in=series_sel, queue_status=selectestado).order_by('serie_id')
             else:
                 series_list = SerieMetadata.objects.filter(serie__in=series_sel).order_by('serie_id')
 

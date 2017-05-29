@@ -319,7 +319,7 @@ class CategoryController(object):
         if request.POST:
             titulo = request.POST['inputTitulo']
             selectestado = request.POST['selectestado']
-
+            print 'selectestado' + selectestado
             #FILTROS
             if titulo != '':
                 #Q(original_name__icontains=titulo)|Q(category_id__icontains=titulo)
@@ -328,7 +328,7 @@ class CategoryController(object):
                 categories_sel = Category.objects.all().order_by('oringinal_name')
 
             if selectestado != '':
-                categories_list = CategoryMetadata.objects.filter(category__in=categories_sel, publish_status=selectestado).order_by('category_id')
+                categories_list = CategoryMetadata.objects.filter(category__in=categories_sel, queue_status=selectestado).order_by('category_id')
             else:
                 categories_list = CategoryMetadata.objects.filter(category__in=categories_sel).order_by('category_id')
 

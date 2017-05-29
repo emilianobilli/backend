@@ -269,11 +269,11 @@ class BlockController(object):
             # FILTROS
             if titulo != '':
                 if selectestado != '':
-                    blocks_list = Block.objects.filter(Q(name__icontains=titulo)|Q(block_id__icontains=titulo), publish_status=selectestado).order_by('block_id')
+                    blocks_list = Block.objects.filter(Q(name__icontains=titulo)|Q(block_id__icontains=titulo), queue_status=selectestado).order_by('block_id')
                 else:
                     blocks_list = Block.objects.filter(Q(name__icontains=titulo)|Q(block_id__icontains=titulo)).order_by('block_id')
             elif selectestado != '':
-                blocks_list = Block.objects.filter(publish_status=selectestado).order_by('block_id')
+                blocks_list = Block.objects.filter(queue_status=selectestado).order_by('block_id')
             else:
                 blocks_list = Block.objects.all().order_by('block_id')
 

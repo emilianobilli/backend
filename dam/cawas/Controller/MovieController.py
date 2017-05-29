@@ -462,7 +462,6 @@ class MovieController(object):
         categories = Category.objects.all().order_by('original_name')
         languages = Language.objects.all()
 
-
         title = 'Editar Movie'
 
         context = {'title': title, 'assets': assets, 'channels': channels, 'girls': girls, 'categories': categories,
@@ -509,8 +508,7 @@ class MovieController(object):
                 movies_sel = Movie.objects.all()
 
             if selectestado != '':
-                movies_list = MovieMetadata.objects.filter(movie__in=movies_sel, publish_status=selectestado).order_by(
-                    'movie_id')
+                movies_list = MovieMetadata.objects.filter(movie__in=movies_sel, queue_status=selectestado).order_by('movie_id')
             else:
                 movies_list = MovieMetadata.objects.filter(movie__in=movies_sel).order_by('movie_id')
 
