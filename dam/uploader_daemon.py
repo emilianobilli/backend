@@ -75,10 +75,10 @@ def upload_images():
                         job.status = 'U'
                         job.save()
                         s3.upload(src_path, filename, job.publish_zone.s3_bucket, dest_path)
-                        logging.info("File %s uploaded successfully" % img)
+                        logging.info("File %s/%s uploaded successfully" % (src_path, filename))
                     else:
                         job.status = 'E'
-                        msg = "File does not exist: %s" % img
+                        msg = "File does not exist: %s/%s" % (src_path, filename)
                         job.message = msg
                         job.save()
                         logging.error('upload_images(): %s' % msg)
@@ -98,10 +98,10 @@ def upload_images():
                         job.status = 'U'
                         job.save()
                         s3.upload(src_path, filename, job.publish_zone.s3_bucket, dest_path)
-                        logging.info("File %s uploaded successfully" % img)
+                        logging.info("File %s/%s uploaded successfully" % (src_path, filename))
                     else:
                         job.status = 'E'
-                        msg = "File does not exist: %s" % img
+                        msg = "File does not exist: %s/%s" % (src_path, filename)
                         job.message = msg
                         job.save()
                         logging.error('upload_images(): %s' % msg)
