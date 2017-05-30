@@ -94,6 +94,8 @@ $('#search_category').multiselect({
     var $myVerifEpisodeSelect = $("#episode-select").select2();
 
     leerRuntime();
+
+
     $("#runtime").durationPicker({
       minutes: {
         label: ":",
