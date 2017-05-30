@@ -80,13 +80,18 @@ class BlockController(object):
                     try:
                         asset_id = item['asset_id']
                         vasset = Asset.objects.get(asset_id=asset_id)
-                        # Publica en PublishQueue
                         ph = PublishHelper()
+
+                        # Publica en PublishQueue
+                        # Eliminar cola de publicacion para el item en estado Queued
                         ph.func_publish_queue(request, asset_id, vblock.language, 'AS', 'Q', vblock.publish_date)
 
                     except Asset.DoesNotExist as e:
-                        return render(request, 'cawas/error.html',
-                                      {"message": "No existe Asset. " + asset_id + "  (" + e.message + ")"})
+                        self.code_return = -1
+                        request.session['list_block_message'] = 'Error: No existe Asset. ' + e.message
+                        request.session['list_block_flag'] = FLAG_ALERT
+                        return self.code_return
+
                 vblock.queue_status = 'Q'
                 vblock.save()
                 ph = PublishHelper()
@@ -182,18 +187,16 @@ class BlockController(object):
                     print item
                     ph.func_publish_queue(request, item, vblock.language, 'AS', 'Q', vblock.publish_date)
                 except Asset.DoesNotExist as e:
-                    return render(request, 'cawas/error.html', {"message": "No existe Asset. (" + e.message + ")"})
+                    request.session['list_block_message'] = 'Error: '+ e.message
+                    request.session['list_block_flag'] = FLAG_ALERT
+                    return  -1
 
-
-
-            #func_publish_queue(vblock.block_id, vblock.language, 'BL', 'Q', vblock.publish_date)
             ph = PublishHelper()
             ph.func_publish_queue(request, vblock.block_id, vblock.language, 'BL', 'Q', vblock.publish_date)
             context = {"flag": "success"}
             self.code_return = 0
             request.session['list_block_message'] = 'Guardado Correctamente.'
             request.session['list_block_flag'] = FLAG_SUCCESS
-
             return render(request, 'cawas/blocks/edit.html', context)
             # Fin datos Bloque
 
@@ -221,9 +224,6 @@ class BlockController(object):
         vgirls = Girl.objects.all()
         vlanguages = Language.objects.all()
         vdevices = Device.objects.all()
-
-
-
         context = {'message': message, 'vchannels': vchannels,
                    'vgirls': vgirls, 'vlanguages': vlanguages,
                    'vseries': vseries, 'vblock': vblock,
@@ -429,11 +429,14 @@ class BlockController(object):
                 ph.func_publish_queue(request, asset_id, block.language, 'AS', 'Q', block.publish_date)
 
             except Asset.DoesNotExist as e:
-                return render(request, 'cawas/error.html',
-                              {"message": "No existe Asset. " + asset_id + "  (" + e.message + ")"})
+                request.session['list_block_message'] = "Error: (" + str(e.message) + ")"
+                request.session['list_block_flag'] = FLAG_ALERT
+                self.code_return = -1
+
             except Girl.DoesNotExist as e:
-                return render(request, 'cawas/error.html',
-                              {"message": "No existe Chica. " + asset_id + "  (" + e.message + ")"})
+                request.session['list_block_message'] = "Error: (" + str(e.message) + ")"
+                request.session['list_block_flag'] = FLAG_ALERT
+                self.code_return = -1
 
         ph = PublishHelper()
         ph.func_publish_queue(request, block.block_id, block.language, 'BL', 'Q', block.publish_date)

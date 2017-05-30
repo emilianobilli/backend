@@ -43,20 +43,19 @@ class SerieController(object):
                 request.session['list_serie_flag'] = FLAG_ALERT
                 return self.code_return
 
-
-            # IMAGEN Portrait
+            vimg.name = vasset.asset_id
+            # IMAGEN Landscape
             if (request.FILES.has_key('ThumbHor')):
                 if request.FILES['ThumbHor'].name != '':
                     # TRATAMIENTO DE IMAGEN Landscape
                     vimg.landscape = request.FILES['ThumbHor']
                     extension = os.path.splitext(vimg.landscape.name)[1]
                     varchivo = pathfilesland.value + vimg.name + extension
-                    vimg.name = vasset.asset_id
                     vimg.landscape.name = varchivo
                     if os.path.isfile(varchivo):
                         os.remove(varchivo)
 
-            # IMAGEN Landscape
+            # IMAGEN Portrait
             if (request.FILES.has_key('ThumbVer')):
                 if request.FILES['ThumbVer'].name != '':
                     # Landscape
@@ -75,7 +74,6 @@ class SerieController(object):
             vserie.asset = vasset
             vserie.original_title = decjson['Serie']['original_title']
             vserie.year = decjson['Serie']['year']
-
             #vserie.cast = decjson['Serie']['cast']
             #vserie.directors = decjson['Serie']['directors']
             if (decjson['Serie']['cast'] is not None):
@@ -124,6 +122,7 @@ class SerieController(object):
             # Fin datos serie
 
             # BORRAR Y CREAR METADATA
+
             vseriemetadatas = decjson['Serie']['Seriemetadatas']
             for item in vseriemetadatas:
                 smd = SerieMetadata()
@@ -143,6 +142,7 @@ class SerieController(object):
                 smd.publish_date = vschedule_date
                 smd.queue_status = 'Q'
                 smd.save()
+
             flag = 'success'
             self.code_return = 0
             request.session['list_serie_message'] = 'Guardado Correctamente'
@@ -201,22 +201,21 @@ class SerieController(object):
                 request.session['list_serie_flag'] = FLAG_ALERT
                 return self.code_return
 
-            # IMAGEN Portrait
+            vimg.name = vasset.asset_id
+            # IMAGEN Landscape
             if (request.FILES.has_key('ThumbHor')):
                 if request.FILES['ThumbHor'].name != '':
                     # TRATAMIENTO DE IMAGEN Landscape
                     vimg.landscape = request.FILES['ThumbHor']
                     extension = os.path.splitext(vimg.landscape.name)[1]
                     varchivo = pathfilesland.value + vimg.name + extension
-                    vimg.name = vasset.asset_id
                     vimg.landscape.name = varchivo
                     if os.path.isfile(varchivo):
                         os.remove(varchivo)
 
-            # IMAGEN Landscape
+            # IMAGEN Portrait
             if (request.FILES.has_key('ThumbVer')):
                 if request.FILES['ThumbVer'].name != '':
-                    # Landscape
                     vimg.portrait = request.FILES['ThumbVer']
                     extension = os.path.splitext(vimg.portrait.name)[1]
                     varchivo = pathfilesport.value + vimg.name + extension
@@ -238,16 +237,10 @@ class SerieController(object):
             if (decjson['Serie']['directors'] is not None):
                 vserie.directors = decjson['Serie']['directors']
 
-            #vserie.cast = decjson['Serie']['cast']
-            #vserie.directors = decjson['Serie']['directors']
-
-
             vserie.image = vimg
             vserie.save()
 
             # CARGAR GIRLS
-
-
             vserie.girls = []
             vserie.save()
             if (decjson['Serie']['girls'] is not None):
@@ -311,10 +304,6 @@ class SerieController(object):
                 smd.publish_date = vschedule_date
                 smd.queue_status = 'Q'
                 smd.save()
-                #metadatas = SerieMetadata.objects.filter(serie=vserie, language=smd.language)
-                # Si no existe METADATA, se genera
-                #if metadatas.count() < 1:
-                # Publica en PublishQueue
                 if (Episode.objects.filter(serie=vserie).count() > 0):
                     ph = PublishHelper()
                     ph.func_publish_queue(request, vserie.asset.asset_id, smd.language, 'AS', 'Q',vschedule_date)
@@ -398,12 +387,6 @@ class SerieController(object):
                    'vepisodes':vepisodes,
                    'flag':flag
                    }
-        # return render(request, 'cawas/pruebas/subir_img.html', context)
-
-        # Serie - OK
-        # SerieMetadata -
-        # Publishqueue -
-        # Imagequeue - s
 
         return render(request, 'cawas/series/edit.html', context)
 
@@ -478,7 +461,6 @@ class SerieController(object):
 
             ph = PublishHelper()
             ph.func_publish_queue(request, md.serie.asset.asset_id, md.language, 'AS', 'Q',datetime.datetime.now().strftime('%Y-%m-%d'))
-
             #Publicar los episodios de la serie
             episodes = Episode.objects.filter(serie=md.serie)
             for e in episodes:

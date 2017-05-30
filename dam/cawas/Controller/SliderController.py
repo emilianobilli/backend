@@ -26,7 +26,10 @@ class SliderController(object):
         try:
             pathfilesland = Setting.objects.get(code='image_repository_path_landscape')
         except Setting.DoesNotExist as e:
-            return render(request, 'cawas/error.html', {"message": "No Setting. (" + e.message + ")"})
+            self.code_return = -1
+            request.session['list_slider_message'] = 'No existe Setting '
+            request.session['list_slider_flag'] = FLAG_ALERT
+            return self.code_return
 
         if request.method == 'POST':
             # VARIABLES
@@ -47,9 +50,10 @@ class SliderController(object):
                 #vslider.image = vimg
                 vslider.save()
 
+
+                vimg.name = vslider.slider_id
                 if (request.FILES.has_key('ThumbHor')):
                     if request.FILES['ThumbHor'].name != '':
-                        vimg.name = vslider.slider_id
                         vimg.landscape = request.FILES['ThumbHor']
                         extension = os.path.splitext(vimg.landscape.name)[1]
                         varchivo = pathfilesland.value + vimg.name + extension
@@ -59,7 +63,6 @@ class SliderController(object):
                         vimg.save()
                         vslider.image = vimg
                         vslider.save()
-                        print 'debug5'
 
 
                 if decjson['Slider']['text'] is None:
@@ -113,7 +116,6 @@ class SliderController(object):
                     vflag = "success"
                     request.session['list_slider_message'] = 'Guardado Correctamente en Cola de Publicacion'
                     request.session['list_slider_flag'] = FLAG_SUCCESS
-
 
             except Exception as e:
                 request.session['list_slider_message'] = "Error al Guardar Slider. (" + e.message + " - " + varchivo +  " )"
@@ -170,7 +172,10 @@ class SliderController(object):
                 imgland = vslider.image.landscape.name[5:i]
 
         except Slider.DoesNotExist as e:
-            return render(request, 'cawas/error.html', {"message": "No Existe Slider. (" + str(e.message) + ")"})
+            self.code_return = -1
+            request.session['list_slider_message'] = 'Error: ' + e.message
+            request.session['list_slider_flag'] = FLAG_ALERT
+            return self.code_return
         except Image.DoesNotExist as e:
             imgland = ''
 
@@ -220,12 +225,12 @@ class SliderController(object):
                 request.session['list_slider_flag'] = FLAG_ALERT
                 return self.code_return
 
+            vimg.name = vslider.slider_id
             # IMAGEN Portrait
             if (request.FILES.has_key('ThumbHor')):
                 if request.FILES['ThumbHor'].name != '':
                     vimg.landscape = request.FILES['ThumbHor']
                     extension = os.path.splitext(vimg.landscape.name)[1]
-                    vimg.name = vslider.slider_id
                     varchivo = pathfilesland.value + vimg.name + extension
                     vimg.landscape.name = varchivo
                     if os.path.isfile(varchivo):
@@ -320,7 +325,10 @@ class SliderController(object):
             ph.func_publish_image(request, vslider.image)
 
         except Slider.DoesNotExist as e:
-            return render(request, 'cawas/error.html', {"message": "No Existe Slider. (" + str(e.message) + ")"})
+            self.code_return = -1
+            request.session['list_slider_message'] = 'Error: ' + e.message
+            request.session['list_slider_flag'] = FLAG_ALERT
+            return self.code_return
 
         request.session['list_slider_message'] = 'Slider ' + vslider.slider_id + ' Guardado en Cola de Publicacion'
         request.session['list_slider_flag'] = FLAG_SUCCESS
@@ -369,9 +377,14 @@ class SliderController(object):
             request.session['list_slider_message'] = 'Slider en ' + slider.language.name +' de Slider ' + slider.slider_id + ' Despublicado Correctamente'
             request.session['list_slider_flag'] = FLAG_SUCCESS
         except PublishZone.DoesNotExist as e:
-            return render(request, 'cawas/error.html', {"message": "PublishZone no Existe. (" + str(e.message) + ")"})
-        except ApiBackendException as e:
-            request.session['list_slider_message'] = "Error al despublicar (" + str(e.value) + ")"
+            self.code_return = -1
+            request.session['list_slider_message'] = 'Error: ' + e.message
             request.session['list_slider_flag'] = FLAG_ALERT
+            return self.code_return
+        except ApiBackendException as e:
+            self.code_return = -1
+            request.session['list_slider_message'] = 'Error: ' + e.message
+            request.session['list_slider_flag'] = FLAG_ALERT
+            return self.code_return
 
         return self.code_return

@@ -38,10 +38,9 @@ class CategoryController(object):
                 vgrabarypublicar = decjson['Category']['publicar']
                 vcategory.save()
 
-
+                vimg.name = vcategory.category_id
                 if (request.FILES.has_key('ThumbHor')):
                     if request.FILES['ThumbHor'].name != '':
-                        vimg.name = vcategory.category_id
                         vimg.landscape = request.FILES['ThumbHor']
                         extension = os.path.splitext(vimg.landscape.name)[1]
                         varchivo = pathfilesland.value + vimg.name + extension
@@ -53,7 +52,6 @@ class CategoryController(object):
 
                 if (request.FILES.has_key('ThumbVer')):
                     if request.FILES['ThumbVer'].name != '':
-                        vimg.name = vcategory.category_id
                         vimg.portrait = request.FILES['ThumbVer']
                         extension = os.path.splitext(vimg.portrait.name)[1]
                         varchivo = pathfilesport.value + vimg.name + extension
@@ -64,8 +62,6 @@ class CategoryController(object):
                         vcategory.image = vimg
 
                 vcategory.save()
-                print 'debug1'
-
 
             except Setting.DoesNotExist as e:
                 request.session['list_category_message'] = "Error al Guardar Category. (" + e.message + ")"
@@ -78,6 +74,8 @@ class CategoryController(object):
                 self.code_return = -1
                 return self.code_return
 
+            # Eliminar cola de publicacion para el item en estado Queued
+            ph = PublishHelper()
             # CREAR METADATA
             vcategorymetadatas = decjson['Category']['Categorymetadatas']
             for item in vcategorymetadatas:
@@ -202,7 +200,6 @@ class CategoryController(object):
             try:
                 vcategory = Category.objects.get(category_id=category_id)
                 vimg = Image.objects.get(name=vcategory.category_id)
-
             except Asset.DoesNotExist as e:
                 request.session['list_category_message'] = "Error al Guardar Categoria. (" + e.message + ")"
                 request.session['list_category_flag'] = FLAG_ALERT
@@ -246,6 +243,8 @@ class CategoryController(object):
             vcategory.save()
             print 'debug3'
 
+            # Eliminar cola de publicacion para el item en estado Queued
+            ph = PublishHelper()
             vcategorymetadatas = decjson['Category']['Categorymetadatas']
             print vcategorymetadatas
             for item in vcategorymetadatas:

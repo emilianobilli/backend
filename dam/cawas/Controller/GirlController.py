@@ -89,11 +89,13 @@ class GirlController(object):
             print 'debug4'
             vgirl.save()
             print 'debug5'
-            #except Exception as e:
-            #    return render(request, 'cawas/error.html', {"message": "Error al Guardar Girl. (" + e.message + ")."})
 
             # CREAR METADATA
             print 'debug6'
+
+            # Eliminar cola de publicacion para el item en estado Queued
+            ph = PublishHelper()
+
             vgirlmetadatas = decjson['Girl']['Girlmetadatas']
             for item in vgirlmetadatas:
                 vlanguage = Language.objects.get(code=item['Girlmetadata']['language'])
@@ -111,7 +113,7 @@ class GirlController(object):
                 gmd.girl = vgirl
                 gmd.save()
 
-            print 'debug7'
+
             #PUBLICAR METADATA
             if vgrabarypublicar == '1':
                 try:
@@ -228,12 +230,12 @@ class GirlController(object):
             except Image.DoesNotExist as e:
                 vimg = Image()
 
+            vimg.name = vasset.asset_id
             # IMAGEN Portrait
             if (request.FILES.has_key('ThumbVer')):
                 if request.FILES['ThumbVer'].name != '':
                     vimg.portrait = request.FILES['ThumbVer']
                     extension = os.path.splitext(vimg.portrait.name)[1]
-                    vimg.name = vasset.asset_id
                     varchivo = pathfilesport.value + vimg.name + extension
                     vimg.portrait.name = varchivo
                     if os.path.isfile(varchivo):
@@ -266,6 +268,9 @@ class GirlController(object):
                 return -1
 
 
+            # Eliminar cola de publicacion para el item en estado Queued
+            ph = PublishHelper()
+
             #BORRAR Y CREAR METADATA
             vgirlmetadatas = decjson['Girl']['Girlmetadatas']
             for item in vgirlmetadatas:
@@ -289,10 +294,10 @@ class GirlController(object):
                 # Publica en PublishImage
                 ph.func_publish_image(request, vimg)
 
-                flag = 'success'
-                message = 'Guardado Correctamente.'
-                request.session['list_girl_message'] = 'Guardado Correctamente'
-                request.session['list_girl_flag'] = FLAG_SUCCESS
+            flag = 'success'
+            message = 'Guardado Correctamente.'
+            request.session['list_girl_message'] = 'Guardado Correctamente'
+            request.session['list_girl_flag'] = FLAG_SUCCESS
 
         context = { 'vlanguages': vlanguages, 'vgirl':vgirl,
                    'vtypegirl':vtypegirl,'vlangmetadata':vlangmetadata,
@@ -378,7 +383,7 @@ class GirlController(object):
             vasset_id = girlmetadata.girl.asset.asset_id
 
             # 1 - VERIFICAR, si estado de publicacion esta en Q, se debe eliminar
-            publishs = PublishQueue.objects.filter(item_id=vasset_id, status='Q')
+            publishs = PublishQueue.objects.filter(item_id=vasset_id, status='Q', language=girlmetadata.language)
             if publishs.count > 0:
                 publishs.delete()
 
@@ -445,6 +450,8 @@ class GirlController(object):
         gmd.queue_status = 'Q'
         gmd.save()
         ph = PublishHelper()
+        #verifica si existe cola de publicacion en Q para el item, se borra
+
         ph.func_publish_queue(request, gmd.girl.asset.asset_id, gmd.language, 'AS', 'Q', datetime.datetime.now().strftime('%Y-%m-%d'))
         ph.func_publish_image(request,gmd.girl.image)
         request.session['list_girl_message'] = 'Metadata en ' + gmd.language.name + ' de Chica ' + gmd.girl.asset.asset_id + ' Guardado en Cola de Publicacion'
@@ -460,7 +467,7 @@ class GirlController(object):
         #Actualizar la fecha de publicacion
         for md in mditems:
             md.publish_date = datetime.datetime.now().strftime('%Y-%m-%d')
-            md.activated = True
+            #md.activated = True
             md.save()
             #Dejar en cola de publicacion para cada idioma
             ph = PublishHelper()

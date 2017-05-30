@@ -8,9 +8,8 @@ class PublishHelper(object):
     def func_publish_queue(self, request, pid, planguage, pitem_type, pstatus,  pschedule_date):
         #fecha pschedule_date: ya tiene que estar parceada como strftime('%Y-%m-%d')
 
-        #Chequear si hay una publicacion para el contenido en estado Q, se debe eliminar
-        publicaciones_anteriores = PublishQueue.objects.filter(item_id=pid, status='Q')
-        if publicaciones_anteriores.count()> 0:
+        publicaciones_anteriores = PublishQueue.objects.filter(item_id=pid, status='Q',item_lang=planguage)
+        if publicaciones_anteriores.count() > 0:
             publicaciones_anteriores.delete()
 
         #Crear nueva publicacion
@@ -43,4 +42,6 @@ class PublishHelper(object):
                 except Exception as e:
                     request.session['message'] = 'Error ' + e.message
                     return -1
+
+
 

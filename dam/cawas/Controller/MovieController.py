@@ -63,11 +63,11 @@ class MovieController(object):
                 vflag = "error"
                 img = Image()
 
+            img.name = vasset.asset_id
             # TRATAMIENTO DE IMAGEN Landscape
             img.landscape = request.FILES['ThumbHor']
             extension = os.path.splitext(img.landscape.name)[1]
             varchivo = pathfilesland.value + img.name + extension
-            img.name = vasset.asset_id
             img.landscape.name = varchivo
             if os.path.isfile(varchivo):
                 os.remove(varchivo)
@@ -135,6 +135,9 @@ class MovieController(object):
             vasset.save()
 
             # GUARDAR METADATA
+
+            #SI hay items en estado Queued, se elimina
+            ph = PublishHelper()
             vmoviesmetadata = decjson['Movie']['Moviesmetadata']
 
             for item in vmoviesmetadata:
@@ -182,7 +185,6 @@ class MovieController(object):
             if vgrabarypublicar == '1':
                 metadatas = MovieMetadata.objects.filter(movie=mv)
                 for mdi in metadatas:
-
                     if ph.func_publish_queue(request, mdi.movie.asset.asset_id, mdi.language, 'AS', 'Q', mdi.publish_date) == RETURN_ERROR:
                         request.session['list_movie_message'] = 'Error' + request.session['message']
                         request.session['list_movie_flag'] = FLAG_ALERT
@@ -273,6 +275,7 @@ class MovieController(object):
                 request.session['list_movie_flag'] = FLAG_ALERT
                 self.code_return = -1
 
+            img.name = vasset.asset_id
             # IMAGEN Portrait
             if (request.FILES.has_key('ThumbVer')):
                 if request.FILES['ThumbVer'].name != '':
@@ -290,7 +293,6 @@ class MovieController(object):
                 if request.FILES['ThumbHor'].name != '':
                     img.landscape = request.FILES['ThumbHor']
                     extension = os.path.splitext(img.landscape.name)[1]
-                    img.name = vasset.asset_id
                     varchivo = pathfilesland.value + img.name + extension
                     img.landscape.name = varchivo
                     if os.path.isfile(varchivo):
@@ -308,6 +310,11 @@ class MovieController(object):
                 mv.cast = decjson['Movie']['cast']
             if (decjson['Movie']['directors'] is not None):
                 mv.directors = decjson['Movie']['directors']
+
+            #runtime = decjson['Movie']['display_runtime'].strip()
+            #hora = runtime.rindex
+            #if runtime < 10:
+            #    runtime = '0'+ runtime
 
             mv.display_runtime = decjson['Movie']['display_runtime']
             # calcular runtime
@@ -347,6 +354,9 @@ class MovieController(object):
             # eliminar las movies metadata existentes
             mv.save()
 
+            # Chequear si hay una publicacion para el contenido en estado Q, se debe eliminar
+            ph = PublishHelper()
+
             for item in vmoviesmetadata:
                 vlanguage = Language.objects.get(code=item['Moviemetadata']['language'])
                 try:
@@ -373,8 +383,12 @@ class MovieController(object):
                     mmd.save()
                     # Si no existe METADATA, se GENERA
 
+
+
+
                     # CREAR COLA DE PUBLICACION
                     ph = PublishHelper()
+
                     ph.func_publish_queue(request, mmd.movie.asset.asset_id, mmd.language, 'AS', 'Q', vpublishdate)
                 except Language.DoesNotExist as e:
                     request.session['list_movie_message'] = "Error: No existe Lenguaje (" + str(e.message) + ")"
@@ -587,6 +601,7 @@ class MovieController(object):
         md.save()
 
         ph = PublishHelper()
+        # SI hay items en estado Queued, se elimina
         ph.func_publish_queue(request, md.movie.asset.asset_id, md.language, 'AS', 'Q', datetime.datetime.now().strftime('%Y-%m-%d'))
         ph.func_publish_image(request, md.movie.image)
         request.session['list_movie_message'] = 'Metadata en ' + md.language.name + ' de Movie ' + md.movie.asset.asset_id + ' Guardado en Cola de Publicacion'

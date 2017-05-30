@@ -64,8 +64,8 @@ class EpisodeController(object):
                     vimg = Image.objects.get(name=vasset.asset_id)
                 except Image.DoesNotExist as e:
                     vimg = Image()
-                    vimg.name = vasset.asset_id
 
+                vimg.name = vasset.asset_id
                 # IMAGEN Portrait
                 if (request.FILES.has_key('ThumbHor')):
                     if request.FILES['ThumbHor'].name != '':
@@ -73,7 +73,6 @@ class EpisodeController(object):
                         vimg.landscape = request.FILES['ThumbHor']
                         extension = os.path.splitext(vimg.landscape.name)[1]
                         varchivo = pathfilesland.value + vimg.name + extension
-                        vimg.name = vasset.asset_id
                         vimg.landscape.name = varchivo
                         if os.path.isfile(varchivo):
                             os.remove(varchivo)
@@ -96,20 +95,40 @@ class EpisodeController(object):
                 vepisode.image = vimg
                 vepisode.save()
             except Asset.DoesNotExist as e:
-                return render(request, 'cawas/error.html', {"message": "No Existe Asset. (" + e.message + ")"})
+                request.session['list_episode_message'] = 'Error: ' + str(e.message)
+                request.session['list_episode_flag'] = FLAG_ALERT
+                self.code_return = -1
+                return self.code_return
             except Setting.DoesNotExist as e:
-                return render(request, 'cawas/error.html', {"message": "No Existe Setting. (" + e.message + ")"})
+                request.session['list_episode_message'] = 'Error: ' + str(e.message)
+                request.session['list_episode_flag'] = FLAG_ALERT
+                self.code_return = -1
+                return self.code_return
             except Serie.DoesNotExist as e:
-                return render(request, 'cawas/error.html', {"message": "No Existe Serie. (" + e.message + ")"})
+                request.session['list_episode_message'] = 'Error: ' + str(e.message)
+                request.session['list_episode_flag'] = FLAG_ALERT
+                self.code_return = -1
+                return self.code_return
             except Image.DoesNotExist as e:
-                return render(request, 'cawas/error.html',
-                              {"message": "No Existe Imagen Asociada a la Serie. (" + e.message + ")"})
+                request.session['list_episode_message'] = 'Error: ' + str(e.message)
+                request.session['list_episode_flag'] = FLAG_ALERT
+                self.code_return = -1
+                return self.code_return
             except Language.DoesNotExist as e:
-                return render(request, 'cawas/error.html', {"message": "No existe LENGUAJE. (" + e.message + ")"})
+                request.session['list_episode_message'] = 'Error: ' + str(e.message)
+                request.session['list_episode_flag'] = FLAG_ALERT
+                self.code_return = -1
+                return self.code_return
             except Channel.DoesNotExist as e:
-                return render(request, 'cawas/error.html', {"message": "No existe Channel. (" + e.message + ")"})
+                request.session['list_episode_message'] = 'Error: ' + str(e.message)
+                request.session['list_episode_flag'] = FLAG_ALERT
+                self.code_return = -1
+                return self.code_return
             except Device.DoesNotExist as e:
-                return render(request, 'cawas/error.html', {"message": "No existe Device. (" + e.message + ")"})
+                request.session['list_episode_message'] = 'Error: ' + str(e.message)
+                request.session['list_episode_flag'] = FLAG_ALERT
+                self.code_return = -1
+                return self.code_return
 
             # CARGAR ASSETS
             if (decjson['Episode']['girls'] is not None):
@@ -121,10 +140,15 @@ class EpisodeController(object):
                         vgirl = Girl.objects.get(asset_id=item['girl_id'])
                         vepisode.girls.add(vgirl)
                     except Girl.DoesNotExist as e:
-                        return render(request, 'cawas/error.html', {"message": "No existe Girl. (" + e.message + ")"})
+                        request.session['list_episode_message'] = 'Error: ' + str(e.message)
+                        request.session['list_episode_flag'] = FLAG_ALERT
+                        self.code_return = -1
+                        return self.code_return
                     except Asset.DoesNotExist as e:
-                        return render(request, 'cawas/error.html', {"message": "No existe Asset. (" + e.message + ")"})
-
+                        request.session['list_episode_message'] = 'Error: ' + str(e.message)
+                        request.session['list_episode_flag'] = FLAG_ALERT
+                        self.code_return = -1
+                        return self.code_return
             # CARGAR CATEGORY
             vcategories = decjson['Episode']['categories']
             for item in vcategories:
@@ -134,13 +158,17 @@ class EpisodeController(object):
                     vcategory = Category.objects.get(pk=category_id)
                     vepisode.category.add(vcategory)
                 except Category.DoesNotExist as e:
-                    return render(request, 'cawas/error.html', {"message": "No existe Categoria. (" + e.message + ")"})
+                    request.session['list_episode_message'] = 'No Existe Categoria ' + str(e.message)
+                    request.session['list_episode_flag'] = FLAG_ALERT
+                    self.code_return = -1
+                    return self.code_return
             vepisode.save()
 
+            #SI hay items en estado Queued
+            ph = PublishHelper()
             vepisodemetadata = decjson['Episode']['Episodemetadatas']
             for item in vepisodemetadata:
                 try:
-
                     vlang = Language.objects.get(code=item['Episodemetadata']['language'])
                     try:
                         emd = EpisodeMetadata.objects.get(episode=vepisode, language=vlang)
@@ -160,9 +188,12 @@ class EpisodeController(object):
                     emd.summary_long = item['Episodemetadata']['summary_long']
                     emd.publish_date = vschedule_date
                     emd.episode = vepisode
-
+                    emd.save()
                 except Language.DoesNotExist as e:
-                    return render(request, 'cawas/error.html', {"message": "Lenguaje no Existe. (" + e.message + ")"})
+                    request.session['list_episode_message'] = 'Error: ' + str(e.message)
+                    request.session['list_episode_flag'] = FLAG_ALERT
+                    self.code_return = -1
+                    return self.code_return
             request.session['list_episode_message'] = 'Guardado Correctamente'
             request.session['list_episode_flag'] = FLAG_SUCCESS
             #PUBLICAR METADATA
@@ -233,13 +264,6 @@ class EpisodeController(object):
         vschedule_date = ''
         vasset = Asset()
         vepisode = Episode()
-        #inputid = request.GET['inputid']
-
-        #print 'Episode: ' + inputid
-        #008360
-
-
-
         try:
             vasset = Asset.objects.get(asset_id=episode_id)
             #print "episode: " + episode_id
@@ -252,7 +276,7 @@ class EpisodeController(object):
 
         except Asset.DoesNotExist as e:
             request.session['list_episode_message'] = 'No Existe Asset' +  str(e.message)
-            request.session['list_episode_flag'] = FLAG_SUCCESS
+            request.session['list_episode_flag'] = FLAG_ALERT
             self.code_return = -1
             return self.code_return
         except Setting.DoesNotExist as e:
@@ -293,8 +317,9 @@ class EpisodeController(object):
                     vimg = Image.objects.get(name=vasset.asset_id)
                 except Image.DoesNotExist as e:
                     vimg = Image()
-                    vimg.name = vasset.asset_id
 
+
+                vimg.name = vasset.asset_id
                 # IMAGEN Portrait
                 if (request.FILES.has_key('ThumbHor')):
                     if request.FILES['ThumbHor'].name != '':
@@ -302,7 +327,6 @@ class EpisodeController(object):
                         vimg.landscape = request.FILES['ThumbHor']
                         extension = os.path.splitext(vimg.landscape.name)[1]
                         varchivo = pathfilesland.value + vimg.name + extension
-                        vimg.name = vasset.asset_id
                         vimg.landscape.name = varchivo
                         if os.path.isfile(varchivo):
                             os.remove(varchivo)
@@ -319,8 +343,6 @@ class EpisodeController(object):
                         # si existe archivo, lo borra
                         if os.path.isfile(varchivo):
                             os.remove(varchivo)
-
-
 
                 vimg.save()
                 vepisode.image = vimg
@@ -373,6 +395,8 @@ class EpisodeController(object):
             vepisode.save()
 
 
+            #Eliminar cola de publicacion para el item en estado Queued
+            ph = PublishHelper()
             vepisodemetadata = decjson['Episode']['Episodemetadatas']
             for item in vepisodemetadata:
                 try:
@@ -422,14 +446,6 @@ class EpisodeController(object):
                     request.session['list_episode_message'] = 'Error al Guardar Episode Metadata ' + e.message
                     request.session['list_episode_flag'] = FLAG_ALERT
                     return self.code_return
-
-
-            #vflag = "success"
-            #message = 'Guardado Correctamente'
-            #context = {"flag": vflag, 'message': message}
-            #return render(request, 'cawas/episodes/edit.html', context)
-            # return redirect(menu_view)
-            # Fin POST Bloque
 
         try:
             vchannels = Channel.objects.all()
