@@ -34,9 +34,9 @@ from s3 import *
 #+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 # Basic Config
 #+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-LOG_FILE = './log/image_daemon.log'
-ERR_FILE = './log/image_daemon.err'
-PID_FILE = './pid/image_daemon.pid'
+LOG_FILE = './log/uploader_daemon.log'
+ERR_FILE = './log/uploader_daemon.err'
+PID_FILE = './pid/uploader_daemon.pid'
 
 
 class UploaderException(Exception):
@@ -67,7 +67,6 @@ def upload_images():
             if job.image.portrait.name != '':
                 try:
                     img = job.image.portrait.name
-                    print img
                     if os.path.isfile(img):
                         src_path = os.path.dirname(img)
                         filename = os.path.basename(img)
