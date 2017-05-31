@@ -79,6 +79,7 @@ def login_view(request):
     return render(request, 'cawas/login.html', context)
 
 
+
 def menu_view(request):
     if not request.user.is_authenticated:
         return redirect(login_view)
