@@ -43,26 +43,30 @@ class SerieController(object):
                 request.session['list_serie_flag'] = FLAG_ALERT
                 return self.code_return
 
-            # IMAGEN Portrait
+            vimg.name = vasset.asset_id
+            # IMAGEN Landscape
             if (request.FILES.has_key('ThumbHor')):
                 if request.FILES['ThumbHor'].name != '':
-                    vimg.portrait = request.FILES['ThumbHor']
-                    extension = os.path.splitext(vimg.portrait.name)[1]
-                    vimg.name = vasset.asset_id
-                    varchivo = pathfilesport.value + vimg.name + extension
-                    vimg.portrait.name = varchivo
-                    if os.path.isfile(varchivo):
-                        os.remove(varchivo)
-
-            # IMAGEN Landscape
-            if (request.FILES.has_key('ThumbVer')):
-                if request.FILES['ThumbVer'].name != '':
-                    vimg.landscape = request.FILES['ThumbVer']
+                    # TRATAMIENTO DE IMAGEN Landscape
+                    vimg.landscape = request.FILES['ThumbHor']
                     extension = os.path.splitext(vimg.landscape.name)[1]
                     varchivo = pathfilesland.value + vimg.name + extension
                     vimg.landscape.name = varchivo
                     if os.path.isfile(varchivo):
                         os.remove(varchivo)
+
+            # IMAGEN Portrait
+            if (request.FILES.has_key('ThumbVer')):
+                if request.FILES['ThumbVer'].name != '':
+                    # Landscape
+                    vimg.portrait = request.FILES['ThumbVer']
+                    extension = os.path.splitext(vimg.portrait.name)[1]
+                    varchivo = pathfilesport.value + vimg.name + extension
+                    vimg.portrait.name = varchivo
+                    # si existe archivo, lo borra
+                    if os.path.isfile(varchivo):
+                        os.remove(varchivo)
+
             vimg.save()
             # FIN IMAGEN
 
@@ -70,22 +74,28 @@ class SerieController(object):
             vserie.asset = vasset
             vserie.original_title = decjson['Serie']['original_title']
             vserie.year = decjson['Serie']['year']
-            vserie.cast = decjson['Serie']['cast']
-            vserie.directors = decjson['Serie']['directors']
+            #vserie.cast = decjson['Serie']['cast']
+            #vserie.directors = decjson['Serie']['directors']
+            if (decjson['Serie']['cast'] is not None):
+                vserie.cast = decjson['Serie']['cast']
+            if (decjson['Serie']['directors'] is not None):
+                vserie.directors = decjson['Serie']['directors']
+
             vserie.image = vimg
             vserie.save()
 
             # CARGAR GIRLS
-            vgirls = decjson['Serie']['girls']
-            for item in vgirls:
-                try:
-                    g = Girl.objects.get(pk=item['girl_id'])
-                    vserie.girls.add(g)
-                except Girl.DoesNotExist as e:
-                    self.code_return = -1
-                    request.session['list_serie_message'] = 'Error: ' + e.message
-                    request.session['list_serie_flag'] = FLAG_ALERT
-                    return self.code_return
+            if (decjson['Serie']['girls'] is not None):
+                vgirls = decjson['Serie']['girls']
+                for item in vgirls:
+                    try:
+                        g = Girl.objects.get(pk=item['girl_id'])
+                        vserie.girls.add(g)
+                    except Girl.DoesNotExist as e:
+                        self.code_return = -1
+                        request.session['list_serie_message'] = 'Error: ' + e.message
+                        request.session['list_serie_flag'] = FLAG_ALERT
+                        return self.code_return
 
             # CARGAR CATEGORIES
             vcategories = decjson['Serie']['categories']
@@ -112,6 +122,7 @@ class SerieController(object):
             # Fin datos serie
 
             # BORRAR Y CREAR METADATA
+
             vseriemetadatas = decjson['Serie']['Seriemetadatas']
             for item in vseriemetadatas:
                 smd = SerieMetadata()
@@ -129,11 +140,13 @@ class SerieController(object):
                 smd.summary_long = item['Seriemetadata']['summary_long']
                 smd.serie = vserie
                 smd.publish_date = vschedule_date
+                smd.queue_status = 'Q'
                 smd.save()
 
-
             flag = 'success'
-
+            self.code_return = 0
+            request.session['list_serie_message'] = 'Guardado Correctamente'
+            request.session['list_serie_flag'] = FLAG_SUCCESS
 
         # VARIABLES PARA GET - CARGAR GIRL
         try:
@@ -150,9 +163,6 @@ class SerieController(object):
             request.session['list_episode_flag'] = FLAG_ALERT
             return self.code_return
 
-        self.code_return = 0
-        request.session['list_serie_message'] = 'Guardado Correctamente'
-        request.session['list_serie_flag'] = FLAG_SUCCESS
 
         context = {'message': message, 'flag':flag, 'vgirls': vgirls, 'vlanguages': vlanguages, 'vcategories': vcategories,
                    'vchannels': vchannels, 'vseries': vseries, 'flag':flag}
@@ -190,26 +200,30 @@ class SerieController(object):
                 request.session['list_serie_message'] = 'Error: ' + e.message
                 request.session['list_serie_flag'] = FLAG_ALERT
                 return self.code_return
-            # IMAGEN Portrait
+
+            vimg.name = vasset.asset_id
+            # IMAGEN Landscape
             if (request.FILES.has_key('ThumbHor')):
                 if request.FILES['ThumbHor'].name != '':
-                    vimg.portrait = request.FILES['ThumbHor']
-                    extension = os.path.splitext(vimg.portrait.name)[1]
-                    vimg.name = vasset.asset_id
-                    varchivo = pathfilesport.value + vimg.name + extension
-                    vimg.portrait.name = varchivo
-                    if os.path.isfile(varchivo):
-                        os.remove(varchivo)
-
-            # IMAGEN Landscape
-            if (request.FILES.has_key('ThumbVer')):
-                if request.FILES['ThumbVer'].name != '':
-                    vimg.landscape = request.FILES['ThumbVer']
+                    # TRATAMIENTO DE IMAGEN Landscape
+                    vimg.landscape = request.FILES['ThumbHor']
                     extension = os.path.splitext(vimg.landscape.name)[1]
                     varchivo = pathfilesland.value + vimg.name + extension
                     vimg.landscape.name = varchivo
                     if os.path.isfile(varchivo):
                         os.remove(varchivo)
+
+            # IMAGEN Portrait
+            if (request.FILES.has_key('ThumbVer')):
+                if request.FILES['ThumbVer'].name != '':
+                    vimg.portrait = request.FILES['ThumbVer']
+                    extension = os.path.splitext(vimg.portrait.name)[1]
+                    varchivo = pathfilesport.value + vimg.name + extension
+                    vimg.portrait.name = varchivo
+                    # si existe archivo, lo borra
+                    if os.path.isfile(varchivo):
+                        os.remove(varchivo)
+
             vimg.save()
             # FIN IMAGEN
             vgrabarypublicar = decjson['Serie']['publicar']
@@ -217,24 +231,34 @@ class SerieController(object):
             vserie.asset = vasset
             vserie.original_title = decjson['Serie']['original_title']
             vserie.year = decjson['Serie']['year']
-            vserie.cast = decjson['Serie']['cast']
-            vserie.directors = decjson['Serie']['directors']
+
+            if (decjson['Serie']['cast'] is not None):
+                vserie.cast = decjson['Serie']['cast']
+            if (decjson['Serie']['directors'] is not None):
+                vserie.directors = decjson['Serie']['directors']
+
             vserie.image = vimg
             vserie.save()
 
             # CARGAR GIRLS
-            vgirls = decjson['Serie']['girls']
-            for item in vgirls:
-                try:
-                    g = Girl.objects.get(pk=item['girl_id'])
-                    vserie.girls.add(g)
-                except Girl.DoesNotExist as e:
-                    self.code_return = -1
-                    request.session['list_serie_message'] = 'Error: ' + e.message
-                    request.session['list_serie_flag'] = FLAG_ALERT
-                    return self.code_return
+            vserie.girls = []
+            vserie.save()
+            if (decjson['Serie']['girls'] is not None):
+                vgirls = decjson['Serie']['girls']
+                for item in vgirls:
+                    try:
+                        g = Girl.objects.get(pk=item['girl_id'])
+                        vserie.girls.add(g)
+                    except Girl.DoesNotExist as e:
+                        self.code_return = -1
+                        request.session['list_serie_message'] = 'Error: ' + e.message
+                        request.session['list_serie_flag'] = FLAG_ALERT
+                        return self.code_return
+                vserie.save()
 
             # CARGAR CATEGORIES
+            vserie.category = []
+            vserie.save()
             vcategories = decjson['Serie']['categories']
             for item in vcategories:
                 try:
@@ -244,7 +268,7 @@ class SerieController(object):
                     request.session['list_serie_message'] = 'Error: ' + e.message
                     request.session['list_serie_flag'] = FLAG_ALERT
                     return self.code_return
-
+            vserie.save()
             # Channel
             try:
                 vserie.channel = Channel.objects.get(pk=decjson['Serie']['channel_id'])
@@ -278,22 +302,22 @@ class SerieController(object):
                 smd.summary_long = item['Seriemetadata']['summary_long']
                 smd.serie = vserie
                 smd.publish_date = vschedule_date
+                smd.queue_status = 'Q'
                 smd.save()
-                metadatas = SerieMetadata.objects.filter(serie=vserie, language=smd.language)
-                # Si no existe METADATA, se genera
-                if metadatas.count() < 1:
-                    # Publica en PublishQueue
-                    if (Episode.objects.filter(serie=vserie).count() > 0):
-                        ph = PublishHelper()
-                        ph.func_publish_queue(request, vserie.asset.asset_id, smd.language, 'AS', 'Q',vschedule_date)
-                        ph.func_publish_image(request, vimg)
-                    else:
-                        self.code_return = -1
-                        request.session['list_serie_message'] = 'No se puede Publicar Serie sin Episodios asignados '
-                        request.session['list_serie_flag'] = FLAG_ALERT
-                        return self.code_return
+                if (Episode.objects.filter(serie=vserie).count() > 0):
+                    ph = PublishHelper()
+                    ph.func_publish_queue(request, vserie.asset.asset_id, smd.language, 'AS', 'Q',vschedule_date)
+                    ph.func_publish_image(request, vimg)
+                else:
+                    self.code_return = -1
+                    request.session['list_serie_message'] = 'No se puede Publicar Serie sin Episodios asignados '
+                    request.session['list_serie_flag'] = FLAG_ALERT
+                    return self.code_return
                 # Fin de POST
             flag = "success"
+            self.code_return = 0
+            request.session['list_serie_message'] = 'Guardado Correctamente'
+            request.session['list_serie_flag'] = FLAG_SUCCESS
 
         # VARIABLES PARA GET - CARGAR GIRL
         try:
@@ -305,6 +329,7 @@ class SerieController(object):
             vseries = Serie.objects.all()
             vasset = Asset.objects.get(asset_id=asset_id)
             vserie = Serie.objects.get(asset=vasset)
+            vepisodes = Episode.objects.filter(serie=vserie)
 
             # carga imagenes
             i = len(vserie.image.portrait.name)
@@ -346,9 +371,6 @@ class SerieController(object):
             request.session['list_serie_flag'] = FLAG_ALERT
             return self.code_return
 
-        self.code_return = 0
-        request.session['list_serie_message'] = 'Guardado Correctamente'
-        request.session['list_serie_flag'] = FLAG_SUCCESS
 
         context = {'message': message, 'vgirls': vgirls,
                    'vlanguages': vlanguages,
@@ -362,14 +384,9 @@ class SerieController(object):
                    'vgirlselected': vgirlselected,
                    'vcategoryselected': vcategoryselected,
                    'vcategorynotselected': vcategorynotselected,
+                   'vepisodes':vepisodes,
                    'flag':flag
                    }
-        # return render(request, 'cawas/pruebas/subir_img.html', context)
-
-        # Serie - OK
-        # SerieMetadata -
-        # Publishqueue -
-        # Imagequeue - s
 
         return render(request, 'cawas/series/edit.html', context)
 
@@ -410,7 +427,7 @@ class SerieController(object):
                 series_sel = Serie.objects.all()
 
             if selectestado != '':
-                series_list = SerieMetadata.objects.filter(serie__in=series_sel, publish_status=selectestado).order_by('serie_id')
+                series_list = SerieMetadata.objects.filter(serie__in=series_sel, queue_status=selectestado).order_by('serie_id')
             else:
                 series_list = SerieMetadata.objects.filter(serie__in=series_sel).order_by('serie_id')
 
@@ -439,11 +456,11 @@ class SerieController(object):
 
             md = SerieMetadata.objects.get(id=id)
             md.publish_date = datetime.datetime.now().strftime('%Y-%m-%d')
+            md.queue_status = 'Q'
             md.save()
 
             ph = PublishHelper()
             ph.func_publish_queue(request, md.serie.asset.asset_id, md.language, 'AS', 'Q',datetime.datetime.now().strftime('%Y-%m-%d'))
-
             #Publicar los episodios de la serie
             episodes = Episode.objects.filter(serie=md.serie)
             for e in episodes:
@@ -453,7 +470,7 @@ class SerieController(object):
                     ph = PublishHelper()
                     ph.func_publish_queue(request, em.episode.asset.asset_id, em.language, 'AS', 'Q', datetime.datetime.now().strftime('%Y-%m-%d'))
                     ph.func_publish_image(request, em.episode.image)
-            request.session['list_serie_message'] = 'Serie en ' + md.language.name + ' de Publicada Correctamente'
+            request.session['list_serie_message'] = 'Serie en ' + md.language.name + ' Guardado en Cola de Publicacion'
             request.session['list_serie_flag'] = FLAG_SUCCESS
             self.code_return = 0
         except Exception as e:

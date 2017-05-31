@@ -40,7 +40,7 @@ class BlockController(object):
                 vschedule_date = datetime.datetime.strptime(decjson['Block']['publish_date'], '%d-%m-%Y').strftime('%Y-%m-%d')
                 vblock.publish_date = vschedule_date
                 vblock.language = Language.objects.get(code=decjson['Block']['language'])
-
+                vblock.queue_status = True
                 if decjson['Block']['channel_id'] is not None:
                     vblock.channel = Channel.objects.get(pk=decjson['Block']['channel_id'])
 
@@ -80,14 +80,19 @@ class BlockController(object):
                     try:
                         asset_id = item['asset_id']
                         vasset = Asset.objects.get(asset_id=asset_id)
-                        # Publica en PublishQueue
                         ph = PublishHelper()
+
+                        # Publica en PublishQueue
+                        # Eliminar cola de publicacion para el item en estado Queued
                         ph.func_publish_queue(request, asset_id, vblock.language, 'AS', 'Q', vblock.publish_date)
 
                     except Asset.DoesNotExist as e:
-                        return render(request, 'cawas/error.html',
-                                      {"message": "No existe Asset. " + asset_id + "  (" + e.message + ")"})
+                        self.code_return = -1
+                        request.session['list_block_message'] = 'Error: No existe Asset. ' + e.message
+                        request.session['list_block_flag'] = FLAG_ALERT
+                        return self.code_return
 
+                vblock.queue_status = 'Q'
                 vblock.save()
                 ph = PublishHelper()
                 ph.func_publish_queue(request, vblock.block_id, vblock.language, 'BL', 'Q', vblock.publish_date)
@@ -144,6 +149,7 @@ class BlockController(object):
                 vdevice = Device.objects.get(pk=int(decjson['Block']['target_device_id']))
 
                 vblock.target_device_id = int(decjson['Block']['target_device_id'])
+                vblock.queue_status = 'Q'
                 vblock.save()
             except Exception as e:
                 self.code_return = -1
@@ -181,18 +187,16 @@ class BlockController(object):
                     print item
                     ph.func_publish_queue(request, item, vblock.language, 'AS', 'Q', vblock.publish_date)
                 except Asset.DoesNotExist as e:
-                    return render(request, 'cawas/error.html', {"message": "No existe Asset. (" + e.message + ")"})
+                    request.session['list_block_message'] = 'Error: '+ e.message
+                    request.session['list_block_flag'] = FLAG_ALERT
+                    return  -1
 
-
-
-            #func_publish_queue(vblock.block_id, vblock.language, 'BL', 'Q', vblock.publish_date)
             ph = PublishHelper()
             ph.func_publish_queue(request, vblock.block_id, vblock.language, 'BL', 'Q', vblock.publish_date)
             context = {"flag": "success"}
             self.code_return = 0
             request.session['list_block_message'] = 'Guardado Correctamente.'
             request.session['list_block_flag'] = FLAG_SUCCESS
-
             return render(request, 'cawas/blocks/edit.html', context)
             # Fin datos Bloque
 
@@ -220,9 +224,6 @@ class BlockController(object):
         vgirls = Girl.objects.all()
         vlanguages = Language.objects.all()
         vdevices = Device.objects.all()
-
-
-
         context = {'message': message, 'vchannels': vchannels,
                    'vgirls': vgirls, 'vlanguages': vlanguages,
                    'vseries': vseries, 'vblock': vblock,
@@ -268,11 +269,11 @@ class BlockController(object):
             # FILTROS
             if titulo != '':
                 if selectestado != '':
-                    blocks_list = Block.objects.filter(Q(name__icontains=titulo)|Q(block_id__icontains=titulo), publish_status=selectestado).order_by('block_id')
+                    blocks_list = Block.objects.filter(Q(name__icontains=titulo)|Q(block_id__icontains=titulo), queue_status=selectestado).order_by('block_id')
                 else:
                     blocks_list = Block.objects.filter(Q(name__icontains=titulo)|Q(block_id__icontains=titulo)).order_by('block_id')
             elif selectestado != '':
-                blocks_list = Block.objects.filter(publish_status=selectestado).order_by('block_id')
+                blocks_list = Block.objects.filter(queue_status=selectestado).order_by('block_id')
             else:
                 blocks_list = Block.objects.all().order_by('block_id')
 
@@ -365,27 +366,29 @@ class BlockController(object):
 
             # se elimina el bloque de cawas
             block.delete()
-
             self.code_return = 0
             request.session['list_block_message'] = 'Bloque Eliminado y Despublicado Correctamente '
             request.session['list_block_flag'] = FLAG_SUCCESS
 
         except PublishZone.DoesNotExist as e:
-            request.session['list_block_message'] = "Error al despublicar (" + str(e.value) + ")"
+            request.session['list_block_message'] = "Error al despublicar (" + str(e.message) + ")"
             request.session['list_block_flag'] = FLAG_ALERT
             self.code_return = -1
 
         except Block.DoesNotExist as e:
-            request.session['list_block_message'] = "Error al despublicar (" + str(e.value) + ")"
+            request.session['list_block_message'] = "Error al despublicar (" + str(e.message) + ")"
             request.session['list_block_flag'] = FLAG_ALERT
             self.code_return = -1
         except Setting.DoesNotExist as e:
-            request.session['list_block_message'] = "Error al despublicar (" + str(e.value) + ")"
+            request.session['list_block_message'] = "Error al despublicar (" + str(e.message) + ")"
             request.session['list_block_flag'] = FLAG_ALERT
             self.code_return = -1
 
         except ApiBackendException as e:
             request.session['list_block_message'] = "Error al despublicar (" + str(e.value) + ")"
+            request.session['list_block_flag'] = FLAG_ALERT
+        except Exception as e:
+            request.session['list_block_message'] = "Error al despublicar (" + str(e.message) + ")"
             request.session['list_block_flag'] = FLAG_ALERT
 
         return self.code_return
@@ -397,6 +400,7 @@ class BlockController(object):
         block = Block.objects.get(id = id)
         vpublish_date = datetime.datetime.now().strftime('%Y-%m-%d')
         block.publish_date = vpublish_date
+        block.queue_status = 'Q'
         block.save()
        # ENCOLA LOS ASSETS QUE CORRESPONDEN AL BLOQUE, SOLO en el IDIOMA QUE SE SELECCIONO
         vassets = block.assets.all()
@@ -425,16 +429,19 @@ class BlockController(object):
                 ph.func_publish_queue(request, asset_id, block.language, 'AS', 'Q', block.publish_date)
 
             except Asset.DoesNotExist as e:
-                return render(request, 'cawas/error.html',
-                              {"message": "No existe Asset. " + asset_id + "  (" + e.message + ")"})
+                request.session['list_block_message'] = "Error: (" + str(e.message) + ")"
+                request.session['list_block_flag'] = FLAG_ALERT
+                self.code_return = -1
+
             except Girl.DoesNotExist as e:
-                return render(request, 'cawas/error.html',
-                              {"message": "No existe Chica. " + asset_id + "  (" + e.message + ")"})
+                request.session['list_block_message'] = "Error: (" + str(e.message) + ")"
+                request.session['list_block_flag'] = FLAG_ALERT
+                self.code_return = -1
 
         ph = PublishHelper()
         ph.func_publish_queue(request, block.block_id, block.language, 'BL', 'Q', block.publish_date)
 
-        request.session['list_block_message'] = 'Bloque en ' + block.language.name + ' de Publicada Correctamente'
+        request.session['list_block_message'] = 'Bloque en ' + block.language.name + ' Guardado en Cola de Publicacion'
         request.session['list_block_flag'] = FLAG_SUCCESS
         self.code_return = 0
 

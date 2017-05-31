@@ -191,7 +191,7 @@
                            <div class="form-group has-feedback">
                             <div class="helpright"><span class="glyphicon glyphicon-question-sign" data-toggle="tooltip"
                                                          title="La descripción para los thumbnails mostrará los primeros 50 caracteres. Al ingresar en la slider se verá completa."></span></div>
-                            <label class="label-left" for="text">Texto: *</label>
+                            <label class="label-left" for="text">Texto: </label>
                            <textarea class="form-control" name="text" id="text"></textarea>
                            <span class="glyphicon form-control-feedback"></span>
                            </div>
@@ -203,13 +203,12 @@
             
 
                 <div class="row form-row">
-                   <div class="col-xs-4 col-md-4 col-lg-4">
+                    <div class="col-xs-offset-2 col-xs-4 col-md-4 col-lg-4 ">
+                        <button class="btn btn-primary btn-block form-control" type="submit" id="sendBut">Grabar</button>
                     </div>
-
+                    <input type="hidden" class="form-control" name="publicar" id="publicar" value="0">
                     <div class="col-xs-4 col-md-4 col-lg-4">
-                        <button class="btn btn-primary btn-block form-control" type="button" id="sendBut">Grabar slider</button>
-                    </div>
-                    <div class="col-xs-4 col-md-4 col-lg-4">
+                        <button class="btn btn-primary btn-block form-control" type="submit" id="btngrabarypublicar">Grabar y Publicar</button>
                     </div>
                 </div>
 

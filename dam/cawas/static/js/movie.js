@@ -1,6 +1,29 @@
 
 $( document ).ready(function() {
 
+
+    $('#search_girls').multiselect({
+        search: {
+            left: '<input type="text" name="q" class="form-control" placeholder="Buscar..." />',
+            right: '<input type="text" name="q" class="form-control" placeholder="Buscar..." />',
+        },
+        fireSearch: function(value) {
+            return value.length > 3;
+        }
+    });
+
+
+$('#search_category').multiselect({
+        search: {
+            left: '<input type="text" name="q" class="form-control" placeholder="Buscar..." />',
+            right: '<input type="text" name="q" class="form-control" placeholder="Buscar..." />',
+        },
+        fireSearch: function(value) {
+            return value.length > 3;
+        }
+    });
+
+
  // rellena el formulario con los datos recogidos en la variable requestedData
     function completarRuntime(){
         $("#duration-minutes").val(minutos).change();
@@ -10,10 +33,13 @@ $( document ).ready(function() {
     function leerRuntime(){
             var estreno = ($("#runtime").val());
             var estrenoArr = estreno.split(":");
+            //minutos = String.format("%02d", estrenoArr[0]);
+            //segundos = String.format("%02d", estrenoArr[1]);
             minutos = Number(estrenoArr[0]);
             segundos = Number(estrenoArr[1]);
-
     }
+
+
 
 
     $("#btnsearch").click(function(){
@@ -74,6 +100,10 @@ $( document ).ready(function() {
     leerRuntime();
 
 
+
+//$("#runtime").durationPicker();
+
+
     $("#runtime").durationPicker({
       minutes: {
         label: ":",
@@ -90,6 +120,7 @@ $( document ).ready(function() {
       classname: 'form-control',
       responsive: true
     });
+
     completarRuntime();
 
     // simular exit con el botón de salir
@@ -193,42 +224,7 @@ $( document ).ready(function() {
     });
     
     
-    /**/
-    $("ul.generoPick").sortable({
-      group: 'generoPick',
-      pullPlaceholder: false,
-      // animation on drop
-      onDrop: function  ($item, container, _super) {
-        var $clonedItem = $('<li/>').css({height: 0});
-        $item.before($clonedItem);
-        $clonedItem.animate({'height': $item.height()});
 
-        $item.animate($clonedItem.position(), function  () {
-          $clonedItem.detach();
-          _super($item, container);
-        });
-      },
-
-      // set $item relative to cursor position
-      onDragStart: function ($item, container, _super) {
-        var offset = $item.offset(),
-            pointer = container.rootGroup.pointer;
-
-        adjustment = {
-          left: pointer.left - offset.left,
-          top: pointer.top - offset.top
-        };
-
-        _super($item, container);
-      },
-      onDrag: function ($item, position) {
-        $item.css({
-          left: position.left - adjustment.left,
-          top: position.top - adjustment.top
-        });
-      }
-    });
-    
     
     /*---- DATE PICKER ----*/
     $('.datePick').dcalendarpicker({
@@ -263,7 +259,7 @@ $( document ).ready(function() {
 //----------------> Helper functions
     
     function changeVideo(src, divId){// para cambiar lo que reproduce el player de acuerdo al ID de la lista.
-        path="http://cdnlevel3.zolechamedia.net/" + src + "/mp4/350/" + src +".mp4";
+        path="http://cdnlevel3.zolechamedia.net/" + src + "/mp4/1200/" + src +".mp4";
         var video = $(divId+' video')[0];
         //http://cdnlevel3.zolechamedia.net/{asset_id}/mp4/350/{asset_id}.mp4
         video.src = path;
@@ -324,6 +320,8 @@ $( document ).ready(function() {
         var display_runtime = $('#runtime').val();
         var year_selected = $('#releaseYear').val();
         var publicar = $('#publicar').val();
+
+
         countChecked();
         // chequea original Title
         if(original_Title=="" || original_Title==" ")
@@ -349,32 +347,46 @@ $( document ).ready(function() {
         }else{
             okMe("#ThumbVer");
         }
-        
-        // chequea pornstar
-        if ( $('#pornstarDrop li').length > 0 )
+
+
+
+        //search_to_girls
+        if ( $('#search_girls_to option').length > 0 )
         {
-            okMe("#pornstarDrop");
+            okMe("#search_girls_to");
             pornstars_selected = [];
-            $('#pornstarDrop li').each(function(){
-               pornstars_selected.push($(this).val());
+            $('#search_girls_to option').each(function(){
+               var asset_id_aux = $(this).attr("value"); //val();
+               if (asset_id_aux != null){
+                   pornstars_selected.push(asset_id_aux);
+               }
             })
-            //console.log("pornstars_selected:"+pornstars_selected)
+            console.log("search_girls_to_selected:"+pornstars_selected);
         }
-        
-        // chequea categorías
-        if ( $('#generoDrop li').length < 1 )
+
+        //search_category_to
+        if ( $('#search_category_to option').length < 1 )
         {
-            errorMe("#generoDrop");
+            errorMe("#search_category_to");
             checkVal++;
         }else{
-            okMe("#generoDrop");
+            okMe("#search_category_to");
             categories_selected = [];
-            $('#generoDrop li').each(function(){
-              categories_selected.push($(this).val());
+            $('#search_category_to option').each(function(){
+               var asset_id_aux = $(this).attr("value"); //val();
+               if (asset_id_aux != null){
+                   categories_selected.push(asset_id_aux);
+               }
             })
-            console.log("generoDrop:"+categories_selected)
+            console.log("search_girls_to_selected:"+categories_selected);
         }
-        
+
+
+
+
+
+
+
         // chequea canal
         console.log("#canalSelect"+$('#canalSelect').val());
         if ( $('#canalSelect').val()=="0" || $('#canalSelect').val()==0)
@@ -388,7 +400,6 @@ $( document ).ready(function() {
             canal_selected=$('#canalSelect').val();
         }
 
-        
          // chequea display runtime
 
 

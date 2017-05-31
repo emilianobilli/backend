@@ -1,7 +1,7 @@
 import os, datetime, json
 from LogController import LogController
 from django.shortcuts import render,redirect
-from ..models import Asset, Setting, Slider,  Category, Language, Device, Image, Girl, PublishZone, Channel, PublishQueue, ImageQueue
+from ..models import Asset, Setting, Slider, Movie, Episode, Serie, Girl, Category, Language, Device, Image, Girl, PublishZone, Channel, PublishQueue, ImageQueue
 from ..Helpers.PublishHelper import PublishHelper
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from ..Helpers.GlobalValues import *
@@ -26,7 +26,10 @@ class SliderController(object):
         try:
             pathfilesland = Setting.objects.get(code='image_repository_path_landscape')
         except Setting.DoesNotExist as e:
-            return render(request, 'cawas/error.html', {"message": "No Setting. (" + e.message + ")"})
+            self.code_return = -1
+            request.session['list_slider_message'] = 'No existe Setting '
+            request.session['list_slider_flag'] = FLAG_ALERT
+            return self.code_return
 
         if request.method == 'POST':
             # VARIABLES
@@ -35,6 +38,7 @@ class SliderController(object):
                 # Parsear JSON
                 strjson = request.POST['varsToJSON']
                 decjson = json.loads(strjson)
+                vgrabarypublicar = decjson['Slider']['publicar']
                 if (decjson['Slider']['asset_id']!='0'):
                     vasset = Asset.objects.get(asset_id=decjson['Slider']['asset_id'])
                     vslider.asset = vasset
@@ -46,9 +50,10 @@ class SliderController(object):
                 #vslider.image = vimg
                 vslider.save()
 
+
+                vimg.name = vslider.slider_id
                 if (request.FILES.has_key('ThumbHor')):
                     if request.FILES['ThumbHor'].name != '':
-                        vimg.name = vslider.slider_id
                         vimg.landscape = request.FILES['ThumbHor']
                         extension = os.path.splitext(vimg.landscape.name)[1]
                         varchivo = pathfilesland.value + vimg.name + extension
@@ -58,9 +63,12 @@ class SliderController(object):
                         vimg.save()
                         vslider.image = vimg
                         vslider.save()
-                        print 'debug5'
 
 
+                if decjson['Slider']['text'] is None:
+                    vslider.text = ''
+                else:
+                    vslider.text = decjson['Slider']['text']
 
                 if (decjson['Slider']['publish_date'] != ''):
                     vschedule_date = datetime.datetime.strptime(decjson['Slider']['publish_date'],'%d-%m-%Y').strftime('%Y-%m-%d')
@@ -68,17 +76,47 @@ class SliderController(object):
                     vschedule_date = datetime.datetime.now().strftime('%Y-%m-%d')
 
                 vslider.publish_date = vschedule_date
+                vslider.queue_status = 'Q'
                 vslider.save()
+                vflag = "success"
+                request.session['list_slider_message'] = 'Guardado Correctamente'
+                request.session['list_slider_flag'] = FLAG_SUCCESS
 
+                # PUBLICAR METADATA
+                if vgrabarypublicar == '1':
+                    ph = PublishHelper()
+                    ph.func_publish_queue(request, vslider.slider_id, vslider.language, 'SL', 'Q', vslider.publish_date)
+                    ph.func_publish_image(request, vslider.image)
 
+                    if vslider.asset is not None:
+                        ph.func_publish_queue(request, vslider.asset.asset_id, vslider.language, 'SL', 'Q', vslider.publish_date)
 
+                    #consultar tipo de asset
+                    # Buscar en Movie, Girl, Category
+                    if (Asset.objects.filter(asset_id=vslider.asset.asset_id).count() > 0):
+                        asset = Asset.objects.get(asset_id=vslider.asset.asset_id)
+                        #imagenes_encoladas = ImageQueue.objects.filter(status='Q', item)
+                        if asset.asset_type == 'movie':
+                            contenido = Movie.objects.get(asset=asset)
 
-            except Device.DoesNotExist as e:
-                return render(request, 'cawas/error.html', {"message": "No existe Device. (" + e.message + ")"})
-            except Asset.DoesNotExist as e:
-                return render(request, 'cawas/error.html', {"message": "No existe Asset. (" + e.message + ")"})
-            except Language.DoesNotExist as e:
-                return render(request, 'cawas/error.html', {"message": "No existe Lenguaje. (" + e.message + ")"})
+                            ph.func_publish_image(request, contenido.image)
+
+                        if asset.asset_type == 'episode':
+                            contenido = Episode.objects.get(asset=asset)
+                            ph.func_publish_image(request, contenido.image)
+
+                        if asset.asset_type == 'girl':
+                            contenido = Girl.objects.get(asset=asset)
+                            ph.func_publish_image(request, contenido.image)
+
+                        if asset.asset_type == 'serie':
+                            contenido = Serie.objects.get(asset=asset)
+                            ph.func_publish_image(request, contenido.image)
+
+                    vflag = "success"
+                    request.session['list_slider_message'] = 'Guardado Correctamente en Cola de Publicacion'
+                    request.session['list_slider_flag'] = FLAG_SUCCESS
+
             except Exception as e:
                 request.session['list_slider_message'] = "Error al Guardar Slider. (" + e.message + " - " + varchivo +  " )"
                 request.session['list_slider_flag'] = FLAG_ALERT
@@ -86,9 +124,6 @@ class SliderController(object):
                 return self.code_return
 
 
-            vflag = "success"
-            request.session['list_slider_message'] = 'Guardado Correctamente'
-            request.session['list_slider_flag'] = FLAG_SUCCESS
 
 
         vassets = Asset.objects.all()
@@ -120,8 +155,10 @@ class SliderController(object):
         try:
             pathfilesland = Setting.objects.get(code='image_repository_path_landscape')
         except Setting.DoesNotExist as e:
-            return render(request, 'cawas/error.html', {"message": "No Setting. (" + e.message + ")"})
-
+            self.code_return = -1
+            request.session['list_slider_message'] = 'No existe Setting '
+            request.session['list_slider_flag'] = FLAG_ALERT
+            return self.code_return
         try:
             vslider = Slider.objects.get(slider_id=slider_id)
             vassets = Asset.objects.all()
@@ -135,7 +172,10 @@ class SliderController(object):
                 imgland = vslider.image.landscape.name[5:i]
 
         except Slider.DoesNotExist as e:
-            return render(request, 'cawas/error.html', {"message": "No Existe Slider. (" + str(e.message) + ")"})
+            self.code_return = -1
+            request.session['list_slider_message'] = 'Error: ' + e.message
+            request.session['list_slider_flag'] = FLAG_ALERT
+            return self.code_return
         except Image.DoesNotExist as e:
             imgland = ''
 
@@ -156,7 +196,11 @@ class SliderController(object):
                 vslider.media_type = decjson['Slider']['media_type']
                 vdevice = Device.objects.get(id=decjson['Slider']['target_device_id'])
                 vslider.target_device = vdevice
-                vslider.text = decjson['Slider']['text']
+                if decjson['Slider']['text'] is None:
+                    vslider.text = ''
+                else:
+                    vslider.text = decjson['Slider']['text']
+
                 vslider.language = Language.objects.get(code=decjson['Slider']['language'])
                 if (decjson['Slider']['publish_date'] != ''):
                     vschedule_date = datetime.datetime.strptime(decjson['Slider']['publish_date'], '%d-%m-%Y').strftime(
@@ -171,16 +215,22 @@ class SliderController(object):
                     vimg = Image()
 
             except Device.DoesNotExist as e:
-                return render(request, 'cawas/error.html', {"message": "No existe Device. (" + e.message + ")"})
+                self.code_return = -1
+                request.session['list_slider_message'] = 'No existe Device '
+                request.session['list_slider_flag'] = FLAG_ALERT
+                return self.code_return
             except Asset.DoesNotExist as e:
-                return render(request, 'cawas/error.html', {"message": "No existe Asset. (" + e.message + ")"})
+                self.code_return = -1
+                request.session['list_slider_message'] = 'No existe Asset '
+                request.session['list_slider_flag'] = FLAG_ALERT
+                return self.code_return
 
+            vimg.name = vslider.slider_id
             # IMAGEN Portrait
             if (request.FILES.has_key('ThumbHor')):
                 if request.FILES['ThumbHor'].name != '':
                     vimg.landscape = request.FILES['ThumbHor']
                     extension = os.path.splitext(vimg.landscape.name)[1]
-                    vimg.name = vslider.slider_id
                     varchivo = pathfilesland.value + vimg.name + extension
                     vimg.landscape.name = varchivo
                     if os.path.isfile(varchivo):
@@ -188,6 +238,7 @@ class SliderController(object):
 
             vimg.save()
             vslider.image = vimg
+            vslider.queue_status = 'Q'
             vslider.save()
 
             # publicar
@@ -195,10 +246,9 @@ class SliderController(object):
             ph.func_publish_queue(request, vslider.slider_id, vslider.language, 'SL', 'Q', vslider.publish_date)
             ph.func_publish_image(request, vslider.image)
 
-            request.session['list_slider_message'] = 'Guardado Correctamente'
+            vflag = "success"
+            request.session['list_slider_message'] = 'Guardado Correctamente en Cola de Publicacion'
             request.session['list_slider_flag'] = FLAG_SUCCESS
-
-
 
         if request.method == 'GET':
             context = {'vtypes': vtypes, 'vassets': vassets, 'vsliders': vsliders, 'imgland':imgland,
@@ -239,11 +289,11 @@ class SliderController(object):
             # FILTROS
             if titulo != '':
                 if selectestado != '':
-                    sliders_list = Slider.objects.filter(slider_id__icontains=titulo, publish_status=selectestado).order_by('slider_id')
+                    sliders_list = Slider.objects.filter(slider_id__icontains=titulo, queue_status=selectestado).order_by('slider_id')
                 else:
                     sliders_list = Slider.objects.filter(slider_id__icontains=titulo).order_by('slider_id')
             elif selectestado != '':
-                sliders_list = Slider.objects.filter(publish_status=selectestado).order_by('slider_id')
+                sliders_list = Slider.objects.filter(queue_status=selectestado).order_by('slider_id')
             else:
                 sliders_list = Slider.objects.all().order_by('slider_id')
 
@@ -267,15 +317,20 @@ class SliderController(object):
     def publish(self, request, id):
         try:
             vslider = Slider.objects.get(slider_id=id)
+            vslider.queue_status = 'Q'
+            vslider.save()
             # publicar
             ph = PublishHelper()
             ph.func_publish_queue(request, vslider.slider_id, vslider.language, 'SL', 'Q', vslider.publish_date)
             ph.func_publish_image(request, vslider.image)
 
         except Slider.DoesNotExist as e:
-            return render(request, 'cawas/error.html', {"message": "No Existe Slider. (" + str(e.message) + ")"})
+            self.code_return = -1
+            request.session['list_slider_message'] = 'Error: ' + e.message
+            request.session['list_slider_flag'] = FLAG_ALERT
+            return self.code_return
 
-        request.session['list_slider_message'] = 'Slider ' + vslider.slider_id + ' Publicada Correctamente'
+        request.session['list_slider_message'] = 'Slider ' + vslider.slider_id + ' Guardado en Cola de Publicacion'
         request.session['list_slider_flag'] = FLAG_SUCCESS
         self.code_return = 0
 
@@ -322,9 +377,14 @@ class SliderController(object):
             request.session['list_slider_message'] = 'Slider en ' + slider.language.name +' de Slider ' + slider.slider_id + ' Despublicado Correctamente'
             request.session['list_slider_flag'] = FLAG_SUCCESS
         except PublishZone.DoesNotExist as e:
-            return render(request, 'cawas/error.html', {"message": "PublishZone no Existe. (" + str(e.message) + ")"})
-        except ApiBackendException as e:
-            request.session['list_slider_message'] = "Error al despublicar (" + str(e.value) + ")"
+            self.code_return = -1
+            request.session['list_slider_message'] = 'Error: ' + e.message
             request.session['list_slider_flag'] = FLAG_ALERT
+            return self.code_return
+        except ApiBackendException as e:
+            self.code_return = -1
+            request.session['list_slider_message'] = 'Error: ' + e.message
+            request.session['list_slider_flag'] = FLAG_ALERT
+            return self.code_return
 
         return self.code_return

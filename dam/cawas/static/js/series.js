@@ -1,7 +1,30 @@
 $( document ).ready(function() {
     
     console.log( "ready!" );
-    
+
+
+    $('#search_girls').multiselect({
+        search: {
+            left: '<input type="text" name="q" class="form-control" placeholder="Buscar..." />',
+            right: '<input type="text" name="q" class="form-control" placeholder="Buscar..." />',
+        },
+        fireSearch: function(value) {
+            return value.length > 3;
+        }
+    });
+
+
+$('#search_category').multiselect({
+        search: {
+            left: '<input type="text" name="q" class="form-control" placeholder="Buscar..." />',
+            right: '<input type="text" name="q" class="form-control" placeholder="Buscar..." />',
+        },
+        fireSearch: function(value) {
+            return value.length > 3;
+        }
+    });
+
+
     if(resultado=="success"){
         $("#myModal-OK").modal();
     }
@@ -291,33 +314,43 @@ $( document ).ready(function() {
         }
         
         // chequea pornstar
-        if ( $('#pornstarDrop li').length < 1 )
+
+
+
+        //search_to_girls
+        if ( $('#search_girls_to option').length > 0 )
         {
-            errorMe("#pornstarDrop");
-            checkVal++;
-        }else{
-            okMe("#pornstarDrop");
+            okMe("#search_girls_to");
             pornstars_selected = [];
-            $('#pornstarDrop li').each(function(){
-               pornstars_selected.push($(this).val());
+            $('#search_girls_to option').each(function(){
+               var asset_id_aux = $(this).attr("value"); //val();
+               if (asset_id_aux != null){
+                   pornstars_selected.push(asset_id_aux);
+               }
             })
-            //console.log("pornstars_selected:"+pornstars_selected)
+            console.log("search_girls_to_selected:"+pornstars_selected);
         }
-        
-        // chequea categorías
-        if ( $('#generoDrop li').length < 1 )
+
+
+
+        //search_category_to
+        if ( $('#search_category_to option').length < 1 )
         {
-            errorMe("#generoDrop");
+            errorMe("#search_category_to");
             checkVal++;
         }else{
-            okMe("#generoDrop");
+            okMe("#search_category_to");
             categories_selected = [];
-            $('#generoDrop li').each(function(){
-              categories_selected.push($(this).val());
+            $('#search_category_to option').each(function(){
+               var asset_id_aux = $(this).attr("value"); //val();
+               if (asset_id_aux != null){
+                   categories_selected.push(asset_id_aux);
+               }
             })
-            console.log("generoDrop:"+categories_selected)
+            console.log("search_girls_to_selected:"+categories_selected);
         }
-        
+
+
         // chequea canal
         console.log("#canalSelect"+$('#canalSelect').val());
         if ( $('#canalSelect').val()=="0" || $('#canalSelect').val()==0)
@@ -330,15 +363,7 @@ $( document ).ready(function() {
              $(".select2-selection--single").css("border","1px #3c763d solid");
             canal_selected=$('#canalSelect').val();
         }
-        
-        // chequea director
-        if(director_selected=="" || director_selected==" ")
-        {
-            errorMe("#director");
-            checkVal++;
-        }else{
-            okMe("#director");
-        }
+
         
         // chequea año de estreno
         if(year_selected=="" || year_selected==" ")
@@ -351,15 +376,7 @@ $( document ).ready(function() {
         
         
         
-        // chequea elenco
-        if(elenco_selected=="" || elenco_selected==" ")
-        {
-            errorMe("#elenco");
-            checkVal++;
-        }else{
-            okMe("#elenco");
-        }
-        
+
         // chequeo de idiomas (tit_; desc_; date_)
         if(langQ==0){
             errorMe("#pickLang");
@@ -497,9 +514,23 @@ $( document ).ready(function() {
                     myJSON+='"original_title":"'+original_Title+'",';
                     myJSON+='"channel_id":"'+canal_selected+'",';
                     myJSON+='"year":'+year_selected+',';
-                    myJSON+='"cast":"'+elenco_selected+'",';
-                    myJSON+='"directors":"'+director_selected+'",';
-                    myJSON+='"girls":'+myGirls+',';                    
+
+                    if (elenco_selected==''){
+                        myJSON+='"cast":null,';
+                    }else{
+                        myJSON+='"cast":"'+elenco_selected+'",';
+                    }
+                    if (director_selected==''){
+                        myJSON+='"directors":null,';
+                       }else{
+                        myJSON+='"directors":"'+director_selected+'",';
+                    }
+                    if (myGirls=="[]"){
+                        myJSON+='"girls":null,';
+                    }else{
+                        myJSON+='"girls":'+myGirls+',';
+                    }
+
                     myJSON+='"categories":'+myCategories+',';
                     myJSON+='"publicar":"'+publicar+'",';
                     myJSON+='"Seriemetadatas": [';

@@ -274,7 +274,6 @@ def publish_items():
                     ep.add(item[0])
                     job.status = 'D'
                     job.save()
-                    obj.save()
                     print item
                     logging.info('publish_item(): Published item: %s' % item)
                 except ApiBackendException as err:
@@ -282,6 +281,8 @@ def publish_items():
                     job.message = err.value
                     job.save()
                     logging.error('publish_item(): %s' % err.value)
+                obj.queue_status = job.status
+                obj.save()
 
 def publisher_main():
 

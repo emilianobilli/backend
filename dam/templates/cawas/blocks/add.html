@@ -46,13 +46,13 @@
                                 </div>
                             </div>
                             <div>
-                                    <!--------------------Reemplazar por listado de bloques ------------------->
-                                    <select id="bloque-select" class="form-control" size="6">
-                                         {% for item in vblocks %}
-                                            <option value="{{ item.block_id }}"> {{ item.name }} </option>
-                                         {% endfor %}
-                                    </select>
-                                    <!-- ---------------------- Fin de  listado de bloques ------------------- -->
+                                <!--------------------Reemplazar por listado de bloques ------------------->
+                                <select id="bloque-select" class="form-control" size="6">
+                                     {% for item in vblocks %}
+                                        <option value="{{ item.block_id }}"> {{ item.name }} </option>
+                                     {% endfor %}
+                                </select>
+                                <!-- ---------------------- Fin de  listado de bloques ------------------- -->
                             </div>
 
                             <div>
@@ -107,6 +107,9 @@
                 </div>
             </div>
 
+
+
+
             <!-- Form manda imagenes y vars en un JSON hecho string -->
                 <form method="post" action="" name="asset-completeForm"  class="content-picker movieChoose" id="assetForm" enctype="multipart/form-data">
 
@@ -136,7 +139,7 @@
 
                     <div class="col-xs-12 col-md-4 col-lg-4 form-group">
                         <div class="form-group has-feedback" id="channelSelect">
-                            <label for="canal">Canal: *</label>
+                            <label for="canal">Canal: </label>
                             <div class="helpright"><span class="glyphicon glyphicon-question-sign" data-toggle="tooltip" title="Selecciona el canal al que pertenece esta movie (ej: Venus)"></span></div>
 
                             <!-- ------------------Reemplazar por listado de canales ----------------- -->
@@ -196,81 +199,54 @@
 
             <!-- Assets modules -->
 
-            <!-- 4 Row : Palymates pick -->
-                <div class="row form-row">
-                   <h3 class="sepBOT-big">Seleccione los assets que contiene el bloque</h3>
-                    <div class="col-xs-4 col-md-4 col-lg-4 form-group plyMatePick">
-                        <label class="label-left" for="pornstarPick" id="pornstarPickTit">Pornstars / Playmates: </label>
-
-
-                        <!-- ------------------Reemplazar por listado de pornstars ----------------- -->
-                        <ul class="form-control assetPick" id="pornstarPick">
-                        {% for item in vgirls %}
-                                 <li value="{{item.asset.asset_id}}">{{ item.name }}</li>
-                        {% endfor %}
-                        </ul>
-                        <!------------------------ Fin de  listado de pornstars --------------------->
-
-                       <div class="form-group plyMatePick">
-                        <label class="label-left" for="MoviePick">Movies: </label>
-
-                        <!-- ------------------Reemplazar por listado de movies ----------------- -->
-
-                        <ul class="form-control assetPick" id="MoviePick">
-                           {% for item in vmovies %}
-                                 <li value="{{item.asset.asset_id}}" id="{{item.asset.asset_id}}">{{ item.original_title }}</li>
-                           {% endfor %}
-                        </ul>
-
-                        <!------------------------ Fin de  listado de movies --------------------->
-                        </div>
-
-                        <div class="form-group plyMatePick">
-                        <label class="label-left" for="MoviePick">Series: </label>
-
-                        <!-- ------------------Reemplazar por listado de movies ----------------- -->
-
-                        <ul class="form-control assetPick" id="SeriePick">
-                           {% for item in vseries %}
-                                 <li value="{{item.asset.asset_id}}" id="{{item.asset.asset_id}}">{{ item.original_title }}</li>
-                           {% endfor %}
-                        </ul>
-
-                        <!------------------------ Fin de  listado de movies --------------------->
-                        </div>
-
-                        <div class="form-group plyMatePick">
-                        <label class="label-left" for="SeriePick">Capítulos: </label>
-
-                            <!--------------------Reemplazar por listado de capítulos ------------------->
-                            <ul class="form-control assetPick" id="EpisodePick">
-                                {% for item in vcapitulos %}
-                                     <li value="{{item.asset.asset_id}}"  tag="{{item.asset.asset_id}}">{{ item.asset.asset_id }} - {{ item.original_title }} </li>
-                                {% endfor %}
-                            </ul>
-                            <!-- ---------------------- Fin de  listado de capítulos ------------------- -->
-
-                        </div>
-
-                    </div>
 
 
 
 
-                    <div class="col-xs-4 col-md-4 col-lg-4 form-group plyMateDrop" >
-                       <div class="form-group has-feedback">
-                            <label for="assetDrop">Arrastrar hasta aquí para agregar *</label>
-                            <ul class="form-control assetPick" id="assetDrop" name="assetDrop">
+<div class="row">
+    <div class="col-xs-5">
+        <select name="from[]" id="search" class="form-control searchmultiple" size="20" multiple="multiple">
+        <optgroup label="Chicas">
+            {% for item in vgirls %}
+                 <option value="{{item.asset.asset_id}}">{{ item.asset.asset_id }} - {{   item.name }}</option>
+        {% endfor %}
+        </optgroup>
+        <optgroup label="Movies">
+        {% for item in vmovies %}
+             <option value="{{item.asset.asset_id}}" id="{{item.asset.asset_id}}">{{ item.asset.asset_id }} - {{ item.original_title }}</option>
+        {% endfor %}
+        </optgroup>
+        <optgroup label="Series">
+            {% for item in vseries %}
+             <option value="{{item.asset.asset_id}}" id="{{item.asset.asset_id}}">{{ item.original_title }}</option>
+            {% endfor %}
+        </optgroup>
+        <optgroup label="Episodios">
+        {% for item in vcapitulos %}
+             <option value="{{item.asset.asset_id}}"  tag="{{item.asset.asset_id}}">{{ item.asset.asset_id }} - {{ item.original_title }}  - Temp. {{ item.season }} - Cap. {{ item.charper }} </option>
+        {% endfor %}
+        </optgroup>
+        </select>
+    </div>
 
-                            </ul>
-                            <span class="glyphicon form-control-feedback"></span>
-                        </div>
-                    </div>
+    <div class="col-xs-2">
+        <button type="button" id="search_rightAll" class="btn btn-block"><i class="glyphicon glyphicon-forward"></i></button>
+        <button type="button" id="search_rightSelected" class="btn btn-block"><i class="glyphicon glyphicon-chevron-right"></i></button>
+        <button type="button" id="search_leftSelected" class="btn btn-block"><i class="glyphicon glyphicon-chevron-left"></i></button>
+        <button type="button" id="search_leftAll" class="btn btn-block"><i class="glyphicon glyphicon-backward"></i></button>
+    </div>
+
+    <div class="col-xs-5">
+        <select name="to[]" id="search_to" class="form-control searchmultiple" size="20" multiple="multiple">
+
+        </select>
+    </div>
+</div>
 
 
 
 
-                </div>
+
 
 
 

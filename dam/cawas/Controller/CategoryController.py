@@ -38,10 +38,9 @@ class CategoryController(object):
                 vgrabarypublicar = decjson['Category']['publicar']
                 vcategory.save()
 
-
+                vimg.name = vcategory.category_id
                 if (request.FILES.has_key('ThumbHor')):
                     if request.FILES['ThumbHor'].name != '':
-                        vimg.name = vcategory.category_id
                         vimg.landscape = request.FILES['ThumbHor']
                         extension = os.path.splitext(vimg.landscape.name)[1]
                         varchivo = pathfilesland.value + vimg.name + extension
@@ -53,7 +52,6 @@ class CategoryController(object):
 
                 if (request.FILES.has_key('ThumbVer')):
                     if request.FILES['ThumbVer'].name != '':
-                        vimg.name = vcategory.category_id
                         vimg.portrait = request.FILES['ThumbVer']
                         extension = os.path.splitext(vimg.portrait.name)[1]
                         varchivo = pathfilesport.value + vimg.name + extension
@@ -64,8 +62,6 @@ class CategoryController(object):
                         vcategory.image = vimg
 
                 vcategory.save()
-                print 'debug1'
-
 
             except Setting.DoesNotExist as e:
                 request.session['list_category_message'] = "Error al Guardar Category. (" + e.message + ")"
@@ -78,6 +74,8 @@ class CategoryController(object):
                 self.code_return = -1
                 return self.code_return
 
+            # Eliminar cola de publicacion para el item en estado Queued
+            ph = PublishHelper()
             # CREAR METADATA
             vcategorymetadatas = decjson['Category']['Categorymetadatas']
             for item in vcategorymetadatas:
@@ -97,6 +95,7 @@ class CategoryController(object):
                 gmd.name = item['Categorymetadata']['name']
                 gmd.publish_date = vschedule_date
                 gmd.category = vcategory
+
                 gmd.save()
 
             #PUBLICAR METADATA
@@ -107,6 +106,8 @@ class CategoryController(object):
                     metadatas = CategoryMetadata.objects.filter(category=vcategory)
                     for mdi in metadatas:
                         # Publica en PublishQueue
+                        mdi.queue_status = 'Q'
+                        mdi.save()
                         ph.func_publish_queue(request, mdi.category.category_id, mdi.language, 'CA', 'Q', vschedule_date)
                 except CategoryMetadata.DoesNotExist as e:
                     return render(request, 'cawas/error.html',
@@ -199,7 +200,6 @@ class CategoryController(object):
             try:
                 vcategory = Category.objects.get(category_id=category_id)
                 vimg = Image.objects.get(name=vcategory.category_id)
-
             except Asset.DoesNotExist as e:
                 request.session['list_category_message'] = "Error al Guardar Categoria. (" + e.message + ")"
                 request.session['list_category_flag'] = FLAG_ALERT
@@ -243,6 +243,8 @@ class CategoryController(object):
             vcategory.save()
             print 'debug3'
 
+            # Eliminar cola de publicacion para el item en estado Queued
+            ph = PublishHelper()
             vcategorymetadatas = decjson['Category']['Categorymetadatas']
             print vcategorymetadatas
             for item in vcategorymetadatas:
@@ -263,6 +265,7 @@ class CategoryController(object):
                     gmd.name = item['Categorymetadata']['name']
                     gmd.publish_date = vschedule_date
                     gmd.category = vcategory
+                    gmd.queue_status = 'Q'
                     gmd.save()
 
             #En Edicion, siempre se Publica Metadata
@@ -315,7 +318,7 @@ class CategoryController(object):
         if request.POST:
             titulo = request.POST['inputTitulo']
             selectestado = request.POST['selectestado']
-
+            print 'selectestado' + selectestado
             #FILTROS
             if titulo != '':
                 #Q(original_name__icontains=titulo)|Q(category_id__icontains=titulo)
@@ -324,7 +327,7 @@ class CategoryController(object):
                 categories_sel = Category.objects.all().order_by('oringinal_name')
 
             if selectestado != '':
-                categories_list = CategoryMetadata.objects.filter(category__in=categories_sel, publish_status=selectestado).order_by('category_id')
+                categories_list = CategoryMetadata.objects.filter(category__in=categories_sel, queue_status=selectestado).order_by('category_id')
             else:
                 categories_list = CategoryMetadata.objects.filter(category__in=categories_sel).order_by('category_id')
 
@@ -403,16 +406,16 @@ class CategoryController(object):
         try:
             gmd = CategoryMetadata.objects.get(id=id)
             gmd.publish_date = datetime.datetime.now().strftime('%Y-%m-%d')
-
+            gmd.queue_status = 'Q'
             gmd.save()
             ph = PublishHelper()
             ph.func_publish_queue(request, gmd.category.category_id, gmd.language, 'CA', 'Q', datetime.datetime.now().strftime('%Y-%m-%d'))
             ph.func_publish_image(request, gmd.category.image)
-            request.session['list_category_message'] = 'Metadata en ' + gmd.language.name + ' de Categoria ' + gmd.category.category_id + ' Publicada Correctamente'
+            request.session['list_category_message'] = 'Metadata en ' + gmd.language.name + ' de Categoria ' + gmd.category.category_id + ' Guardado en Cola de Publicacion'
             request.session['list_category_flag'] = FLAG_SUCCESS
             self.code_return = 0
         except CategoryMetadata.DoesNotExist as e:
-            request.session['list_category_message'] = 'Error en Despublicacion '+ str(e.message)
+            request.session['list_category_message'] = 'Error en Publicacion ' + str(e.message)
             request.session['list_category_flag'] = FLAG_ALERT
             self.code_return = -1
 

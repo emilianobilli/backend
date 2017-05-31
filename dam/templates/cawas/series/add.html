@@ -133,62 +133,72 @@
 
 
 
-                <!-- 3 Row : Palymates pick -->
-                <div class="row form-row">
-                    <div class="col-xs-4 col-md-4 col-lg-4 form-group plyMatePick">
-                        <label class="label-left" for="pornstarPick" id="pornstarPickTit">Pornstar / Playmate: </label>
+            <!-- Seleccion de categoria -->
+<div class="row">
 
-                        <!-- ------------------Reemplazar por listado de pornstars ----------------- -->
+    <div class="col-xs-5">
+    <label>Chicas</label>
+        <select name="from[]" id="search_girls" class="form-control searchmultiple" size="10" multiple="multiple">
 
-                        <ul class="form-control pornstarPick" id="pornstarPick">
-                          {% for item in vgirls %}
-                                 <li value="{{item.id}}">{{item.name}} </li>
-                          {% endfor %}
-                        </ul>
+            <optgroup label="Chicas">
+             {% for item in vgirls %}
+                 <option value="{{item.id}}">{{item.name}} </option>
+             {% endfor %}
+            </optgroup>
 
-                        <!-- ---------------------- Fin de  listado de pornstars ------------------- -->
+        </select>
+    </div>
 
-                    </div>
-                    <div class="col-xs-4 col-md-4 col-lg-4 form-group plyMateDrop" >
-                       <div class="form-group has-feedback">
-                            <label for="ThumbVer" id="ThumbVerTit">Arrastrar hasta aquí para agregar *</label>
-                            <ul class="form-control pornstarPick" id="pornstarDrop">
+    <div class="col-xs-2">
+        <button type="button" id="search_girls_rightAll" class="btn btn-block"><i class="glyphicon glyphicon-forward"></i></button>
+        <button type="button" id="search_girls_rightSelected" class="btn btn-block"><i class="glyphicon glyphicon-chevron-right"></i></button>
+        <button type="button" id="search_girls_leftSelected" class="btn btn-block"><i class="glyphicon glyphicon-chevron-left"></i></button>
+        <button type="button" id="search_girls_leftAll" class="btn btn-block"><i class="glyphicon glyphicon-backward"></i></button>
+    </div>
 
-                            </ul>
-                            <span class="glyphicon form-control-feedback"></span>
-                        </div>
-                    </div>
-                    <div class="col-xs-4 col-md-4 col-lg-4">
-                    </div>
-                </div>
+    <div class="col-xs-5">
+    <label>Chicas</label>
+        <select name="to[]" id="search_girls_to" class="form-control searchmultiple" size="10" multiple="multiple">
 
-                <!-- 4 Row : Género pick -->
-                <div class="row form-row">
-                    <div class="col-xs-4 col-md-4 col-lg-4 form-group categoryPick">
-                        <label class="label-left" for="generoPick" id="generoPickTit">Género / Categoría: </label>
+        </select>
+    </div>
+</div>
+<br>
+<br>
 
-                        <!-- ------------------Reemplazar por listado de géneros ----------------- -->
 
-                        <ul class="form-control generoPick" id="generoPick">
-                           {% for item in vcategories %}
-                                 <li value="{{item.id}}">{{item.original_name}} </li>
-                           {% endfor %}
-                        </ul>
+<div class="row">
+    <div class="col-xs-5">
+    <label>Categorias</label>
+        <select name="from[]" id="search_category" class="form-control searchmultiple" size="10" multiple="multiple">
 
-                        <!-- ---------------------- Fin de  listado de géneros ------------------- -->
+            <optgroup label="Categorias">
+             {% for item in vcategories %}
+                 <option value="{{item.id}}">{{item.original_name}} </option>
+             {% endfor %}
+            </optgroup>
 
-                    </div>
-                    <div class="col-xs-4 col-md-4 col-lg-4 form-group categoryDrop" >
-                       <div class="form-group has-feedback">
-                            <label for="ThumbVer" id="ThumbVerTit">Arrastrar hasta aquí para agregar *</label>
-                            <ul class="form-control generoPick" id="generoDrop">
-                            </ul>
-                            <span class="glyphicon form-control-feedback"></span>
-                        </div>
-                    </div>
-                    <div class="col-xs-4 col-md-4 col-lg-4">
-                    </div>
-                </div>
+        </select>
+    </div>
+
+    <div class="col-xs-2">
+        <button type="button" id="search_category_rightAll" class="btn btn-block"><i class="glyphicon glyphicon-forward"></i></button>
+        <button type="button" id="search_category_rightSelected" class="btn btn-block"><i class="glyphicon glyphicon-chevron-right"></i></button>
+        <button type="button" id="search_category_leftSelected" class="btn btn-block"><i class="glyphicon glyphicon-chevron-left"></i></button>
+        <button type="button" id="search_category_leftAll" class="btn btn-block"><i class="glyphicon glyphicon-backward"></i></button>
+    </div>
+
+    <div class="col-xs-5">
+    <label>Categorias</label>
+        <select name="to[]" id="search_category_to" class="form-control searchmultiple" size="10" multiple="multiple">
+
+        </select>
+    </div>
+</div>
+
+
+
+
 
                 <!-- 5 Row : Canal pick -->
                 <div class="row form-row">
@@ -225,7 +235,7 @@
                 <div class="row form-row">
                     <div class="col-xs-12 col-md-12 col-lg-12 form-group">
                         <div class="form-group has-feedback">
-                            <label class="label-left" for="director">Director: *</label>
+                            <label class="label-left" for="director">Director: </label>
                             <input type="text" class="form-control" name="director" id="director" autofocus>
                             <span class="glyphicon form-control-feedback"></span>
                         </div>
@@ -238,7 +248,7 @@
                 <div class="row form-row">
                     <div class="col-xs-12 col-md-12 col-lg-12 form-group">
                         <div class="form-group has-feedback">
-                            <label class="label-left" for="elenco">Elenco: *</label>
+                            <label class="label-left" for="elenco">Elenco: </label>
                             <div class="helpright"><span class="glyphicon glyphicon-question-sign" data-toggle="tooltip" title="Agregar los nombres del elenco completo separados por comas.La lista NO debe terminar con una coma"></span></div>
                             <div class="itaright">(Nombres separados por comas). </div>
                             <input type="text" class="form-control" name="elenco" id="elenco" autofocus>
@@ -298,13 +308,13 @@
 
                 <!-- Last Row : Buttons -->
                 <div class="row form-row">
-                   <div class="col-xs-4 col-md-4 col-lg-4">
+                    <div class="col-xs-offset-2 col-xs-4 col-md-4 col-lg-4 ">
+                        <button class="btn btn-primary btn-block form-control" type="submit" id="sendBut">Grabar</button>
                     </div>
+                    <input type="hidden" class="form-control" name="publicar" id="publicar" value="0">
                     <div class="col-xs-4 col-md-4 col-lg-4">
-                        <button class="btn btn-primary btn-block form-control" type="button" id="sendBut">Grabar Serie</button>
-                    </div>
-                    <div class="col-xs-4 col-md-4 col-lg-4">
+                        <button class="btn btn-primary btn-block form-control" type="submit" id="btngrabarypublicar">Grabar y Publicar</button>
                     </div>
                 </div>
-
+     </div>
 {% endblock content %}

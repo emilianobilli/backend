@@ -79,6 +79,7 @@ def login_view(request):
     return render(request, 'cawas/login.html', context)
 
 
+
 def menu_view(request):
     if not request.user.is_authenticated:
         return redirect(login_view)
@@ -228,12 +229,21 @@ def prueba_json_view(request):
 
 def add_movies_view(request):
     mc = MovieController()
-    return mc.add(request)
+    if request.method == 'GET':
+        return mc.add(request)
+    if request.method == 'POST':
+        mc.add(request)
+        return redirect(list_movies_view)
 
 
 def edit_movies_view(request, asset_id):
     mc = MovieController()
-    return mc.edit(request, asset_id)
+    if request.method == 'GET':
+        return mc.edit(request, asset_id)
+    if request.method == 'POST':
+        mc.edit(request, asset_id)
+        return redirect(list_movies_view)
+
 
 
 #<GIRL>

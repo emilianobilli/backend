@@ -12,9 +12,9 @@
         <link rel="stylesheet" href="{% static 'css/duration-picker.css' %}">
         <link rel="stylesheet" href="{% static 'css/select2.css' %}">
 
+        <link rel="stylesheet" href="{% static 'css/style.css' %}">
 
         <!-- Javascript -->
-
         <script src="{% static 'js/jquery.min.js' %}"></script>
         <script src="{% static 'js/jquery-sortable.js' %}"></script>
         <script src="{% static 'js/bootstrap.min.js' %}"></script>
@@ -22,18 +22,13 @@
         <script src="{% static 'js/select2.min.js' %}"></script>
         <script src="{% static 'js/duration-picker.min.js' %}"></script>
 
+
+        <script src="{% static 'js/multiselect.min.js' %}"></script>
+        <script src="{% static 'js/script.js' %}"></script>
+        <link rel="stylesheet" href="//code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
+        <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
         {% block extra_head %}
         {% endblock %}
-        <!--/Javascript
-
-        <script src="{% static 'js/series.js' %}"></script>
-        <script src="{% static 'js/series.js' %}"></script>
-        <script src="{% static 'js/bloques.js' %}"></script>
-
-        <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.2.4/jquery.min.js"></script>
-
-        -->
-
 
 
 <style>
@@ -49,7 +44,6 @@
     color: white;
     border-radius: 10px;
 }
-
 
 .closebtn {
     margin-left: 15px;
@@ -67,32 +61,31 @@
 }
 </style>
 
-         <script>
-            /*---------------------------------------
-            REEMPLAZAR EL VALOR DE ESTA VARIABLE PARA
-            DAR UN STATUS AL USUARIO LUEGO DEL POST
-            ---------------------------------------*/
 
-            var resultado = ""; // cambiar por "error" si hubo algún problema o por "success" en caso de éxito
+     <script>
+        /*---------------------------------------
+        REEMPLAZAR EL VALOR DE ESTA VARIABLE PARA
+        DAR UN STATUS AL USUARIO LUEGO DEL POST
+        ---------------------------------------*/
 
-
-             //year check
-            function maxLengthCheck(object)
-              {
-                if (object.value.length > 4)
-                  object.value = object.value.slice(0, 4)
-              }
-        </script>
+        var resultado = ""; // cambiar por "error" si hubo algún problema o por "success" en caso de éxito
 
 
+         //year check
+        function maxLengthCheck(object)
+          {
+            if (object.value.length > 4)
+              object.value = object.value.slice(0, 4)
+          }
 
-
+    </script>
     </head>
     <body>
 
 
+<div id="msgconfirm" hidden title="Atención"><p></p></div>
 
-<!-- Modal -->
+
 <div class="modal fade" id="myModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
   <div class="modal-dialog" role="document">
     <div class="modal-content">
@@ -110,7 +103,32 @@
     </div>
   </div>
 </div>
-<!-- Modal end -->
+
+
+
+<!--
+<div class="modal fade" id="confirmation" tabindex="-1" role="dialog" aria-labelledby="lblconfirmation">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+        <h4 class="modal-title" id="lblconfirmation">Confirmar salida</h4>
+      </div>
+      <div class="modal-body">
+        ¿Está seguro que desea salir de esta aplicación?
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-default" data-dismiss="modal">Ok</button>
+        <button type="button" class="btn btn-primary" id="getOut">Cancelar</button>
+      </div>
+    </div>
+  </div>
+</div>
+-->
+
+
+
+
 
 <!-- Modal 2-->
 <div class="modal fade" id="myModal2" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
