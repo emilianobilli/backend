@@ -266,13 +266,13 @@ $('#search_category').multiselect({
      /* Funcion que cuenta la cantidad de idiomas selecionados, se utiliza al momento de validar la edicion de la movie */
     var countChecked = function(){
     langQ = $("input:checked" ).length;
-    /*
+
         $('input[type=checkbox]').each(function(){
             if (this.checked) {
                 langDesc.push($(this).attr("id"));
             }
         });
-    */
+
     };
 
     function checkAll(){

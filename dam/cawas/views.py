@@ -80,6 +80,7 @@ def login_view(request):
 
 
 
+
 def menu_view(request):
     if not request.user.is_authenticated:
         return redirect(login_view)

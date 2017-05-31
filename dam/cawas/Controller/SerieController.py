@@ -195,6 +195,8 @@ class SerieController(object):
                 vimg = Image.objects.get(name=vasset.asset_id)
                 pathfilesport = Setting.objects.get(code='image_repository_path_portrait')
                 pathfilesland = Setting.objects.get(code='image_repository_path_landscape')
+                print 'flag1'
+
             except Exception as e:
                 self.code_return = -1
                 request.session['list_serie_message'] = 'Error: ' + e.message
@@ -225,6 +227,7 @@ class SerieController(object):
                         os.remove(varchivo)
 
             vimg.save()
+            print 'flag2'
             # FIN IMAGEN
             vgrabarypublicar = decjson['Serie']['publicar']
             # Datos de Serie
@@ -255,7 +258,7 @@ class SerieController(object):
                         request.session['list_serie_flag'] = FLAG_ALERT
                         return self.code_return
                 vserie.save()
-
+            print 'flag3'
             # CARGAR CATEGORIES
             vserie.category = []
             vserie.save()
@@ -269,6 +272,7 @@ class SerieController(object):
                     request.session['list_serie_flag'] = FLAG_ALERT
                     return self.code_return
             vserie.save()
+            print 'flag4'
             # Channel
             try:
                 vserie.channel = Channel.objects.get(pk=decjson['Serie']['channel_id'])
@@ -281,8 +285,10 @@ class SerieController(object):
             vserie.save()
             message = 'Categoria - Registrado Correctamente'
 
+            print 'flag5'
             # BORRAR Y CREAR METADATA
             vseriemetadatas = decjson['Serie']['Seriemetadatas']
+
             for item in vseriemetadatas:
                 try:
                     vlanguage = Language.objects.get(code=item['Seriemetadata']['language'])
@@ -304,7 +310,10 @@ class SerieController(object):
                 smd.publish_date = vschedule_date
                 smd.queue_status = 'Q'
                 smd.save()
+
+                print 'flag6'
                 if (Episode.objects.filter(serie=vserie).count() > 0):
+                    print 'ingreso'
                     ph = PublishHelper()
                     ph.func_publish_queue(request, vserie.asset.asset_id, smd.language, 'AS', 'Q',vschedule_date)
                     ph.func_publish_image(request, vimg)
@@ -314,6 +323,7 @@ class SerieController(object):
                     request.session['list_serie_flag'] = FLAG_ALERT
                     return self.code_return
                 # Fin de POST
+
             flag = "success"
             self.code_return = 0
             request.session['list_serie_message'] = 'Guardado Correctamente'

@@ -4,6 +4,7 @@ $( document ).ready(function() {
     var minutos = 0 ;
     var segundos = 0 ;
 
+    $('#runtime').mask('00:00:00',{placeholder: "HH:mm:ss"});
 
     $('#search_girls').multiselect({
         search: {
@@ -44,13 +45,7 @@ $('#search_category').multiselect({
            $("#searchForID").submit();
     });
 
-    function leerRuntime(){
-            var estreno = ($("#runtime").val());
-            var estrenoArr = estreno.split(":");
-            minutos = Number(estrenoArr[0]);
-            segundos = Number(estrenoArr[1]);
 
-    }
 
     /* Funcion que cuenta la cantidad de idiomas selecionados, se utiliza al momento de validar la edicion de la movie */
     var countChecked = function() {
@@ -93,26 +88,7 @@ $('#search_category').multiselect({
     var $myVerifSelect = $("#canalSelect").select2();
     var $myVerifEpisodeSelect = $("#episode-select").select2();
 
-    leerRuntime();
 
-
-    $("#runtime").durationPicker({
-      minutes: {
-        label: ":",
-        min: 0,
-        max: 120,
-        value:1
-      },
-      seconds: {
-        label: "",
-        min: 0,
-        max: 59,
-        value:20
-      },
-      classname: 'form-control',
-      responsive: true
-    });
-    completarRuntime();
 
 
 
@@ -427,18 +403,11 @@ $('#search_category').multiselect({
         }
         
          // chequea display runtime
-        if(display_runtime=="" || display_runtime=="0:,0")
+        if(display_runtime==""||display_runtime.length < 8)
         {
             errorMe("#runtime");
             $(".durationpicker-container").css("border","1px #a94442 solid");
             checkVal++;
-        }else{
-            console.log("display:runtime"+display_runtime);
-            $(".durationpicker-container").css("border","1px #3c763d solid");
-            var myStrRuntime = display_runtime;
-            var myDirtyRuntime = myStrRuntime.split(",");
-            display_runtimeJSON=myDirtyRuntime[0]+myDirtyRuntime[1];
-            okMe("#runtime");
         }
         
         
@@ -738,7 +707,7 @@ $('#search_category').multiselect({
                         myJSON+='"directors":"'+director_selected+'",';
                     }
 
-                    myJSON+='"display_runtime": "'+display_runtimeJSON+'",';
+                    myJSON+='"display_runtime": "'+display_runtime+'",';
                     myJSON+='"serie_id": "'+serie_selected+'",';   
                     myJSON+='"chapter": "'+chapter_selected+'",';   
                     myJSON+='"season": "'+season_selected+'",';   

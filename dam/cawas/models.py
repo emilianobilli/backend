@@ -479,7 +479,7 @@ class Episode(models.Model):
     directors       = models.CharField(max_length=1024, blank=True, help_text="Listado de directores separados por coma")
     image           = models.ForeignKey(Image, blank=True, null=True)
     runtime         = models.IntegerField(default=0, help_text="Duracion expresada en segundos")
-    display_runtime = models.CharField(max_length=5, default="00:00", help_text="Duracion expresada en HH:MM")
+    display_runtime = models.CharField(default="00:00:00", max_length=8, help_text="Duracion expresada en HH:MM:SS")
     serie           = models.ForeignKey(Serie)
     chapter         = models.IntegerField(default=0, help_text="Numero de capitulo")
     season          = models.IntegerField(default=0, help_text="Numero de temporada")
@@ -583,7 +583,7 @@ class Movie(models.Model):
     directors       = models.CharField(max_length=1024, blank=True, help_text="Listado de directores separados por coma")
     image           = models.ForeignKey(Image, blank=True, null=True)
     runtime         = models.IntegerField(default=0, help_text="Duracion expresada en segundos")
-    display_runtime = models.CharField(default="00:00", max_length=5, help_text="Duracion expresada en HH:MM")
+    display_runtime = models.CharField(default="00:00:00", max_length=8, help_text="Duracion expresada en HH:MM:SS")
     thumbnails      = models.BooleanField(default=False)
     category        = models.ManyToManyField(Category)
 
