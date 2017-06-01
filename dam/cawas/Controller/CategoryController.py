@@ -64,7 +64,7 @@ class CategoryController(object):
                         varchivo_server = base_dir.value + varchivo
                         if os.path.isfile(varchivo_server):
                             os.remove(varchivo_server)
-
+                vimg.save()
                 vcategory.image = vimg
 
                 vcategory.save()
