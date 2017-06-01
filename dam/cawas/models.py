@@ -514,8 +514,12 @@ class Episode(models.Model):
             if self.image.landscape.name != '':
                 dict["image_landscape"] = os.path.basename(self.image.landscape.name)
         if self.display_runtime != '':
-            hours, minutes = self.display_runtime.split(':')
-            dict["runtime"] = (int(minutes) * 60) + (int(hours) * 3600)
+            if len(self.display_runtime) > 5:
+                hours, minutes, seconds = self.display_runtime.split(':')
+                dict["runtime"] = int(seconds) + (int(minutes) * 60) + (int(hours) * 3600)
+            else:
+                hours, minutes = self.display_runtime.split(':')
+                dict["runtime"] = (int(minutes) * 60) + (int(hours) * 3600)
         else:
             dict["runtime"] = 0
         dict["display_runtime"] = self.display_runtime
@@ -615,8 +619,12 @@ class Movie(models.Model):
             if self.image.landscape.name != '':
                 dict["image_landscape"] = os.path.basename(self.image.landscape.name)
         if self.display_runtime != '':
-            hours, minutes = self.display_runtime.split(':')
-            dict["runtime"] = (int(minutes) * 60) + (int(hours) * 3600)
+            if len(self.display_runtime) > 5:
+                hours, minutes, seconds = self.display_runtime.split(':')
+                dict["runtime"] = int(seconds) + (int(minutes) * 60) + (int(hours) * 3600)
+            else:
+                hours, minutes = self.display_runtime.split(':')
+                dict["runtime"] = (int(minutes) * 60) + (int(hours) * 3600)
         else:
             dict["runtime"] = 0
         dict["display_runtime"] = self.display_runtime
