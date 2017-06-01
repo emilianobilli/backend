@@ -44,7 +44,7 @@ class CategoryController(object):
                     if request.FILES['ThumbHor'].name != '':
                         vimg.landscape = request.FILES['ThumbHor']
                         extension = os.path.splitext(vimg.landscape.name)[1]
-                        varchivo = base_dir + pathfilesland.value + vimg.name + extension
+                        varchivo = base_dir.value + pathfilesland.value + vimg.name + extension
                         vimg.landscape.name = varchivo
                         if os.path.isfile(varchivo):
                             os.remove(varchivo)
@@ -55,7 +55,7 @@ class CategoryController(object):
                     if request.FILES['ThumbVer'].name != '':
                         vimg.portrait = request.FILES['ThumbVer']
                         extension = os.path.splitext(vimg.portrait.name)[1]
-                        varchivo = base_dir + pathfilesport.value + vimg.name + extension
+                        varchivo = base_dir.value + pathfilesport.value + vimg.name + extension
                         vimg.portrait.name = varchivo
                         if os.path.isfile(varchivo):
                             os.remove(varchivo)
@@ -222,7 +222,7 @@ class CategoryController(object):
                 if request.FILES['ThumbHor'].name != '':
                     vimg.landscape = request.FILES['ThumbHor']
                     extension = os.path.splitext(vimg.landscape.name)[1]
-                    varchivo = base_dir + pathfilesland.value + vimg.name + extension
+                    varchivo = base_dir.value + pathfilesland.value + vimg.name + extension
                     vimg.landscape.name = varchivo
                     if os.path.isfile(varchivo):
                         os.remove(varchivo)
@@ -232,7 +232,7 @@ class CategoryController(object):
                 if request.FILES['ThumbVer'].name != '':
                     vimg.portrait = request.FILES['ThumbVer']
                     extension = os.path.splitext(vimg.portrait.name)[1]
-                    varchivo = base_dir + pathfilesport.value + vimg.name + extension
+                    varchivo = base_dir.value + pathfilesport.value + vimg.name + extension
                     vimg.portrait.name = varchivo
                     if os.path.isfile(varchivo):
                         os.remove(varchivo)

@@ -68,7 +68,7 @@ class MovieController(object):
             # TRATAMIENTO DE IMAGEN Landscape
             img.landscape = request.FILES['ThumbHor']
             extension = os.path.splitext(img.landscape.name)[1]
-            varchivo = base_dir + pathfilesland.value + img.name + extension
+            varchivo = base_dir.value + pathfilesland.value + img.name + extension
             img.landscape.name = varchivo
             if os.path.isfile(varchivo):
                 os.remove(varchivo)
@@ -76,7 +76,7 @@ class MovieController(object):
             # Landscape
             img.portrait = request.FILES['ThumbVer']
             extension = os.path.splitext(img.portrait.name)[1]
-            varchivo = base_dir + pathfilesport.value + img.name + extension
+            varchivo = base_dir.value + pathfilesport.value + img.name + extension
             img.portrait.name = varchivo
             # si existe archivo, lo borra
             if os.path.isfile(varchivo):
@@ -283,7 +283,7 @@ class MovieController(object):
                 if request.FILES['ThumbVer'].name != '':
                     img.portrait = request.FILES['ThumbVer']
                     extension = os.path.splitext(img.portrait.name)[1]
-                    varchivo = base_dir + pathfilesport.value + img.name + extension
+                    varchivo = base_dir.value + pathfilesport.value + img.name + extension
                     img.portrait.name = varchivo
                     # si existe archivo, lo borra
                     if os.path.isfile(varchivo):
@@ -295,7 +295,7 @@ class MovieController(object):
                 if request.FILES['ThumbHor'].name != '':
                     img.landscape = request.FILES['ThumbHor']
                     extension = os.path.splitext(img.landscape.name)[1]
-                    varchivo = base_dir + pathfilesland.value + img.name + extension
+                    varchivo = base_dir.value + pathfilesland.value + img.name + extension
                     img.landscape.name = varchivo
                     if os.path.isfile(varchivo):
                         os.remove(varchivo)
