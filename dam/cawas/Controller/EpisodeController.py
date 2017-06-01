@@ -565,10 +565,13 @@ class EpisodeController(object):
             episodemetadata = EpisodeMetadata.objects.get(id=id)
             vasset_id = episodemetadata.episode.asset.asset_id
 
+
             # 1 - VERIFICAR, si estado de publicacion esta en Q, se debe eliminar
             publishs = PublishQueue.objects.filter(item_id=vasset_id, status='Q')
             if publishs.count > 0:
                 publishs.delete()
+
+
 
             # 2 - Realizar delete al backend
             setting = Setting.objects.get(code='backend_asset_url')
