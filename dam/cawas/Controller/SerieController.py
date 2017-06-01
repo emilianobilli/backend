@@ -207,6 +207,7 @@ class SerieController(object):
 
             vimg.name = vasset.asset_id
             # IMAGEN Landscape
+
             if (request.FILES.has_key('ThumbHor')):
                 if request.FILES['ThumbHor'].name != '':
                     # TRATAMIENTO DE IMAGEN Landscape
@@ -231,7 +232,8 @@ class SerieController(object):
                     if os.path.isfile(varchivo):
                         os.remove(varchivo)
 
-            vimg.save()
+
+            #vimg.save()
             print 'flag2'
             # FIN IMAGEN
             vgrabarypublicar = decjson['Serie']['publicar']

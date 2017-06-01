@@ -1,5 +1,5 @@
-import datetime
-from ..models import PublishQueue, ImageQueue,PublishZone
+import datetime,os
+from ..models import PublishQueue, ImageQueue,PublishZone, Setting
 from django.shortcuts import render
 
 class PublishHelper(object):
@@ -44,4 +44,42 @@ class PublishHelper(object):
                     return -1
 
 
+'''
+    def subir_imagen(self, request, p_img ):
+        try:
+            vimg = p_img
+            pathfilesport = Setting.objects.get(code='image_repository_path_portrait')
+            pathfilesland = Setting.objects.get(code='image_repository_path_landscape')
+            base_dir = Setting.objects.get(code='dam_base_dir')
+
+            if (request.FILES.has_key('ThumbHor')):
+                if request.FILES['ThumbHor'].name != '':
+                    # TRATAMIENTO DE IMAGEN Landscape
+                    vimg.landscape = request.FILES['ThumbHor']
+                    extension = os.path.splitext(vimg.landscape.name)[1]
+                    varchivo = base_dir + pathfilesland.value + vimg.name + extension
+                    print varchivo
+                    vimg.landscape.name = varchivo
+                    if os.path.isfile(varchivo):
+                        os.remove(varchivo)
+
+            # IMAGEN Portrait
+            if (request.FILES.has_key('ThumbVer')):
+                if request.FILES['ThumbVer'].name != '':
+                    vimg.portrait = request.FILES['ThumbVer']
+                    extension = os.path.splitext(vimg.portrait.name)[1]
+                    varchivo = base_dir + pathfilesport.value + vimg.name + extension
+                    vimg.portrait.name = varchivo
+                    # si existe archivo, lo borra
+                    print varchivo
+
+                    if os.path.isfile(varchivo):
+                        os.remove(varchivo)
+            vimg.save()
+        except Exception as e:
+            request.session['message'] = 'Error ' + e.message
+            return -1
+
+        return vimg
+'''
 

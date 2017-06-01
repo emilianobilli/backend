@@ -34,6 +34,7 @@ class GirlController(object):
         try:
             pathfilesport = Setting.objects.get(code='image_repository_path_portrait')
             pathfilesland = Setting.objects.get(code='image_repository_path_landscape')
+            base_dir = Setting.objects.get(code='dam_base_dir')
         except Setting.DoesNotExist as e:
             return render(request, 'cawas/error.html', {"message": "No Setting. (" + e.message + ")"})
 
@@ -56,7 +57,7 @@ class GirlController(object):
                 if request.FILES['ThumbVer'].name != '':
                     vimg.portrait = request.FILES['ThumbVer']
                     extension = os.path.splitext(vimg.portrait.name)[1]
-                    varchivo = pathfilesport.value  + vimg.name + extension
+                    varchivo = base_dir + pathfilesport.value  + vimg.name + extension
                     vimg.portrait.name = varchivo
                     if os.path.isfile(varchivo):
                         os.remove(varchivo)
@@ -66,7 +67,7 @@ class GirlController(object):
                 if request.FILES['ThumbHor'].name != '':
                     vimg.landscape = request.FILES['ThumbHor']
                     extension = os.path.splitext(vimg.landscape.name)[1]
-                    varchivo = pathfilesland.value + vimg.name + extension
+                    varchivo = base_dir + pathfilesland.value + vimg.name + extension
                     vimg.landscape.name = varchivo
                     if os.path.isfile(varchivo):
                         os.remove(varchivo)
@@ -163,6 +164,7 @@ class GirlController(object):
             vlangmetadata = []
             pathfilesport = Setting.objects.get(code='image_repository_path_portrait')
             pathfilesland = Setting.objects.get(code='image_repository_path_landscape')
+            base_dir = Setting.objects.get(code='dam_base_dir')
             vasset = Asset.objects.get(asset_id=asset_id)
             vgirl = Girl.objects.get(asset=vasset)
             vtypegirl = {"pornstar": "Pornstar", "playmate": "Playmate"}
@@ -236,7 +238,7 @@ class GirlController(object):
                 if request.FILES['ThumbVer'].name != '':
                     vimg.portrait = request.FILES['ThumbVer']
                     extension = os.path.splitext(vimg.portrait.name)[1]
-                    varchivo = pathfilesport.value + vimg.name + extension
+                    varchivo = base_dir + pathfilesport.value + vimg.name + extension
                     vimg.portrait.name = varchivo
                     if os.path.isfile(varchivo):
                         os.remove(varchivo)
@@ -246,7 +248,7 @@ class GirlController(object):
                 if request.FILES['ThumbHor'].name != '':
                     vimg.landscape = request.FILES['ThumbHor']
                     extension = os.path.splitext(vimg.landscape.name)[1]
-                    varchivo = pathfilesland.value + vimg.name + extension
+                    varchivo = base_dir + pathfilesland.value + vimg.name + extension
                     vimg.landscape.name = varchivo
                     if os.path.isfile(varchivo):
                         os.remove(varchivo)

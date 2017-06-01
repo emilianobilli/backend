@@ -32,7 +32,7 @@ class EpisodeController(object):
             try:
                 pathfilesport = Setting.objects.get(code='image_repository_path_portrait')
                 pathfilesland = Setting.objects.get(code='image_repository_path_landscape')
-
+                base_dir = Setting.objects.get(code='dam_base_dir')
                 # Parsear JSON
                 strjson = request.POST['varsToJSON']
                 decjson = json.loads(strjson)
@@ -72,7 +72,7 @@ class EpisodeController(object):
                         # TRATAMIENTO DE IMAGEN Landscape
                         vimg.landscape = request.FILES['ThumbHor']
                         extension = os.path.splitext(vimg.landscape.name)[1]
-                        varchivo = pathfilesland.value + vimg.name + extension
+                        varchivo = base_dir + pathfilesland.value + vimg.name + extension
                         vimg.landscape.name = varchivo
                         if os.path.isfile(varchivo):
                             os.remove(varchivo)
@@ -84,7 +84,7 @@ class EpisodeController(object):
                         # Landscape
                         vimg.portrait = request.FILES['ThumbVer']
                         extension = os.path.splitext(vimg.portrait.name)[1]
-                        varchivo = pathfilesport.value + vimg.name + extension
+                        varchivo = base_dir + pathfilesport.value + vimg.name + extension
                         vimg.portrait.name = varchivo
                         # si existe archivo, lo borra
                         if os.path.isfile(varchivo):
@@ -289,7 +289,7 @@ class EpisodeController(object):
             try:
                 pathfilesport = Setting.objects.get(code='image_repository_path_portrait')
                 pathfilesland = Setting.objects.get(code='image_repository_path_landscape')
-
+                base_dir = Setting.objects.get(code='dam_base_dir')
                 # Parsear JSON
                 strjson = request.POST['varsToJSON']
                 decjson = json.loads(strjson)
@@ -326,7 +326,7 @@ class EpisodeController(object):
                         # TRATAMIENTO DE IMAGEN Landscape
                         vimg.landscape = request.FILES['ThumbHor']
                         extension = os.path.splitext(vimg.landscape.name)[1]
-                        varchivo = pathfilesland.value + vimg.name + extension
+                        varchivo = base_dir + pathfilesland.value + vimg.name + extension
                         vimg.landscape.name = varchivo
                         if os.path.isfile(varchivo):
                             os.remove(varchivo)
@@ -338,7 +338,7 @@ class EpisodeController(object):
                         # Landscape
                         vimg.portrait = request.FILES['ThumbVer']
                         extension = os.path.splitext(vimg.portrait.name)[1]
-                        varchivo = pathfilesport.value + vimg.name + extension
+                        varchivo = base_dir + pathfilesport.value + vimg.name + extension
                         vimg.portrait.name = varchivo
                         # si existe archivo, lo borra
                         if os.path.isfile(varchivo):

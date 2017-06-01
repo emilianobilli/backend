@@ -51,6 +51,7 @@ class MovieController(object):
             try:
                 pathfilesport = Setting.objects.get(code='image_repository_path_portrait')
                 pathfilesland = Setting.objects.get(code='image_repository_path_landscape')
+                base_dir = Setting.objects.get(code='dam_base_dir')
             except Setting.DoesNotExist as e:
                 request.session['list_movie_message'] = "Error: No existe Setting (" + str(e.message) + ")"
                 request.session['list_movie_flag'] = FLAG_ALERT
@@ -67,7 +68,7 @@ class MovieController(object):
             # TRATAMIENTO DE IMAGEN Landscape
             img.landscape = request.FILES['ThumbHor']
             extension = os.path.splitext(img.landscape.name)[1]
-            varchivo = pathfilesland.value + img.name + extension
+            varchivo = base_dir + pathfilesland.value + img.name + extension
             img.landscape.name = varchivo
             if os.path.isfile(varchivo):
                 os.remove(varchivo)
@@ -75,7 +76,7 @@ class MovieController(object):
             # Landscape
             img.portrait = request.FILES['ThumbVer']
             extension = os.path.splitext(img.portrait.name)[1]
-            varchivo = pathfilesport.value + img.name + extension
+            varchivo = base_dir + pathfilesport.value + img.name + extension
             img.portrait.name = varchivo
             # si existe archivo, lo borra
             if os.path.isfile(varchivo):
@@ -236,6 +237,7 @@ class MovieController(object):
         try:
             pathfilesport = Setting.objects.get(code='image_repository_path_portrait')
             pathfilesland = Setting.objects.get(code='image_repository_path_landscape')
+            base_dir = Setting.objects.get(code='dam_base_dir')
         except Setting.DoesNotExist as e:
             request.session['list_movie_message'] = "Error: No existe Setting (" + str(e.message) + ")"
             request.session['list_movie_flag'] = FLAG_ALERT
@@ -281,7 +283,7 @@ class MovieController(object):
                 if request.FILES['ThumbVer'].name != '':
                     img.portrait = request.FILES['ThumbVer']
                     extension = os.path.splitext(img.portrait.name)[1]
-                    varchivo = pathfilesport.value + img.name + extension
+                    varchivo = base_dir + pathfilesport.value + img.name + extension
                     img.portrait.name = varchivo
                     # si existe archivo, lo borra
                     if os.path.isfile(varchivo):
@@ -293,7 +295,7 @@ class MovieController(object):
                 if request.FILES['ThumbHor'].name != '':
                     img.landscape = request.FILES['ThumbHor']
                     extension = os.path.splitext(img.landscape.name)[1]
-                    varchivo = pathfilesland.value + img.name + extension
+                    varchivo = base_dir + pathfilesland.value + img.name + extension
                     img.landscape.name = varchivo
                     if os.path.isfile(varchivo):
                         os.remove(varchivo)
