@@ -64,6 +64,7 @@ class SliderController(object):
                         if os.path.isfile(varchivo_server):
                             os.remove(varchivo_server)
 
+                vimg.save()
                 vslider.image = vimg
                 vslider.save()
 

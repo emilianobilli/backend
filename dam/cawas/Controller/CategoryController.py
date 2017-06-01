@@ -367,10 +367,20 @@ class CategoryController(object):
             return redirect(lc.login_view(request))
 
         try:
+            print 'debugmetadata'
+            # si es la ultima categoria metadata, se debe eliminar la metadata y la categoria
             categorymetadata = CategoryMetadata.objects.get(id=id)
+            c = categorymetadata.category
+            borrarcategory = False
+            if CategoryMetadata.objects.filter(category=c).count()==1:
+                borrarcategory = True
 
+            #print 'debug1metadata' + categorymetadata
             if not categorymetadata.activated:
                 categorymetadata.delete()
+                if borrarcategory==True:
+                    c.delete()
+
                 self.code_return = 0
                 request.session['list_category_message'] = 'Categoria Eliminada Correctamente '
                 request.session['list_category_flag'] = FLAG_SUCCESS
@@ -402,14 +412,15 @@ class CategoryController(object):
         except PublishZone.DoesNotExist as e:
             request.session['list_category_message'] = "PublishZone no Existe. (" + str(e.message) + ")"
             request.session['list_category_flag'] = FLAG_ALERT
-
+            self.code_return = -1
         except CategoryMetadata.DoesNotExist as e:
             request.session['list_category_message'] = "Metadata de Category no Existe. (" + str(e.message) + ")"
             request.session['list_category_flag'] = FLAG_ALERT
-
+            self.code_return = -1
         except ApiBackendException as e:
             request.session['list_category_message'] = "Error al despublicar (" + str(e.message) + ")"
             request.session['list_category_flag'] = FLAG_ALERT
+            self.code_return = -1
 
         return self.code_return
 
