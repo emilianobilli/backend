@@ -65,22 +65,32 @@ class MovieController(object):
                 img = Image()
 
             img.name = vasset.asset_id
-            # TRATAMIENTO DE IMAGEN Landscape
-            img.landscape = request.FILES['ThumbHor']
-            extension = os.path.splitext(img.landscape.name)[1]
-            varchivo = base_dir.value + pathfilesland.value + img.name + extension
-            img.landscape.name = varchivo
-            if os.path.isfile(varchivo):
-                os.remove(varchivo)
 
-            # Landscape
-            img.portrait = request.FILES['ThumbVer']
-            extension = os.path.splitext(img.portrait.name)[1]
-            varchivo = base_dir.value + pathfilesport.value + img.name + extension
-            img.portrait.name = varchivo
-            # si existe archivo, lo borra
-            if os.path.isfile(varchivo):
-                os.remove(varchivo)
+
+            # TRATAMIENTO DE IMAGEN Landscape
+            if (request.FILES.has_key('ThumbHor')):
+                if request.FILES['ThumbHor'].name != '':
+                    # TRATAMIENTO DE IMAGEN Landscape
+                    img.landscape = request.FILES['ThumbHor']
+                    extension = os.path.splitext(img.landscape.name)[1]
+                    varchivo = pathfilesland.value + img.name + extension
+                    img.landscape.name = varchivo
+                    varchivo_server = base_dir.value + varchivo
+                    if os.path.isfile(varchivo_server):
+                        os.remove(varchivo_server)
+
+            # IMAGEN Landscape
+            if (request.FILES.has_key('ThumbVer')):
+                if request.FILES['ThumbVer'].name != '':
+                    # Landscape
+                    img.portrait = request.FILES['ThumbVer']
+                    extension = os.path.splitext(img.portrait.name)[1]
+                    varchivo = pathfilesport.value + img.name + extension
+                    img.portrait.name = varchivo
+                    # si existe archivo, lo borra
+                    varchivo_server = base_dir.value + varchivo
+                    if os.path.isfile(varchivo_server):
+                        os.remove(varchivo_server)
 
             img.save()
             mv.image = img
@@ -279,26 +289,30 @@ class MovieController(object):
 
             img.name = vasset.asset_id
             # IMAGEN Portrait
-            if (request.FILES.has_key('ThumbVer')):
-                if request.FILES['ThumbVer'].name != '':
-                    img.portrait = request.FILES['ThumbVer']
-                    extension = os.path.splitext(img.portrait.name)[1]
-                    varchivo = base_dir.value + pathfilesport.value + img.name + extension
-                    img.portrait.name = varchivo
-                    # si existe archivo, lo borra
-                    if os.path.isfile(varchivo):
-                        os.remove(varchivo)
 
-
-            # IMAGEN Landscape
             if (request.FILES.has_key('ThumbHor')):
                 if request.FILES['ThumbHor'].name != '':
+                    # TRATAMIENTO DE IMAGEN Landscape
                     img.landscape = request.FILES['ThumbHor']
                     extension = os.path.splitext(img.landscape.name)[1]
-                    varchivo = base_dir.value + pathfilesland.value + img.name + extension
+                    varchivo = pathfilesland.value + img.name + extension
                     img.landscape.name = varchivo
-                    if os.path.isfile(varchivo):
-                        os.remove(varchivo)
+                    varchivo_server = base_dir.value + varchivo
+                    if os.path.isfile(varchivo_server):
+                        os.remove(varchivo_server)
+
+            # IMAGEN Landscape
+            if (request.FILES.has_key('ThumbVer')):
+                if request.FILES['ThumbVer'].name != '':
+                    # Landscape
+                    img.portrait = request.FILES['ThumbVer']
+                    extension = os.path.splitext(img.portrait.name)[1]
+                    varchivo = pathfilesport.value + img.name + extension
+                    img.portrait.name = varchivo
+                    # si existe archivo, lo borra
+                    varchivo_server = base_dir.value + varchivo
+                    if os.path.isfile(varchivo_server):
+                        os.remove(varchivo_server)
 
             img.save()
             mv.image = img

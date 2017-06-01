@@ -51,22 +51,24 @@ class SerieController(object):
                     # TRATAMIENTO DE IMAGEN Landscape
                     vimg.landscape = request.FILES['ThumbHor']
                     extension = os.path.splitext(vimg.landscape.name)[1]
-                    varchivo = base_dir.value + pathfilesland.value + vimg.name + extension
+                    varchivo = pathfilesland.value + vimg.name + extension
                     vimg.landscape.name = varchivo
-                    if os.path.isfile(varchivo):
-                        os.remove(varchivo)
+                    varchivo_server = base_dir.value + varchivo
+                    if os.path.isfile(varchivo_server):
+                        os.remove(varchivo_server)
 
-            # IMAGEN Portrait
+            # IMAGEN Landscape
             if (request.FILES.has_key('ThumbVer')):
                 if request.FILES['ThumbVer'].name != '':
                     # Landscape
                     vimg.portrait = request.FILES['ThumbVer']
                     extension = os.path.splitext(vimg.portrait.name)[1]
-                    varchivo = base_dir.value + pathfilesport.value + vimg.name + extension
+                    varchivo = pathfilesport.value + vimg.name + extension
                     vimg.portrait.name = varchivo
                     # si existe archivo, lo borra
-                    if os.path.isfile(varchivo):
-                        os.remove(varchivo)
+                    varchivo_server = base_dir.value + varchivo
+                    if os.path.isfile(varchivo_server):
+                        os.remove(varchivo_server)
 
             vimg.save()
             # FIN IMAGEN
@@ -207,33 +209,35 @@ class SerieController(object):
 
             vimg.name = vasset.asset_id
             # IMAGEN Landscape
-
+            print 'debug1'
             if (request.FILES.has_key('ThumbHor')):
                 if request.FILES['ThumbHor'].name != '':
                     # TRATAMIENTO DE IMAGEN Landscape
+                    print 'debug2'
                     vimg.landscape = request.FILES['ThumbHor']
                     extension = os.path.splitext(vimg.landscape.name)[1]
-                    varchivo = base_dir.value + pathfilesland.value + vimg.name + extension
-                    print varchivo
+                    varchivo = pathfilesland.value + vimg.name + extension
                     vimg.landscape.name = varchivo
-                    if os.path.isfile(varchivo):
-                        os.remove(varchivo)
+                    varchivo_server = base_dir.value + varchivo
+                    if os.path.isfile(varchivo_server):
+                        os.remove(varchivo_server)
 
-            # IMAGEN Portrait
+            # IMAGEN Landscape
+            print 'debug3'
             if (request.FILES.has_key('ThumbVer')):
                 if request.FILES['ThumbVer'].name != '':
+                    # Landscape
+                    print 'debug4'
                     vimg.portrait = request.FILES['ThumbVer']
                     extension = os.path.splitext(vimg.portrait.name)[1]
-                    varchivo = base_dir.value + pathfilesport.value + vimg.name + extension
+                    varchivo = pathfilesport.value + vimg.name + extension
                     vimg.portrait.name = varchivo
                     # si existe archivo, lo borra
-                    print varchivo
+                    varchivo_server = base_dir.value + varchivo
+                    if os.path.isfile(varchivo_server):
+                        os.remove(varchivo_server)
 
-                    if os.path.isfile(varchivo):
-                        os.remove(varchivo)
-
-
-            #vimg.save()
+            vimg.save()
             print 'flag2'
             # FIN IMAGEN
             vgrabarypublicar = decjson['Serie']['publicar']
