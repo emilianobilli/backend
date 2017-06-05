@@ -628,7 +628,6 @@ class Movie(models.Model):
         else:
             dict["runtime"] = 0
             dict["display_runtime"] = "00:00"
-        dict["display_runtime"] = self.display_runtime
         dict["thumbnails"]      = self.thumbnails
 
         return dict
