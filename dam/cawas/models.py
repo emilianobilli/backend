@@ -514,15 +514,15 @@ class Episode(models.Model):
             if self.image.landscape.name != '':
                 dict["image_landscape"] = os.path.basename(self.image.landscape.name)
         if self.display_runtime != '':
-            if len(self.display_runtime) > 5:
-                hours, minutes, seconds = self.display_runtime.split(':')
-                dict["runtime"] = int(seconds) + (int(minutes) * 60) + (int(hours) * 3600)
-            else:
-                hours, minutes = self.display_runtime.split(':')
-                dict["runtime"] = (int(minutes) * 60) + (int(hours) * 3600)
+            hours, minutes, seconds = self.display_runtime.split(':')
+            dict["runtime"] = int(seconds) + (int(minutes) * 60) + (int(hours) * 3600)
+            min_sum = int(minutes) + (int(hours) * 60)
+            if min_sum < 10:
+                min_sum = "0%d" % min_sum
+            dict["display_runtime"] = "%s:%s" % (min_sum, seconds)
         else:
             dict["runtime"] = 0
-        dict["display_runtime"] = self.display_runtime
+            dict["display_runtime"] = "00:00"
         if self.chapter > 0:
             dict["episode"]         = self.chapter
         if self.season > 0:
@@ -619,15 +619,15 @@ class Movie(models.Model):
             if self.image.landscape.name != '':
                 dict["image_landscape"] = os.path.basename(self.image.landscape.name)
         if self.display_runtime != '':
-            if len(self.display_runtime) > 5:
-                hours, minutes, seconds = self.display_runtime.split(':')
-                dict["runtime"] = int(seconds) + (int(minutes) * 60) + (int(hours) * 3600)
-            else:
-                hours, minutes = self.display_runtime.split(':')
-                dict["runtime"] = (int(minutes) * 60) + (int(hours) * 3600)
+            hours, minutes, seconds = self.display_runtime.split(':')
+            dict["runtime"] = int(seconds) + (int(minutes) * 60) + (int(hours) * 3600)
+            min_sum = int(minutes) + (int(hours) * 60)
+            if min_sum < 10:
+                min_sum = "0%d" % min_sum
+            dict["display_runtime"] = "%s:%s" % (min_sum, seconds)
         else:
             dict["runtime"] = 0
-        dict["display_runtime"] = self.display_runtime
+            dict["display_runtime"] = "00:00"
         dict["thumbnails"]      = self.thumbnails
 
         return dict
