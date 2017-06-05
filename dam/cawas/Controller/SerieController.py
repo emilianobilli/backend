@@ -448,13 +448,13 @@ class SerieController(object):
                 series_sel = Serie.objects.all()
 
             if selectestado != '':
-                series_list = SerieMetadata.objects.filter(serie__in=series_sel, queue_status=selectestado).order_by('serie_id')
+                series_list = SerieMetadata.objects.filter(serie__in=series_sel, queue_status=selectestado).order_by('-id')
             else:
-                series_list = SerieMetadata.objects.filter(serie__in=series_sel).order_by('serie_id')
+                series_list = SerieMetadata.objects.filter(serie__in=series_sel).order_by('-id')
 
 
         if series_list is None:
-            series_list = SerieMetadata.objects.all().order_by('serie_id')
+            series_list = SerieMetadata.objects.all().order_by('-id')
 
         paginator = Paginator(series_list, 20)  # Show 25 contacts per page
         try:

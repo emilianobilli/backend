@@ -535,12 +535,12 @@ class MovieController(object):
                 movies_sel = Movie.objects.all()
 
             if selectestado != '':
-                movies_list = MovieMetadata.objects.filter(movie__in=movies_sel, queue_status=selectestado).order_by('movie_id')
+                movies_list = MovieMetadata.objects.filter(movie__in=movies_sel, queue_status=selectestado).order_by('-id')
             else:
-                movies_list = MovieMetadata.objects.filter(movie__in=movies_sel).order_by('movie_id')
+                movies_list = MovieMetadata.objects.filter(movie__in=movies_sel).order_by('-id')
 
         if movies_list is None:
-            movies_list = MovieMetadata.objects.all().order_by('movie_id')
+            movies_list = MovieMetadata.objects.all().order_by('-id')
 
         paginator = Paginator(movies_list, 20)  # Show 25 contacts per page
         try:

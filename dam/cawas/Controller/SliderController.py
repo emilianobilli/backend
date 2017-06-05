@@ -296,16 +296,16 @@ class SliderController(object):
             # FILTROS
             if titulo != '':
                 if selectestado != '':
-                    sliders_list = Slider.objects.filter(slider_id__icontains=titulo, queue_status=selectestado).order_by('slider_id')
+                    sliders_list = Slider.objects.filter(slider_id__icontains=titulo, queue_status=selectestado).order_by('-id')
                 else:
-                    sliders_list = Slider.objects.filter(slider_id__icontains=titulo).order_by('slider_id')
+                    sliders_list = Slider.objects.filter(slider_id__icontains=titulo).order_by('-id')
             elif selectestado != '':
-                sliders_list = Slider.objects.filter(queue_status=selectestado).order_by('slider_id')
+                sliders_list = Slider.objects.filter(queue_status=selectestado).order_by('-id')
             else:
-                sliders_list = Slider.objects.all().order_by('slider_id')
+                sliders_list = Slider.objects.all().order_by('-id')
 
         if sliders_list is None:
-            sliders_list = Slider.objects.all().order_by('slider_id')
+            sliders_list = Slider.objects.all().order_by('-id')
 
         paginator = Paginator(sliders_list, 20)  # Show 25 contacts per page
         try:

@@ -219,7 +219,7 @@ class GirlController(object):
             # Parsear JSON
             strjson = request.POST['varsToJSON']
             decjson = json.loads(strjson)
-
+            #print 'idioma' + request.GET['HTTP_ACCEPT_LANGUAGE']
             # Leer GIRL desde AssetID
             try:
                 vasset = Asset.objects.get(asset_id=decjson['Girl']['asset_id'])
@@ -362,13 +362,13 @@ class GirlController(object):
                 girls_sel = Girl.objects.all()
 
             if selectestado != '':
-                girls_list = GirlMetadata.objects.filter(girl__in=girls_sel, queue_status=selectestado).order_by('girl_id')
+                girls_list = GirlMetadata.objects.filter(girl__in=girls_sel, queue_status=selectestado).order_by('-id')
             else:
-                girls_list = GirlMetadata.objects.filter(girl__in=girls_sel).order_by('girl_id')
+                girls_list = GirlMetadata.objects.filter(girl__in=girls_sel).order_by('-id')
 
 
         if girls_list is None:
-            girls_list = GirlMetadata.objects.all().order_by('girl_id')
+            girls_list = GirlMetadata.objects.all().order_by('-id')
 
         paginator = Paginator(girls_list, 20)  # Show 25 contacts per page
         try:

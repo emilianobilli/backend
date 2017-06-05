@@ -340,13 +340,13 @@ class CategoryController(object):
                 categories_sel = Category.objects.all().order_by('oringinal_name')
 
             if selectestado != '':
-                categories_list = CategoryMetadata.objects.filter(category__in=categories_sel, queue_status=selectestado).order_by('category_id')
+                categories_list = CategoryMetadata.objects.filter(category__in=categories_sel, queue_status=selectestado).order_by('-id')
             else:
-                categories_list = CategoryMetadata.objects.filter(category__in=categories_sel).order_by('category_id')
+                categories_list = CategoryMetadata.objects.filter(category__in=categories_sel).order_by('-id')
 
 
         if categories_list is None:
-            categories_list = CategoryMetadata.objects.all()
+            categories_list = CategoryMetadata.objects.all().order_by('-id')
 
         paginator = Paginator(categories_list, 20)  # Show 25 contacts per page
         try:

@@ -532,14 +532,14 @@ class EpisodeController(object):
                 episodes_sel = Episode.objects.all()
 
             if selectestado != '':
-                episodes_list = EpisodeMetadata.objects.filter(episode__in=episodes_sel, queue_status=selectestado).order_by('episode_id')
+                episodes_list = EpisodeMetadata.objects.filter(episode__in=episodes_sel, queue_status=selectestado).order_by('-id')
             else:
-                episodes_list = EpisodeMetadata.objects.filter(episode__in=episodes_sel).order_by('episode_id')
+                episodes_list = EpisodeMetadata.objects.filter(episode__in=episodes_sel).order_by('-id')
 
 
 
         if episodes_list is None:
-            episodes_list = EpisodeMetadata.objects.all().order_by('episode_id')
+            episodes_list = EpisodeMetadata.objects.all().order_by('-id')
 
         paginator = Paginator(episodes_list, 20)  # Show 25 contacts per page
         try:
