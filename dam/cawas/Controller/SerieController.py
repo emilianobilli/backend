@@ -33,7 +33,10 @@ class SerieController(object):
 
             # Parsear JSON
             strjson = request.POST['varsToJSON']
-            decjson = json.loads(strjson)
+            print 'JSON'+ strjson
+
+            decjson = json.loads(strjson.replace('\r','\\r').replace('\n','\\n'))
+
             try:
                 pathfilesport = Setting.objects.get(code='image_repository_path_portrait')
                 pathfilesland = Setting.objects.get(code='image_repository_path_landscape')
@@ -191,7 +194,7 @@ class SerieController(object):
             # Parsear JSON
             try:
                 strjson = request.POST['varsToJSON']
-                decjson = json.loads(strjson)
+                decjson = json.loads(strjson.replace('\r','\\r').replace('\n','\\n'))
                 vasset = Asset.objects.get(asset_id=asset_id)
                 vserie = Serie.objects.get(asset=vasset)
                 vimg = Image.objects.get(name=vasset.asset_id)
@@ -202,6 +205,7 @@ class SerieController(object):
 
             except Exception as e:
                 self.code_return = -1
+                print 'fallo json'
                 request.session['list_serie_message'] = 'Error: ' + e.message
                 request.session['list_serie_flag'] = FLAG_ALERT
                 return self.code_return

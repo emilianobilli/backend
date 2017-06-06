@@ -28,7 +28,7 @@ class CategoryController(object):
         if request.method == 'POST':
             # parsear JSON
             strjson = request.POST['varsToJSON']
-            decjson = json.loads(strjson)
+            decjson = json.loads(strjson.replace('\r','\\r').replace('\n','\\n'))
             vimg = Image()
             vcategory = Category()
             try:
@@ -202,7 +202,7 @@ class CategoryController(object):
             vcategory = Category()
             # Parsear JSON
             strjson = request.POST['varsToJSON']
-            decjson = json.loads(strjson)
+            decjson = json.loads(strjson.replace('\r','\\r').replace('\n','\\n'))
             print 'debug1'
             # Leer GIRL desde AssetID
             try:

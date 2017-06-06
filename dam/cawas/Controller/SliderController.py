@@ -38,7 +38,7 @@ class SliderController(object):
                 vimg = Image()
                 # Parsear JSON
                 strjson = request.POST['varsToJSON']
-                decjson = json.loads(strjson)
+                decjson = json.loads(strjson.replace('\r','\\r').replace('\n','\\n'))
                 vgrabarypublicar = decjson['Slider']['publicar']
                 if (decjson['Slider']['asset_id']!='0'):
                     vasset = Asset.objects.get(asset_id=decjson['Slider']['asset_id'])
@@ -189,7 +189,7 @@ class SliderController(object):
             try:
                 # Parsear JSON
                 strjson = request.POST['varsToJSON']
-                decjson = json.loads(strjson)
+                decjson = json.loads(strjson.replace('\r','\\r').replace('\n','\\n'))
 
                 vslider = Slider.objects.get(slider_id=slider_id)
 

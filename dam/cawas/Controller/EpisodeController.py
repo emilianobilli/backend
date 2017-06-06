@@ -35,7 +35,7 @@ class EpisodeController(object):
                 base_dir = Setting.objects.get(code='dam_base_dir')
                 # Parsear JSON
                 strjson = request.POST['varsToJSON']
-                decjson = json.loads(strjson)
+                decjson = json.loads(strjson.replace('\r','\\r').replace('\n','\\n'))
                 # DATOS OBLIGATORIOS
                 vasset = Asset.objects.get(asset_id=decjson['Episode']['asset_id'])
                 vasset.asset_type = "episode"
@@ -295,7 +295,7 @@ class EpisodeController(object):
                 base_dir = Setting.objects.get(code='dam_base_dir')
                 # Parsear JSON
                 strjson = request.POST['varsToJSON']
-                decjson = json.loads(strjson)
+                decjson = json.loads(strjson.replace('\r','\\r').replace('\n','\\n'))
                 # DATOS OBLIGATORIOS
                 vepisode.original_title = decjson['Episode']['original_title']
                 vepisode.channel = Channel.objects.get(pk=decjson['Episode']['channel_id'])

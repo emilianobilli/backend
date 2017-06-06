@@ -33,7 +33,7 @@ class BlockController(object):
             # Parsear JSON
             try:
                 strjson = request.POST['varsToJSON']
-                decjson = json.loads(strjson)
+                decjson = json.loads(strjson.replace('\r','\\r').replace('\n','\\n'))
                 vblock.name = decjson['Block']['name']
                 vblock.order = decjson['Block']['order']
                 vgrabarypublicar = decjson['Block']['publicar']
@@ -137,7 +137,7 @@ class BlockController(object):
             # Parsear JSON
             try:
                 strjson = request.POST['varsToJSON']
-                decjson = json.loads(strjson)
+                decjson = json.loads(strjson.replace('\r','\\r').replace('\n','\\n'))
                 vblock = Block.objects.get(block_id=decjson['Block']['block_id'])
                 vblock.name = decjson['Block']['name']
                 vblock.order = decjson['Block']['order']

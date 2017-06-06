@@ -32,7 +32,7 @@ class MovieController(object):
         if request.method == 'POST':
             # parsear JSON
             strjson = request.POST['varsToJSON']
-            decjson = json.loads(strjson)
+            decjson = json.loads(strjson.replace('\r','\\r').replace('\n','\\n'))
             vgrabarypublicar = decjson['Movie']['publicar']
 
             # DECLARACION DE OBJECTOS
@@ -257,7 +257,7 @@ class MovieController(object):
         if request.method == 'POST':
             # parsear JSON
             strjson = request.POST['varsToJSON']
-            decjson = json.loads(strjson)
+            decjson = json.loads(strjson.replace('\r','\\r').replace('\n','\\n'))
 
             # DECLARACION DE OBJECTOS
             mv = Movie()

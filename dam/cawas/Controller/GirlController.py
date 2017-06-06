@@ -42,7 +42,7 @@ class GirlController(object):
         if request.method == 'POST':
             # parsear JSON
             strjson = request.POST['varsToJSON']
-            decjson = json.loads(strjson)
+            decjson = json.loads(strjson.replace('\r','\\r').replace('\n','\\n'))
             print 'debug1'
             # VARIABLES - (esta logica pasa al controlador)
             vgirl = Girl()
@@ -218,7 +218,7 @@ class GirlController(object):
             vgirl = Girl()
             # Parsear JSON
             strjson = request.POST['varsToJSON']
-            decjson = json.loads(strjson)
+            decjson = json.loads(strjson.replace('\r','\\r').replace('\n','\\n'))
             #print 'idioma' + request.GET['HTTP_ACCEPT_LANGUAGE']
             # Leer GIRL desde AssetID
             try:
