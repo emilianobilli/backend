@@ -533,7 +533,17 @@ def validate_jwt(token):
     ret = {}
     try:
         ret['status'] = 200
-        ret['body']   = jwt.decode(token, MA_SIGNATURE)
+        majwt         = jwt.decode(token, MA_SIGNATURE)
+        if majwt['akey'] != '':
+            valid,ttl     = authorization.check_api_key_nohttp(majwt['akey'])
+            if valid:
+                majwt['ttl']  = ttl
+                ret[body]     = majwt
+            else:
+                ret['status'] = 401
+                ret['body']   = {'status': 'failed', 'message': 'expired'}
+        else:
+            ret[body] = majwt
     except Exception as e:
         ret['status'] = 401
         ret['body']   = {'status': 'failed', 'message': str(e)}

@@ -43,6 +43,32 @@ class Auth(object):
             body   = {'status': 'failure', 'message': str(e)}
         return {'status': status, 'body': body}
 
+    def check_api_key_nohttp(self, api_key):
+        akey_item = {}
+        akey_item['apikey'] = api_key
+        try:
+            ret = self.table.get(akey_item)
+            if 'item' in ret:
+                if ret['item'] != {}:
+                    if int(ret['item']['enabled']) == 1:
+                        now    = int(time.time())
+                        if int(ret['item']['expiration']) > now:
+                            return (True,now-int(ret['item']['expiration']))
+                        else:
+                            ret['item']['enabled'] = 0
+                            self.table.add(ret['item'])
+                            return (False,0)
+                    else:
+                        return (False,0)
+        except CollectionException as e:
+            return (False,0)
+        except DynamoException as e:
+            return (False,0)
+        except Exception as e:
+            return (False,0)
+
+        return (False,0)
+
     def check_api_key(self, api_key):
         akey_item = {}
         akey_item['apikey'] = api_key
