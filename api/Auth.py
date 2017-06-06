@@ -53,7 +53,7 @@ class Auth(object):
                     if int(ret['item']['enabled']) == 1:
                         now    = int(time.time())
                         if int(ret['item']['expiration']) > now:
-                            return (True,now-int(ret['item']['expiration']))
+                            return (True,int(ret['item']['expiration'])-now)
                         else:
                             ret['item']['enabled'] = 0
                             self.table.add(ret['item'])
