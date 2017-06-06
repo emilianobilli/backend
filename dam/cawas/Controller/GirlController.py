@@ -34,6 +34,7 @@ class GirlController(object):
         try:
             pathfilesport = Setting.objects.get(code='image_repository_path_portrait')
             pathfilesland = Setting.objects.get(code='image_repository_path_landscape')
+            base_dir = Setting.objects.get(code='dam_base_dir')
         except Setting.DoesNotExist as e:
             return render(request, 'cawas/error.html', {"message": "No Setting. (" + e.message + ")"})
 
@@ -41,7 +42,7 @@ class GirlController(object):
         if request.method == 'POST':
             # parsear JSON
             strjson = request.POST['varsToJSON']
-            decjson = json.loads(strjson)
+            decjson = json.loads(strjson.replace('\r','\\r').replace('\n','\\n'))
             print 'debug1'
             # VARIABLES - (esta logica pasa al controlador)
             vgirl = Girl()
@@ -52,24 +53,30 @@ class GirlController(object):
             #try:
             vimg.name = vasset.asset_id
             # IMAGEN Portrait
-            if (request.FILES.has_key('ThumbVer')):
-                if request.FILES['ThumbVer'].name != '':
-                    vimg.portrait = request.FILES['ThumbVer']
-                    extension = os.path.splitext(vimg.portrait.name)[1]
-                    varchivo = pathfilesport.value  + vimg.name + extension
-                    vimg.portrait.name = varchivo
-                    if os.path.isfile(varchivo):
-                        os.remove(varchivo)
-
-            # IMAGEN Landscape
             if (request.FILES.has_key('ThumbHor')):
                 if request.FILES['ThumbHor'].name != '':
+                    # TRATAMIENTO DE IMAGEN Landscape
                     vimg.landscape = request.FILES['ThumbHor']
                     extension = os.path.splitext(vimg.landscape.name)[1]
                     varchivo = pathfilesland.value + vimg.name + extension
                     vimg.landscape.name = varchivo
-                    if os.path.isfile(varchivo):
-                        os.remove(varchivo)
+                    varchivo_server = base_dir.value + varchivo
+                    if os.path.isfile(varchivo_server):
+                        os.remove(varchivo_server)
+
+            # IMAGEN Landscape
+            if (request.FILES.has_key('ThumbVer')):
+                if request.FILES['ThumbVer'].name != '':
+                    # Landscape
+                    vimg.portrait = request.FILES['ThumbVer']
+                    extension = os.path.splitext(vimg.portrait.name)[1]
+                    varchivo = pathfilesport.value + vimg.name + extension
+                    vimg.portrait.name = varchivo
+                    # si existe archivo, lo borra
+                    varchivo_server = base_dir.value + varchivo
+                    if os.path.isfile(varchivo_server):
+                        os.remove(varchivo_server)
+
             vimg.save()
             print 'debug3'
             # CREAR GIRL
@@ -163,6 +170,7 @@ class GirlController(object):
             vlangmetadata = []
             pathfilesport = Setting.objects.get(code='image_repository_path_portrait')
             pathfilesland = Setting.objects.get(code='image_repository_path_landscape')
+            base_dir = Setting.objects.get(code='dam_base_dir')
             vasset = Asset.objects.get(asset_id=asset_id)
             vgirl = Girl.objects.get(asset=vasset)
             vtypegirl = {"pornstar": "Pornstar", "playmate": "Playmate"}
@@ -210,8 +218,8 @@ class GirlController(object):
             vgirl = Girl()
             # Parsear JSON
             strjson = request.POST['varsToJSON']
-            decjson = json.loads(strjson)
-
+            decjson = json.loads(strjson.replace('\r','\\r').replace('\n','\\n'))
+            #print 'idioma' + request.GET['HTTP_ACCEPT_LANGUAGE']
             # Leer GIRL desde AssetID
             try:
                 vasset = Asset.objects.get(asset_id=decjson['Girl']['asset_id'])
@@ -232,24 +240,29 @@ class GirlController(object):
 
             vimg.name = vasset.asset_id
             # IMAGEN Portrait
-            if (request.FILES.has_key('ThumbVer')):
-                if request.FILES['ThumbVer'].name != '':
-                    vimg.portrait = request.FILES['ThumbVer']
-                    extension = os.path.splitext(vimg.portrait.name)[1]
-                    varchivo = pathfilesport.value + vimg.name + extension
-                    vimg.portrait.name = varchivo
-                    if os.path.isfile(varchivo):
-                        os.remove(varchivo)
-
-            # IMAGEN Landscape
             if (request.FILES.has_key('ThumbHor')):
                 if request.FILES['ThumbHor'].name != '':
+                    # TRATAMIENTO DE IMAGEN Landscape
                     vimg.landscape = request.FILES['ThumbHor']
                     extension = os.path.splitext(vimg.landscape.name)[1]
                     varchivo = pathfilesland.value + vimg.name + extension
                     vimg.landscape.name = varchivo
-                    if os.path.isfile(varchivo):
-                        os.remove(varchivo)
+                    varchivo_server = base_dir.value + varchivo
+                    if os.path.isfile(varchivo_server):
+                        os.remove(varchivo_server)
+
+            # IMAGEN Landscape
+            if (request.FILES.has_key('ThumbVer')):
+                if request.FILES['ThumbVer'].name != '':
+                    # Landscape
+                    vimg.portrait = request.FILES['ThumbVer']
+                    extension = os.path.splitext(vimg.portrait.name)[1]
+                    varchivo = pathfilesport.value + vimg.name + extension
+                    vimg.portrait.name = varchivo
+                    # si existe archivo, lo borra
+                    varchivo_server = base_dir.value + varchivo
+                    if os.path.isfile(varchivo_server):
+                        os.remove(varchivo_server)
 
             vimg.save()
 
@@ -349,13 +362,13 @@ class GirlController(object):
                 girls_sel = Girl.objects.all()
 
             if selectestado != '':
-                girls_list = GirlMetadata.objects.filter(girl__in=girls_sel, queue_status=selectestado).order_by('girl_id')
+                girls_list = GirlMetadata.objects.filter(girl__in=girls_sel, queue_status=selectestado).order_by('-id')
             else:
-                girls_list = GirlMetadata.objects.filter(girl__in=girls_sel).order_by('girl_id')
+                girls_list = GirlMetadata.objects.filter(girl__in=girls_sel).order_by('-id')
 
 
         if girls_list is None:
-            girls_list = GirlMetadata.objects.all().order_by('girl_id')
+            girls_list = GirlMetadata.objects.all().order_by('-id')
 
         paginator = Paginator(girls_list, 20)  # Show 25 contacts per page
         try:

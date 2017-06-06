@@ -33,10 +33,14 @@ class SerieController(object):
 
             # Parsear JSON
             strjson = request.POST['varsToJSON']
-            decjson = json.loads(strjson)
+            print 'JSON'+ strjson
+
+            decjson = json.loads(strjson.replace('\r','\\r').replace('\n','\\n'))
+
             try:
                 pathfilesport = Setting.objects.get(code='image_repository_path_portrait')
                 pathfilesland = Setting.objects.get(code='image_repository_path_landscape')
+                base_dir = Setting.objects.get(code='dam_base_dir')
             except Setting.DoesNotExist as e:
                 self.code_return = -1
                 request.session['list_serie_message'] = 'Error: ' + e.message
@@ -52,10 +56,11 @@ class SerieController(object):
                     extension = os.path.splitext(vimg.landscape.name)[1]
                     varchivo = pathfilesland.value + vimg.name + extension
                     vimg.landscape.name = varchivo
-                    if os.path.isfile(varchivo):
-                        os.remove(varchivo)
+                    varchivo_server = base_dir.value + varchivo
+                    if os.path.isfile(varchivo_server):
+                        os.remove(varchivo_server)
 
-            # IMAGEN Portrait
+            # IMAGEN Landscape
             if (request.FILES.has_key('ThumbVer')):
                 if request.FILES['ThumbVer'].name != '':
                     # Landscape
@@ -64,8 +69,9 @@ class SerieController(object):
                     varchivo = pathfilesport.value + vimg.name + extension
                     vimg.portrait.name = varchivo
                     # si existe archivo, lo borra
-                    if os.path.isfile(varchivo):
-                        os.remove(varchivo)
+                    varchivo_server = base_dir.value + varchivo
+                    if os.path.isfile(varchivo_server):
+                        os.remove(varchivo_server)
 
             vimg.save()
             # FIN IMAGEN
@@ -163,7 +169,6 @@ class SerieController(object):
             request.session['list_episode_flag'] = FLAG_ALERT
             return self.code_return
 
-
         context = {'message': message, 'flag':flag, 'vgirls': vgirls, 'vlanguages': vlanguages, 'vcategories': vcategories,
                    'vchannels': vchannels, 'vseries': vseries, 'flag':flag}
         return render(request, 'cawas/series/add.html', context)
@@ -189,42 +194,54 @@ class SerieController(object):
             # Parsear JSON
             try:
                 strjson = request.POST['varsToJSON']
-                decjson = json.loads(strjson)
+                decjson = json.loads(strjson.replace('\r','\\r').replace('\n','\\n'))
                 vasset = Asset.objects.get(asset_id=asset_id)
                 vserie = Serie.objects.get(asset=vasset)
                 vimg = Image.objects.get(name=vasset.asset_id)
                 pathfilesport = Setting.objects.get(code='image_repository_path_portrait')
                 pathfilesland = Setting.objects.get(code='image_repository_path_landscape')
+                base_dir = Setting.objects.get(code='dam_base_dir')
+                print 'flag1'
+
             except Exception as e:
                 self.code_return = -1
+                print 'fallo json'
                 request.session['list_serie_message'] = 'Error: ' + e.message
                 request.session['list_serie_flag'] = FLAG_ALERT
                 return self.code_return
 
             vimg.name = vasset.asset_id
             # IMAGEN Landscape
+            print 'debug1'
             if (request.FILES.has_key('ThumbHor')):
                 if request.FILES['ThumbHor'].name != '':
                     # TRATAMIENTO DE IMAGEN Landscape
+                    print 'debug2'
                     vimg.landscape = request.FILES['ThumbHor']
                     extension = os.path.splitext(vimg.landscape.name)[1]
                     varchivo = pathfilesland.value + vimg.name + extension
                     vimg.landscape.name = varchivo
-                    if os.path.isfile(varchivo):
-                        os.remove(varchivo)
+                    varchivo_server = base_dir.value + varchivo
+                    if os.path.isfile(varchivo_server):
+                        os.remove(varchivo_server)
 
-            # IMAGEN Portrait
+            # IMAGEN Landscape
+            print 'debug3'
             if (request.FILES.has_key('ThumbVer')):
                 if request.FILES['ThumbVer'].name != '':
+                    # Landscape
+                    print 'debug4'
                     vimg.portrait = request.FILES['ThumbVer']
                     extension = os.path.splitext(vimg.portrait.name)[1]
                     varchivo = pathfilesport.value + vimg.name + extension
                     vimg.portrait.name = varchivo
                     # si existe archivo, lo borra
-                    if os.path.isfile(varchivo):
-                        os.remove(varchivo)
+                    varchivo_server = base_dir.value + varchivo
+                    if os.path.isfile(varchivo_server):
+                        os.remove(varchivo_server)
 
             vimg.save()
+            print 'flag2'
             # FIN IMAGEN
             vgrabarypublicar = decjson['Serie']['publicar']
             # Datos de Serie
@@ -255,7 +272,7 @@ class SerieController(object):
                         request.session['list_serie_flag'] = FLAG_ALERT
                         return self.code_return
                 vserie.save()
-
+            print 'flag3'
             # CARGAR CATEGORIES
             vserie.category = []
             vserie.save()
@@ -269,6 +286,7 @@ class SerieController(object):
                     request.session['list_serie_flag'] = FLAG_ALERT
                     return self.code_return
             vserie.save()
+            print 'flag4'
             # Channel
             try:
                 vserie.channel = Channel.objects.get(pk=decjson['Serie']['channel_id'])
@@ -281,8 +299,10 @@ class SerieController(object):
             vserie.save()
             message = 'Categoria - Registrado Correctamente'
 
+            print 'flag5'
             # BORRAR Y CREAR METADATA
             vseriemetadatas = decjson['Serie']['Seriemetadatas']
+
             for item in vseriemetadatas:
                 try:
                     vlanguage = Language.objects.get(code=item['Seriemetadata']['language'])
@@ -304,7 +324,10 @@ class SerieController(object):
                 smd.publish_date = vschedule_date
                 smd.queue_status = 'Q'
                 smd.save()
+
+                print 'flag6'
                 if (Episode.objects.filter(serie=vserie).count() > 0):
+                    print 'ingreso'
                     ph = PublishHelper()
                     ph.func_publish_queue(request, vserie.asset.asset_id, smd.language, 'AS', 'Q',vschedule_date)
                     ph.func_publish_image(request, vimg)
@@ -314,6 +337,7 @@ class SerieController(object):
                     request.session['list_serie_flag'] = FLAG_ALERT
                     return self.code_return
                 # Fin de POST
+
             flag = "success"
             self.code_return = 0
             request.session['list_serie_message'] = 'Guardado Correctamente'
@@ -427,13 +451,13 @@ class SerieController(object):
                 series_sel = Serie.objects.all()
 
             if selectestado != '':
-                series_list = SerieMetadata.objects.filter(serie__in=series_sel, queue_status=selectestado).order_by('serie_id')
+                series_list = SerieMetadata.objects.filter(serie__in=series_sel, queue_status=selectestado).order_by('-id')
             else:
-                series_list = SerieMetadata.objects.filter(serie__in=series_sel).order_by('serie_id')
+                series_list = SerieMetadata.objects.filter(serie__in=series_sel).order_by('-id')
 
 
         if series_list is None:
-            series_list = SerieMetadata.objects.all().order_by('serie_id')
+            series_list = SerieMetadata.objects.all().order_by('-id')
 
         paginator = Paginator(series_list, 20)  # Show 25 contacts per page
         try:

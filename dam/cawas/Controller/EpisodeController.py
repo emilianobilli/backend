@@ -32,10 +32,10 @@ class EpisodeController(object):
             try:
                 pathfilesport = Setting.objects.get(code='image_repository_path_portrait')
                 pathfilesland = Setting.objects.get(code='image_repository_path_landscape')
-
+                base_dir = Setting.objects.get(code='dam_base_dir')
                 # Parsear JSON
                 strjson = request.POST['varsToJSON']
-                decjson = json.loads(strjson)
+                decjson = json.loads(strjson.replace('\r','\\r').replace('\n','\\n'))
                 # DATOS OBLIGATORIOS
                 vasset = Asset.objects.get(asset_id=decjson['Episode']['asset_id'])
                 vasset.asset_type = "episode"
@@ -72,10 +72,11 @@ class EpisodeController(object):
                         # TRATAMIENTO DE IMAGEN Landscape
                         vimg.landscape = request.FILES['ThumbHor']
                         extension = os.path.splitext(vimg.landscape.name)[1]
-                        varchivo = pathfilesland.value + vimg.name + extension
+                        varchivo =  pathfilesland.value + vimg.name + extension
                         vimg.landscape.name = varchivo
-                        if os.path.isfile(varchivo):
-                            os.remove(varchivo)
+                        varchivo_server = base_dir.value + varchivo
+                        if os.path.isfile(varchivo_server):
+                            os.remove(varchivo_server)
 
 
                 # IMAGEN Landscape
@@ -87,8 +88,9 @@ class EpisodeController(object):
                         varchivo = pathfilesport.value + vimg.name + extension
                         vimg.portrait.name = varchivo
                         # si existe archivo, lo borra
-                        if os.path.isfile(varchivo):
-                            os.remove(varchivo)
+                        varchivo_server = base_dir.value + varchivo
+                        if os.path.isfile(varchivo_server):
+                            os.remove(varchivo_server)
 
 
                 vimg.save()
@@ -272,6 +274,7 @@ class EpisodeController(object):
             imgport = vepisode.image.portrait.name[5:i]
             i = len(vepisode.image.landscape.name)
             imgland = vepisode.image.landscape.name[5:i]
+            #imgland = vepisode.image.landscape.name
             #print "episodio " + vepisode.original_title
 
         except Asset.DoesNotExist as e:
@@ -289,10 +292,10 @@ class EpisodeController(object):
             try:
                 pathfilesport = Setting.objects.get(code='image_repository_path_portrait')
                 pathfilesland = Setting.objects.get(code='image_repository_path_landscape')
-
+                base_dir = Setting.objects.get(code='dam_base_dir')
                 # Parsear JSON
                 strjson = request.POST['varsToJSON']
-                decjson = json.loads(strjson)
+                decjson = json.loads(strjson.replace('\r','\\r').replace('\n','\\n'))
                 # DATOS OBLIGATORIOS
                 vepisode.original_title = decjson['Episode']['original_title']
                 vepisode.channel = Channel.objects.get(pk=decjson['Episode']['channel_id'])
@@ -326,10 +329,11 @@ class EpisodeController(object):
                         # TRATAMIENTO DE IMAGEN Landscape
                         vimg.landscape = request.FILES['ThumbHor']
                         extension = os.path.splitext(vimg.landscape.name)[1]
-                        varchivo = pathfilesland.value + vimg.name + extension
+                        varchivo =  pathfilesland.value + vimg.name + extension
                         vimg.landscape.name = varchivo
-                        if os.path.isfile(varchivo):
-                            os.remove(varchivo)
+                        varchivo_server = base_dir.value + varchivo
+                        if os.path.isfile(varchivo_server):
+                            os.remove(varchivo_server)
 
 
                 # IMAGEN Landscape
@@ -341,8 +345,9 @@ class EpisodeController(object):
                         varchivo = pathfilesport.value + vimg.name + extension
                         vimg.portrait.name = varchivo
                         # si existe archivo, lo borra
-                        if os.path.isfile(varchivo):
-                            os.remove(varchivo)
+                        varchivo_server = base_dir.value + varchivo
+                        if os.path.isfile(varchivo_server):
+                            os.remove(varchivo_server)
 
                 vimg.save()
                 vepisode.image = vimg
@@ -527,14 +532,14 @@ class EpisodeController(object):
                 episodes_sel = Episode.objects.all()
 
             if selectestado != '':
-                episodes_list = EpisodeMetadata.objects.filter(episode__in=episodes_sel, queue_status=selectestado).order_by('episode_id')
+                episodes_list = EpisodeMetadata.objects.filter(episode__in=episodes_sel, queue_status=selectestado).order_by('-id')
             else:
-                episodes_list = EpisodeMetadata.objects.filter(episode__in=episodes_sel).order_by('episode_id')
+                episodes_list = EpisodeMetadata.objects.filter(episode__in=episodes_sel).order_by('-id')
 
 
 
         if episodes_list is None:
-            episodes_list = EpisodeMetadata.objects.all().order_by('episode_id')
+            episodes_list = EpisodeMetadata.objects.all().order_by('-id')
 
         paginator = Paginator(episodes_list, 20)  # Show 25 contacts per page
         try:
@@ -560,10 +565,13 @@ class EpisodeController(object):
             episodemetadata = EpisodeMetadata.objects.get(id=id)
             vasset_id = episodemetadata.episode.asset.asset_id
 
+
             # 1 - VERIFICAR, si estado de publicacion esta en Q, se debe eliminar
             publishs = PublishQueue.objects.filter(item_id=vasset_id, status='Q')
             if publishs.count > 0:
                 publishs.delete()
+
+
 
             # 2 - Realizar delete al backend
             setting = Setting.objects.get(code='backend_asset_url')

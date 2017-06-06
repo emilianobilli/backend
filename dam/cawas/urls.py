@@ -8,6 +8,7 @@ urlpatterns = [
     url(r'^login/$', views.login_view, name='login_view'),
     url(r'^logout/$', views.logout_view, name='logout_view'),
     url(r'^$', views.menu_view, name='menu_view'),
+    #url(r'^mantenimiento$', views.matenimiento_view, name='mantenimiento_view'),
 
     url(r'^movies/add/$', views.add_movies_view, name='add_movie'),
     url(r'^movies/edit/(?P<asset_id>\w*)/$', views.edit_movies_view, name='edit_movie'),

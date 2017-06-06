@@ -479,7 +479,7 @@ class Episode(models.Model):
     directors       = models.CharField(max_length=1024, blank=True, help_text="Listado de directores separados por coma")
     image           = models.ForeignKey(Image, blank=True, null=True)
     runtime         = models.IntegerField(default=0, help_text="Duracion expresada en segundos")
-    display_runtime = models.CharField(max_length=5, default="00:00", help_text="Duracion expresada en HH:MM")
+    display_runtime = models.CharField(default="00:00:00", max_length=8, help_text="Duracion expresada en HH:MM:SS")
     serie           = models.ForeignKey(Serie)
     chapter         = models.IntegerField(default=0, help_text="Numero de capitulo")
     season          = models.IntegerField(default=0, help_text="Numero de temporada")
@@ -514,11 +514,15 @@ class Episode(models.Model):
             if self.image.landscape.name != '':
                 dict["image_landscape"] = os.path.basename(self.image.landscape.name)
         if self.display_runtime != '':
-            hours, minutes = self.display_runtime.split(':')
-            dict["runtime"] = (int(minutes) * 60) + (int(hours) * 3600)
+            hours, minutes, seconds = self.display_runtime.split(':')
+            dict["runtime"] = int(seconds) + (int(minutes) * 60) + (int(hours) * 3600)
+            min_sum = int(minutes) + (int(hours) * 60)
+            if min_sum < 10:
+                min_sum = "0%d" % min_sum
+            dict["display_runtime"] = "%s:%s" % (min_sum, seconds)
         else:
             dict["runtime"] = 0
-        dict["display_runtime"] = self.display_runtime
+            dict["display_runtime"] = "00:00"
         if self.chapter > 0:
             dict["episode"]         = self.chapter
         if self.season > 0:
@@ -583,7 +587,7 @@ class Movie(models.Model):
     directors       = models.CharField(max_length=1024, blank=True, help_text="Listado de directores separados por coma")
     image           = models.ForeignKey(Image, blank=True, null=True)
     runtime         = models.IntegerField(default=0, help_text="Duracion expresada en segundos")
-    display_runtime = models.CharField(default="00:00", max_length=5, help_text="Duracion expresada en HH:MM")
+    display_runtime = models.CharField(default="00:00:00", max_length=8, help_text="Duracion expresada en HH:MM:SS")
     thumbnails      = models.BooleanField(default=False)
     category        = models.ManyToManyField(Category)
 
@@ -615,11 +619,15 @@ class Movie(models.Model):
             if self.image.landscape.name != '':
                 dict["image_landscape"] = os.path.basename(self.image.landscape.name)
         if self.display_runtime != '':
-            hours, minutes = self.display_runtime.split(':')
-            dict["runtime"] = (int(minutes) * 60) + (int(hours) * 3600)
+            hours, minutes, seconds = self.display_runtime.split(':')
+            dict["runtime"] = int(seconds) + (int(minutes) * 60) + (int(hours) * 3600)
+            min_sum = int(minutes) + (int(hours) * 60)
+            if min_sum < 10:
+                min_sum = "0%d" % min_sum
+            dict["display_runtime"] = "%s:%s" % (min_sum, seconds)
         else:
             dict["runtime"] = 0
-        dict["display_runtime"] = self.display_runtime
+            dict["display_runtime"] = "00:00"
         dict["thumbnails"]      = self.thumbnails
 
         return dict

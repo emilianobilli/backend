@@ -32,7 +32,7 @@ class MovieController(object):
         if request.method == 'POST':
             # parsear JSON
             strjson = request.POST['varsToJSON']
-            decjson = json.loads(strjson)
+            decjson = json.loads(strjson.replace('\r','\\r').replace('\n','\\n'))
             vgrabarypublicar = decjson['Movie']['publicar']
 
             # DECLARACION DE OBJECTOS
@@ -51,6 +51,7 @@ class MovieController(object):
             try:
                 pathfilesport = Setting.objects.get(code='image_repository_path_portrait')
                 pathfilesland = Setting.objects.get(code='image_repository_path_landscape')
+                base_dir = Setting.objects.get(code='dam_base_dir')
             except Setting.DoesNotExist as e:
                 request.session['list_movie_message'] = "Error: No existe Setting (" + str(e.message) + ")"
                 request.session['list_movie_flag'] = FLAG_ALERT
@@ -64,22 +65,32 @@ class MovieController(object):
                 img = Image()
 
             img.name = vasset.asset_id
-            # TRATAMIENTO DE IMAGEN Landscape
-            img.landscape = request.FILES['ThumbHor']
-            extension = os.path.splitext(img.landscape.name)[1]
-            varchivo = pathfilesland.value + img.name + extension
-            img.landscape.name = varchivo
-            if os.path.isfile(varchivo):
-                os.remove(varchivo)
 
-            # Landscape
-            img.portrait = request.FILES['ThumbVer']
-            extension = os.path.splitext(img.portrait.name)[1]
-            varchivo = pathfilesport.value + img.name + extension
-            img.portrait.name = varchivo
-            # si existe archivo, lo borra
-            if os.path.isfile(varchivo):
-                os.remove(varchivo)
+
+            # TRATAMIENTO DE IMAGEN Landscape
+            if (request.FILES.has_key('ThumbHor')):
+                if request.FILES['ThumbHor'].name != '':
+                    # TRATAMIENTO DE IMAGEN Landscape
+                    img.landscape = request.FILES['ThumbHor']
+                    extension = os.path.splitext(img.landscape.name)[1]
+                    varchivo = pathfilesland.value + img.name + extension
+                    img.landscape.name = varchivo
+                    varchivo_server = base_dir.value + varchivo
+                    if os.path.isfile(varchivo_server):
+                        os.remove(varchivo_server)
+
+            # IMAGEN Landscape
+            if (request.FILES.has_key('ThumbVer')):
+                if request.FILES['ThumbVer'].name != '':
+                    # Landscape
+                    img.portrait = request.FILES['ThumbVer']
+                    extension = os.path.splitext(img.portrait.name)[1]
+                    varchivo = pathfilesport.value + img.name + extension
+                    img.portrait.name = varchivo
+                    # si existe archivo, lo borra
+                    varchivo_server = base_dir.value + varchivo
+                    if os.path.isfile(varchivo_server):
+                        os.remove(varchivo_server)
 
             img.save()
             mv.image = img
@@ -236,6 +247,7 @@ class MovieController(object):
         try:
             pathfilesport = Setting.objects.get(code='image_repository_path_portrait')
             pathfilesland = Setting.objects.get(code='image_repository_path_landscape')
+            base_dir = Setting.objects.get(code='dam_base_dir')
         except Setting.DoesNotExist as e:
             request.session['list_movie_message'] = "Error: No existe Setting (" + str(e.message) + ")"
             request.session['list_movie_flag'] = FLAG_ALERT
@@ -245,7 +257,7 @@ class MovieController(object):
         if request.method == 'POST':
             # parsear JSON
             strjson = request.POST['varsToJSON']
-            decjson = json.loads(strjson)
+            decjson = json.loads(strjson.replace('\r','\\r').replace('\n','\\n'))
 
             # DECLARACION DE OBJECTOS
             mv = Movie()
@@ -277,26 +289,30 @@ class MovieController(object):
 
             img.name = vasset.asset_id
             # IMAGEN Portrait
+
+            if (request.FILES.has_key('ThumbHor')):
+                if request.FILES['ThumbHor'].name != '':
+                    # TRATAMIENTO DE IMAGEN Landscape
+                    img.landscape = request.FILES['ThumbHor']
+                    extension = os.path.splitext(img.landscape.name)[1]
+                    varchivo = pathfilesland.value + img.name + extension
+                    img.landscape.name = varchivo
+                    varchivo_server = base_dir.value + varchivo
+                    if os.path.isfile(varchivo_server):
+                        os.remove(varchivo_server)
+
+            # IMAGEN Landscape
             if (request.FILES.has_key('ThumbVer')):
                 if request.FILES['ThumbVer'].name != '':
+                    # Landscape
                     img.portrait = request.FILES['ThumbVer']
                     extension = os.path.splitext(img.portrait.name)[1]
                     varchivo = pathfilesport.value + img.name + extension
                     img.portrait.name = varchivo
                     # si existe archivo, lo borra
-                    if os.path.isfile(varchivo):
-                        os.remove(varchivo)
-
-
-            # IMAGEN Landscape
-            if (request.FILES.has_key('ThumbHor')):
-                if request.FILES['ThumbHor'].name != '':
-                    img.landscape = request.FILES['ThumbHor']
-                    extension = os.path.splitext(img.landscape.name)[1]
-                    varchivo = pathfilesland.value + img.name + extension
-                    img.landscape.name = varchivo
-                    if os.path.isfile(varchivo):
-                        os.remove(varchivo)
+                    varchivo_server = base_dir.value + varchivo
+                    if os.path.isfile(varchivo_server):
+                        os.remove(varchivo_server)
 
             img.save()
             mv.image = img
@@ -519,12 +535,12 @@ class MovieController(object):
                 movies_sel = Movie.objects.all()
 
             if selectestado != '':
-                movies_list = MovieMetadata.objects.filter(movie__in=movies_sel, queue_status=selectestado).order_by('movie_id')
+                movies_list = MovieMetadata.objects.filter(movie__in=movies_sel, queue_status=selectestado).order_by('-id')
             else:
-                movies_list = MovieMetadata.objects.filter(movie__in=movies_sel).order_by('movie_id')
+                movies_list = MovieMetadata.objects.filter(movie__in=movies_sel).order_by('-id')
 
         if movies_list is None:
-            movies_list = MovieMetadata.objects.all().order_by('movie_id')
+            movies_list = MovieMetadata.objects.all().order_by('-id')
 
         paginator = Paginator(movies_list, 20)  # Show 25 contacts per page
         try:

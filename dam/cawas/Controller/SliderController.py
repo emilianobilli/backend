@@ -25,6 +25,7 @@ class SliderController(object):
 
         try:
             pathfilesland = Setting.objects.get(code='image_repository_path_landscape')
+            base_dir = Setting.objects.get(code='dam_base_dir')
         except Setting.DoesNotExist as e:
             self.code_return = -1
             request.session['list_slider_message'] = 'No existe Setting '
@@ -37,7 +38,7 @@ class SliderController(object):
                 vimg = Image()
                 # Parsear JSON
                 strjson = request.POST['varsToJSON']
-                decjson = json.loads(strjson)
+                decjson = json.loads(strjson.replace('\r','\\r').replace('\n','\\n'))
                 vgrabarypublicar = decjson['Slider']['publicar']
                 if (decjson['Slider']['asset_id']!='0'):
                     vasset = Asset.objects.get(asset_id=decjson['Slider']['asset_id'])
@@ -54,15 +55,18 @@ class SliderController(object):
                 vimg.name = vslider.slider_id
                 if (request.FILES.has_key('ThumbHor')):
                     if request.FILES['ThumbHor'].name != '':
+                        # TRATAMIENTO DE IMAGEN Landscape
                         vimg.landscape = request.FILES['ThumbHor']
                         extension = os.path.splitext(vimg.landscape.name)[1]
-                        varchivo = pathfilesland.value + vimg.name + extension
+                        varchivo =  pathfilesland.value + vimg.name + extension
                         vimg.landscape.name = varchivo
-                        if os.path.isfile(varchivo):
-                            os.remove(varchivo)
-                        vimg.save()
-                        vslider.image = vimg
-                        vslider.save()
+                        varchivo_server = base_dir.value + varchivo
+                        if os.path.isfile(varchivo_server):
+                            os.remove(varchivo_server)
+
+                vimg.save()
+                vslider.image = vimg
+                vslider.save()
 
 
                 if decjson['Slider']['text'] is None:
@@ -154,6 +158,7 @@ class SliderController(object):
         imgland = ''
         try:
             pathfilesland = Setting.objects.get(code='image_repository_path_landscape')
+            base_dir = Setting.objects.get(code='dam_base_dir')
         except Setting.DoesNotExist as e:
             self.code_return = -1
             request.session['list_slider_message'] = 'No existe Setting '
@@ -184,7 +189,7 @@ class SliderController(object):
             try:
                 # Parsear JSON
                 strjson = request.POST['varsToJSON']
-                decjson = json.loads(strjson)
+                decjson = json.loads(strjson.replace('\r','\\r').replace('\n','\\n'))
 
                 vslider = Slider.objects.get(slider_id=slider_id)
 
@@ -229,12 +234,14 @@ class SliderController(object):
             # IMAGEN Portrait
             if (request.FILES.has_key('ThumbHor')):
                 if request.FILES['ThumbHor'].name != '':
+                    # TRATAMIENTO DE IMAGEN Landscape
                     vimg.landscape = request.FILES['ThumbHor']
                     extension = os.path.splitext(vimg.landscape.name)[1]
                     varchivo = pathfilesland.value + vimg.name + extension
                     vimg.landscape.name = varchivo
-                    if os.path.isfile(varchivo):
-                        os.remove(varchivo)
+                    varchivo_server = base_dir.value + varchivo
+                    if os.path.isfile(varchivo_server):
+                        os.remove(varchivo_server)
 
             vimg.save()
             vslider.image = vimg
@@ -289,16 +296,16 @@ class SliderController(object):
             # FILTROS
             if titulo != '':
                 if selectestado != '':
-                    sliders_list = Slider.objects.filter(slider_id__icontains=titulo, queue_status=selectestado).order_by('slider_id')
+                    sliders_list = Slider.objects.filter(slider_id__icontains=titulo, queue_status=selectestado).order_by('-id')
                 else:
-                    sliders_list = Slider.objects.filter(slider_id__icontains=titulo).order_by('slider_id')
+                    sliders_list = Slider.objects.filter(slider_id__icontains=titulo).order_by('-id')
             elif selectestado != '':
-                sliders_list = Slider.objects.filter(queue_status=selectestado).order_by('slider_id')
+                sliders_list = Slider.objects.filter(queue_status=selectestado).order_by('-id')
             else:
-                sliders_list = Slider.objects.all().order_by('slider_id')
+                sliders_list = Slider.objects.all().order_by('-id')
 
         if sliders_list is None:
-            sliders_list = Slider.objects.all().order_by('slider_id')
+            sliders_list = Slider.objects.all().order_by('-id')
 
         paginator = Paginator(sliders_list, 20)  # Show 25 contacts per page
         try:

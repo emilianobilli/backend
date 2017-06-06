@@ -33,7 +33,7 @@ class BlockController(object):
             # Parsear JSON
             try:
                 strjson = request.POST['varsToJSON']
-                decjson = json.loads(strjson)
+                decjson = json.loads(strjson.replace('\r','\\r').replace('\n','\\n'))
                 vblock.name = decjson['Block']['name']
                 vblock.order = decjson['Block']['order']
                 vgrabarypublicar = decjson['Block']['publicar']
@@ -137,7 +137,7 @@ class BlockController(object):
             # Parsear JSON
             try:
                 strjson = request.POST['varsToJSON']
-                decjson = json.loads(strjson)
+                decjson = json.loads(strjson.replace('\r','\\r').replace('\n','\\n'))
                 vblock = Block.objects.get(block_id=decjson['Block']['block_id'])
                 vblock.name = decjson['Block']['name']
                 vblock.order = decjson['Block']['order']
@@ -269,16 +269,16 @@ class BlockController(object):
             # FILTROS
             if titulo != '':
                 if selectestado != '':
-                    blocks_list = Block.objects.filter(Q(name__icontains=titulo)|Q(block_id__icontains=titulo), queue_status=selectestado).order_by('block_id')
+                    blocks_list = Block.objects.filter(Q(name__icontains=titulo)|Q(block_id__icontains=titulo), queue_status=selectestado).order_by('-id')
                 else:
-                    blocks_list = Block.objects.filter(Q(name__icontains=titulo)|Q(block_id__icontains=titulo)).order_by('block_id')
+                    blocks_list = Block.objects.filter(Q(name__icontains=titulo)|Q(block_id__icontains=titulo)).order_by('-id')
             elif selectestado != '':
-                blocks_list = Block.objects.filter(queue_status=selectestado).order_by('block_id')
+                blocks_list = Block.objects.filter(queue_status=selectestado).order_by('-id')
             else:
-                blocks_list = Block.objects.all().order_by('block_id')
+                blocks_list = Block.objects.all().order_by('-id')
 
         if blocks_list is None:
-            blocks_list = Block.objects.all().order_by('block_id')
+            blocks_list = Block.objects.all().order_by('-id')
 
         paginator = Paginator(blocks_list, 20)  # Show 25 contacts per page
         try:

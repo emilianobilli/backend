@@ -28,12 +28,13 @@ class CategoryController(object):
         if request.method == 'POST':
             # parsear JSON
             strjson = request.POST['varsToJSON']
-            decjson = json.loads(strjson)
+            decjson = json.loads(strjson.replace('\r','\\r').replace('\n','\\n'))
             vimg = Image()
             vcategory = Category()
             try:
                 pathfilesland = Setting.objects.get(code='image_repository_path_landscape')
                 pathfilesport = Setting.objects.get(code='image_repository_path_portrait')
+                base_dir = Setting.objects.get(code='dam_base_dir')
                 vcategory.original_name = decjson['Category']['original_name']
                 vgrabarypublicar = decjson['Category']['publicar']
                 vcategory.save()
@@ -41,25 +42,30 @@ class CategoryController(object):
                 vimg.name = vcategory.category_id
                 if (request.FILES.has_key('ThumbHor')):
                     if request.FILES['ThumbHor'].name != '':
+                        # TRATAMIENTO DE IMAGEN Landscape
                         vimg.landscape = request.FILES['ThumbHor']
                         extension = os.path.splitext(vimg.landscape.name)[1]
-                        varchivo = pathfilesland.value + vimg.name + extension
+                        varchivo =  pathfilesland.value + vimg.name + extension
                         vimg.landscape.name = varchivo
-                        if os.path.isfile(varchivo):
-                            os.remove(varchivo)
-                        vimg.save()
-                        vcategory.image = vimg
+                        varchivo_server = base_dir.value + varchivo
+                        if os.path.isfile(varchivo_server):
+                            os.remove(varchivo_server)
 
+
+                # IMAGEN Landscape
                 if (request.FILES.has_key('ThumbVer')):
                     if request.FILES['ThumbVer'].name != '':
+                        # Landscape
                         vimg.portrait = request.FILES['ThumbVer']
                         extension = os.path.splitext(vimg.portrait.name)[1]
                         varchivo = pathfilesport.value + vimg.name + extension
                         vimg.portrait.name = varchivo
-                        if os.path.isfile(varchivo):
-                            os.remove(varchivo)
-                        vimg.save()
-                        vcategory.image = vimg
+                        # si existe archivo, lo borra
+                        varchivo_server = base_dir.value + varchivo
+                        if os.path.isfile(varchivo_server):
+                            os.remove(varchivo_server)
+                vimg.save()
+                vcategory.image = vimg
 
                 vcategory.save()
 
@@ -145,6 +151,8 @@ class CategoryController(object):
             vlangmetadata = []
             pathfilesport = Setting.objects.get(code='image_repository_path_portrait')
             pathfilesland = Setting.objects.get(code='image_repository_path_landscape')
+            base_dir = Setting.objects.get(code='dam_base_dir')
+
             #vasset = Asset.objects.get(asset_id=asset_id)
             vcategory = Category.objects.get(category_id=category_id)
             vtypecategory = {"pornstar": "Pornstar", "playmate": "Playmate"}
@@ -194,7 +202,7 @@ class CategoryController(object):
             vcategory = Category()
             # Parsear JSON
             strjson = request.POST['varsToJSON']
-            decjson = json.loads(strjson)
+            decjson = json.loads(strjson.replace('\r','\\r').replace('\n','\\n'))
             print 'debug1'
             # Leer GIRL desde AssetID
             try:
@@ -217,22 +225,27 @@ class CategoryController(object):
             vimg.name = vcategory.category_id
             if (request.FILES.has_key('ThumbHor')):
                 if request.FILES['ThumbHor'].name != '':
+                    # TRATAMIENTO DE IMAGEN Landscape
                     vimg.landscape = request.FILES['ThumbHor']
                     extension = os.path.splitext(vimg.landscape.name)[1]
                     varchivo = pathfilesland.value + vimg.name + extension
                     vimg.landscape.name = varchivo
-                    if os.path.isfile(varchivo):
-                        os.remove(varchivo)
+                    varchivo_server = base_dir.value + varchivo
+                    if os.path.isfile(varchivo_server):
+                        os.remove(varchivo_server)
 
             # IMAGEN Landscape
             if (request.FILES.has_key('ThumbVer')):
                 if request.FILES['ThumbVer'].name != '':
+                    # Landscape
                     vimg.portrait = request.FILES['ThumbVer']
                     extension = os.path.splitext(vimg.portrait.name)[1]
                     varchivo = pathfilesport.value + vimg.name + extension
                     vimg.portrait.name = varchivo
-                    if os.path.isfile(varchivo):
-                        os.remove(varchivo)
+                    # si existe archivo, lo borra
+                    varchivo_server = base_dir.value + varchivo
+                    if os.path.isfile(varchivo_server):
+                        os.remove(varchivo_server)
 
             vimg.save()
             print 'debug2'
@@ -327,13 +340,13 @@ class CategoryController(object):
                 categories_sel = Category.objects.all().order_by('oringinal_name')
 
             if selectestado != '':
-                categories_list = CategoryMetadata.objects.filter(category__in=categories_sel, queue_status=selectestado).order_by('category_id')
+                categories_list = CategoryMetadata.objects.filter(category__in=categories_sel, queue_status=selectestado).order_by('-id')
             else:
-                categories_list = CategoryMetadata.objects.filter(category__in=categories_sel).order_by('category_id')
+                categories_list = CategoryMetadata.objects.filter(category__in=categories_sel).order_by('-id')
 
 
         if categories_list is None:
-            categories_list = CategoryMetadata.objects.all()
+            categories_list = CategoryMetadata.objects.all().order_by('-id')
 
         paginator = Paginator(categories_list, 20)  # Show 25 contacts per page
         try:
@@ -354,10 +367,20 @@ class CategoryController(object):
             return redirect(lc.login_view(request))
 
         try:
+            print 'debugmetadata'
+            # si es la ultima categoria metadata, se debe eliminar la metadata y la categoria
             categorymetadata = CategoryMetadata.objects.get(id=id)
+            c = categorymetadata.category
+            borrarcategory = False
+            if CategoryMetadata.objects.filter(category=c).count()==1:
+                borrarcategory = True
 
+            #print 'debug1metadata' + categorymetadata
             if not categorymetadata.activated:
                 categorymetadata.delete()
+                if borrarcategory==True:
+                    c.delete()
+
                 self.code_return = 0
                 request.session['list_category_message'] = 'Categoria Eliminada Correctamente '
                 request.session['list_category_flag'] = FLAG_SUCCESS
@@ -389,14 +412,15 @@ class CategoryController(object):
         except PublishZone.DoesNotExist as e:
             request.session['list_category_message'] = "PublishZone no Existe. (" + str(e.message) + ")"
             request.session['list_category_flag'] = FLAG_ALERT
-
+            self.code_return = -1
         except CategoryMetadata.DoesNotExist as e:
             request.session['list_category_message'] = "Metadata de Category no Existe. (" + str(e.message) + ")"
             request.session['list_category_flag'] = FLAG_ALERT
-
+            self.code_return = -1
         except ApiBackendException as e:
             request.session['list_category_message'] = "Error al despublicar (" + str(e.message) + ")"
             request.session['list_category_flag'] = FLAG_ALERT
+            self.code_return = -1
 
         return self.code_return
 

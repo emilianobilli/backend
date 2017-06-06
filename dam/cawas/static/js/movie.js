@@ -25,21 +25,6 @@ $('#search_category').multiselect({
 
 
  // rellena el formulario con los datos recogidos en la variable requestedData
-    function completarRuntime(){
-        $("#duration-minutes").val(minutos).change();
-        $("#duration-seconds").val(segundos).change();
-    }
-
-    function leerRuntime(){
-            var estreno = ($("#runtime").val());
-            var estrenoArr = estreno.split(":");
-            //minutos = String.format("%02d", estrenoArr[0]);
-            //segundos = String.format("%02d", estrenoArr[1]);
-            minutos = Number(estrenoArr[0]);
-            segundos = Number(estrenoArr[1]);
-    }
-
-
 
 
     $("#btnsearch").click(function(){
@@ -97,31 +82,15 @@ $('#search_category').multiselect({
     var $myVerifSelect = $("#canalSelect").select2();
 
     // activar timepicker
-    leerRuntime();
+    //leerRuntime();
 
 
 
 //$("#runtime").durationPicker();
 
+$('#runtime').mask('00:00:00',{placeholder: "HH:mm:ss"});
 
-    $("#runtime").durationPicker({
-      minutes: {
-        label: ":",
-        min: 0,
-        max: 120,
-        value:1
-      },
-      seconds: {
-        label: "",
-        min: 0,
-        max: 59,
-        value:20
-      },
-      classname: 'form-control',
-      responsive: true
-    });
-
-    completarRuntime();
+   // completarRuntime();
 
     // simular exit con el botón de salir
     $("#getOut").click(function(){
@@ -402,7 +371,7 @@ $('#search_category').multiselect({
 
          // chequea display runtime
 
-
+/*
         if(display_runtime=="" || display_runtime=="0:,0")
         {
             errorMe("#runtime");
@@ -416,7 +385,14 @@ $('#search_category').multiselect({
             display_runtimeJSON=myDirtyRuntime[0]+myDirtyRuntime[1];
             okMe("#runtime");
         }
+*/
 
+        if(display_runtime==""||display_runtime.length < 8)
+        {
+            errorMe("#runtime");
+            $(".durationpicker-container").css("border","1px #a94442 solid");
+            checkVal++;
+        }
 
         
         // chequeo de idiomas (tit_; desc_; date_)
@@ -593,7 +569,7 @@ $('#search_category').multiselect({
                        }else{
                         myJSON+='"directors":"'+director_selected+'",';
                     }
-                    myJSON+='"display_runtime": "'+display_runtimeJSON+'",';
+                    myJSON+='"display_runtime": "'+display_runtime+'",';
                     myJSON+='"categories":'+myCategories+',';
                     myJSON+='"Moviesmetadata": [';
                     myJSON+= addMovieMetadata(langDesc);
