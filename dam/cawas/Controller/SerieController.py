@@ -166,7 +166,6 @@ class SerieController(object):
             request.session['list_episode_flag'] = FLAG_ALERT
             return self.code_return
 
-
         context = {'message': message, 'flag':flag, 'vgirls': vgirls, 'vlanguages': vlanguages, 'vcategories': vcategories,
                    'vchannels': vchannels, 'vseries': vseries, 'flag':flag}
         return render(request, 'cawas/series/add.html', context)

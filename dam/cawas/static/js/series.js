@@ -181,14 +181,6 @@ $('#search_category').multiselect({
       }
     });
     
-    
-    /*---- DATE PICKER 
-    $('.datePick').dcalendarpicker({
-     // default: mm/dd/yyyy
-
-      format: 'dd-mm-yyyy'
-
-    });----*/
 
     
     
@@ -200,14 +192,14 @@ $('#search_category').multiselect({
         if (self.is(":checked")) {
             console.log("checkbox  id =" + self.attr("id") + "is checked ");
             $(showDiv).show('slow');
-            langQ++;
-            langDesc.push(self.attr("id"));
+            //langQ++;
+            //langDesc.push(self.attr("id"));
             
         } else {
             console.log("Id = " + self.attr("id") + "is Unchecked ");
             $(showDiv).hide('fast');
-            langQ--;
-            langDesc.pop();
+            //langQ--;
+            //langDesc.pop();
         }
         console.log("idiomas tildados:"+langQ+", y son:"+langDesc);// cantidad de idiomas
         if(checkedOnce>0){
