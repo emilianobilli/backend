@@ -538,7 +538,7 @@ def validate_jwt(token):
             valid,ttl     = authorization.check_api_key_nohttp(majwt['akey'])
             if valid:
                 majwt['ttl']  = ttl
-                ret[body]     = majwt
+                ret['body']     = majwt
             else:
                 ret['status'] = 401
                 ret['body']   = {'status': 'failed', 'message': 'expired'}
