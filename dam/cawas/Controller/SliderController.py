@@ -123,10 +123,10 @@ class SliderController(object):
                     request.session['list_slider_flag'] = FLAG_SUCCESS
 
             except Exception as e:
-                request.session['list_slider_message'] = "Error al Guardar Slider. (" + e.message + " )"
-                request.session['list_slider_flag'] = FLAG_ALERT
-                self.code_return = -1
-                return self.code_return
+                request.session['list_slider_message'] = "Error al Guardar Slider. (" + str(e) + " )"
+            #    request.session['list_slider_flag'] = FLAG_ALERT
+            #    self.code_return = -1
+            #    return self.code_return
 
 
 
