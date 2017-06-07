@@ -18,6 +18,7 @@ class SliderController(object):
 
             # VARIABLES LOCALES
         message = ''
+        varchivo=''
         vflag = ""
         vschedule_date = ''
         vasset = Asset()
@@ -122,7 +123,7 @@ class SliderController(object):
                     request.session['list_slider_flag'] = FLAG_SUCCESS
 
             except Exception as e:
-                request.session['list_slider_message'] = "Error al Guardar Slider. (" + e.message + " - " + varchivo +  " )"
+                request.session['list_slider_message'] = "Error al Guardar Slider. (" + e.message + " )"
                 request.session['list_slider_flag'] = FLAG_ALERT
                 self.code_return = -1
                 return self.code_return
@@ -151,6 +152,7 @@ class SliderController(object):
             # VARIABLES LOCALES
         vflag = ''
         message=''
+        varchivo =''
         vschedule_date = ''
         vasset = Asset()
         vslider = Slider()
