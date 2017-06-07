@@ -128,9 +128,6 @@ class SliderController(object):
                 self.code_return = -1
                 return self.code_return
 
-
-
-
         vassets = Asset.objects.all()
         vsliders = Slider.objects.all()
         vlanguages = Language.objects.all()

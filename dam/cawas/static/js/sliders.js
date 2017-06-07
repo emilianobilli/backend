@@ -400,7 +400,7 @@ $( document ).ready(function() {
                     myJSON+='"asset_id":"'+asset_Id+'",';
                     //myJSON+='"text":"'+text+'",';
                     if (text=='' ){
-                        myJSON+='"text":null,';
+                        myJSON+='"text":"",';
                        }else{
                         myJSON+='"text":"'+text+'",';
                     }
