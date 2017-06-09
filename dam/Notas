@@ -349,3 +349,10 @@ class ApiBackendResource(object):
 
     def delete(self,  item, api_key):
         return self.server.delete(self.url, {"action":"del", "item":item}, api_key)
+
+
+
+
+---------------------------------------------------------------------------------------
+012769
+
