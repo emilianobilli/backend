@@ -71,8 +71,9 @@ class Components(object):
     def __query(self, where, q, qfilter=None):
         try:
             ret    = where.query(q)
-            for qf in qfilter:
-              ret  = self.__post_filter(ret, qf)
+            if qfilter is not None:
+                for qf in qfilter:
+                    ret  = self.__post_filter(ret, qf)
             ret    = self.__add_cdn_images(ret, None)
             status = 200
         except CollectionException as e:
