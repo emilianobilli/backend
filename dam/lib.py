@@ -1089,29 +1089,14 @@ def enqueue_category(category, pzone, language=''):
         enqueue_item(category.category_id, lang, 'CA', publish_zone)
 
 
-def enqueue_slider(slider, pzone, language=''):
+def enqueue_slider(slider, pzone):
     try:
         publish_zone = PublishZone.objects.get(name=pzone)
     except ObjectDoesNotExist:
         msg = "Publish Zone %s does not exist" % pzone
         raise EnqueuerException(msg)
 
-    if language == '':
-        metadata_list = SliderMetadata.objects.filter(slider=slider)
-        for metadata in metadata_list:
-            enqueue_item(slider.slider_id, metadata.language, 'SL', publish_zone)
-    else:
-        # Verifico que el lenguage exista
-        try:
-            lang = __get_language(language)
-        except ImporterException as e:
-            raise EnqueuerException(e.value)
-        try:
-            SliderMetadata.objects.get(slider=slider, language=lang)
-        except ObjectDoesNotExist:
-            msg = "Metadata in %s does not exist for slider ID %s" % (language, slider.slider_id)
-            raise EnqueuerException(msg)
-        enqueue_item(slider.slider_id, lang, 'SL', publish_zone)
+    enqueue_item(slider.slider_id, slider.language, 'SL', publish_zone)
 
 
 def enqueue_asset(asset, pzone, language=''):

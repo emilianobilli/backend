@@ -14,6 +14,11 @@ class LanguageAdmin(admin.ModelAdmin):
     list_display = ['name', 'code']
 
 
+@admin.register(models.Country)
+class CountryAdmin(admin.ModelAdmin):
+    list_display = ['name', 'code']
+
+
 @admin.register(models.PublishQueue)
 class PublishQueueAdmin(admin.ModelAdmin):
     list_display = ['item_id', 'item_type', 'status', 'schedule_date', 'message']

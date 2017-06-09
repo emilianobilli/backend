@@ -251,6 +251,12 @@ class Asset(models.Model):
     def toDict(self):
         dict = {}
 
+        tc_list = []
+        for tc in self.target_country.all():
+            tc_list.append(tc.code)
+        if len(tc_list) > 0:
+            dict["target_country"] = tc_list
+
         dict["asset_id"]     = self.asset_id
         if self.asset_type == 'girl':
             dict["asset_type"] = 'girl'
@@ -295,6 +301,12 @@ class Slider(models.Model):
 
     def toDict(self):
         dict = {}
+
+        tc_list = []
+        for tc in self.target_country.all():
+            tc_list.append(tc.code)
+        if len(tc_list) > 0:
+            dict["target_country"] = tc_list
 
         dict["slider_id"]  = self.slider_id
         dict["media_type"] = self.media_type
@@ -721,6 +733,12 @@ class Block(models.Model):
 
     def toDict(self):
         dict = {}
+
+        tc_list = []
+        for tc in self.target_country.all():
+            tc_list.append(tc.code)
+        if len(tc_list) > 0:
+            dict["target_country"] = tc_list
 
         dict["block_id"]      = self.block_id
         dict["block_name"]    = self.name
