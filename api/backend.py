@@ -880,6 +880,8 @@ class Backend(object):
                 ret['count'] = ret['count'] + 1
                 ret['total'] = ret['total'] + 1
                 i = i - 1
+        else:
+            return Items
         return ret
 
     def suggest(self, args):
@@ -905,10 +907,16 @@ class Backend(object):
                         if ret['item'] != {}:
                             show = ret['item']
                             if 'img' in args:
-                                qret  = self.query_show({'lang':lang,'channel': show['channel'], 'img': args['img'], 'size':1000})
+                                if 'target_country' in args:
+                                    qret  = self.query_show({'lang':lang,'channel': show['channel'],'target_country':args['target_country'] ,'img': args['img'], 'size':1000})
+                                else:
+                                    qret  = self.query_show({'lang':lang,'channel': show['channel'], 'img': args['img'], 'size':1000})
                             else:
-                                qret  = self.query_show({'lang':lang,'channel': show['channel'], 'size': 1000})
-                    
+                                if 'target_country' in args:
+                                    qret  = self.query_show({'lang':lang,'channel': show['channel'],'target_country':args['target_country'] ,'size': 1000})
+                                else:
+                                    qret  = self.query_show({'lang':lang,'channel': show['channel'], 'size': 1000})
+
                     status = 200
                     ret = self.__commit_suggest(qret)
                 else:
