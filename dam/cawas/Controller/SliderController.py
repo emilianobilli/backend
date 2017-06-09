@@ -18,6 +18,7 @@ class SliderController(object):
 
             # VARIABLES LOCALES
         message = ''
+        varchivo=''
         vflag = ""
         vschedule_date = ''
         vasset = Asset()
@@ -91,44 +92,15 @@ class SliderController(object):
                     ph = PublishHelper()
                     ph.func_publish_queue(request, vslider.slider_id, vslider.language, 'SL', 'Q', vslider.publish_date)
                     ph.func_publish_image(request, vslider.image)
-
-                    if vslider.asset is not None:
-                        ph.func_publish_queue(request, vslider.asset.asset_id, vslider.language, 'SL', 'Q', vslider.publish_date)
-
-                    #consultar tipo de asset
-                    # Buscar en Movie, Girl, Category
-                    if (Asset.objects.filter(asset_id=vslider.asset.asset_id).count() > 0):
-                        asset = Asset.objects.get(asset_id=vslider.asset.asset_id)
-                        #imagenes_encoladas = ImageQueue.objects.filter(status='Q', item)
-                        if asset.asset_type == 'movie':
-                            contenido = Movie.objects.get(asset=asset)
-
-                            ph.func_publish_image(request, contenido.image)
-
-                        if asset.asset_type == 'episode':
-                            contenido = Episode.objects.get(asset=asset)
-                            ph.func_publish_image(request, contenido.image)
-
-                        if asset.asset_type == 'girl':
-                            contenido = Girl.objects.get(asset=asset)
-                            ph.func_publish_image(request, contenido.image)
-
-                        if asset.asset_type == 'serie':
-                            contenido = Serie.objects.get(asset=asset)
-                            ph.func_publish_image(request, contenido.image)
-
                     vflag = "success"
                     request.session['list_slider_message'] = 'Guardado Correctamente en Cola de Publicacion'
                     request.session['list_slider_flag'] = FLAG_SUCCESS
 
             except Exception as e:
-                request.session['list_slider_message'] = "Error al Guardar Slider. (" + e.message + " - " + varchivo +  " )"
+                request.session['list_slider_message'] = "Error al Guardar Slider. (" + str(e) + " )"
                 request.session['list_slider_flag'] = FLAG_ALERT
                 self.code_return = -1
                 return self.code_return
-
-
-
 
         vassets = Asset.objects.all()
         vsliders = Slider.objects.all()
@@ -151,6 +123,7 @@ class SliderController(object):
             # VARIABLES LOCALES
         vflag = ''
         message=''
+        varchivo =''
         vschedule_date = ''
         vasset = Asset()
         vslider = Slider()
