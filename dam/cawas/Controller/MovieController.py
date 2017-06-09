@@ -1,7 +1,7 @@
 import os, datetime, json
 from LogController import LogController
 from django.shortcuts import render,redirect
-from ..models import Asset, Setting, Movie, MovieMetadata, MovieMetadata, Category, Language, Image, Girl, PublishZone, Channel, PublishQueue, ImageQueue
+from ..models import Asset, Setting, Country, Movie, MovieMetadata, MovieMetadata, Category, Language, Image, Girl, PublishZone, Channel, PublishQueue, ImageQueue
 from ..Helpers.PublishHelper import PublishHelper
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from ..Helpers.GlobalValues import *
@@ -141,9 +141,22 @@ class MovieController(object):
                     request.session['list_movie_flag'] = FLAG_ALERT
                     self.code_return = -1
 
+
             # ACTUALIZAR EL ASSET A MOVIE
             vasset.asset_type = "movie"
             vasset.save()
+
+            # CARGAR Countries al Asset de la Movie
+            if (decjson['Movie']['countries'] is not None):
+                countries = decjson['Movie']['countries']
+                for item in countries:
+                    try:
+                        country = Country.objects.get(id=item['country_id'])
+                        mv.asset.target_country.add(country)
+                    except Country.DoesNotExist as e:
+                        request.session['list_movie_message'] = "Error: No Existe Pais (" + str(e.message) + ")"
+                        request.session['list_movie_flag'] = FLAG_ALERT
+                        self.code_return = -1
 
             # GUARDAR METADATA
 
@@ -222,10 +235,14 @@ class MovieController(object):
         channels = Channel.objects.all().order_by('name')
         girls = Girl.objects.all().order_by('name')
         categories = Category.objects.all().order_by('original_name')
+        countries = Country.objects.all().order_by('name')
+
         vlanguages = Language.objects.all()
         title = 'Nueva Movie'
-        context = {'title': title, 'assets': assets, 'channels': channels, 'girls': girls, 'categories': categories,
-                   'movies': vmovies, 'vlanguages': vlanguages, 'flag': vflag, 'message': message}
+        context = {'title': title, 'assets': assets, 'channels': channels,
+                   'girls': girls, 'categories': categories, 'movies': vmovies,
+                   'vlanguages': vlanguages, 'flag': vflag, 'message': message,
+                   'countries':countries}
         return render(request, 'cawas/movies/add.html', context)
 
 
@@ -327,14 +344,7 @@ class MovieController(object):
             if (decjson['Movie']['directors'] is not None):
                 mv.directors = decjson['Movie']['directors']
 
-            #runtime = decjson['Movie']['display_runtime'].strip()
-            #hora = runtime.rindex
-            #if runtime < 10:
-            #    runtime = '0'+ runtime
-
             mv.display_runtime = decjson['Movie']['display_runtime']
-            # calcular runtime
-            # mv.runtime
 
             # CARGAR GIRLS
             mv.girls = []
@@ -351,6 +361,7 @@ class MovieController(object):
                         self.code_return = -1
                 mv.save()
             print 'debug1'
+
             # CARGAR CATEGORIES
             vcategories = decjson['Movie']['categories']
             mv.category = []
@@ -363,7 +374,23 @@ class MovieController(object):
                     request.session['list_movie_message'] = "Error: No existe Categoria (" + str(e.message) + ")"
                     request.session['list_movie_flag'] = FLAG_ALERT
                     self.code_return = -1
+
+
+            # CARGAR Countries al Asset de la Movie
+            if (decjson['Movie']['countries'] is not None):
+                countries = decjson['Movie']['countries']
+                for item in countries:
+                    try:
+                        country = Country.objects.get(id=item['country_id'])
+                        mv.asset.target_country.add(country)
+                    except Country.DoesNotExist as e:
+                        request.session['list_movie_message'] = "Error: No Existe Pais (" + str(e.message) + ")"
+                        request.session['list_movie_flag'] = FLAG_ALERT
+                        self.code_return = -1
+
             mv.save()
+
+
             # ACTUALIZAR EL ASSET A MOVIE
             # CARGAR METADATA
             vmoviesmetadata = decjson['Movie']['Moviesmetadata']
@@ -449,6 +476,10 @@ class MovieController(object):
             vcategorynotselected = Category.objects.exclude(id__in=vcategoryselected).order_by('original_name')
             languages = Language.objects.all()
 
+            countries_selected = vmovie.asset.target_country.all().order_by('name')
+            countries_notselected = Country.objects.exclude(id__in=countries_selected).order_by('name')
+
+
             # nuevo diccionario para completar lenguages y metadata
             for itemlang in languages:
                 vmoviemetadata = None
@@ -488,14 +519,14 @@ class MovieController(object):
         girls = Girl.objects.all().order_by('name')
         categories = Category.objects.all().order_by('original_name')
         languages = Language.objects.all()
-
         title = 'Editar Movie'
 
         context = {'title': title, 'assets': assets, 'channels': channels, 'girls': girls, 'categories': categories,
                    'vmovie': vmovie, 'vgirlselected': vgirlselected, 'vgirlnotselected': vgirlnotselected,
                    'vcategoryselected': vcategoryselected, 'vcategorynotselected': vcategorynotselected,
                    'languages': languages, 'vmoviemetadata': vmoviemetadata, 'vlangmetadata': vlangmetadata,
-                   'asset_id': asset_id, 'imgland': imgland, 'imgport': imgport,'flag':flag,'message':message}
+                   'asset_id': asset_id, 'imgland': imgland, 'imgport': imgport,'flag':flag,'message':message,
+                   'countries_selected':countries_selected, 'countries_notselected':countries_notselected}
 
         return render(request, 'cawas/movies/edit.html', context)
 

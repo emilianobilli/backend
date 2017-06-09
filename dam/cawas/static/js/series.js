@@ -25,6 +25,17 @@ $('#search_category').multiselect({
     });
 
 
+    $('#search_paises').multiselect({
+        search: {
+            left: '<input type="text" name="q" class="form-control" placeholder="Buscar..." />',
+            right: '<input type="text" name="q" class="form-control" placeholder="Buscar..." />',
+        },
+        fireSearch: function(value) {
+            return value.length > 1;
+        }
+    });
+
+
     if(resultado=="success"){
         $("#myModal-OK").modal();
     }
@@ -109,78 +120,6 @@ $('#search_category').multiselect({
     // drag and drop controles para las listas
     var adjustment;
 
-    $("ul.pornstarPick").sortable({
-      group: 'pornstarPick',
-      pullPlaceholder: false,
-      // animation on drop
-      onDrop: function  ($item, container, _super) {
-        var $clonedItem = $('<li/>').css({height: 0});
-        $item.before($clonedItem);
-        $clonedItem.animate({'height': $item.height()});
-
-        $item.animate($clonedItem.position(), function  () {
-          $clonedItem.detach();
-          _super($item, container);
-        });
-      },
-
-      // set $item relative to cursor position
-      onDragStart: function ($item, container, _super) {
-        var offset = $item.offset(),
-            pointer = container.rootGroup.pointer;
-
-        adjustment = {
-          left: pointer.left - offset.left,
-          top: pointer.top - offset.top
-        };
-
-        _super($item, container);
-      },
-      onDrag: function ($item, position) {
-        $item.css({
-          left: position.left - adjustment.left,
-          top: position.top - adjustment.top
-        });
-      }
-    });
-    
-    
-    /**/
-    $("ul.generoPick").sortable({
-      group: 'generoPick',
-      pullPlaceholder: false,
-      // animation on drop
-      onDrop: function  ($item, container, _super) {
-        var $clonedItem = $('<li/>').css({height: 0});
-        $item.before($clonedItem);
-        $clonedItem.animate({'height': $item.height()});
-
-        $item.animate($clonedItem.position(), function  () {
-          $clonedItem.detach();
-          _super($item, container);
-        });
-      },
-
-      // set $item relative to cursor position
-      onDragStart: function ($item, container, _super) {
-        var offset = $item.offset(),
-            pointer = container.rootGroup.pointer;
-
-        adjustment = {
-          left: pointer.left - offset.left,
-          top: pointer.top - offset.top
-        };
-
-        _super($item, container);
-      },
-      onDrag: function ($item, position) {
-        $item.css({
-          left: position.left - adjustment.left,
-          top: position.top - adjustment.top
-        });
-      }
-    });
-    
 
     
     
@@ -276,6 +215,7 @@ $('#search_category').multiselect({
         var canal_selected = $('#canalSelect option:selected');
         var pornstars_selected = [];
         var categories_selected = [];
+        var paises_selected = [];
         var director_selected = $('#director').val();
         var elenco_selected = $('#elenco').val();
         var year_selected = $('#releaseYear').val();
@@ -342,6 +282,19 @@ $('#search_category').multiselect({
             console.log("search_girls_to_selected:"+categories_selected);
         }
 
+        //search_to_paises - No es obligatorio
+        if ( $('#search_paises_to option').length > 0 )
+        {
+            okMe("#search_paises_to");
+            paises_selected = [];
+            $('#search_paises_to option').each(function(){
+               var asset_id_aux = $(this).attr("value"); //val();
+               if (asset_id_aux != null){
+                   paises_selected.push(asset_id_aux);
+               }
+            })
+            console.log("search_paises_to_selected:"+paises_selected);
+        }
 
         // chequea canal
         console.log("#canalSelect"+$('#canalSelect').val());
@@ -500,6 +453,8 @@ $('#search_category').multiselect({
                 if(checkVal==0){
                     var myGirls=explodeArray(pornstars_selected,"girl_id");
                     var myCategories=explodeArray(categories_selected,"category_id");
+                    var myCountries=explodeArray(paises_selected,"country_id");
+
                     var myJSON = '';
                     myJSON+='{"Serie":{';
                     myJSON+='"asset_id":"'+asset_Id+'",';
@@ -507,21 +462,13 @@ $('#search_category').multiselect({
                     myJSON+='"channel_id":"'+canal_selected+'",';
                     myJSON+='"year":'+year_selected+',';
 
-                    if (elenco_selected==''){
-                        myJSON+='"cast":null,';
-                    }else{
-                        myJSON+='"cast":"'+elenco_selected+'",';
-                    }
-                    if (director_selected==''){
-                        myJSON+='"directors":null,';
-                       }else{
-                        myJSON+='"directors":"'+director_selected+'",';
-                    }
-                    if (myGirls=="[]"){
-                        myJSON+='"girls":null,';
-                    }else{
-                        myJSON+='"girls":'+myGirls+',';
-                    }
+                    if (elenco_selected==''){myJSON+='"cast":null,';}else{myJSON+='"cast":"'+elenco_selected+'",';}
+
+                    if (director_selected==''){myJSON+='"directors":null,';}else{myJSON+='"directors":"'+director_selected+'",';}
+
+                    if (myGirls=="[]"){myJSON+='"girls":null,';}else{myJSON+='"girls":'+myGirls+',';}
+
+                    if (myCountries=="[]"){myJSON+='"countries":null,'; }else{myJSON+='"countries":'+myCountries+',';}
 
                     myJSON+='"categories":'+myCategories+',';
                     myJSON+='"publicar":"'+publicar+'",';

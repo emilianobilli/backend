@@ -1,7 +1,7 @@
 import os, datetime, json
 from LogController import LogController
 from django.shortcuts import render,redirect
-from ..models import Asset, Setting, Girl, Block, Category, Language, Image,PublishZone,PublishQueue, Channel, Device, Serie, Movie, Episode, EpisodeMetadata
+from ..models import Asset, Setting, Girl, Country, Block, Category, Language, Image,PublishZone,PublishQueue, Channel, Device, Serie, Movie, Episode, EpisodeMetadata
 from ..Helpers.PublishHelper import PublishHelper
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from ..Helpers.GlobalValues import *
@@ -166,6 +166,7 @@ class EpisodeController(object):
                     return self.code_return
             vepisode.save()
 
+
             #SI hay items en estado Queued
             ph = PublishHelper()
             vepisodemetadata = decjson['Episode']['Episodemetadatas']
@@ -244,10 +245,11 @@ class EpisodeController(object):
         vmovies = Movie.objects.all()
         vcapitulos = Episode.objects.all()
         vassets = Asset.objects.filter(asset_type="unknown")
+        countries = Country.objects.all().order_by('name')
 
         context = {'message': message, 'vcategories': vcategories, 'vchannels': vchannels, 'vgirls': vgirls,
                    'vlanguages': vlanguages, 'vseries': vseries, 'vmovies': vmovies, 'vcapitulos': vcapitulos,
-                   'vassets': vassets}
+                   'vassets': vassets,'countries':countries}
 
         return render(request, 'cawas/episodes/add.html', context)
 
@@ -397,7 +399,22 @@ class EpisodeController(object):
                     request.session['list_episode_flag'] = FLAG_ALERT
                     self.code_return = -1
                     return self.code_return
+
+            # CARGAR Countries al Asset del Episode
+            if (decjson['Episode']['countries'] is not None):
+                countries = decjson['Episode']['countries']
+                for item in countries:
+                    try:
+                        country = Country.objects.get(id=item['country_id'])
+                        vepisode.asset.target_country.add(country)
+                    except Country.DoesNotExist as e:
+                        request.session['list_episode_message'] = "Error: No Existe Pais (" + str(e.message) + ")"
+                        request.session['list_episode_flag'] = FLAG_ALERT
+                        self.code_return = -1
+
             vepisode.save()
+
+
 
 
             #Eliminar cola de publicacion para el item en estado Queued
@@ -467,6 +484,9 @@ class EpisodeController(object):
             vcategorynotselected = Category.objects.exclude(id__in=vcategoryselected)
             vseries = Serie.objects.all()
 
+            countries_selected = vepisode.asset.target_country.all().order_by('name')
+            countries_notselected = Country.objects.exclude(id__in=countries_selected).order_by('name')
+
             # nuevo diccionario para completar lenguages y metadata
             vlangmetadata = []
             for itemlang in vlanguages:
@@ -490,7 +510,8 @@ class EpisodeController(object):
                    'vgirlselected': vgirlselected,
                    'imgland': imgland, 'imgport': imgport, 'vepisode': vepisode,
                    'vcategorynotselected': vcategorynotselected, 'vcategoryselected': vcategoryselected,
-                   'vchannels': vchannels, 'vlangmetadata': vlangmetadata, 'vseries': vseries
+                   'vchannels': vchannels, 'vlangmetadata': vlangmetadata, 'vseries': vseries,
+                   'countries_selected':countries_selected, 'countries_notselected':countries_notselected
                    }
 
         return render(request, 'cawas/episodes/edit.html', context)

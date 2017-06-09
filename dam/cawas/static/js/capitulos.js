@@ -17,6 +17,7 @@ $( document ).ready(function() {
     });
 
 
+
 $('#search_category').multiselect({
         search: {
             left: '<input type="text" name="q" class="form-control" placeholder="Buscar..." />',
@@ -152,86 +153,7 @@ $('#search_category').multiselect({
     // drag and drop controles para las listas
     var adjustment;
 
-    $("ul.pornstarPick").sortable({
-      group: 'pornstarPick',
-      pullPlaceholder: false,
-      // animation on drop
-      onDrop: function  ($item, container, _super) {
-        var $clonedItem = $('<li/>').css({height: 0});
-        $item.before($clonedItem);
-        $clonedItem.animate({'height': $item.height()});
 
-        $item.animate($clonedItem.position(), function  () {
-          $clonedItem.detach();
-          _super($item, container);
-        });
-      },
-
-      // set $item relative to cursor position
-      onDragStart: function ($item, container, _super) {
-        var offset = $item.offset(),
-            pointer = container.rootGroup.pointer;
-
-        adjustment = {
-          left: pointer.left - offset.left,
-          top: pointer.top - offset.top
-        };
-
-        _super($item, container);
-      },
-      onDrag: function ($item, position) {
-        $item.css({
-          left: position.left - adjustment.left,
-          top: position.top - adjustment.top
-        });
-      }
-    });
-    
-    
-    /**/
-    $("ul.generoPick").sortable({
-      group: 'generoPick',
-      pullPlaceholder: false,
-      // animation on drop
-      onDrop: function  ($item, container, _super) {
-        var $clonedItem = $('<li/>').css({height: 0});
-        $item.before($clonedItem);
-        $clonedItem.animate({'height': $item.height()});
-
-        $item.animate($clonedItem.position(), function  () {
-          $clonedItem.detach();
-          _super($item, container);
-        });
-      },
-
-      // set $item relative to cursor position
-      onDragStart: function ($item, container, _super) {
-        var offset = $item.offset(),
-            pointer = container.rootGroup.pointer;
-
-        adjustment = {
-          left: pointer.left - offset.left,
-          top: pointer.top - offset.top
-        };
-
-        _super($item, container);
-      },
-      onDrag: function ($item, position) {
-        $item.css({
-          left: position.left - adjustment.left,
-          top: position.top - adjustment.top
-        });
-      }
-    });
-    
-    
-    /*---- DATE PICKER 
-    $('.datePick').dcalendarpicker({
-     // default: mm/dd/yyyy
-
-      format: 'dd-mm-yyyy'
-
-    });----*/
 
     
     
@@ -243,14 +165,14 @@ $('#search_category').multiselect({
         if (self.is(":checked")) {
             console.log("checkbox  id =" + self.attr("id") + "is checked ");
             $(showDiv).show('slow');
-            langQ++;
-            langDesc.push(self.attr("id"));
+//            langQ++;
+//            langDesc.push(self.attr("id"));
             
         } else {
             console.log("Id = " + self.attr("id") + "is Unchecked ");
             $(showDiv).hide('fast');
-            langQ--;
-            langDesc.pop();
+ //           langQ--;
+ //           langDesc.pop();
         }
         console.log("idiomas tildados:"+langQ+", y son:"+langDesc);// cantidad de idiomas
         if(checkedOnce>0){
@@ -463,6 +385,9 @@ $('#search_category').multiselect({
             })
             console.log("search_girls_to_selected:"+categories_selected);
         }
+
+
+
 
 
 
@@ -695,17 +620,10 @@ $('#search_category').multiselect({
                         myJSON+='"year":"'+year_selected+'",';
                     }
 
-                    if (elenco_selected==''){
-                        myJSON+='"cast":null,';
-                    }else{
-                        myJSON+='"cast":"'+elenco_selected+'",';
-                    }
+                    if (elenco_selected==''){myJSON+='"cast":null,';}else{myJSON+='"cast":"'+elenco_selected+'",';}
 
-                    if (director_selected==''){
-                        myJSON+='"directors":null,';
-                       }else{
-                        myJSON+='"directors":"'+director_selected+'",';
-                    }
+                    if (director_selected==''){myJSON+='"directors":null,';}else{myJSON+='"directors":"'+director_selected+'",';}
+
 
                     myJSON+='"display_runtime": "'+display_runtime+'",';
                     myJSON+='"serie_id": "'+serie_selected+'",';   
