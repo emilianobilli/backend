@@ -221,6 +221,7 @@ class Asset(models.Model):
         ("unknown", "Unknown")
     )
 
+
     asset_id          = models.CharField(max_length=8, unique=True, help_text="ID del Asset")
     asset_type        = models.CharField(max_length=10, choices=TYPE, blank=True, null=True, help_text="Tipo de Asset")
     creation_date     = models.DateTimeField(auto_now=False, auto_now_add=True)

@@ -71,7 +71,8 @@ class Components(object):
     def __query(self, where, q, qfilter=None):
         try:
             ret    = where.query(q)
-            ret    = self.__post_filter(ret, qfilter)
+            for qf in qfilter:
+              ret  = self.__post_filter(ret, qf)
             ret    = self.__add_cdn_images(ret, None)
             status = 200
         except CollectionException as e:
@@ -154,6 +155,10 @@ class Components(object):
         value = qfilter[key]
         for item in response['items']:
             if key in item:
+                if type(item[key]).__name__ == 'list':
+                    if value in item[key]:
+                        ret['items'].append(item)
+                        n = n + 1
                 if item[key] == value:
                     ret['items'].append(item)
                     n = n + 1
@@ -194,20 +199,29 @@ class Components(object):
         Query Methods for Slider, Block and Category
     '''
     def query_blocks(self, arg):
+        qfilter = []
         if 'target' in arg:
-            qfilter = {}
-            qfilter['target'] = arg['target']
-            return self.__query(self.blocks, arg, qfilter)
-        else:
+            qfilter.append({'target': arg['target']})
+        if 'target_country' in arg:
+            qfilter.append({'target_country': arg['target_country']})
+
+        if qfilter is []:
             return self.__query(self.blocks,arg)
+        else:
+            return self.__query(self.blocks,arg, qfilter)
 
     def query_sliders(self, arg):
+
+        qfilter = []
         if 'target' in arg:
-            qfilter = {}
-            qfilter['target'] = arg['target']
-            return self.__query(self.sliders,arg, qfilter)
-        else:
+            qfilter.append({'target': arg['target']})
+        if 'target_country' in arg:
+            qfilter.append({'target_country': arg['target_country']})
+
+        if qfilter is []:
             return self.__query(self.sliders,arg)
+        else:
+            return self.__query(self.sliders,arg, qfilter)
 
     def query_categories(self, arg):
         return self.__query(self.categories,arg)
@@ -610,6 +624,7 @@ class Backend(object):
 
         lang = args['lang']
         q    = args['q']
+    
         if 'start' in args:
             start = args['start']
         else:
@@ -913,14 +928,14 @@ class Backend(object):
     def query_show(self, args):
         exclude = {'show_type' :'episode'}
         fq      = {'asset_type':'show'}
-        qArgs   = ['ranking', 'views', 'show_type', 'channel', 'girls_id', 'year', 'categories']
+        qArgs   = ['ranking', 'views', 'show_type', 'channel', 'girls_id', 'year', 'categories', 'target_country']
 
         return self._cs_query(args,qArgs,fq,exclude)
 
 
     def query_girl(self, args):
         fq      = {'asset_type':'girl'}
-        qArgs   = ['class', 'ranking', 'views']
+        qArgs   = ['class', 'ranking', 'views', 'target_country']
         exclude = None
 
         return self._cs_query(args,qArgs,fq,exclude)
