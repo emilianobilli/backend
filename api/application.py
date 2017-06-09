@@ -546,7 +546,7 @@ def validate_jwt(token):
                 ret['status'] = 401
                 ret['body']   = {'status': 'failed', 'message': 'expired'}
         else:
-            ret[body] = majwt
+            ret['body'] = majwt
     except Exception as e:
         ret['status'] = 401
         ret['body']   = {'status': 'failed', 'message': str(e)}
