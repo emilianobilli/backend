@@ -880,6 +880,8 @@ class Backend(object):
                 ret['count'] = ret['count'] + 1
                 ret['total'] = ret['total'] + 1
                 i = i - 1
+        else:
+            return Items
         return ret
 
     def suggest(self, args):
