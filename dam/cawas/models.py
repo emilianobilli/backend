@@ -253,7 +253,7 @@ class Asset(models.Model):
 
         tc_list = []
         for tc in self.target_country.all():
-            tc_list.append(tc.name)
+            tc_list.append(tc.code)
         if len(tc_list) > 0:
             dict["target_country"] = tc_list
 
@@ -304,7 +304,7 @@ class Slider(models.Model):
 
         tc_list = []
         for tc in self.target_country.all():
-            tc_list.append(tc.name)
+            tc_list.append(tc.code)
         if len(tc_list) > 0:
             dict["target_country"] = tc_list
 
@@ -736,7 +736,7 @@ class Block(models.Model):
 
         tc_list = []
         for tc in self.target_country.all():
-            tc_list.append(tc.name)
+            tc_list.append(tc.code)
         if len(tc_list) > 0:
             dict["target_country"] = tc_list
 
