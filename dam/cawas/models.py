@@ -50,6 +50,14 @@ class Language(models.Model):
         return self.name
 
 
+class Country(models.Model):
+    name = models.CharField(max_length=20, help_text="Country name")
+    code = models.CharField(max_length=2, help_text="Country code")
+
+    def __unicode__(self):
+        return self.name
+
+
 class PublishQueue(models.Model):
     STATUS = (
         ('Q', 'Queued'),
@@ -216,6 +224,7 @@ class Asset(models.Model):
     asset_id          = models.CharField(max_length=8, unique=True, help_text="ID del Asset")
     asset_type        = models.CharField(max_length=10, choices=TYPE, blank=True, null=True, help_text="Tipo de Asset")
     creation_date     = models.DateTimeField(auto_now=False, auto_now_add=True)
+    target_country    = models.ManyToManyField(Country, blank=True)
 
     def save(self, *args, **kwargs):
         super(Asset, self).save(*args, **kwargs)
@@ -261,6 +270,7 @@ class Slider(models.Model):
     asset             = models.ForeignKey(Asset, blank=True, null=True)
     target_device     = models.ForeignKey(Device)
     language          = models.ForeignKey(Language)
+    target_country    = models.ManyToManyField(Country, blank=True)
     text              = models.CharField(max_length=256, blank=True, help_text="Texto asociado al Slider")
     publish_date      = models.DateTimeField(auto_now=False, auto_now_add=False, blank=True, null=True)
     publish_status    = models.BooleanField(default=False)
@@ -685,6 +695,7 @@ class Block(models.Model):
     channel           = models.ForeignKey(Channel, blank=True, null=True)
     assets            = models.ManyToManyField(Asset, blank=True)
     target_device     = models.ForeignKey(Device)
+    target_country    = models.ManyToManyField(Country, blank=True)
     order             = models.IntegerField(help_text="Orden del bloque")
     modification_date = models.DateTimeField(auto_now=True)
     publish_date      = models.DateTimeField(auto_now=False, auto_now_add=False, blank=True, null=True)
