@@ -469,6 +469,7 @@ def urlAuthorize():
 
     try:
         user_data = loads(request.data)
+        print "Authorize: %s" % str(user_data)
     except Exception as e:
         ret = {}
         ret['status'] = 422
