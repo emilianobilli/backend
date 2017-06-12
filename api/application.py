@@ -375,6 +375,7 @@ def urlVote():
                 if 'X-API-KEY' in request.headers:
                     x_api_key = request.headers.get('X-API-KEY')
                     ret       = authorization.check_api_key(x_api_key)
+                    print "Ret: %s" % str(ret)
                     if ret['status'] == 200:
                         username = ret['body']['username']
                         print "App: %s" % username
