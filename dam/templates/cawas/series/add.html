@@ -207,9 +207,7 @@
         <select name="from[]" id="search_paises" class="form-control searchmultiple" size="10" multiple="multiple">
 
             <optgroup label="Paises">
-             {% for item in countries %}
-                 <option value="{{item.id}}">{{item.name}} </option>
-             {% endfor %}
+
             </optgroup>
 
         </select>
@@ -225,6 +223,11 @@
     <div class="col-xs-5">
     <label>Paises Seleccionados</label>
         <select name="to[]" id="search_paises_to" class="form-control searchmultiple" size="10" multiple="multiple">
+            <optgroup label="Paises">
+             {% for item in countries %}
+                 <option value="{{item.id}}">{{item.name}} </option>
+             {% endfor %}
+            </optgroup>
         </select>
     </div>
 </div>
