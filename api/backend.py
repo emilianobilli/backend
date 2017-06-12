@@ -414,6 +414,7 @@ class Backend(object):
         return {'status': status, 'body': ret}
 
     def doVote(self, asset_id, username, voted):
+        print "Backend: %s" % username 
         update = False
         previous_vote = {}
         previous_vote['asset_id'] = asset_id

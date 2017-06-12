@@ -377,6 +377,7 @@ def urlVote():
                     ret       = authorization.check_api_key(x_api_key)
                     if ret['status'] == 200:
                         username = ret['body']['username']
+                        print "App: %s" % username
                         ret = backend.doVote(data['asset_id'], username, data['voted'])
                 else:
                     ret['body']     = {'status': 'failure', 'message': 'Missing header'}
