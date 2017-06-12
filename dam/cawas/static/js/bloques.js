@@ -98,41 +98,6 @@ $( document ).ready(function() {
     // drag and drop controles para las listas
     var adjustment;
 
-    $("ul.assetPick").sortable({
-      group: 'assetPick',
-      pullPlaceholder: false,
-      // animation on drop
-      onDrop: function  ($item, container, _super) {
-        var $clonedItem = $('<li/>').css({height: 0});
-        $item.before($clonedItem);
-        $clonedItem.animate({'height': $item.height()});
-
-        $item.animate($clonedItem.position(), function  () {
-          $clonedItem.detach();
-          _super($item, container);
-        });
-      },
-
-      // set $item relative to cursor position
-      onDragStart: function ($item, container, _super) {
-        var offset = $item.offset(),
-            pointer = container.rootGroup.pointer;
-
-        adjustment = {
-          left: pointer.left - offset.left,
-          top: pointer.top - offset.top
-        };
-
-        _super($item, container);
-      },
-      onDrag: function ($item, position) {
-        $item.css({
-          left: position.left - adjustment.left,
-          top: position.top - adjustment.top
-        });
-      }
-    });
-    
     /*---- DATE PICKER ----*/
     $('#date_blq').dcalendarpicker({
      // default: mm/dd/yyyy
@@ -378,7 +343,6 @@ $( document ).ready(function() {
             function submitJson(){
                 if(checkVal==0){
                     var myCountries=explodeArray(paises_selected,"country_id");
-
                     var myJSON = '';
                     myJSON+='{"Block":{';
                     myJSON+='"block_id":"'+block_id+'",';
@@ -389,7 +353,6 @@ $( document ).ready(function() {
                        }else{
                         myJSON+='"channel_id":"'+canal_selected+'",';
                     }
-
                     if (myCountries=="[]"){myJSON+='"countries":null,'; }else{myJSON+='"countries":'+myCountries+',';}
 
                     myJSON+='"publish_date":"'+publish_date+'",';

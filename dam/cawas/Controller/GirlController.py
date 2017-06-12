@@ -6,7 +6,7 @@ from LogController import LogController
 from ..backend_sdk import ApiBackendServer, ApiBackendResource, ApiBackendException
 from ..Helpers.GlobalValues import *
 from ..Helpers.PublishHelper import PublishHelper
-from ..models import Asset, Setting, Movie,MovieMetadata, Girl, GirlMetadata, Category, Language, Image,PublishZone, PublishQueue
+from ..models import Asset, Setting, Movie,MovieMetadata, Girl,Country, GirlMetadata, Category, Language, Image,PublishZone, PublishQueue
 from django.db.models import Q
 
 #ApiBackendResource, ApiBackendException,ApiBackendServer
@@ -95,7 +95,18 @@ class GirlController(object):
             vgirl.image = vimg
             print 'debug4'
             vgirl.save()
-            print 'debug5'
+
+            # CARGAR Countries al Asset
+            if (decjson['Girl']['countries'] is not None):
+                countries = decjson['Girl']['countries']
+                for item in countries:
+                    try:
+                        country = Country.objects.get(id=item['country_id'])
+                        vgirl.asset.target_country.add(country)
+                    except Country.DoesNotExist as e:
+                        request.session['list_girl_message'] = "Error: No Existe Pais (" + str(e.message) + ")"
+                        request.session['list_girl_flag'] = FLAG_ALERT
+                        self.code_return = -1
 
             # CREAR METADATA
             print 'debug6'
@@ -146,10 +157,11 @@ class GirlController(object):
             vgirls = Girl.objects.all().order_by('name')
             vcategories = Category.objects.all().order_by('name')
             vlanguages = Language.objects.all()
+            countries = Country.objects.all().order_by('name')
 
             vtypegirl = {"pornstar": "Pornstar", "playmate": "Playmate"}
             context = {'vgirls': vgirls, 'vcategories': vcategories, 'vlanguages': vlanguages,
-                       'vtypegirl': vtypegirl
+                       'vtypegirl': vtypegirl, 'countries':countries
                        }
             return render(request, 'cawas/girls/add.html', context)
 
@@ -180,6 +192,10 @@ class GirlController(object):
             imgport = vgirl.image.portrait.name[5:i]
             i = len(vgirl.image.landscape.name)
             imgland = vgirl.image.landscape.name[5:i]
+
+            countries_selected = vgirl.asset.target_country.all().order_by('name')
+            countries_notselected = Country.objects.exclude(id__in=countries_selected).order_by('name')
+
             #Nuevo diccionario para completar lenguages y metadata
             for itemlang in vlanguages:
                 vgirlmetadata = None
@@ -265,6 +281,18 @@ class GirlController(object):
                         os.remove(varchivo_server)
 
             vimg.save()
+            # CARGAR Countries al Asset
+            vgirl.asset.target_country = []
+            if (decjson['Girl']['countries'] is not None):
+                countries = decjson['Girl']['countries']
+                for item in countries:
+                    try:
+                        country = Country.objects.get(id=item['country_id'])
+                        vgirl.asset.target_country.add(country)
+                    except Country.DoesNotExist as e:
+                        request.session['list_girl_message'] = "Error: No Existe Pais (" + str(e.message) + ")"
+                        request.session['list_girl_flag'] = FLAG_ALERT
+                        self.code_return = -1
 
             #Actualiza Girl
             try:
@@ -315,9 +343,11 @@ class GirlController(object):
         context = { 'vlanguages': vlanguages, 'vgirl':vgirl,
                    'vtypegirl':vtypegirl,'vlangmetadata':vlangmetadata,
                    'imgport':imgport, 'imgland':imgland,
-                   'flag':flag,
-                   'message':message}
+                   'flag':flag, 'message':message,
+                   'countries_selected': countries_selected, 'countries_notselected': countries_notselected
+                    }
         # checks:
+
         return render(request, 'cawas/girls/edit.html', context)
 
 

@@ -300,6 +300,8 @@ class SerieController(object):
             vserie.asset.target_country = []
             vserie.save()
 
+
+            #!!!cuando se cambie countries, se debe actualizar los paises en los episodios que pertenecen a la serie!!!
             # CARGAR Countries al Asset
             if (decjson['Serie']['countries'] is not None):
                 countries = decjson['Serie']['countries']
@@ -324,7 +326,6 @@ class SerieController(object):
 
             vserie.save()
             message = 'Categoria - Registrado Correctamente'
-
             print 'flag5'
             # BORRAR Y CREAR METADATA
             vseriemetadatas = decjson['Serie']['Seriemetadatas']

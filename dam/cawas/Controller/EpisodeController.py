@@ -164,9 +164,24 @@ class EpisodeController(object):
                     request.session['list_episode_flag'] = FLAG_ALERT
                     self.code_return = -1
                     return self.code_return
+
+            #leer target_country de la serie a la que pertence el episodio
+            #setear en el asset del episodio los mismos target_countries
+            #countries = vepisode.serie.asset
+            serie = vepisode.serie
+            asset = serie.asset
+            print 'serie: ' + str(serie)
+            print 'asset: ' + str(asset)
+            print 'target: ' + str(asset.target_country)
             vepisode.save()
 
+            vepisode.asset.target_country = []
+            vepisode.save()
 
+            for item in vepisode.serie.asset.target_country.all():
+                vepisode.asset.target_country.add(item)
+
+            vepisode.save()
             #SI hay items en estado Queued
             ph = PublishHelper()
             vepisodemetadata = decjson['Episode']['Episodemetadatas']

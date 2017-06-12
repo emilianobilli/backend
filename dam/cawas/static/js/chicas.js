@@ -1,6 +1,17 @@
 $( document ).ready(function() {
 
 
+    $('#search_paises').multiselect({
+        search: {
+            left: '<input type="text" name="q" class="form-control" placeholder="Buscar..." />',
+            right: '<input type="text" name="q" class="form-control" placeholder="Buscar..." />',
+        },
+        fireSearch: function(value) {
+            return value.length > 1;
+        }
+    });
+
+
     console.log( "ready!" );
     // inicializar tooltips para los íconos de HELP
     $('[data-toggle="tooltip"]').tooltip(); 
@@ -162,7 +173,8 @@ $( document ).ready(function() {
         var girl_height = $('#height').val();
         var girl_weight = $('#weight').val();
         var publicar = $('#publicar').val();
-        
+        var paises_selected = [];
+
         countChecked();
         // chequea original Name
         if(original_name=="" || original_name==" ")
@@ -181,6 +193,19 @@ $( document ).ready(function() {
             okMe("#ThumbHor");
         }
 
+        //search_to_paises - No es obligatorio
+        if ( $('#search_paises_to option').length > 0 )
+        {
+            okMe("#search_paises_to");
+            paises_selected = [];
+            $('#search_paises_to option').each(function(){
+               var asset_id_aux = $(this).attr("value"); //val();
+               if (asset_id_aux != null){
+                   paises_selected.push(asset_id_aux);
+               }
+            })
+            console.log("search_paises_to_selected:"+paises_selected);
+        }
         // chequea thumbnail vertical
         if(!$('#ThumbVer').val() && !$('#imgantportrait').val()){
             errorMe("#ThumbVer");
@@ -325,7 +350,8 @@ $( document ).ready(function() {
         
             function submitJson(){
                 if(checkVal==0){
-                    
+                    var myCountries=explodeArray(paises_selected,"country_id");
+
                     var myJSON = '';
                     myJSON+='{"Girl":{';
                     myJSON+='"asset_id":"'+edit_asset_id+'",';
@@ -337,6 +363,8 @@ $( document ).ready(function() {
                        }else{
                         myJSON+='"birth_date":"'+birth_date+'",';
                     }
+                    if (myCountries=="[]"){myJSON+='"countries":null,'; }else{myJSON+='"countries":'+myCountries+',';}
+
                     if (girl_height==''){
                         myJSON+='"height":null,';
                        }else{
