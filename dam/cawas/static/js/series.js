@@ -123,7 +123,8 @@ $('#search_category').multiselect({
 
     
     
-    
+
+
     // checkbox idiomas detecta lo que se chequea y muestra el módulo de idioma
     $("input[type=checkbox]").on('change', function () {
         var self = $(this);
