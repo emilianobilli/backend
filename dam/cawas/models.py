@@ -700,6 +700,27 @@ class MovieMetadata(models.Model):
         return dict
 
 
+class CableOperator(models.Model):
+    cableoperador_id = models.CharField(max_length=8, unique=True, help_text="ID del Cableoperador")
+    name             = models.CharField(max_length=128, help_text="Nombre del Cableoperador")
+    image            = models.ForeignKey(Image, blank=True, null=True)
+    phone            = models.CharField(max_length=128, help_text="Nombre del Cableoperador")
+    site             = models.CharField(max_length=128, help_text="Sitio Web")
+    country          = models.ForeignKey(Country)
+
+    def save(self, *args, **kwargs):
+        super(CableOperator, self).save(*args, **kwargs)
+        if self.cableoperador_id == '':
+            id = str(self.id)
+            while len(id) < 5:
+                id = "0" + id
+
+            self.cableoperador_id = "I%s" % (id)
+        super(CableOperator, self).save(*args, **kwargs)
+
+    def __unicode__(self):
+        return self.cableoperador_id
+
 
 class Block(models.Model):
     block_id          = models.CharField(max_length=8, unique=True, help_text="ID del Bloque")
