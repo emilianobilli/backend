@@ -1,7 +1,7 @@
 import os, datetime, json
 from LogController import LogController
 from django.shortcuts import render,redirect
-from ..models import Asset, Setting, Slider, Movie, Episode, Serie, Girl, Category, Language, Device, Image, Girl, PublishZone, Channel, PublishQueue, ImageQueue
+from ..models import Asset, Setting, Slider,Country, Movie, Episode, Serie, Girl, Category, Language, Device, Image, Girl, PublishZone, Channel, PublishQueue, ImageQueue
 from ..Helpers.PublishHelper import PublishHelper
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from ..Helpers.GlobalValues import *
@@ -49,7 +49,6 @@ class SliderController(object):
                 vslider.target_device = vdevice
                 vslider.text = decjson['Slider']['text']
                 vslider.language = Language.objects.get(code=decjson['Slider']['language'])
-                #vslider.image = vimg
                 vslider.save()
 
 
@@ -68,6 +67,19 @@ class SliderController(object):
                 vimg.save()
                 vslider.image = vimg
                 vslider.save()
+
+
+                # CARGAR Countries al Asset
+                if (decjson['Slider']['countries'] is not None):
+                    countries = decjson['Slider']['countries']
+                    for item in countries:
+                        try:
+                            country = Country.objects.get(id=item['country_id'])
+                            vslider.target_country.add(country)
+                        except Country.DoesNotExist as e:
+                            request.session['list_slider_message'] = "Error: No Existe Pais (" + str(e.message) + ")"
+                            request.session['list_slider_flag'] = FLAG_ALERT
+                            self.code_return = -1
 
 
                 if decjson['Slider']['text'] is None:
@@ -89,9 +101,14 @@ class SliderController(object):
 
                 # PUBLICAR METADATA
                 if vgrabarypublicar == '1':
+                    # preguntar si asset asociado NO esta activado, no publicar el Slider y mostrar mensaje,
+                    # se debe publicar asset asociado antes de publicar el slider
+
                     ph = PublishHelper()
                     ph.func_publish_queue(request, vslider.slider_id, vslider.language, 'SL', 'Q', vslider.publish_date)
                     ph.func_publish_image(request, vslider.image)
+
+
                     vflag = "success"
                     request.session['list_slider_message'] = 'Guardado Correctamente en Cola de Publicacion'
                     request.session['list_slider_flag'] = FLAG_SUCCESS
@@ -107,9 +124,10 @@ class SliderController(object):
         vlanguages = Language.objects.all()
         vdevices = Device.objects.all()
         vtypes = {"image": "Image", "video": "Video"}
+        countries = Country.objects.all().order_by('name')
 
         context = {'message': message, 'flag': vflag, 'vtypes': vtypes, 'vassets': vassets, 'vsliders': vsliders,
-                   'vlanguages': vlanguages, 'vdevices': vdevices}
+                   'vlanguages': vlanguages, 'vdevices': vdevices, 'countries':countries}
         return render(request, 'cawas/sliders/add.html', context)
 
 
@@ -143,6 +161,10 @@ class SliderController(object):
             vsliders = Slider.objects.all()
             vlanguages = Language.objects.all()
             vdevices = Device.objects.all()
+
+            countries_selected = vslider.target_country.all().order_by('name')
+            countries_notselected = Country.objects.exclude(id__in=countries_selected).order_by('name')
+
             vtypes = {"image": "Image", "video": "Video"}
 
             if vslider.image is not None:
@@ -219,6 +241,20 @@ class SliderController(object):
             vimg.save()
             vslider.image = vimg
             vslider.queue_status = 'Q'
+            vslider.target_country = []
+
+            # CARGAR Countries al Asset del Episode
+            if (decjson['Slider']['countries'] is not None):
+                countries = decjson['Slider']['countries']
+                for item in countries:
+                    try:
+                        country = Country.objects.get(id=item['country_id'])
+                        vslider.target_country.add(country)
+                    except Country.DoesNotExist as e:
+                        request.session['list_episode_message'] = "Error: No Existe Pais (" + str(e.message) + ")"
+                        request.session['list_episode_flag'] = FLAG_ALERT
+                        self.code_return = -1
+
             vslider.save()
 
             # publicar
@@ -233,7 +269,8 @@ class SliderController(object):
         if request.method == 'GET':
             context = {'vtypes': vtypes, 'vassets': vassets, 'vsliders': vsliders, 'imgland':imgland,
                        'vlanguages': vlanguages, 'vdevices': vdevices, 'flag': vflag, 'vslider': vslider,
-                        'message':message}
+                        'message':message, 'countries_selected':countries_selected,
+                       'countries_notselected':countries_notselected}
             return render(request, 'cawas/sliders/edit.html', context)
 
 

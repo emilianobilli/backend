@@ -12,6 +12,17 @@ $( document ).ready(function() {
     });
 
 
+    $('#search_paises').multiselect({
+        search: {
+            left: '<input type="text" name="q" class="form-control" placeholder="Buscar..." />',
+            right: '<input type="text" name="q" class="form-control" placeholder="Buscar..." />',
+        },
+        fireSearch: function(value) {
+            return value.length > 1;
+        }
+    });
+
+
     console.log( "ready!" );
     // inicializar tooltips para los íconos de HELP
     $('[data-toggle="tooltip"]').tooltip(); 
@@ -87,41 +98,6 @@ $( document ).ready(function() {
     // drag and drop controles para las listas
     var adjustment;
 
-    $("ul.assetPick").sortable({
-      group: 'assetPick',
-      pullPlaceholder: false,
-      // animation on drop
-      onDrop: function  ($item, container, _super) {
-        var $clonedItem = $('<li/>').css({height: 0});
-        $item.before($clonedItem);
-        $clonedItem.animate({'height': $item.height()});
-
-        $item.animate($clonedItem.position(), function  () {
-          $clonedItem.detach();
-          _super($item, container);
-        });
-      },
-
-      // set $item relative to cursor position
-      onDragStart: function ($item, container, _super) {
-        var offset = $item.offset(),
-            pointer = container.rootGroup.pointer;
-
-        adjustment = {
-          left: pointer.left - offset.left,
-          top: pointer.top - offset.top
-        };
-
-        _super($item, container);
-      },
-      onDrag: function ($item, position) {
-        $item.css({
-          left: position.left - adjustment.left,
-          top: position.top - adjustment.top
-        });
-      }
-    });
-    
     /*---- DATE PICKER ----*/
     $('#date_blq').dcalendarpicker({
      // default: mm/dd/yyyy
@@ -158,6 +134,7 @@ $( document ).ready(function() {
         var publish_date = $('#date_blq').val().trim();
         var device_selected = $('#deviceSelect').val();
         var asset_selected = [];
+        var paises_selected = [];
         var publicar = $('#publicar').val();
         var order = $('#order').val();
 
@@ -221,7 +198,6 @@ $( document ).ready(function() {
         }
         
          // chequea assets
-
         if ( $('#search_to option').length < 1 )
         {
             errorMe("#search_to");
@@ -236,6 +212,20 @@ $( document ).ready(function() {
                }
             })
             console.log("search_to_selected:"+asset_selected);
+        }
+
+        //search_to_paises - No es obligatorio
+        if ( $('#search_paises_to option').length > 0 )
+        {
+            okMe("#search_paises_to");
+            paises_selected = [];
+            $('#search_paises_to option').each(function(){
+               var asset_id_aux = $(this).attr("value"); //val();
+               if (asset_id_aux != null){
+                   paises_selected.push(asset_id_aux);
+               }
+            })
+            console.log("search_paises_to_selected:"+paises_selected);
         }
 
                 
@@ -352,7 +342,7 @@ $( document ).ready(function() {
         
             function submitJson(){
                 if(checkVal==0){
-                    
+                    var myCountries=explodeArray(paises_selected,"country_id");
                     var myJSON = '';
                     myJSON+='{"Block":{';
                     myJSON+='"block_id":"'+block_id+'",';
@@ -363,6 +353,8 @@ $( document ).ready(function() {
                        }else{
                         myJSON+='"channel_id":"'+canal_selected+'",';
                     }
+                    if (myCountries=="[]"){myJSON+='"countries":null,'; }else{myJSON+='"countries":'+myCountries+',';}
+
                     myJSON+='"publish_date":"'+publish_date+'",';
                     myJSON+='"target_device_id":"'+device_selected+'",';
                     myJSON+='"publicar":"'+publicar+'",';

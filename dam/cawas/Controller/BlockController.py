@@ -1,7 +1,7 @@
 import os, datetime, json
 from LogController import LogController
 from django.shortcuts import render,redirect
-from ..models import Asset, Setting, Girl, Block, PublishQueue,  Category, GirlMetadata, EpisodeMetadata, SerieMetadata, MovieMetadata, PublishZone,  Language, Image, Channel, Device, Serie, Movie, Episode
+from ..models import Asset, Setting, Girl, Block,Country, PublishQueue,  Category, GirlMetadata, EpisodeMetadata, SerieMetadata, MovieMetadata, PublishZone,  Language, Image, Channel, Device, Serie, Movie, Episode
 from ..Helpers.PublishHelper import PublishHelper
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from MovieController import MovieController
@@ -46,6 +46,21 @@ class BlockController(object):
 
                 vblock.target_device = Device.objects.get(pk=int(decjson['Block']['target_device_id']))
                 vblock.save()
+
+
+                # CARGAR Countries al Asset
+                if (decjson['Block']['countries'] is not None):
+                    countries = decjson['Block']['countries']
+                    for item in countries:
+                        try:
+                            country = Country.objects.get(id=item['country_id'])
+                            vblock.target_country.add(country)
+                        except Country.DoesNotExist as e:
+                            request.session['list_block_message'] = "Error: No Existe Pais (" + str(e.message) + ")"
+                            request.session['list_block_flag'] = FLAG_ALERT
+                            self.code_return = -1
+
+
                 vassets = decjson['Block']['assets']
                 for item in vassets:
                     try:
@@ -69,7 +84,7 @@ class BlockController(object):
                 return self.code_return
             except Exception as e:
                 self.code_return = -1
-                request.session['list_block_message'] = 'Error: ' + e.message
+                request.session['list_block_message'] = 'Error: ' + str(e.message)
                 request.session['list_block_flag'] = FLAG_ALERT
                 return self.code_return
 
@@ -113,10 +128,10 @@ class BlockController(object):
         vmovies = Movie.objects.all().order_by('original_title')
         vcapitulos = Episode.objects.all().order_by('original_title')
         vseries = Serie.objects.all().order_by('original_title')
-
+        countries = Country.objects.all().order_by('name')
         context = {'message': message, 'vblocks': vblocks, 'vchannels': vchannels, 'vdevices': vdevices, 'vgirls': vgirls,
                    'vlanguages': vlanguages, 'vseries': vseries,
-                   'vmovies': vmovies, 'vcapitulos': vcapitulos}
+                   'vmovies': vmovies, 'vcapitulos': vcapitulos, 'countries':countries}
         return render(request, 'cawas/blocks/add.html', context)
 
 
@@ -156,6 +171,19 @@ class BlockController(object):
                 request.session['list_block_message'] = 'Error: ' + e.message
                 request.session['list_block_flag'] = FLAG_ALERT
                 return self.code_return
+
+            vblock.target_country= []
+            # CARGAR Countries al Asset
+            if (decjson['Block']['countries'] is not None):
+                countries = decjson['Block']['countries']
+                for item in countries:
+                    try:
+                        country = Country.objects.get(id=item['country_id'])
+                        vblock.target_country.add(country)
+                    except Country.DoesNotExist as e:
+                        request.session['list_block_message'] = "Error: No Existe Pais (" + str(e.message) + ")"
+                        request.session['list_block_flag'] = FLAG_ALERT
+                        self.code_return = -1
 
             # CARGAR NUEVOS ASSETS SELECCIONADOS
             assetall = []
@@ -215,6 +243,9 @@ class BlockController(object):
             vgirlselect = Girl.objects.filter(asset__in=vassetselect)
             vepisodeselect = Episode.objects.filter(asset__in=vassetselect)
 
+            countries_selected = vblock.target_country.all().order_by('name')
+            countries_notselected = Country.objects.exclude(id__in=countries_selected).order_by('name')
+
         except Block.DoesNotExist as e:
             return render(request, 'cawas/error.html', {"message": "No existe Bloque2. (" + e.message + ")"})
 
@@ -231,7 +262,8 @@ class BlockController(object):
                    'vmovienotselect': vmovienotselect, 'vgirlnotselect': vgirlnotselect,
                    'vepisodenotselect': vepisodenotselect, 'vmovieselect': vmovieselect,
                    'vgirlselect': vgirlselect, 'vepisodeselect': vepisodeselect,
-                   'vserienotselect': vserienotselect, 'vserieselect': vserieselect
+                   'vserienotselect': vserienotselect, 'vserieselect': vserieselect,
+                   'countries_selected':countries_selected, 'countries_notselected':countries_notselected
                    }
         return render(request, 'cawas/blocks/edit.html', context)
 

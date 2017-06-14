@@ -8,7 +8,7 @@ $( document ).ready(function() {
             right: '<input type="text" name="q" class="form-control" placeholder="Buscar..." />',
         },
         fireSearch: function(value) {
-            return value.length > 3;
+            return value.length > 1;
         }
     });
 
@@ -19,7 +19,18 @@ $('#search_category').multiselect({
             right: '<input type="text" name="q" class="form-control" placeholder="Buscar..." />',
         },
         fireSearch: function(value) {
-            return value.length > 3;
+            return value.length > 1;
+        }
+    });
+
+
+    $('#search_paises').multiselect({
+        search: {
+            left: '<input type="text" name="q" class="form-control" placeholder="Buscar..." />',
+            right: '<input type="text" name="q" class="form-control" placeholder="Buscar..." />',
+        },
+        fireSearch: function(value) {
+            return value.length > 1;
         }
     });
 
@@ -157,41 +168,6 @@ $('#runtime').mask('00:00:00',{placeholder: "HH:mm:ss"});
     // drag and drop controles para las listas
     var adjustment;
 
-    $("ul.pornstarPick").sortable({
-      group: 'pornstarPick',
-      pullPlaceholder: false,
-      // animation on drop
-      onDrop: function  ($item, container, _super) {
-        var $clonedItem = $('<li/>').css({height: 0});
-        $item.before($clonedItem);
-        $clonedItem.animate({'height': $item.height()});
-
-        $item.animate($clonedItem.position(), function  () {
-          $clonedItem.detach();
-          _super($item, container);
-        });
-      },
-
-      // set $item relative to cursor position
-      onDragStart: function ($item, container, _super) {
-        var offset = $item.offset(),
-            pointer = container.rootGroup.pointer;
-
-        adjustment = {
-          left: pointer.left - offset.left,
-          top: pointer.top - offset.top
-        };
-
-        _super($item, container);
-      },
-      onDrag: function ($item, position) {
-        $item.css({
-          left: position.left - adjustment.left,
-          top: position.top - adjustment.top
-        });
-      }
-    });
-    
     
 
     
@@ -210,14 +186,14 @@ $('#runtime').mask('00:00:00',{placeholder: "HH:mm:ss"});
         if (self.is(":checked")) {
             console.log("checkbox  id =" + self.attr("id") + "is checked ");
             $(showDiv).show('slow');
-            langQ++;
-            langDesc.push(self.attr("id"));
+            //langQ++;
+            //langDesc.push(self.attr("id"));
             
         } else {
             console.log("Id = " + self.attr("id") + "is Unchecked ");
             $(showDiv).hide('fast');
-            langQ--;
-            langDesc.pop();
+            //langQ--;
+            //langDesc.pop();
         }
         console.log("idiomas tildados:"+langQ+", y son:"+langDesc);// cantidad de idiomas
         if(checkedOnce>0){
@@ -284,6 +260,7 @@ $('#runtime').mask('00:00:00',{placeholder: "HH:mm:ss"});
         var canal_selected = $('#canalSelect option:selected');
         var pornstars_selected = [];
         var categories_selected = [];
+        var paises_selected = [];
         var director_selected = $('#director').val();
         var elenco_selected = $('#elenco').val();
         var display_runtime = $('#runtime').val();
@@ -350,11 +327,19 @@ $('#runtime').mask('00:00:00',{placeholder: "HH:mm:ss"});
             console.log("search_girls_to_selected:"+categories_selected);
         }
 
-
-
-
-
-
+        //search_to_paises - No es obligatorio
+        if ( $('#search_paises_to option').length > 0 )
+        {
+            okMe("#search_paises_to");
+            paises_selected = [];
+            $('#search_paises_to option').each(function(){
+               var asset_id_aux = $(this).attr("value"); //val();
+               if (asset_id_aux != null){
+                   paises_selected.push(asset_id_aux);
+               }
+            })
+            console.log("search_paises_to_selected:"+paises_selected);
+        }
 
         // chequea canal
         console.log("#canalSelect"+$('#canalSelect').val());
@@ -371,21 +356,6 @@ $('#runtime').mask('00:00:00',{placeholder: "HH:mm:ss"});
 
          // chequea display runtime
 
-/*
-        if(display_runtime=="" || display_runtime=="0:,0")
-        {
-            errorMe("#runtime");
-            $(".durationpicker-container").css("border","1px #a94442 solid");
-            checkVal++;
-        }else{
-            console.log("display:runtime"+display_runtime);
-            $(".durationpicker-container").css("border","1px #3c763d solid");
-            var myStrRuntime = display_runtime;
-            var myDirtyRuntime = myStrRuntime.split(",");
-            display_runtimeJSON=myDirtyRuntime[0]+myDirtyRuntime[1];
-            okMe("#runtime");
-        }
-*/
 
         if(display_runtime==""||display_runtime.length < 8)
         {
@@ -541,6 +511,8 @@ $('#runtime').mask('00:00:00',{placeholder: "HH:mm:ss"});
                 if(checkVal==0){
                     var myGirls=explodeArray(pornstars_selected,"girl_id");
                     var myCategories=explodeArray(categories_selected,"category_id");
+                    var myCountries=explodeArray(paises_selected,"country_id");
+
                     var myJSON = '';
                     myJSON+='{"Movie":{';
                     myJSON+='"asset_id":"'+asset_Id+'",';
@@ -564,11 +536,11 @@ $('#runtime').mask('00:00:00',{placeholder: "HH:mm:ss"});
                     }else{
                         myJSON+='"cast":"'+elenco_selected+'",';
                     }
-                    if (director_selected==''){
-                        myJSON+='"directors":null,';
-                       }else{
-                        myJSON+='"directors":"'+director_selected+'",';
-                    }
+
+                    if (director_selected==''){myJSON+='"directors":null,';}else{myJSON+='"directors":"'+director_selected+'",';}
+
+                    if (myCountries=="[]"){myJSON+='"countries":null,'; }else{myJSON+='"countries":'+myCountries+',';}
+
                     myJSON+='"display_runtime": "'+display_runtime+'",';
                     myJSON+='"categories":'+myCategories+',';
                     myJSON+='"Moviesmetadata": [';

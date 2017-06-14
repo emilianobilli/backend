@@ -164,6 +164,45 @@
             </div>
 
 
+
+
+
+<!-- Seleccion de  Paises -->
+<br>
+<br>
+<div class="row">
+    <div class="col-xs-5">
+    <label>Pais A donde Aplicar el Contenido</label>
+        <select name="from[]" id="search_paises" class="form-control searchmultiple" size="10" multiple="multiple">
+
+            <optgroup label="Paises">
+
+            </optgroup>
+
+        </select>
+    </div>
+
+    <div class="col-xs-2">
+        <button type="button" id="search_paises_rightAll" class="btn btn-block"><i class="glyphicon glyphicon-forward"></i></button>
+        <button type="button" id="search_paises_rightSelected" class="btn btn-block"><i class="glyphicon glyphicon-chevron-right"></i></button>
+        <button type="button" id="search_paises_leftSelected" class="btn btn-block"><i class="glyphicon glyphicon-chevron-left"></i></button>
+        <button type="button" id="search_paises_leftAll" class="btn btn-block"><i class="glyphicon glyphicon-backward"></i></button>
+    </div>
+
+    <div class="col-xs-5">
+    <label>Paises Seleccionados</label>
+        <select name="to[]" id="search_paises_to" class="form-control searchmultiple" size="10" multiple="multiple">
+            <optgroup label="Paises">
+             {% for item in countries %}
+                 <option value="{{item.id}}">{{item.name}} </option>
+             {% endfor %}
+            </optgroup>
+        </select>
+    </div>
+</div>
+<!-- Fin de seleccion de Paises -->
+
+
           <div class="row form-row">
               <div class="col-xs-12 col-md-4 col-lg-4">
                    <div class="form-group has-feedback">

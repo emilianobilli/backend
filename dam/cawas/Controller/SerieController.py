@@ -1,7 +1,7 @@
 import os, datetime, json
 from LogController import LogController
 from django.shortcuts import render,redirect
-from ..models import Asset, Setting, Serie, SerieMetadata, Category, Episode, EpisodeMetadata,  Language,PublishQueue, PublishZone, Image, Girl,  GirlMetadata, Channel
+from ..models import Asset, Setting, Serie, Country, SerieMetadata, Category, Episode, EpisodeMetadata,  Language,PublishQueue, PublishZone, Image, Girl,  GirlMetadata, Channel
 from ..Helpers.PublishHelper import PublishHelper
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from ..Helpers.GlobalValues import *
@@ -80,8 +80,6 @@ class SerieController(object):
             vserie.asset = vasset
             vserie.original_title = decjson['Serie']['original_title']
             vserie.year = decjson['Serie']['year']
-            #vserie.cast = decjson['Serie']['cast']
-            #vserie.directors = decjson['Serie']['directors']
             if (decjson['Serie']['cast'] is not None):
                 vserie.cast = decjson['Serie']['cast']
             if (decjson['Serie']['directors'] is not None):
@@ -113,6 +111,19 @@ class SerieController(object):
                     request.session['list_serie_message'] = 'Error: ' + e.message
                     request.session['list_serie_flag'] = FLAG_ALERT
                     return self.code_return
+
+
+            # CARGAR Countries al Asset
+            if (decjson['Serie']['countries'] is not None):
+                countries = decjson['Serie']['countries']
+                for item in countries:
+                    try:
+                        country = Country.objects.get(id=item['country_id'])
+                        vserie.asset.target_country.add(country)
+                    except Country.DoesNotExist as e:
+                        request.session['list_serie_message'] = "Error: No Existe Pais (" + str(e.message) + ")"
+                        request.session['list_serie_flag'] = FLAG_ALERT
+                        self.code_return = -1
 
             # Channel
             try:
@@ -162,7 +173,7 @@ class SerieController(object):
             vcategories = Category.objects.all()
             vchannels = Channel.objects.all()
             vseries = Serie.objects.all()
-
+            countries = Country.objects.all().order_by('name')
         except Exception as e:
             self.code_return = -1
             request.session['list_serie_message'] = 'Error: ' + e.message
@@ -170,7 +181,7 @@ class SerieController(object):
             return self.code_return
 
         context = {'message': message, 'flag':flag, 'vgirls': vgirls, 'vlanguages': vlanguages, 'vcategories': vcategories,
-                   'vchannels': vchannels, 'vseries': vseries, 'flag':flag}
+                   'vchannels': vchannels, 'vseries': vseries, 'flag':flag, 'countries':countries}
         return render(request, 'cawas/series/add.html', context)
 
 
@@ -285,7 +296,24 @@ class SerieController(object):
                     request.session['list_serie_message'] = 'Error: ' + e.message
                     request.session['list_serie_flag'] = FLAG_ALERT
                     return self.code_return
+
+            vserie.asset.target_country = []
             vserie.save()
+
+
+            #!!!cuando se cambie countries, se debe actualizar los paises en los episodios que pertenecen a la serie!!!
+            # CARGAR Countries al Asset
+            if (decjson['Serie']['countries'] is not None):
+                countries = decjson['Serie']['countries']
+                for item in countries:
+                    try:
+                        country = Country.objects.get(id=item['country_id'])
+                        vserie.asset.target_country.add(country)
+                    except Country.DoesNotExist as e:
+                        request.session['list_serie_message'] = "Error: No Existe Pais (" + str(e.message) + ")"
+                        request.session['list_serie_flag'] = FLAG_ALERT
+                        self.code_return = -1
+
             print 'flag4'
             # Channel
             try:
@@ -298,7 +326,6 @@ class SerieController(object):
 
             vserie.save()
             message = 'Categoria - Registrado Correctamente'
-
             print 'flag5'
             # BORRAR Y CREAR METADATA
             vseriemetadatas = decjson['Serie']['Seriemetadatas']
@@ -355,6 +382,9 @@ class SerieController(object):
             vserie = Serie.objects.get(asset=vasset)
             vepisodes = Episode.objects.filter(serie=vserie)
 
+            countries_selected = vserie.asset.target_country.all().order_by('name')
+            countries_notselected = Country.objects.exclude(id__in=countries_selected).order_by('name')
+
             # carga imagenes
             i = len(vserie.image.portrait.name)
             imgport = vserie.image.portrait.name[5:i]
@@ -409,7 +439,9 @@ class SerieController(object):
                    'vcategoryselected': vcategoryselected,
                    'vcategorynotselected': vcategorynotselected,
                    'vepisodes':vepisodes,
-                   'flag':flag
+                   'flag':flag,
+                   'countries_selected':countries_selected,
+                   'countries_notselected':countries_notselected
                    }
 
         return render(request, 'cawas/series/edit.html', context)

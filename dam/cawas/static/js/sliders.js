@@ -46,6 +46,17 @@ $( document ).ready(function() {
     };
 
 
+
+    $('#search_paises').multiselect({
+        search: {
+            left: '<input type="text" name="q" class="form-control" placeholder="Buscar..." />',
+            right: '<input type="text" name="q" class="form-control" placeholder="Buscar..." />',
+        },
+        fireSearch: function(value) {
+            return value.length > 1;
+        }
+    });
+
     
     var checkedOnce = 0; //chequea si el formulario se ha intentado enviar alguna vez
     var checkVal=0; //chequea la cantidad de errores en el formulario
@@ -131,15 +142,15 @@ $( document ).ready(function() {
         if (self.is(":checked")) {
             console.log("checkbox  id =" + self.attr("id") + "is checked ");
             $(showDiv).show('slow');
-            langQ++;
-            langDesc.push(self.attr("id"));
+            //langQ++;
+            //langDesc.push(self.attr("id"));
             
         } else {
 
             console.log("Id = " + self.attr("id") + "is Unchecked ");
             $(showDiv).hide('fast');
-            langQ--;
-            langDesc.pop();
+            //langQ--;
+            //langDesc.pop();
         }
         console.log("idiomas tildados:"+langQ+", y son: "+langDesc);// cantidad de idiomas
         if(checkedOnce>0){
@@ -202,7 +213,7 @@ $( document ).ready(function() {
         var publish_date = $('#date_blq').val();
         var text = $("#text").val();
         var publicar = $('#publicar').val();
-
+        var paises_selected = [];
 
 
         // chequea original Title
@@ -229,6 +240,21 @@ $( document ).ready(function() {
         }else{
             okMe("#idiomaSelect");
             idioma_selected=$('#idiomaSelect').val();
+        }
+
+
+        //search_to_paises - No es obligatorio
+        if ( $('#search_paises_to option').length > 0 )
+        {
+            okMe("#search_paises_to");
+            paises_selected = [];
+            $('#search_paises_to option').each(function(){
+               var asset_id_aux = $(this).attr("value"); //val();
+               if (asset_id_aux != null){
+                   paises_selected.push(asset_id_aux);
+               }
+            })
+            console.log("search_paises_to_selected:"+paises_selected);
         }
 
 
@@ -394,16 +420,15 @@ $( document ).ready(function() {
 
             function submitJson(){
                 if(checkVal==0){
+                    var myCountries=explodeArray(paises_selected,"country_id");
 
                     var myJSON = '';
                     myJSON+='{"Slider":{';
                     myJSON+='"asset_id":"'+asset_Id+'",';
                     //myJSON+='"text":"'+text+'",';
-                    if (text=='' ){
-                        myJSON+='"text":"",';
-                       }else{
-                        myJSON+='"text":"'+text+'",';
-                    }
+                    if (text=='' ){myJSON+='"text":"",';}else{myJSON+='"text":"'+text+'",';}
+                    if (myCountries=="[]"){myJSON+='"countries":null,'; }else{myJSON+='"countries":'+myCountries+',';}
+
                     myJSON+='"publish_date":"'+publish_date+'",';
                     myJSON+='"language":"'+idioma_selected+'",';
                     myJSON+='"media_type":"'+typeslider_selected+'",';
