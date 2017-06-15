@@ -100,7 +100,7 @@ def upload_images():
                         logging.info("upload_images(): File %s/%s uploaded successfully" % (src_path, filename))
                     else:
                         job.status = 'E'
-                        msg = "File does not exist: %s/%s" % (src_path, filename)
+                        msg = "File does not exist: %s" % (img)
                         job.message = msg
                         job.save()
                         logging.error('upload_images(): %s' % msg)
