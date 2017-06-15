@@ -15,6 +15,7 @@ import jwt
 from keys   import MA
 from keys   import CAWAS
 from keys   import MA_SIGNATURE
+from keys   import APP_QUERY
 
 application = Flask(__name__)
 
@@ -605,6 +606,7 @@ def validate_jwt(token):
 @application.route('/v1/app/android/version/', methods=['GET'])
 @application.route('/v1/app/android/version', methods=['GET'])
 def app_android_version():
+    ret = {}
     try:
         if 'X-APP-QUERY' in request.headers:
             private_key = request.headers['X-APP-QUERY']
