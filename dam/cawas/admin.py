@@ -41,6 +41,7 @@ class ImageAdmin(admin.ModelAdmin):
     list_display = ['name', 'portrait', 'landscape']
     search_fields = ['name']
 
+
 @admin.register(models.Category)
 class CategoryAdmin(admin.ModelAdmin):
     list_display = ['category_id', 'original_name']
@@ -51,9 +52,16 @@ class CategoryMetadataAdmin(admin.ModelAdmin):
     list_display = ['category', 'language', 'name']
     search_fields = ['category__category_id']
 
+
 @admin.register(models.Channel)
 class ChannelAdmin(admin.ModelAdmin):
     list_display = ['name', 'logo']
+
+
+@admin.register(models.CableOperator)
+class CableOperatorAdmin(admin.ModelAdmin):
+    readonly_fields = ('cableoperator_id',)
+    list_display = ['cableoperator_id', 'name', 'country']
 
 
 @admin.register(models.Asset)
@@ -67,20 +75,24 @@ class GirlAdmin(admin.ModelAdmin):
     list_display = ['asset', 'name', 'type' ]
     search_fields = ['asset__asset_id', 'name']
 
+
 @admin.register(models.GirlMetadata)
 class GirlMetadataAdmin(admin.ModelAdmin):
     list_display = ['girl', 'language', 'modification_date']
     search_fields = ['girl__asset__asset_id']
+
 
 @admin.register(models.Serie)
 class SerieAdmin(admin.ModelAdmin):
     list_display = ['asset', 'original_title', ]
     search_fields = ['asset__asset_id', 'original_title']
 
+
 @admin.register(models.SerieMetadata)
 class SerieMetadataAdmin(admin.ModelAdmin):
     list_display = ['serie', 'title', 'language']
     search_fields = ['serie__asset__asset_id']
+
 
 @admin.register(models.Episode)
 class EpisodeAdmin(admin.ModelAdmin):

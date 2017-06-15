@@ -6,6 +6,7 @@ django.setup()
 from cawas.models import *
 
 from django.utils import timezone
+from cawas.backend_sdk import *
 
 import json
 import datetime
@@ -104,6 +105,30 @@ def channel_serializer(channel_name):
     ret.append(channel.toDict())
 
     return ret
+
+
+def cableoperator_serializer(co_id):
+    ret = []
+    try:
+        co = CableOperator.objects.get(cableoperator_id=co_id)
+    except ObjectDoesNotExist:
+        msg = "Cable Operator with ID %s does not exist" % co_id
+        raise SerializerException(msg)
+
+    ret.append(co.toDict())
+
+    return ret
+
+
+def publish_cableoperator(co_id, co_url, apikey, publish_zone):
+    co = cableoperator_serializer(co_id)
+    endpoint = publish_zone.backend_url
+    ep = ApiBackendResource(endpoint, co_url, apikey)
+    try:
+        ep.add(co)
+        return 0, "success"
+    except ApiBackendException as err:
+        return -1, str(err.value)
 
 
 def asset_serializer(asset_id, lang=''):
