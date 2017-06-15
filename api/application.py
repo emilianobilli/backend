@@ -115,8 +115,9 @@ components = Components({
                 "co": {
                     "database": {
                         "table": "Cop",
-                        "pk":    "co_id",
+                        "pk":    "lang",
                         "schema": {
+                            "lang": "S",
                             "co_id": "S",
                             "co_name": "S",
                             "co_media_url": "S",
@@ -240,7 +241,7 @@ def urlCategories():
 @application.route('/v1/co/', methods=['GET','POST'])
 @application.route('/v1/co', methods=['GET','POST'])
 @cross_origin()
-def urlSliders():
+def urlCop():
     if request.method == 'GET':
         args = {}
         for k in request.args.keys():
@@ -253,8 +254,10 @@ def urlSliders():
             if private_key == CAWAS:
                 body = loads(request.data)
                 if body['action'] == 'add':
+                    body['item']['lang'] = 'none'
                     ret  = components.add_co(body['item'])
                 elif body['action'] == 'del':
+                    body['item']['lang'] = 'none'
                     ret  = components.del_co(body['item'])
             else:
                 ret['status'] = 401
@@ -268,7 +271,7 @@ def urlSliders():
 @application.route('/v1/sliders/',    methods=['GET', 'POST'])
 @application.route('/v1/sliders',     methods=['GET', 'POST'])
 @cross_origin()
-def urlCop():
+def urlSliders():
     if request.method == 'GET':
         args = {}
         for k in request.args.keys():
