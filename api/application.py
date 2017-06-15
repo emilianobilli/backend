@@ -601,6 +601,30 @@ def validate_jwt(token):
         ret['status'] = 401
         ret['body']   = {'status': 'failed', 'message': str(e)}
     return Response(response=dumps(ret['body']), status=ret['status'])
+
+@applicacion.route('/v1/app/android/version/', methods=['GET'])
+@applicacion.route('/v1/app/android/version', methods=['GET'])
+def app_android_version():
+    try:
+        if 'X-APP-QUERY' in request.headers:
+            private_key = request.headers['X-APP-QUERY']
+            if private_key == APP_QUERY:
+                ret['status'] = 200
+                f = open('android_app_ver.json')
+                ret['body']   = f.read()
+                f.close()
+            else:
+                ret['status'] = 401
+                ret['body']   = {'status': 'failed', 'message':'Unauthorized'}
+        else:
+            ret['status'] = 401
+            ret['body']   = {'status': 'failed', 'message':'Unauthorized'}
+
+    except Exception as e:
+        ret['status'] = 401
+        ret['body']   = {'status': 'failed', 'message': str(e)}
+    return Response(response=dumps(ret['body']), status=ret['status'])
+
 #--------------------------------------------------------------------------------------------
 # Ester Egg
 #--------------------------------------------------------------------------------------------
