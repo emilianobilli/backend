@@ -15,6 +15,7 @@ import jwt
 from keys   import MA
 from keys   import CAWAS
 from keys   import MA_SIGNATURE
+from keys   import APP_QUERY
 
 application = Flask(__name__)
 
@@ -112,6 +113,22 @@ backend = Backend({"languages": ['es','pt'],
 
 
 components = Components({
+                "co": {
+                    "database": {
+                        "table": "Cop",
+                        "pk":    "lang",
+                        "schema": {
+                            "lang": "S",
+                            "co_id": "S",
+                            "co_name": "S",
+                            "co_media_url": "S",
+                            "image_filename": "S",
+                            "co_phone": "S",
+                            "co_site":  "S",
+                            "co_country": "S"
+                        },
+                    }
+                },
                 "channels": {
                     "database": {
                         "table": "Channels",
@@ -213,6 +230,37 @@ def urlCategories():
                     ret  = components.add_category(body['item'])
                 elif body['action'] == 'del':
                     ret  = components.del_category(body['item'])
+            else:
+                ret['status'] = 401
+                ret['body']   = {'status': 'failure', 'message': 'Unauthorized'}
+        else:
+            ret['status'] = 422
+            ret['body']   = {'status': 'failure', 'message': 'Missing Header'}
+
+        return Response(response=dumps(ret['body']), status=ret['status'])
+
+@application.route('/v1/co/', methods=['GET','POST'])
+@application.route('/v1/co', methods=['GET','POST'])
+@cross_origin()
+def urlCop():
+    if request.method == 'GET':
+        args = {}
+        args['lang'] = 'none'   # Hardcoding
+        for k in request.args.keys():
+            args[k] = request.args.get(k)
+        ret = components.query_co(args)
+        return Response(response=dumps(ret['body']), status=ret['status'])
+    elif request.method == 'POST':
+        if 'X-PRIVATE-APIKEY' in request.headers:
+            private_key = request.headers.get('X-PRIVATE-APIKEY')
+            if private_key == CAWAS:
+                body = loads(request.data)
+                if body['action'] == 'add':
+                    body['item']['lang'] = 'none'
+                    ret  = components.add_co(body['item'])
+                elif body['action'] == 'del':
+                    body['item']['lang'] = 'none'
+                    ret  = components.del_co(body['item'])
             else:
                 ret['status'] = 401
                 ret['body']   = {'status': 'failure', 'message': 'Unauthorized'}
@@ -554,6 +602,31 @@ def validate_jwt(token):
         ret['status'] = 401
         ret['body']   = {'status': 'failed', 'message': str(e)}
     return Response(response=dumps(ret['body']), status=ret['status'])
+
+@application.route('/v1/app/android/version/', methods=['GET'])
+@application.route('/v1/app/android/version', methods=['GET'])
+def app_android_version():
+    ret = {}
+    try:
+        if 'X-APP-QUERY' in request.headers:
+            private_key = request.headers['X-APP-QUERY']
+            if private_key == APP_QUERY:
+                ret['status'] = 200
+                f = open('android_app_ver.json')
+                ret['body']   = f.read()
+                f.close()
+            else:
+                ret['status'] = 401
+                ret['body']   = dumps({'status': 'failed', 'message':'Unauthorized'})
+        else:
+            ret['status'] = 401
+            ret['body']   = dumps({'status': 'failed', 'message':'Unauthorized'})
+
+    except Exception as e:
+        ret['status'] = 401
+        ret['body']   = dumps({'status': 'failed', 'message': str(e)})
+    return Response(response=ret['body'], status=ret['status'])
+
 #--------------------------------------------------------------------------------------------
 # Ester Egg
 #--------------------------------------------------------------------------------------------
