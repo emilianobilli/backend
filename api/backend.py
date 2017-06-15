@@ -62,6 +62,9 @@ class Components(object):
             self.blocks     = dynamodbCollection(config['blocks'])
         if 'sliders' in config:
             self.sliders    = dynamodbCollection(config['sliders'])
+        if 'co' in config:
+            self.co         = dynamodbCollection(config['co'])
+
 
         self.images    = {}
         self.images['image_landscape'] = CdnImg(['http://cdnimages.zolechamedia.net/','http://cdnimages1.zolechamedia.net/','http://cdnimages2.zolechamedia.net/','http://cdnimages3.zolechamedia.net/','http://cdnimages4.zolechamedia.net/','http://cdnimages5.zolechamedia.net/'], 'landscape/')
@@ -181,6 +184,10 @@ class Components(object):
     def add_category(self, Item={}):
         return self.__add(self.categories, Item)
 
+    def add_co(self, Item={}):
+        return self.__add(self.co, Item)
+
+
     '''
         Del Methods for Slider, Block and Category
     '''
@@ -195,6 +202,10 @@ class Components(object):
 
     def del_slider(self, Item={}):
         return self.__del(self.sliders, Item)
+
+    def del_co(self, Item={}):
+        return self.__del(self.co, Item)
+
 
     '''
         Query Methods for Slider, Block and Category
@@ -226,6 +237,9 @@ class Components(object):
 
     def query_categories(self, arg):
         return self.__query(self.categories,arg)
+
+    def query_co(self, arg):
+        return self.__query(self.co,arg)
 
     def query_channels(self, arg):
         return self.__query(self.channels, arg)
