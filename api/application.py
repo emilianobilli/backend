@@ -602,8 +602,8 @@ def validate_jwt(token):
         ret['body']   = {'status': 'failed', 'message': str(e)}
     return Response(response=dumps(ret['body']), status=ret['status'])
 
-@applicacion.route('/v1/app/android/version/', methods=['GET'])
-@applicacion.route('/v1/app/android/version', methods=['GET'])
+@application.route('/v1/app/android/version/', methods=['GET'])
+@application.route('/v1/app/android/version', methods=['GET'])
 def app_android_version():
     try:
         if 'X-APP-QUERY' in request.headers:
