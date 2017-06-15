@@ -121,7 +121,7 @@ def cableoperator_serializer(co_id):
         raise SerializerException(msg)
 
     co_dict = co.toDict()
-    co_dict['media_url'] = "%s%s" % (CDNURL, co_dict['media_url'])
+    co_dict['co_media_url'] = "%s%s" % (CDNURL, co_dict['co_media_url'])
 
     return co_dict
 
