@@ -244,6 +244,7 @@ def urlCategories():
 def urlCop():
     if request.method == 'GET':
         args = {}
+        args['lang'] = 'none'   # Hardcoding
         for k in request.args.keys():
             args[k] = request.args.get(k)
         ret = components.query_co(args)
