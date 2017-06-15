@@ -696,6 +696,7 @@ class MovieMetadata(models.Model):
         return dict
 
 
+
 class CableOperator(models.Model):
     cableoperator_id = models.CharField(max_length=8, unique=True, help_text="ID del Cableoperador")
     name             = models.CharField(max_length=128, help_text="Nombre del Cableoperador")
