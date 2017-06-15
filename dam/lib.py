@@ -125,6 +125,7 @@ def publish_cableoperator(co_id, co_url, apikey, publish_zone):
     endpoint = publish_zone.backend_url
     ep = ApiBackendResource(endpoint, co_url, apikey)
     try:
+        print co
         ep.add(co)
         return 0, "success"
     except ApiBackendException as err:
