@@ -108,16 +108,22 @@ def channel_serializer(channel_name):
 
 
 def cableoperator_serializer(co_id):
-    ret = []
     try:
         co = CableOperator.objects.get(cableoperator_id=co_id)
     except ObjectDoesNotExist:
         msg = "Cable Operator with ID %s does not exist" % co_id
         raise SerializerException(msg)
 
-    ret.append(co.toDict())
+    try:
+        CDNURL = Setting.objects.get(code="image_cdn_landscape").value
+    except:
+        msg = "Setting with code image_cdn_landscape does not exist"
+        raise SerializerException(msg)
 
-    return ret
+    co_dict = co.toDict()
+    co_dict['co_media_url'] = "%s%s" % (CDNURL, co_dict['co_media_url'])
+
+    return co_dict
 
 
 def publish_cableoperator(co_id, co_url, apikey, publish_zone):
@@ -125,8 +131,8 @@ def publish_cableoperator(co_id, co_url, apikey, publish_zone):
     endpoint = publish_zone.backend_url
     ep = ApiBackendResource(endpoint, co_url, apikey)
     try:
-        print co[0]
-        ep.add(co[0])
+        print co
+        ep.add(co)
         return 0, "success"
     except ApiBackendException as err:
         return -1, str(err.value)
