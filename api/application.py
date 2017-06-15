@@ -268,7 +268,7 @@ def urlSliders():
 @application.route('/v1/sliders/',    methods=['GET', 'POST'])
 @application.route('/v1/sliders',     methods=['GET', 'POST'])
 @cross_origin()
-def urlSliders():
+def urlCop():
     if request.method == 'GET':
         args = {}
         for k in request.args.keys():
