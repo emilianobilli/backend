@@ -730,6 +730,8 @@ class CableOperator(models.Model):
         dict["co_site"]    = self.site
         dict["co_country"] = self.country.code
 
+        return dict
+
 
 class Block(models.Model):
     block_id          = models.CharField(max_length=8, unique=True, help_text="ID del Bloque")
