@@ -613,7 +613,7 @@ def app_android_version():
             if private_key == APP_QUERY:
                 ret['status'] = 200
                 f = open('android_app_ver.json')
-                ret['body']   = f.read()
+                ret['body']   = loads(f.read())
                 f.close()
             else:
                 ret['status'] = 401
