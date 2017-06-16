@@ -48,7 +48,6 @@ $('#search_category').multiselect({
     });
 
     $("#btngrabarypublicar").click(function(){
-
         $("#publicar").val("1");
         clickedToSubmit=1;
         checkAll();
@@ -83,14 +82,12 @@ $('#search_category').multiselect({
         
     // Toma el nombre de la movie seleccionada en la lista
     $( "#serie-edit" ).change(function() {
-        
         $( "#serie-edit option:selected" ).each(function() {
             clickedText = $(this).html();
             clickedTextID = $(this).val();
             if(clickedText!="")
             {
                 $( "#serieName" ).val(clickedText);// Agrega el ID en el input field
-                               
             }
         });
         
@@ -464,11 +461,8 @@ $('#search_category').multiselect({
                     myJSON+='"year":'+year_selected+',';
 
                     if (elenco_selected==''){myJSON+='"cast":null,';}else{myJSON+='"cast":"'+elenco_selected+'",';}
-
                     if (director_selected==''){myJSON+='"directors":null,';}else{myJSON+='"directors":"'+director_selected+'",';}
-
                     if (myGirls=="[]"){myJSON+='"girls":null,';}else{myJSON+='"girls":'+myGirls+',';}
-
                     if (myCountries=="[]"){myJSON+='"countries":null,'; }else{myJSON+='"countries":'+myCountries+',';}
 
                     myJSON+='"categories":'+myCategories+',';
