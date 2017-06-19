@@ -701,7 +701,7 @@ class CableOperator(models.Model):
     name             = models.CharField(max_length=128, help_text="Nombre del Cableoperador")
     image            = models.ForeignKey(Image, blank=True, null=True)
     phone            = models.CharField(max_length=128, blank=True, null=True, help_text="Telefono del Cableoperador")
-    site             = models.CharField(max_length=128, blank=True, null=True, help_text="Sitio Web", help_text="Sitio Web")
+    site             = models.CharField(max_length=128, blank=True, null=True, help_text="Sitio Web")
     country          = models.ForeignKey(Country)
 
     def save(self, *args, **kwargs):
