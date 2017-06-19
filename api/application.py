@@ -116,7 +116,8 @@ components = Components({
                 "co": {
                     "database": {
                         "table": "Cop",
-                        "pk":    "lang",
+                        "pk": "lang",
+                        "sk": "co_id",
                         "schema": {
                             "lang": "S",
                             "co_id": "S",
