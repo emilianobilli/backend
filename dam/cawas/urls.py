@@ -55,6 +55,13 @@ urlpatterns = [
     url(r'^sliders/unpublish/(?P<id>\w*)$', views.unpublish_sliders_view, name='unpublish_sliders'),
     url(r'^sliders/publish/(?P<id>\w*)$', views.publish_sliders_view, name='publish_sliders'),
 
+    url(r'^cableoperators/add/$', views.add_cableoperators_view, name='add_cableoperators'),
+    url(r'^cableoperators/edit/(?P<cableoperator_id>\w+?)/$', views.edit_cableoperators_view, name='edit_cableoperators'),
+    url(r'^cableoperators/list/$', views.list_cableoperators_view, name='list_cableoperators'),
+    url(r'^cableoperators/unpublish/(?P<id>\w*)$', views.unpublish_cableoperators_view, name='unpublish_cableoperators'),
+    url(r'^cableoperators/publish/(?P<id>\w*)$', views.publish_cableoperators_view, name='publish_cableoperators'),
+
+
     #<#POST Json CAWAS>
 
     url(r'^api/add_asset/$', views.add_asset_view, name='api_add_asset')

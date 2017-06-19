@@ -700,8 +700,8 @@ class CableOperator(models.Model):
     cableoperator_id = models.CharField(max_length=8, unique=True, help_text="ID del Cableoperador")
     name             = models.CharField(max_length=128, help_text="Nombre del Cableoperador")
     image            = models.ForeignKey(Image, blank=True, null=True)
-    phone            = models.CharField(max_length=128, blank=True, null=True, help_text="Telefono del Cableoperador")
-    site             = models.CharField(max_length=128, blank=True, null=True, help_text="Sitio Web")
+    phone            = models.CharField(max_length=128, help_text="Nombre del Cableoperador")
+    site             = models.CharField(max_length=128, help_text="Sitio Web")
     country          = models.ForeignKey(Country)
 
     def save(self, *args, **kwargs):
@@ -716,20 +716,6 @@ class CableOperator(models.Model):
 
     def __unicode__(self):
         return self.cableoperator_id
-
-    def toDict(self):
-        dict = {}
-
-        dict["co_id"]   = self.cableoperator_id
-        dict["co_name"] = self.name
-        if self.image is not None:
-            if self.image.landscape.name != '':
-                dict["co_media_url"] = os.path.basename(self.image.landscape.name)
-        dict["co_phone"]   = self.phone
-        dict["co_site"]    = self.site
-        dict["co_country"] = self.country.code
-
-        return dict
 
 
 class Block(models.Model):

@@ -15,6 +15,7 @@ import jwt
 from keys   import MA
 from keys   import CAWAS
 from keys   import MA_SIGNATURE
+from keys   import APP_QUERY
 
 application = Flask(__name__)
 
@@ -601,6 +602,31 @@ def validate_jwt(token):
         ret['status'] = 401
         ret['body']   = {'status': 'failed', 'message': str(e)}
     return Response(response=dumps(ret['body']), status=ret['status'])
+
+@application.route('/v1/app/android/version/', methods=['GET'])
+@application.route('/v1/app/android/version', methods=['GET'])
+def app_android_version():
+    ret = {}
+    try:
+        if 'X-APP-QUERY' in request.headers:
+            private_key = request.headers['X-APP-QUERY']
+            if private_key == APP_QUERY:
+                ret['status'] = 200
+                f = open('android_app_ver.json')
+                ret['body']   = f.read()
+                f.close()
+            else:
+                ret['status'] = 401
+                ret['body']   = dumps({'status': 'failed', 'message':'Unauthorized'})
+        else:
+            ret['status'] = 401
+            ret['body']   = dumps({'status': 'failed', 'message':'Unauthorized'})
+
+    except Exception as e:
+        ret['status'] = 401
+        ret['body']   = dumps({'status': 'failed', 'message': str(e)})
+    return Response(response=ret['body'], status=ret['status'])
+
 #--------------------------------------------------------------------------------------------
 # Ester Egg
 #--------------------------------------------------------------------------------------------

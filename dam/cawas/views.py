@@ -12,6 +12,7 @@ from Controller.EpisodeController import EpisodeController
 from Controller.BlockController import BlockController
 from Controller.CategoryController import CategoryController
 from Controller.SliderController import SliderController
+from Controller.CableOperatorController import CableOperatorController
 
 from Controller.LogController import LogController
 from models import Channel, Device, Slider,  Episode, EpisodeMetadata, ImageQueue, PublishQueue, \
@@ -512,6 +513,10 @@ def list_categories_view(request):
     return gc.list(request)
 
 
+
+
+
+
 #<CRUD CATEGORIES>
 def add_category_view(request):
     controller = CategoryController()
@@ -521,7 +526,6 @@ def add_category_view(request):
         controller.add(request)
         return redirect(list_categories_view)
 
-
 def edit_category_view(request, category_id):
     controller = CategoryController()
     if request.method == 'GET':
@@ -529,6 +533,42 @@ def edit_category_view(request, category_id):
     if request.method == 'POST':
         controller.edit(request, category_id)
         return redirect(list_categories_view)
-
 #</CRUD CATEGORIES>
 
+
+
+#<CRUD CABLE OPERATOR>
+def add_cableoperators_view(request):
+    controller = CableOperatorController()
+    if request.method == 'GET':
+        return controller.add(request)
+    if request.method == 'POST':
+        controller.add(request)
+        return redirect(list_cableoperators_view)
+
+def edit_cableoperators_view(request, cableoperator_id):
+    controller = CableOperatorController()
+    if request.method == 'GET':
+        return controller.edit(request, cableoperator_id)
+    if request.method == 'POST':
+        controller.edit(request, cableoperator_id)
+        return redirect(list_cableoperators_view)
+
+
+def list_cableoperators_view(request):
+    c = CableOperatorController()
+    return c.list(request)
+
+def unpublish_cableoperators_view(request, id):
+    controller = CableOperatorController()
+    controller.unpublish(request, id)
+    if controller.code_return == RETURN_OK:
+        return redirect(list_cableoperators_view)
+
+def publish_cableoperators_view(request, id):
+    controller = CableOperatorController()
+    controller.publish(request, id)
+    if controller.code_return == RETURN_OK:
+        return redirect(list_cableoperators_view)
+
+#</CRUD CATEGORIES>
