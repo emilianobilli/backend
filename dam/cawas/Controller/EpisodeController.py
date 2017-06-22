@@ -170,9 +170,7 @@ class EpisodeController(object):
             #countries = vepisode.serie.asset
             serie = vepisode.serie
             asset = serie.asset
-            print 'serie: ' + str(serie)
-            print 'asset: ' + str(asset)
-            print 'target: ' + str(asset.target_country)
+
             vepisode.save()
 
             vepisode.asset.target_country = []
@@ -415,17 +413,6 @@ class EpisodeController(object):
                     self.code_return = -1
                     return self.code_return
 
-            # CARGAR Countries al Asset del Episode
-            if (decjson['Episode']['countries'] is not None):
-                countries = decjson['Episode']['countries']
-                for item in countries:
-                    try:
-                        country = Country.objects.get(id=item['country_id'])
-                        vepisode.asset.target_country.add(country)
-                    except Country.DoesNotExist as e:
-                        request.session['list_episode_message'] = "Error: No Existe Pais (" + str(e.message) + ")"
-                        request.session['list_episode_flag'] = FLAG_ALERT
-                        self.code_return = -1
 
             vepisode.save()
 
