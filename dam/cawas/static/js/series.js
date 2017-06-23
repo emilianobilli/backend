@@ -35,6 +35,9 @@ $('#search_category').multiselect({
         }
     });
 
+    $("#btnsearch").click(function(){
+           $("#searchForID").submit();
+    });
 
     if(resultado=="success"){
         $("#myModal-OK").modal();
@@ -42,10 +45,18 @@ $('#search_category').multiselect({
     if(resultado=="error"){
         $("#myModal-ERROR").modal();
     }
-    
-     $("#btnsearch").click(function(){
-           $("#searchForID").submit();
-    });
+     /* Funcion que cuenta la cantidad de idiomas selecionados, se utiliza al momento de validar la edicion de la movie */
+    var countChecked = function() {
+    langQ = $("input:checked" ).length;
+        $('input[type=checkbox]').each(function(){
+            if (this.checked) {
+                langDesc.push($(this).attr("id"));
+            }
+        });
+
+    };
+
+
 
     $("#btngrabarypublicar").click(function(){
         $("#publicar").val("1");
@@ -97,12 +108,14 @@ $('#search_category').multiselect({
     $("#EDBtn").click(function(){
            //window.location.href = "series-edit.html?ID="+clickedTextID;
            window.location.href = "/series/edit/"+clickedTextID;
-    })
+    });
     
     // interacción del usuario al hacer click en el botón debajo de la lista de selección
-    $( "#IDBtn" ).click(function(){ 
-        $( "#idTit" ).html("AGREGANDO ID: "+clickedVal);// Agrega el ID en el título
-        $( "#hidden1" ).show();
+    $( "#IDBtn" ).click(function(){
+        if (clickedVal != null){
+            $( "#idTit" ).html("AGREGANDO ID: "+clickedVal);// Agrega el ID en el título
+            $( "#hidden1" ).show();
+        }
     })
     
     //preview de imagenes cargadas por el front end
@@ -183,26 +196,16 @@ $('#search_category').multiselect({
     $("#sendBut").click(function(){
         clickedToSubmit=1;
         checkAll();
-    })
+    });
     
     $("body").mouseup(function(){
         if(checkedOnce>0 && checkVal>0 ){
             clickedToSubmit=0;
             checkAll();      
         }
-    })
+    });
     
-     /* Funcion que cuenta la cantidad de idiomas selecionados, se utiliza al momento de validar la edicion de la movie */
-    var countChecked = function(){
-    langQ = $("input:checked" ).length;
 
-        $('input[type=checkbox]').each(function(){
-            if (this.checked) {
-                langDesc.push($(this).attr("id"));
-            }
-        });
-
-    };
 
     function checkAll(){
         // this function checks for all form values and makes json string to post or alerts user to complete fields.
@@ -218,7 +221,7 @@ $('#search_category').multiselect({
         var elenco_selected = $('#elenco').val();
         var year_selected = $('#releaseYear').val();
         var publicar = $('#publicar').val();
-         countChecked();
+        countChecked();
         // chequea original Title
         if(original_Title=="" || original_Title==" ")
         {
@@ -348,18 +351,17 @@ $('#search_category').multiselect({
         }
         
         checkedOnce++;
-        
-                
-        
-        
-        // helper subfunctions
-        
-        
+
+    }
+
+
+
+
             function errorMe(theField){
                 if ($(theField).parent().hasClass('has-success')){
                     $(theField).parent().removeClass('has-success');
                 }
-                
+
                 if($(theField).next(".glyphicon").hasClass('glyphicon-ok')){
                     $(theField).next(".glyphicon").removeClass('glyphicon-ok');
                 }
@@ -370,22 +372,22 @@ $('#search_category').multiselect({
                     $("#channelSelect").children(".select2-selection--single").css("display","none");
                         //.css("border","1px #ff0000 solid!important");
                 }
-                
+
             }
-        
+
             function okMe(theField){
                 if ($(theField).parent().hasClass('has-error')){
                     $(theField).parent().removeClass('has-error');
                 }
-                
+
                 if($(theField).next(".glyphicon").hasClass('glyphicon-remove')){
                     $(theField).next(".glyphicon").removeClass('glyphicon-remove');
                 }
                 $(theField).parent().addClass("has-success");
                 $(theField).next(".glyphicon").addClass("glyphicon-ok");
-                
+
             }
-        
+
             function explodeArray(arr, indexname){
                 var lngth = arr.length;
                 var stringIt = '[';
@@ -398,9 +400,12 @@ $('#search_category').multiselect({
                 stringIt += ']';
                 return(stringIt);
             }
-        
+
             function checkLangs(arr){ // itera sobre los lenguajes seleccionados buscando errores
                 var lngth = arr.length;
+                var lenguajescargados = 0;
+
+                var lengactualok = 1;
                 for(i=0; i<lngth; i++){
                     var lang=arr[i];
                     /* check title */
@@ -408,28 +413,40 @@ $('#search_category').multiselect({
                     if(titCont==""){
                         errorMe("#tit_"+lang);
                         checkVal++;
+                        lengactualok = 0;
                     }else{
                         okMe("#tit_"+lang);
+
                     }
                     /* check desc */
                     var descCont = $("#short_desc_"+lang).val().trim();
                     if(descCont.length < 1){
                         errorMe("#short_desc_"+lang);
                         checkVal++;
+                        lengactualok = 0;
                     }else{
                         okMe("#short_desc_"+lang);
                     }
-                    
+
+                    if (lengactualok == 1){
+                        lenguajescargados = lenguajescargados + 1 ;
+                    }
+
+
+                    if (lenguajescargados > 0 && lengactualok > 1){
+                        checkVal = 0;
+                    }
+
                 }
             }
-        
+
             function addSerieMetadata(arr){
                 var lngth = arr.length;
                 var myLangs = "";
-                
+
                 for(i=0; i<lngth; i++){
                     var lang=arr[i];
-                    
+
                     var tit = $("#tit_"+lang).val();
                     var short = $("#short_desc_"+lang).val().trim();
                     var long = $("#short_desc_"+lang).val().trim();
@@ -445,8 +462,8 @@ $('#search_category').multiselect({
                 }
                 return(myLangs);
             };
-        
-        
+
+
             function submitJson(){
                 if(checkVal==0){
                     var myGirls=explodeArray(pornstars_selected,"girl_id");
@@ -460,8 +477,8 @@ $('#search_category').multiselect({
                     myJSON+='"channel_id":"'+canal_selected+'",';
                     myJSON+='"year":'+year_selected+',';
 
-                    if (elenco_selected==''){myJSON+='"cast":null,';}else{myJSON+='"cast":"'+elenco_selected+'",';}
-                    if (director_selected==''){myJSON+='"directors":null,';}else{myJSON+='"directors":"'+director_selected+'",';}
+                    if (elenco_selected==''){myJSON+='"cast":"",';}else{myJSON+='"cast":"'+elenco_selected+'",';}
+                    if (director_selected==''){myJSON+='"directors":"",';}else{myJSON+='"directors":"'+director_selected+'",';}
                     if (myGirls=="[]"){myJSON+='"girls":null,';}else{myJSON+='"girls":'+myGirls+',';}
                     if (myCountries=="[]"){myJSON+='"countries":null,'; }else{myJSON+='"countries":'+myCountries+',';}
 
@@ -473,9 +490,11 @@ $('#search_category').multiselect({
                     console.log(myJSON);
                     $("#varsToJSON").val(myJSON);
                     $("#serieForm").submit();
-                  }  
+                  }
             }
-        
-    }
-    
+
+
+
+
+
 });
