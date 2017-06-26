@@ -35,9 +35,7 @@ $('#search_category').multiselect({
         }
     });
 
-    $("#btnsearch").click(function(){
-           $("#searchForID").submit();
-    });
+
 
     if(resultado=="success"){
         $("#myModal-OK").modal();
@@ -59,6 +57,7 @@ $('#search_category').multiselect({
 
 
     $("#btngrabarypublicar").click(function(){
+
         $("#publicar").val("1");
         clickedToSubmit=1;
         checkAll();
@@ -75,7 +74,19 @@ $('#search_category').multiselect({
     var clickedVal; // recoge el valor del ID seleccionado en la lista de movies;
     var clickedText; // recoge el nombre seleccionado en la lista de edición de movies;
     var clickedTextID; // recoge el ID nombre seleccionado en la lista de edición de movies;
-    
+    var pornstars_selected = "";
+    var categories_selected = "";
+    var paises_selected = "";
+    var asset_Id ="";
+    var original_Title = "";
+    var canal_selected="";
+    var director_selected ="";
+    var elenco_selected="" ;
+    var year_selected ="" ;
+    var publicar ="";
+    var myGirls="[]";
+    var myCategories="[]";
+    var myCountries="[]";
     // activar los selects con filtro
     
     $("#serie-edit").select2({placeholder: "Despliega la lista"});
@@ -112,10 +123,10 @@ $('#search_category').multiselect({
     
     // interacción del usuario al hacer click en el botón debajo de la lista de selección
     $( "#IDBtn" ).click(function(){
-        if (clickedVal != null){
-            $( "#idTit" ).html("AGREGANDO ID: "+clickedVal);// Agrega el ID en el título
+
+
             $( "#hidden1" ).show();
-        }
+
     })
     
     //preview de imagenes cargadas por el front end
@@ -193,7 +204,8 @@ $('#search_category').multiselect({
       }
     
     /* triggers for checkALL function */
-    $("#sendBut").click(function(){
+    $("#sendBut").click(function(e){
+        e.preventDefault();
         clickedToSubmit=1;
         checkAll();
     });
@@ -211,16 +223,14 @@ $('#search_category').multiselect({
         // this function checks for all form values and makes json string to post or alerts user to complete fields.
         console.log("checking form...");
         checkVal = 0;
-        var asset_Id = $('#movieID').val();
-        var original_Title = $('#orginalTitle').val();
-        var canal_selected = $('#canalSelect option:selected');
-        var pornstars_selected = [];
-        var categories_selected = [];
-        var paises_selected = [];
-        var director_selected = $('#director').val();
-        var elenco_selected = $('#elenco').val();
-        var year_selected = $('#releaseYear').val();
-        var publicar = $('#publicar').val();
+         asset_Id = $('#movieID').val();
+         original_Title = $('#orginalTitle').val();
+         canal_selected = $('#canalSelect option:selected');
+
+         director_selected = $('#director').val();
+         elenco_selected = $('#elenco').val();
+         year_selected = $('#releaseYear').val();
+         publicar = $('#publicar').val();
         countChecked();
         // chequea original Title
         if(original_Title=="" || original_Title==" ")
@@ -280,7 +290,7 @@ $('#search_category').multiselect({
                    categories_selected.push(asset_id_aux);
                }
             })
-            console.log("search_girls_to_selected:"+categories_selected);
+            console.log("search_category_to_selected:"+categories_selected);
         }
 
         //search_to_paises - No es obligatorio
@@ -405,7 +415,7 @@ $('#search_category').multiselect({
                 var lngth = arr.length;
                 var lenguajescargados = 0;
 
-                var lengactualok = 1;
+                var lengactualok = true; //true
                 for(i=0; i<lngth; i++){
                     var lang=arr[i];
                     /* check title */
@@ -413,7 +423,7 @@ $('#search_category').multiselect({
                     if(titCont==""){
                         errorMe("#tit_"+lang);
                         checkVal++;
-                        lengactualok = 0;
+                        lengactualok = false;
                     }else{
                         okMe("#tit_"+lang);
 
@@ -423,19 +433,17 @@ $('#search_category').multiselect({
                     if(descCont.length < 1){
                         errorMe("#short_desc_"+lang);
                         checkVal++;
-                        lengactualok = 0;
+                        lengactualok = false;
                     }else{
                         okMe("#short_desc_"+lang);
                     }
 
-                    if (lengactualok == 1){
+                    if (lengactualok == true){
                         lenguajescargados = lenguajescargados + 1 ;
                     }
 
 
-                    if (lenguajescargados > 0 && lengactualok > 1){
-                        checkVal = 0;
-                    }
+
 
                 }
             }
@@ -466,13 +474,20 @@ $('#search_category').multiselect({
 
             function submitJson(){
                 if(checkVal==0){
-                    var myGirls=explodeArray(pornstars_selected,"girl_id");
-                    var myCategories=explodeArray(categories_selected,"category_id");
-                    var myCountries=explodeArray(paises_selected,"country_id");
+
+
+
+                    if (pornstars_selected.length > 0)
+                        myGirls=explodeArray(pornstars_selected,"girl_id");
+
+                    if (categories_selected.length > 0)
+                        myCategories=explodeArray(categories_selected,"category_id");
+
+                    if (paises_selected.length > 0)
+                        myCountries=explodeArray(paises_selected,"country_id");
 
                     var myJSON = '';
                     myJSON+='{"Serie":{';
-                    myJSON+='"asset_id":"'+asset_Id+'",';
                     myJSON+='"original_title":"'+original_Title+'",';
                     myJSON+='"channel_id":"'+canal_selected+'",';
                     myJSON+='"year":'+year_selected+',';
@@ -481,8 +496,8 @@ $('#search_category').multiselect({
                     if (director_selected==''){myJSON+='"directors":"",';}else{myJSON+='"directors":"'+director_selected+'",';}
                     if (myGirls=="[]"){myJSON+='"girls":null,';}else{myJSON+='"girls":'+myGirls+',';}
                     if (myCountries=="[]"){myJSON+='"countries":null,'; }else{myJSON+='"countries":'+myCountries+',';}
+                    if (myCategories=="[]"){myJSON+='"categories":null,'; }else{myJSON+='"categories":'+myCategories+',';}
 
-                    myJSON+='"categories":'+myCategories+',';
                     myJSON+='"publicar":"'+publicar+'",';
                     myJSON+='"Seriemetadatas": [';
                     myJSON+= addSerieMetadata(langDesc);
