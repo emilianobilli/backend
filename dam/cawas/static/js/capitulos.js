@@ -1,5 +1,7 @@
 $( document ).ready(function() {
-    
+
+    var dataTable = $('#example').dataTable({"sPaginationType": "full_numbers"});
+
     console.log( "ready!" );
     var minutos = 0 ;
     var segundos = 0 ;

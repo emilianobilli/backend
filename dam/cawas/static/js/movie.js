@@ -1,6 +1,7 @@
 
 $( document ).ready(function() {
 
+    var dataTable = $('#example').dataTable({"sPaginationType": "full_numbers"});
 
     $('#search_girls').multiselect({
         search: {
@@ -145,7 +146,7 @@ $('#runtime').mask('00:00:00',{placeholder: "HH:mm:ss"});
         if (clickedTextID != null){
                window.location.href = "/movies/edit/"+clickedTextID;
         }
-    })
+    });
     
     // interacción del usuario al hacer click en el botón debajo de la lista de selección
     $( "#IDBtn" ).click(function(){ 
@@ -242,7 +243,7 @@ $('#runtime').mask('00:00:00',{placeholder: "HH:mm:ss"});
         clickedToSubmit=1;
         checkAll();
     })
-    
+
     $("body").mouseup(function(){
         if(checkedOnce>0 && checkVal>0 ){
             clickedToSubmit=0;
@@ -393,10 +394,7 @@ $('#runtime').mask('00:00:00',{placeholder: "HH:mm:ss"});
         }
         
         checkedOnce++;
-        
-                
-        
-        
+
         // helper subfunctions
             function errorMe(theField){
                 if ($(theField).parent().hasClass('has-success')){
