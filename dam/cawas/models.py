@@ -584,7 +584,7 @@ class EpisodeMetadata(models.Model):
                 pass
 
         dict["lang"]           = self.language.code
-        dict["title"]          = self.title
+        dict["title"]          = "%s Temp.%d Ep.%d" % (self.title, self.episode.season, self.episode.chapter)
         if self.summary_short != '':
             dict["summary_short"]  = self.summary_short
         if self.summary_long != '':
