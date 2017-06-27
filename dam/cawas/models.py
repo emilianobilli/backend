@@ -584,6 +584,7 @@ class EpisodeMetadata(models.Model):
                 pass
 
         dict["lang"]           = self.language.code
+        """
         if self.episode.season < 10:
             season = "0%d" % self.episode.season
         else:
@@ -593,6 +594,8 @@ class EpisodeMetadata(models.Model):
         else:
             episode = "%d" % self.episode.chapter
         dict["title"]          = "%s S%sE%s" % (self.title, season, episode)
+        """
+        dict["title"]          = self.title
         if self.summary_short != '':
             dict["summary_short"]  = self.summary_short
         if self.summary_long != '':
