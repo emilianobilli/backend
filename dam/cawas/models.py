@@ -703,6 +703,8 @@ class CableOperator(models.Model):
     phone            = models.CharField(max_length=128, blank=True, null=True, help_text="Telefono del Cableoperador")
     site             = models.CharField(max_length=128, blank=True, null=True, help_text="Sitio Web")
     country          = models.ForeignKey(Country)
+    publish_date = models.DateTimeField(auto_now=False, auto_now_add=False, blank=True, null=True)
+    activated = models.BooleanField(default=False)
 
     def save(self, *args, **kwargs):
         super(CableOperator, self).save(*args, **kwargs)
