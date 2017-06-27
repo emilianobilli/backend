@@ -299,33 +299,7 @@ class SliderController(object):
                 flag = request.session['list_slider_flag']
                 request.session['list_slider_flag'] = ''
 
-
-        if request.POST:
-            titulo = request.POST['inputTitulo']
-            selectestado = request.POST['selectestado']
-            # FILTROS
-            if titulo != '':
-                if selectestado != '':
-                    sliders_list = Slider.objects.filter(slider_id__icontains=titulo, queue_status=selectestado).order_by('-id')
-                else:
-                    sliders_list = Slider.objects.filter(slider_id__icontains=titulo).order_by('-id')
-            elif selectestado != '':
-                sliders_list = Slider.objects.filter(queue_status=selectestado).order_by('-id')
-            else:
-                sliders_list = Slider.objects.all().order_by('-id')
-
-        if sliders_list is None:
-            sliders_list = Slider.objects.all().order_by('-id')
-
-        paginator = Paginator(sliders_list, 20)  # Show 25 contacts per page
-        try:
-            sliders = paginator.page(page)
-        except PageNotAnInteger:
-            # If page is not an integer, deliver first page.
-            sliders = paginator.page(1)
-        except EmptyPage:
-            # If page is out of range (e.g. 9999), deliver last page of results.
-            sliders = paginator.page(paginator.num_pages)
+        sliders = Slider.objects.all().order_by('-id')
 
         context = {'message': message, 'flag':flag, 'registros': sliders, 'titulo': titulo, 'usuario': usuario}
         return render(request, 'cawas/sliders/list.html', context)

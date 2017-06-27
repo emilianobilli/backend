@@ -555,36 +555,9 @@ class MovieController(object):
                 flag = request.session['list_movie_flag']
                 request.session['list_movie_flag'] = ''
 
-        if request.POST:
-            titulo = request.POST['inputTitulo']
-            selectestado = request.POST['selectestado']
 
-            if titulo != '':
-                assets = Asset.objects.filter(asset_id__icontains=titulo)
-                movies_sel = Movie.objects.filter(Q(original_title__icontains=titulo)|Q(asset__in=assets))
-            else:
-                movies_sel = Movie.objects.all()
-
-            if selectestado != '':
-                movies_list = MovieMetadata.objects.filter(movie__in=movies_sel, queue_status=selectestado).order_by('-id')
-            else:
-                movies_list = MovieMetadata.objects.filter(movie__in=movies_sel).order_by('-id')
-
-        if movies_list is None:
-            movies_list = MovieMetadata.objects.all().order_by('-id')
-
-        paginator = Paginator(movies_list, 20)  # Show 25 contacts per page
-        try:
-            movies = paginator.page(page)
-        except PageNotAnInteger:
-            # If page is not an integer, deliver first page.
-            movies = paginator.page(1)
-        except EmptyPage:
-            # If page is out of range (e.g. 9999), deliver last page of results.
-            movies = paginator.page(paginator.num_pages)
-
+        movies = MovieMetadata.objects.all().order_by('-id')
         context = {'message': message, 'flag':flag, 'registros': movies, 'titulo': titulo, 'usuario': usuario}
-
         return render(request, 'cawas/movies/list.html', context)
 
 

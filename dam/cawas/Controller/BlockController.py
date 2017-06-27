@@ -293,35 +293,7 @@ class BlockController(object):
                 flag = request.session['list_block_flag']
                 request.session['list_block_flag'] = ''
 
-
-        if request.POST:
-            titulo = request.POST['inputTitulo']
-            selectestado = request.POST['selectestado']
-
-            # FILTROS
-            if titulo != '':
-                if selectestado != '':
-                    blocks_list = Block.objects.filter(Q(name__icontains=titulo)|Q(block_id__icontains=titulo), queue_status=selectestado).order_by('-id')
-                else:
-                    blocks_list = Block.objects.filter(Q(name__icontains=titulo)|Q(block_id__icontains=titulo)).order_by('-id')
-            elif selectestado != '':
-                blocks_list = Block.objects.filter(queue_status=selectestado).order_by('-id')
-            else:
-                blocks_list = Block.objects.all().order_by('-id')
-
-        if blocks_list is None:
-            blocks_list = Block.objects.all().order_by('-id')
-
-        paginator = Paginator(blocks_list, 20)  # Show 25 contacts per page
-        try:
-            blocks = paginator.page(page)
-        except PageNotAnInteger:
-            # If page is not an integer, deliver first page.
-            blocks = paginator.page(1)
-        except EmptyPage:
-            # If page is out of range (e.g. 9999), deliver last page of results.
-            blocks = paginator.page(paginator.num_pages)
-
+        blocks = Block.objects.all().order_by('-id')
         context = {'message': message, 'flag':flag,  'registros': blocks, 'titulo': titulo, 'usuario': usuario}
         return render(request, 'cawas/blocks/list.html', context)
 

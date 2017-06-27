@@ -139,7 +139,6 @@ class SerieController(object):
             # Fin datos serie
 
             # BORRAR Y CREAR METADATA
-
             vseriemetadatas = decjson['Serie']['Seriemetadatas']
             for item in vseriemetadatas:
                 smd = SerieMetadata()
@@ -194,7 +193,7 @@ class SerieController(object):
             return redirect(lc.login_view(request))
 
         # VARIABLES LOCALES
-        message = ''
+        message  = ''
         flag = ''
         vgrabarypublicar=''
         if request.method == 'POST':
@@ -262,9 +261,10 @@ class SerieController(object):
 
             if (decjson['Serie']['cast'] is not None):
                 vserie.cast = decjson['Serie']['cast']
+                print 'dato: ' + vserie.cast
             if (decjson['Serie']['directors'] is not None):
                 vserie.directors = decjson['Serie']['directors']
-
+                print 'dato: ' + vserie.directors
             vserie.image = vimg
             vserie.save()
 
@@ -439,9 +439,9 @@ class SerieController(object):
                    'vcategoryselected': vcategoryselected,
                    'vcategorynotselected': vcategorynotselected,
                    'vepisodes':vepisodes,
-                   'flag':flag,
                    'countries_selected':countries_selected,
-                   'countries_notselected':countries_notselected
+                   'countries_notselected':countries_notselected,
+                   'message':message
                    }
 
         return render(request, 'cawas/series/edit.html', context)
@@ -472,34 +472,8 @@ class SerieController(object):
                 flag = request.session['list_serie_flag']
                 request.session['list_serie_flag'] = ''
 
-        if request.POST:
-            titulo = request.POST['inputTitulo']
-            selectestado = request.POST['selectestado']
-            # FILTROS
-            if titulo != '':
-                assets = Asset.objects.filter(asset_id__icontains=titulo)
-                series_sel = Serie.objects.filter(Q(original_title__icontains=titulo) | Q(asset__in=assets))
-            else:
-                series_sel = Serie.objects.all()
 
-            if selectestado != '':
-                series_list = SerieMetadata.objects.filter(serie__in=series_sel, queue_status=selectestado).order_by('-id')
-            else:
-                series_list = SerieMetadata.objects.filter(serie__in=series_sel).order_by('-id')
-
-
-        if series_list is None:
-            series_list = SerieMetadata.objects.all().order_by('-id')
-
-        paginator = Paginator(series_list, 20)  # Show 25 contacts per page
-        try:
-            series = paginator.page(page)
-        except PageNotAnInteger:
-            # If page is not an integer, deliver first page.
-            series = paginator.page(1)
-        except EmptyPage:
-            # If page is out of range (e.g. 9999), deliver last page of results.
-            series = paginator.page(paginator.num_pages)
+        series = SerieMetadata.objects.all().order_by('-id')
 
         context = {'message':message, 'flag':flag, 'registros': series, 'titulo': titulo, 'usuario': usuario}
         return render(request, 'cawas/series/list.html', context)

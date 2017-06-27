@@ -52,6 +52,9 @@ class GirlController(object):
             print 'debug2'
             #try:
             vimg.name = vasset.asset_id
+
+
+
             # IMAGEN Portrait
             if (request.FILES.has_key('ThumbHor')):
                 if request.FILES['ThumbHor'].name != '':
@@ -380,35 +383,8 @@ class GirlController(object):
             self.message_return =''
             flag='success'
 
-        if request.POST:
-            titulo = request.POST['inputTitulo']
-            selectestado = request.POST['selectestado']
 
-            #FILTROS
-            if titulo != '':
-                assets = Asset.objects.filter(asset_id__icontains=titulo)
-                girls_sel = Girl.objects.filter(Q(name__icontains=titulo)|Q(asset__in=assets))
-            else:
-                girls_sel = Girl.objects.all()
-
-            if selectestado != '':
-                girls_list = GirlMetadata.objects.filter(girl__in=girls_sel, queue_status=selectestado).order_by('-id')
-            else:
-                girls_list = GirlMetadata.objects.filter(girl__in=girls_sel).order_by('-id')
-
-
-        if girls_list is None:
-            girls_list = GirlMetadata.objects.all().order_by('-id')
-
-        paginator = Paginator(girls_list, 20)  # Show 25 contacts per page
-        try:
-            girls = paginator.page(page)
-        except PageNotAnInteger:
-            # If page is not an integer, deliver first page.
-            girls = paginator.page(1)
-        except EmptyPage:
-            # If page is out of range (e.g. 9999), deliver last page of results.
-            girls = paginator.page(paginator.num_pages)
+        girls = GirlMetadata.objects.all().order_by('-id')
 
         context = {'message': message,'flag':flag, 'registros': girls,  'usuario': usuario}
         return render(request, 'cawas/girls/list.html', context)

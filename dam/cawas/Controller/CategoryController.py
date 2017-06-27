@@ -328,34 +328,7 @@ class CategoryController(object):
             self.message_return =''
             flag='success'
 
-        if request.POST:
-            titulo = request.POST['inputTitulo']
-            selectestado = request.POST['selectestado']
-            print 'selectestado' + selectestado
-            #FILTROS
-            if titulo != '':
-                #Q(original_name__icontains=titulo)|Q(category_id__icontains=titulo)
-                categories_sel = Category.objects.filter(Q(original_name__icontains=titulo)|Q(category_id__icontains=titulo)).order_by('oringinal_name')
-            else:
-                categories_sel = Category.objects.all().order_by('oringinal_name')
-
-            if selectestado != '':
-                categories_list = CategoryMetadata.objects.filter(category__in=categories_sel, queue_status=selectestado).order_by('-id')
-            else:
-                categories_list = CategoryMetadata.objects.filter(category__in=categories_sel).order_by('-id')
-
-
-        if categories_list is None:
-            categories_list = CategoryMetadata.objects.all().order_by('-id')
-
-        paginator = Paginator(categories_list, 20)  # Show 25 contacts per page
-        try:
-            categories = paginator.page(page)
-        except PageNotAnInteger:
-            categories = paginator.page(1)
-        except EmptyPage:
-            categories = paginator.page(paginator.num_pages)
-
+        categories = CategoryMetadata.objects.all().order_by('-id')
         context = {'message': message, 'flag':flag, 'registros':categories, 'usuario':usuario}
         return render(request, 'cawas/categories/list.html', context)
 

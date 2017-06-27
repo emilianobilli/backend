@@ -541,39 +541,8 @@ class EpisodeController(object):
 
         page = request.GET.get('page')
         request.POST.get('page')
-        episodes_list = None
 
-        if request.POST:
-            titulo = request.POST['inputTitulo']
-            selectestado = request.POST['selectestado']
-            # FILTROS
-            #Q(name__icontains=titulo) | Q(block_id__icontains=titulo)
-            if titulo != '':
-                assets = Asset.objects.filter(asset_id__icontains=titulo)
-                episodes_sel = Episode.objects.filter(Q(original_title__icontains=titulo)|Q(asset__in=assets))
-            else:
-                episodes_sel = Episode.objects.all()
-
-            if selectestado != '':
-                episodes_list = EpisodeMetadata.objects.filter(episode__in=episodes_sel, queue_status=selectestado).order_by('-id')
-            else:
-                episodes_list = EpisodeMetadata.objects.filter(episode__in=episodes_sel).order_by('-id')
-
-
-
-        if episodes_list is None:
-            episodes_list = EpisodeMetadata.objects.all().order_by('-id')
-
-        paginator = Paginator(episodes_list, 20)  # Show 25 contacts per page
-        try:
-            episodes = paginator.page(page)
-        except PageNotAnInteger:
-            # If page is not an integer, deliver first page.
-            episodes = paginator.page(1)
-        except EmptyPage:
-            # If page is out of range (e.g. 9999), deliver last page of results.
-            episodes = paginator.page(paginator.num_pages)
-
+        episodes = EpisodeMetadata.objects.all().order_by('-id')
         context = {'message': message,'flag':flag, 'registros': episodes, 'usuario': usuario}
         return render(request, 'cawas/episodes/list.html', context)
 
