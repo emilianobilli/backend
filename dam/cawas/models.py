@@ -584,7 +584,18 @@ class EpisodeMetadata(models.Model):
                 pass
 
         dict["lang"]           = self.language.code
-        dict["title"]          = "%s Temp.%d Ep.%d" % (self.title, self.episode.season, self.episode.chapter)
+        """
+        if self.episode.season < 10:
+            season = "0%d" % self.episode.season
+        else:
+            season = "%d" % self.episode.season
+        if self.episode.chapter < 10:
+            episode = "0%d" % self.episode.chapter
+        else:
+            episode = "%d" % self.episode.chapter
+        dict["title"]          = "%s S%sE%s" % (self.title, season, episode)
+        """
+        dict["title"]          = self.title
         if self.summary_short != '':
             dict["summary_short"]  = self.summary_short
         if self.summary_long != '':
@@ -703,8 +714,8 @@ class CableOperator(models.Model):
     phone            = models.CharField(max_length=128, blank=True, null=True, help_text="Telefono del Cableoperador")
     site             = models.CharField(max_length=128, blank=True, null=True, help_text="Sitio Web")
     country          = models.ForeignKey(Country)
-    publish_date = models.DateTimeField(auto_now=False, auto_now_add=False, blank=True, null=True)
-    activated = models.BooleanField(default=False)
+    publish_date     = models.DateTimeField(auto_now=False, auto_now_add=False, blank=True, null=True)
+    activated        = models.BooleanField(default=False)
 
     def save(self, *args, **kwargs):
         super(CableOperator, self).save(*args, **kwargs)
