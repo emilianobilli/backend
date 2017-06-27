@@ -28,115 +28,57 @@
               <div class="row">
                   <div class="col-lg-12 col-md-12 col-sm-12">
                        <h2>Listado de Girls </h2>
-                       <h3>Nueva búsqueda </h3>
+
                   </div>
               </div>
 
-           <!-- Second Row -->
-              <div class="row">
-                  <form method="post" action="" name="searchForID"
-                              id="searchForID" enctype="multipart/form-data">
-                  <div class="col-lg-4 col-md-4 col-sm-4">
-                            <div class="col-xs-12 col-md-2 col-lg-2 ">
-                                 Por <span class="boldIt">Nombre</span>
-                            </div>
 
-                            <div class="col-xs-11 col-md-9 col-lg-9 ">
-                                <div>
-                                    <input type="text" class="form-control fLEFT top6"
-                                           id="inputTitulo" placeholder="Ingresar un texto..." name="inputTitulo" required>
-                                </div>
-                            </div>
-
-                  </div>
-
-                  <div class="col-lg-4 col-md-4 col-sm-4">
-                         <div class="col-xs-12 col-md-2 col-lg-2 ">
-                                Por <span class="boldIt">Status Queued</span>
-                         </div>
-                         <div class="col-xs-12 col-md-8 col-lg-8 ">
-                            <select id="selectestado" name="selectestado" class="form-control top6">
-                               <option value=""></option>
-                               <option value="Q">Queued</option>
-                               <option value="D">Done</option>
-                                <option value="E">Error</option>
-                            </select>
-                        </div>
-
-                        <div class="col-xs-1 col-md-1 col-lg-1">
-                            <span name="btnsearch" id="btnsearch"class="glyphicon glyphicon-search GLY-search fRIGHT top6" id="glyID"> </span>
-                       </div>
-                  </div>
-                </form>
-              </div>
-
-
-            <!-- GRID row -->
              <div class="row">
-                 <br>
+
                  <div class="col-lg-2 col-md-2 col-sm-2" >
                      <a href="/girls/add" class="btn btn-lg btn-primary btn-block logOFF" >Nuevo</a>
                  </div>
-
-                 <div class="col-lg-8 col-md-8 col-sm-8" >
-
-                  </div>
-                 <div class="col-lg-2 col-md-2 col-sm-2" >
-                    <div class="pagination">
-                            <span class="step-links">
-                                {% if registros.has_previous %}
-                                   <b> <a href="?page={{ registros.previous_page_number }}"> << </a></b>
-                                {% endif %}
-
-                                <span class="current">
-                                    Página {{ registros.number }} of {{ registros.paginator.num_pages }}.
-                                </span>
-
-                                {% if registros.has_next %}
-                                    <b><a href="?page={{ registros.next_page_number }}"> >> </a></b>
-                                {% endif %}
-                            </span>
-                        </div>
-                     </div>
-                </div>
+            </div>
+            <br>
             <div class="row">
-
-                <div class="table">
-                    <div class="tb-row tb-header">
-                        <div class="tb-cell">ID</div>
-                        <div class="tb-cell">Nombre</div>
-                        <div class="tb-cell">Idioma</div>
-                        <div class="tb-cell">Estado</div>
-                        <div class="tb-cell">Activado</div>
-                        <div class="tb-cell">En Cola de Pub.</div>
-                        <div class="tb-cell">Fec. Publicación</div>
-                        <div class="tb-cell">Acciones</div>
+                 <table class="" id="example">
+                      <thead>
+                        <th class="tb-cell">ID</th>
+                        <th class="tb-cell">Nombre</th>
+                        <th class="tb-cell">Idioma</th>
+                        <th class="tb-cell">Estado</th>
+                        <th class="tb-cell">Activado</th>
+                        <th class="tb-cell">En Cola de Pub.</th>
+                        <th class="tb-cell">Fec. Publicación</th>
+                        <th class="tb-cell">Acciones</th>
                         {% if usuario.is_superuser == true %}
-                            <div class="tb-cell"></div>
+                            <th class="tb-cell"></th>
                         {% endif %}
-                        <div class="tb-cell"></div>
-                    </div>
+                        <th class="tb-cell"></th>
+
+                    </thead>
+                    <tbody>
                      {% for item in registros %}
-                        <div class="tb-row">
-                            <div class="tb-cell">
-                                <input type="checkbox" id="{{ item.girl.asset.asset_id}}" value="{{ item.girl.asset.asset_id}}"> {{ item.girl.asset.asset_id}}
-                            </div>
-                            <div class="tb-cell">{{ item.girl.name }}</div>
-                            <div class="tb-cell">{{ item.language.name }}</div>
+                       <tr>
+                            <td class="tb-cell">
+                                {{ item.girl.asset.asset_id}}
+                            </td>
+                            <td class="tb-cell">{{ item.girl.name }}</td>
+                            <td class="tb-cell">{{ item.language.name }}</td>
 
                             {% if item.publish_status == 0  %}
-                                <div class="tb-cell">Sin Publicar</div>
+                                <td class="tb-cell">Sin Publicar</td>
                             {% else %}
-                                <div class="tb-cell">Publicado</div>
+                                <td class="tb-cell">Publicado</td>
                             {% endif %}
 
                             {% if item.activated == 0  %}
-                                <div class="tb-cell">NO</div>
+                                <td class="tb-cell">NO</td>
                             {% else %}
-                                <div class="tb-cell">SI</div>
+                                <td class="tb-cell">SI</td>
                             {% endif %}
 
-                            <div class="tb-cell">
+                            <td class="tb-cell">
                                 {% if item.queue_status == 'Q'  %}
                                     Queued
                                 {% elif item.queue_status == 'D' %}
@@ -144,52 +86,30 @@
                                 {% elif item.queue_status == 'E' %}
                                     Error
                                 {% endif %}
-                            </div>
-                            <div class="tb-cell">{{ item.publish_date|date:'d-m-Y' }}</div>
+                            </td>
+                            <td class="tb-cell">{{ item.publish_date|date:'d-m-Y' }}</td>
 
-                            <div class="tb-cell"><a href="/girls/edit/{{ item.girl.asset.asset_id}}" class="btn-info btn tb-btn" >Editar</a></div>
+                            <td class="tb-cell"><a href="/girls/edit/{{ item.girl.asset.asset_id}}" class="btn-info btn tb-btn" >Editar</a></td>
                             {% if usuario.is_superuser == true %}
-                                <div class="tb-cell"><a href="/girls/delete/{{ item.girl.asset.asset_id}}" class="btn-danger btn tb-btn eliminar">Borrar</a></div>
+                                <td class="tb-cell"><a href="/girls/delete/{{ item.girl.asset.asset_id}}" class="btn-danger btn tb-btn eliminar">Borrar</a></td>
                             {% endif %}
 
                             {% if item.activated == 0  %}
-                               <div class="tb-cell"><a href="/girls/publish/{{ item.id}}" class="btn-success btn tb-btn publicar">Publicar</a></div>
+                               <td class="tb-cell"><a href="/girls/publish/{{ item.id}}" class="btn-success btn tb-btn publicar">Publicar</a></td>
                                  {% else %}
-                               <div class="tb-cell"><a href="/girls/unpublish/{{ item.id}}" class="btn-warning btn tb-btn desactivar">Desactivar</a></div>
+                               <td class="tb-cell"><a href="/girls/unpublish/{{ item.id}}" class="btn-warning btn tb-btn desactivar">Desactivar</a></td>
                             {% endif %}
 
-                        </div>
+                        </tr>
                     {% endfor %}
+                     </tbody>
+                </table>
 
-
-
-                </div>
-                <!-- Third Row -->
-                 <div class="row">
-                  <div class="col-lg-10 col-md-10 col-sm-10" >
-
-                  </div>
-                 <div class="col-lg-2 col-md-2 col-sm-2" >
-                    <div class="pagination">
-                            <span class="step-links">
-                                {% if registros.has_previous %}
-                                   <b> <a href="?page={{ registros.previous_page_number }}"> << </a></b>
-                                {% endif %}
-
-                                <span class="current">
-                                    Página {{ registros.number }} of {{ registros.paginator.num_pages }}.
-                                </span>
-
-                                {% if registros.has_next %}
-                                    <b><a href="?page={{ registros.next_page_number }}"> >> </a></b>
-                                {% endif %}
-                            </span>
-                        </div>
-                     </div>
-                </div>
             </div>
-            <!-- end of GRID row -->
+                <!-- Third Row -->
+
 
             <div class="fNONE"></div>
         </div>
+
 {% endblock content %}
