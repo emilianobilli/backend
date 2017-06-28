@@ -123,12 +123,12 @@ class CableOperatorController(object):
 
         #Nuevo diccionario para completar lenguages y metadata
         except Setting.DoesNotExist as e:
-            request.session['list_CableOperator_message'] = "Error al Guardar Categoria. (" + e.message + ")"
+            request.session['list_CableOperator_message'] = "Error al Guardar Cable Operador. (" + e.message + ")"
             request.session['list_CableOperator_flag'] = FLAG_ALERT
             self.code_return = -1
             return self.code_return
         except CableOperator.DoesNotExist as e:
-            request.session['list_CableOperator_message'] = "Error al Guardar Categoria. (" + e.message + ")"
+            request.session['list_CableOperator_message'] = "Error al Guardar Cable Operador. (" + e.message + ")"
             request.session['list_CableOperator_flag'] = FLAG_ALERT
             self.code_return = -1
             return self.code_return
@@ -146,7 +146,7 @@ class CableOperatorController(object):
                 operator = CableOperator.objects.get(cableoperator_id=cableoperator_id)
                 vimg = operator.image
             except Asset.DoesNotExist as e:
-                request.session['list_CableOperator_message'] = "Error al Guardar Categoria. (" + e.message + ")"
+                request.session['list_CableOperator_message'] = "Error al Guardar Cable Operador. (" + e.message + ")"
                 request.session['list_CableOperator_flag'] = FLAG_ALERT
                 self.code_return = -1
                 return self.code_return
@@ -234,7 +234,7 @@ class CableOperatorController(object):
 
         try:
             print 'debugmetadata'
-            # si es la ultima categoria metadata, se debe eliminar la metadata y la categoria
+            # si es la ultima Cable Operador metadata, se debe eliminar la metadata y la Cable Operador
             operator = CableOperator.objects.get(id=id)
 
             # 1 - VERIFICAR, si estado de publicacion esta en Q, se debe eliminar
