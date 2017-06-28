@@ -77,11 +77,11 @@ class CableOperatorController(object):
                 request.session['list_CableOperator_flag'] = FLAG_ALERT
                 self.code_return = -1
                 return self.code_return
-            except Exception as e:
-                request.session['list_CableOperator_message'] = "Error al Guardar CableOperator. (" + str(e.message) + ")"
-                request.session['list_CableOperator_flag'] = FLAG_ALERT
-                self.code_return = -1
-                return self.code_return
+            #except Exception as e:
+            #    request.session['list_CableOperator_message'] = "Error al Guardar CableOperator. (" + str(e.message) + ")"
+            #    request.session['list_CableOperator_flag'] = FLAG_ALERT
+            #    self.code_return = -1
+            #    return self.code_return
 
             request.session['list_CableOperator_message'] = 'Guardado Correctamente'
             request.session['list_CableOperator_flag'] = FLAG_SUCCESS
