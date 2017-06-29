@@ -93,6 +93,7 @@ class ApiBackendResource(object):
         self.apikey = apikey
 
     def add(self, item):
+        print 'backend_sdk_add' + str(item)
         return self.server.post(self.url, self.apikey, {"action":"add", "item":item})
 
     def update(self, item):

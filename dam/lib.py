@@ -1,5 +1,6 @@
 import django
 import os
+from django.forms.models import model_to_dict
 from django.core.exceptions import *
 os.environ.setdefault("DJANGO_SETTINGS_MODULE", "dam.settings")
 django.setup()

@@ -402,7 +402,7 @@ class GirlController(object):
             vasset_id = girlmetadata.girl.asset.asset_id
 
             # 1 - VERIFICAR, si estado de publicacion esta en Q, se debe eliminar
-            publishs = PublishQueue.objects.filter(item_id=vasset_id, status='Q', language=girlmetadata.language)
+            publishs = PublishQueue.objects.filter(item_id=vasset_id, status='Q', item_lang=girlmetadata.language)
             if publishs.count > 0:
                 publishs.delete()
 
@@ -440,7 +440,7 @@ class GirlController(object):
 
             self.code_return = 0
             request.session['list_girl_message'] = 'Metadata en ' + girlmetadata.language.name + ' de Chica ' + girlmetadata.girl.asset.asset_id + ' Despublicado Correctamente'
-            request.session['list_girl_flag'] = FLAG_ALERT
+            request.session['list_girl_flag'] = FLAG_SUCCESS
 
         except PublishZone.DoesNotExist as e:
             request.session['list_girl_message'] = 'No existe PublishZone ' +e.message

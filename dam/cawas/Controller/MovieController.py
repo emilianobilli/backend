@@ -575,7 +575,7 @@ class MovieController(object):
             vasset_id = md.movie.asset.asset_id
 
             # 1 - VERIFICAR, si estado de publicacion esta en Q, se debe eliminar
-            publishs = PublishQueue.objects.filter(item_id=vasset_id, status='Q')
+            publishs = PublishQueue.objects.filter(item_id=vasset_id, status='Q', item_lang=md.language)
             if publishs.count > 0:
                 publishs.delete()
 
