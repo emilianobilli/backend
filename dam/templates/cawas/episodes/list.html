@@ -24,7 +24,7 @@
             <!-- First Row -->
               <div class="row">
                   <div class="col-lg-12 col-md-12 col-sm-12">
-                       <h2>Listado de Episodios </h2>
+
 
                   </div>
               </div>
@@ -45,9 +45,39 @@
 
             <!-- Fin de Filtros -->
 
+
+
             <!-- GRID row -->
             <div class="row">
+                <h2> Episodios sin Metadata</h2>
+                <table class="" id="example2">
+                      <thead>
+                            <th class="tb-cell">ID</th>
+                            <th class="tb-cell">Título</th>
 
+                            <th class="tb-cell">Estado</th>
+
+                            <th class="tb-cell">Acciones</th>
+
+                        </thead>
+
+                     {% for item in episodes_sin_metadata %}
+                        <tr class="tb-row">
+                           <td class="tb-cell">{{ item.asset.asset_id}}</td>
+                            <td class="tb-cell">{{ item.original_title }}</td>
+                            <td class="tb-cell">Sin Publicar</td>
+                            <td class="tb-cell"><a href="/episodes/edit/{{ item.asset.asset_id}}" class="btn-info btn tb-btn" >Editar</a></td>
+
+                        </tr>
+                    {% endfor %}
+                 </table>
+            </div>
+            <br>
+
+
+            <!-- GRID row -->
+            <div class="row">
+                <h2>Listado de Episodios </h2>
                 <table class="" id="example">
                       <thead>
                             <th class="tb-cell">ID</th>

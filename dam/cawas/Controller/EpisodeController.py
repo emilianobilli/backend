@@ -543,7 +543,9 @@ class EpisodeController(object):
         request.POST.get('page')
 
         episodes = EpisodeMetadata.objects.all().order_by('-id')
-        context = {'message': message,'flag':flag, 'registros': episodes, 'usuario': usuario}
+        episodes_sin_metadata = Episode.objects.all().exclude(id__in = episodes)
+
+        context = {'message': message,'flag':flag, 'registros': episodes, 'episodes_sin_metadata':episodes_sin_metadata,'usuario': usuario}
         return render(request, 'cawas/episodes/list.html', context)
 
 
