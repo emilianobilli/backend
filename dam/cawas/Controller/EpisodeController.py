@@ -451,7 +451,7 @@ class EpisodeController(object):
                     ph.func_publish_image(request, vimg)
 
                     # Se vuelve a publicar la SERIE en el idioma del Episodio publicado
-                    if (PublishQueue.objects.filter(item_id=vepisode.serie.asset.asset_id,status__in=['Q', 'D']).count() < 1):
+                    if (PublishQueue.objects.filter(item_id=vepisode.serie.asset.asset_id,status__in=['Q']).count() < 1):
                         ph = PublishHelper()
                         ph.func_publish_queue(request, vepisode.serie.asset.asset_id, vlang, 'AS', 'Q', vschedule_date)
                         ph.func_publish_image(request, vepisode.serie.image)
