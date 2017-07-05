@@ -1,5 +1,5 @@
 $( document ).ready(function() {
-    var dataTable = $('#example').dataTable({"sPaginationType": "full_numbers"});
+
 
     console.log( "ready!" );
     // inicializar tooltips para los íconos de HELP

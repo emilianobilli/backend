@@ -283,14 +283,11 @@ class EpisodeController(object):
         vepisode = Episode()
         try:
             vasset = Asset.objects.get(asset_id=episode_id)
-            #print "episode: " + episode_id
             vepisode = Episode.objects.get(asset=vasset)
             i = len(vepisode.image.portrait.name)
             imgport = vepisode.image.portrait.name[5:i]
             i = len(vepisode.image.landscape.name)
             imgland = vepisode.image.landscape.name[5:i]
-            #imgland = vepisode.image.landscape.name
-            #print "episodio " + vepisode.original_title
 
         except Asset.DoesNotExist as e:
             request.session['list_episode_message'] = 'No Existe Asset' +  str(e.message)
@@ -529,6 +526,29 @@ class EpisodeController(object):
         #Cuando hay una Des-publicacion se completa esta variable
         message =''
         flag = ''
+
+        filter = False
+
+        # Filtro de busqueda
+        if request.GET.has_key('search'):
+            search = request.GET.get('search')
+            if search != '':
+                filter = True
+                registros = EpisodeMetadata.objects.filter(
+                    Q(episode__original_title__icontains=search) | Q(episode__asset__asset_id__icontains=search)).order_by('-id')
+
+        if filter == False:
+            registros = EpisodeMetadata.objects.all().order_by('-id')
+            paginator = Paginator(registros, 25)
+            page = request.GET.get('page')
+            try:
+                registros = paginator.page(page)
+            except PageNotAnInteger:
+                registros = paginator.page(1)
+            except EmptyPage:
+                registros = paginator.page(paginator.num_pages)
+
+
         if request.session.has_key('list_episode_message'):
             if request.session['list_episode_message'] != '':
                 message = request.session['list_episode_message']
@@ -545,7 +565,7 @@ class EpisodeController(object):
         episodes = EpisodeMetadata.objects.all().order_by('-id')
         episodes_sin_metadata = Episode.objects.all().exclude(id__in = episodes)
 
-        context = {'message': message,'flag':flag, 'registros': episodes, 'episodes_sin_metadata':episodes_sin_metadata,'usuario': usuario}
+        context = {'message': message,'flag':flag, 'registros': registros, 'episodes_sin_metadata':episodes_sin_metadata,'usuario': usuario}
         return render(request, 'cawas/episodes/list.html', context)
 
 

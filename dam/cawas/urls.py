@@ -19,6 +19,7 @@ urlpatterns = [
     url(r'^girls/add/$', views.add_girls_view, name='add_girls'),
     url(r'^girls/edit/(?P<asset_id>\w*)/$', views.edit_girls_view, name='edit_girls'),
     url(r'^girls/list/$', views.list_girls_view, name='list_girls'),
+    url(r'^girls/list_json/$', views.list_json_girls_view, name='list_json_girls'),
     url(r'^girls/unpublish/(?P<id>\w*)$', views.unpublish_girls_view, name='unpublish_girls'),
     url(r'^girls/publish/(?P<id>\w*)$', views.publish_girls_view, name='publish_girls'),
 

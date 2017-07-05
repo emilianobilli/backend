@@ -28,24 +28,40 @@
               <div class="row">
                   <div class="col-lg-12 col-md-12 col-sm-12">
                        <h2>Listado de Movies </h2>
-
                   </div>
               </div>
 
             <div class="row">
-                  <br>
+                 <br>
                  <div class="col-lg-2 col-md-2 col-sm-2" >
                      <a href="/movies/add" class="btn btn-lg btn-primary btn-block logOFF" >Nuevo</a>
                  </div>
-
                  <div class="col-lg-8 col-md-8 col-sm-8" ></div>
-
             </div>
+            <br>
+
+            <!-- formulario de busqueda -->
+            <form action="/movies/list" method="get" id="searchForID" name="searchForId">
+                <div class="col-xs-12 col-md-2 col-lg-2 ">
+                     <span class="boldIt">Busqueda</span>
+                </div>
+                <div class="col-xs-7 col-md-7 col-lg-7 ">
+                    <div>
+                        <input type="text" class="form-control fLEFT top6" id="search"
+                               name="search" placeholder="Ingresar Texto de Busqueda" >
+                    </div>
+                </div>
+                <div class="col-xs-1 col-md-1 col-lg-1 unpad">
+                    <button type="submit" class=""><span class="glyphicon glyphicon-filter inverse"></span>
+                    </button>
+                </div>
+            </form>
+            <!-- formulario de busqueda -->
 
             <!-- GRID row -->
+            <br>
             <div class="row">
-
-                <table class="" id="example">
+                <table class="tb-row tb-header">
                     <thead>
                         <th class="tb-cell">ID</th>
                         <th class="tb-cell">Título</th>
@@ -104,9 +120,27 @@
 
                         </tr>
                     {% endfor %}
-                   <!-- Third Row -->
+
 
                 </table>
+
+
+                <div class="pagination">
+                    <span class="step-links">
+                        {% if registros.has_previous %}
+                            <a href="?page={{ registros.previous_page_number }}">Anterior</a>
+                        {% endif %}
+
+                        <span class="current">
+                            Pag. Actual {{ registros.number }} of {{ registros.paginator.num_pages }}.
+                        </span>
+
+                        {% if registros.has_next %}
+                            <a href="?page={{ registros.next_page_number }}">Siguiente</a>
+                        {% endif %}
+                    </span>
+                </div>
+
             </div>
 
             <div class="fNONE"></div>

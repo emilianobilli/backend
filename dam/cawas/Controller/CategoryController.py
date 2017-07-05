@@ -311,7 +311,26 @@ class CategoryController(object):
         flag = ''
         page = request.GET.get('page')
         request.POST.get('page')
-        categories_list = None
+
+        filter = False
+
+        # Filtro de busqueda
+        if request.GET.has_key('search'):
+            search = request.GET.get('search')
+            if search != '':
+                filter = True
+                registros = CategoryMetadata.objects.filter(Q(category__original_name__icontains=search) | Q(category__category_id__icontains=search)).order_by('-id')
+
+        if filter == False:
+            registros = CategoryMetadata.objects.all().order_by('-id')
+            paginator = Paginator(registros, 25)
+            page = request.GET.get('page')
+            try:
+                registros = paginator.page(page)
+            except PageNotAnInteger:
+                registros = paginator.page(1)
+            except EmptyPage:
+                registros = paginator.page(paginator.num_pages)
 
         if request.session.has_key('list_category_message'):
             if request.session['list_category_message'] != '':
@@ -328,8 +347,7 @@ class CategoryController(object):
             self.message_return =''
             flag='success'
 
-        categories = CategoryMetadata.objects.all().order_by('-id')
-        context = {'message': message, 'flag':flag, 'registros':categories, 'usuario':usuario}
+        context = {'message': message, 'flag':flag, 'registros':registros, 'usuario':usuario}
         return render(request, 'cawas/categories/list.html', context)
 
 

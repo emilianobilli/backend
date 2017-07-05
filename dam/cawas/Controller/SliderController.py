@@ -287,8 +287,29 @@ class SliderController(object):
         titulo = ''
         page = request.GET.get('page')
         request.POST.get('page')
-        sliders_list = None
+        registros =''
+        filter = False
 
+        # Filtro de busqueda
+        if request.GET.has_key('search'):
+            search = request.GET.get('search')
+            if search != '':
+                filter = True
+                registros = Slider.objects.filter(Q(slider_id__icontains=search) | Q(text__icontains=search)).order_by('-id')
+
+        if filter ==False:
+            registros = Slider.objects.all().order_by('-id')
+            paginator = Paginator(registros, 25)
+            page = request.GET.get('page')
+            try:
+                registros = paginator.page(page)
+            except PageNotAnInteger:
+                registros = paginator.page(1)
+            except EmptyPage:
+                registros = paginator.page(paginator.num_pages)
+
+
+        #Mensajes
         if request.session.has_key('list_slider_message'):
             if request.session['list_slider_message'] != '':
                 message = request.session['list_slider_message']
@@ -299,9 +320,7 @@ class SliderController(object):
                 flag = request.session['list_slider_flag']
                 request.session['list_slider_flag'] = ''
 
-        sliders = Slider.objects.all().order_by('-id')
-
-        context = {'message': message, 'flag':flag, 'registros': sliders, 'titulo': titulo, 'usuario': usuario}
+        context = {'message': message, 'flag':flag, 'registros': registros, 'titulo': titulo, 'usuario': usuario}
         return render(request, 'cawas/sliders/list.html', context)
 
 

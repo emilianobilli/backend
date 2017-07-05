@@ -485,6 +485,10 @@ def list_girls_view(request):
     gc = GirlController()
     return gc.list(request)
 
+def list_json_girls_view(request):
+    gc = GirlController()
+    return gc.list_json(request)
+
 def list_blocks_view(request):
     gc = BlockController()
     return gc.list(request)

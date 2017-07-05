@@ -1,6 +1,6 @@
 $( document ).ready(function() {
 
-    var dataTable = $('#example').dataTable({"sPaginationType": "full_numbers"});
+
 
     console.log( "ready!" );
     var minutos = 0 ;

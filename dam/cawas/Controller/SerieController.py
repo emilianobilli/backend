@@ -457,10 +457,27 @@ class SerieController(object):
         titulo = ''
         page = request.GET.get('page')
         request.POST.get('page')
-        series_list = None
-
+        filter = False
         message = ''
         flag = ''
+
+        # Filtro de busqueda
+        if request.GET.has_key('search'):
+            search = request.GET.get('search')
+            if search != '':
+                filter = True
+                registros = SerieMetadata.objects.filter(Q(title__icontains=search) | Q(serie__asset__asset_id__icontains=search)).order_by('-id')
+
+        if filter == False:
+            registros = SerieMetadata.objects.all().order_by('-id')
+            paginator = Paginator(registros, 25)
+            page = request.GET.get('page')
+            try:
+                registros = paginator.page(page)
+            except PageNotAnInteger:
+                registros = paginator.page(1)
+            except EmptyPage:
+                registros = paginator.page(paginator.num_pages)
 
         if request.session.has_key('list_serie_message'):
             if request.session['list_serie_message'] != '':
@@ -475,7 +492,7 @@ class SerieController(object):
 
         series = SerieMetadata.objects.all().order_by('-id')
 
-        context = {'message':message, 'flag':flag, 'registros': series, 'titulo': titulo, 'usuario': usuario}
+        context = {'message':message, 'flag':flag, 'registros': registros, 'titulo': titulo, 'usuario': usuario}
         return render(request, 'cawas/series/list.html', context)
 
 

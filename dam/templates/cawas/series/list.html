@@ -39,11 +39,32 @@
 
             </div>
 
+            <br>
+            <!-- formulario de busqueda -->
+            <div class = "row">
+                <div class="col-xs-12 col-md-12 col-lg-12">
+                <form action="/series/list" method="get" id="searchForID" name="searchForId">
+                    <div class="col-xs-12 col-md-2 col-lg-2">
+                         <span class="boldIt">Busqueda</span>
+                    </div>
 
+                    <div class="col-xs-7 col-md-7 col-lg-7 ">
+                        <input type="text" class="form-control fLEFT top6" id="search" name="search" placeholder="Ingresar Texto de Busqueda" >
+
+                    </div>
+                    <div class="col-xs-1 col-md-1 col-lg-1">
+                        <button type="submit" class="btn  btn-default btn-block">
+                            <span class="glyphicon glyphicon-filter inverse"></span></button>
+                    </div>
+                </form>
+                </div>
+            </div>
+
+            <!-- formulario de busqueda -->
             <!-- GRID row -->
             <div class="row">
 
-                 <table class="" id="example">
+                 <table  class="tb-row tb-header">
                     <thead>
                         <th class="tb-cell">ID</th>
                         <th class="tb-cell">Título Original</th>
@@ -110,6 +131,22 @@
 
                     {% endfor %}
                  </table>
+
+                <div class="pagination">
+                    <span class="step-links">
+                        {% if registros.has_previous %}
+                            <a href="?page={{ registros.previous_page_number }}">Anterior</a>
+                        {% endif %}
+
+                        <span class="current">
+                            Pag. Actual {{ registros.number }} of {{ registros.paginator.num_pages }}.
+                        </span>
+
+                        {% if registros.has_next %}
+                            <a href="?page={{ registros.next_page_number }}">Siguiente</a>
+                        {% endif %}
+                    </span>
+                </div>
             </div>
             <!-- end of GRID row -->
 

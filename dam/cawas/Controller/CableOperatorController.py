@@ -205,6 +205,26 @@ class CableOperatorController(object):
         page = request.GET.get('page')
         request.POST.get('page')
         categories_list = None
+        filter = False
+
+        # Filtro de busqueda
+        if request.GET.has_key('search'):
+            search = request.GET.get('search')
+            if search != '':
+                filter = True
+                registros = CableOperator.objects.filter(Q(cableoperator_id__icontains=search) | Q(name__icontains=search)).order_by('-id')
+
+        if filter == False:
+            registros = CableOperator.objects.all().order_by('-id')
+            paginator = Paginator(registros, 25)
+            page = request.GET.get('page')
+            try:
+                registros = paginator.page(page)
+            except PageNotAnInteger:
+                registros = paginator.page(1)
+            except EmptyPage:
+                registros = paginator.page(paginator.num_pages)
+
 
         if request.session.has_key('list_CableOperator_message'):
             if request.session['list_CableOperator_message'] != '':
@@ -222,7 +242,7 @@ class CableOperatorController(object):
             flag='success'
 
         operators = CableOperator.objects.all().order_by('-id')
-        context = {'message': message, 'flag':flag, 'registros':operators, 'usuario':usuario}
+        context = {'message': message, 'flag':flag, 'registros':registros, 'usuario':usuario}
         return render(request, 'cawas/cableoperators/list.html', context)
 
 

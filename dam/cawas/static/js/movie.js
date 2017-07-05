@@ -1,7 +1,6 @@
 
 $( document ).ready(function() {
 
-    var dataTable = $('#example').dataTable({"sPaginationType": "full_numbers"});
 
     $('#search_girls').multiselect({
         search: {

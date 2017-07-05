@@ -8,6 +8,13 @@ from ..Helpers.GlobalValues import *
 from ..Helpers.PublishHelper import PublishHelper
 from ..models import Asset, Setting, Movie,MovieMetadata, Girl,Country, GirlMetadata, Category, Language, Image,PublishZone, PublishQueue
 from django.db.models import Q
+from django.forms import model_to_dict
+
+from urlparse import urlparse
+import httplib2
+import socket
+from django.http import JsonResponse
+
 
 #ApiBackendResource, ApiBackendException,ApiBackendServer
 class GirlController(object):
@@ -366,7 +373,26 @@ class GirlController(object):
         flag = ''
         page = request.GET.get('page')
         request.POST.get('page')
-        girls_list = None
+        filter = False
+
+        # Filtro de busqueda
+        if request.GET.has_key('search'):
+            search = request.GET.get('search')
+            if search != '':
+                filter = True
+                registros = GirlMetadata.objects.filter(
+                    Q(girl__name__icontains=search) | Q(girl__asset__asset_id__icontains=search)).order_by('-id')
+
+        if filter == False:
+            registros = GirlMetadata.objects.all().order_by('-id')
+            paginator = Paginator(registros, 25)
+            page = request.GET.get('page')
+            try:
+                registros = paginator.page(page)
+            except PageNotAnInteger:
+                registros = paginator.page(1)
+            except EmptyPage:
+                registros = paginator.page(paginator.num_pages)
 
         if request.session.has_key('list_girl_message'):
             if request.session['list_girl_message'] != '':
@@ -383,10 +409,7 @@ class GirlController(object):
             self.message_return =''
             flag='success'
 
-
-        girls = GirlMetadata.objects.all().order_by('-id')
-
-        context = {'message': message,'flag':flag, 'registros': girls,  'usuario': usuario}
+        context = {'message': message,'flag':flag, 'registros': registros,  'usuario': usuario}
         return render(request, 'cawas/girls/list.html', context)
 
 
@@ -456,6 +479,7 @@ class GirlController(object):
             return -1
 
         return self.code_return
+
 
 
 

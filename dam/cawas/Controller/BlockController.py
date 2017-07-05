@@ -283,7 +283,26 @@ class BlockController(object):
         flag =''
         page = request.GET.get('page')
         request.POST.get('page')
-        blocks_list = None
+        filter = False
+
+        # Filtro de busqueda
+        if request.GET.has_key('search1'):
+            search = request.GET.get('search1')
+            if search != '':
+                filter = True
+                registros = Block.objects.filter(
+                    Q(block_id__icontains=search) | Q(name__icontains=search)).order_by('-id')
+
+        if filter == False:
+            registros = Block.objects.all().order_by('-id')
+            paginator = Paginator(registros, 25)
+            page = request.GET.get('page')
+            try:
+                registros = paginator.page(page)
+            except PageNotAnInteger:
+                registros = paginator.page(1)
+            except EmptyPage:
+                registros = paginator.page(paginator.num_pages)
 
         if request.session.has_key('list_block_message'):
             if request.session['list_block_message'] != '':
@@ -296,7 +315,7 @@ class BlockController(object):
                 request.session['list_block_flag'] = ''
 
         blocks = Block.objects.all().order_by('-id')
-        context = {'message': message, 'flag':flag,  'registros': blocks, 'titulo': titulo, 'usuario': usuario}
+        context = {'message': message, 'flag':flag,  'registros': registros, 'titulo': titulo, 'usuario': usuario}
         return render(request, 'cawas/blocks/list.html', context)
 
 

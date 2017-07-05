@@ -159,7 +159,7 @@ class MovieController(object):
                         self.code_return = -1
 
             # GUARDAR METADATA
-
+            mv.save()
             #SI hay items en estado Queued, se elimina
             ph = PublishHelper()
             vmoviesmetadata = decjson['Movie']['Moviesmetadata']
@@ -539,12 +539,37 @@ class MovieController(object):
 
         usuario = request.user
         titulo = ''
-        page = request.GET.get('page')
         request.POST.get('page')
-        movies_list = None
-
         message = ''
         flag = ''
+        filter = False
+
+        #Filtro de busqueda
+        if request.GET.has_key('search'):
+            search = request.GET.get('search')
+            if search != '':
+                filter = True
+                movies = MovieMetadata.objects.filter(Q(title__icontains=search) | Q(movie__asset__asset_id__icontains=search)).order_by('-id')
+
+        if filter==False:
+            movies = MovieMetadata.objects.all().order_by('-id')
+            paginator = Paginator(movies, 25)
+            page = request.GET.get('page')
+            try:
+                movies = paginator.page(page)
+            except PageNotAnInteger:
+                movies = paginator.page(1)
+            except EmptyPage:
+                movies = paginator.page(paginator.num_pages)
+
+
+        #filtro por
+        #if request.GET.has_key('activated'):
+        #    activated = request.GET.get('activated')
+        #    if activated != 'Todos':
+        #        movies.filter(activated=activated)
+
+
         if request.session.has_key('list_movie_message'):
             if request.session['list_movie_message'] != '':
                 message = request.session['list_movie_message']
@@ -555,9 +580,7 @@ class MovieController(object):
                 flag = request.session['list_movie_flag']
                 request.session['list_movie_flag'] = ''
 
-
-        movies = MovieMetadata.objects.all().order_by('-id')
-        context = {'message': message, 'flag':flag, 'registros': movies, 'titulo': titulo, 'usuario': usuario}
+        context = {'message': message, 'flag':flag, 'registros': movies, 'titulo': titulo, 'usuario': usuario,'filter':filter}
         return render(request, 'cawas/movies/list.html', context)
 
 
