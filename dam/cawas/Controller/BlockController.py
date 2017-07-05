@@ -40,7 +40,7 @@ class BlockController(object):
                 vschedule_date = datetime.datetime.strptime(decjson['Block']['publish_date'], '%d-%m-%Y').strftime('%Y-%m-%d')
                 vblock.publish_date = vschedule_date
                 vblock.language = Language.objects.get(code=decjson['Block']['language'])
-                vblock.queue_status = True
+                vblock.queue_status = 'Q'
                 if decjson['Block']['channel_id'] is not None:
                     vblock.channel = Channel.objects.get(pk=decjson['Block']['channel_id'])
 
@@ -84,7 +84,7 @@ class BlockController(object):
                 return self.code_return
             except Exception as e:
                 self.code_return = -1
-                request.session['list_block_message'] = 'Error: ' + str(e.message)
+                request.session['list_block_message'] = 'Error: ' + str(e)
                 request.session['list_block_flag'] = FLAG_ALERT
                 return self.code_return
 
@@ -168,7 +168,7 @@ class BlockController(object):
                 vblock.save()
             except Exception as e:
                 self.code_return = -1
-                request.session['list_block_message'] = 'Error: ' + e.message
+                request.session['list_block_message'] = 'Error: ' + str(e)
                 request.session['list_block_flag'] = FLAG_ALERT
                 return self.code_return
 
@@ -392,7 +392,7 @@ class BlockController(object):
             request.session['list_block_message'] = "Error al despublicar (" + str(e.value) + ")"
             request.session['list_block_flag'] = FLAG_ALERT
         except Exception as e:
-            request.session['list_block_message'] = "Error al despublicar (" + str(e.message) + ")"
+            request.session['list_block_message'] = "Error al despublicar (" + str(e) + ")"
             request.session['list_block_flag'] = FLAG_ALERT
 
         return self.code_return
