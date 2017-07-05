@@ -160,7 +160,9 @@ class BlockController(object):
                     '%Y-%m-%d')
                 vblock.publish_date = vschedule_date
                 vblock.language = Language.objects.get(code=decjson['Block']['language'])
-                vblock.channel = Channel.objects.get(pk=decjson['Block']['channel_id'])
+                if decjson['Block']['channel_id'] is not None:
+                    vblock.channel = Channel.objects.get(pk=decjson['Block']['channel_id'])
+
                 vdevice = Device.objects.get(pk=int(decjson['Block']['target_device_id']))
 
                 vblock.target_device_id = int(decjson['Block']['target_device_id'])
