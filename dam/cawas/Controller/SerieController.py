@@ -33,7 +33,7 @@ class SerieController(object):
 
             # Parsear JSON
             strjson = request.POST['varsToJSON']
-            print 'JSON'+ strjson
+
 
             decjson = json.loads(strjson.replace('\r','\\r').replace('\n','\\n'))
 
@@ -213,6 +213,7 @@ class SerieController(object):
                 base_dir = Setting.objects.get(code='dam_base_dir')
                 print 'flag1'
 
+
             except Exception as e:
                 self.code_return = -1
                 print 'fallo json'
@@ -261,10 +262,10 @@ class SerieController(object):
 
             if (decjson['Serie']['cast'] is not None):
                 vserie.cast = decjson['Serie']['cast']
-                print 'dato: ' + vserie.cast
+
             if (decjson['Serie']['directors'] is not None):
                 vserie.directors = decjson['Serie']['directors']
-                print 'dato: ' + vserie.directors
+
             vserie.image = vimg
             vserie.save()
 
@@ -352,7 +353,7 @@ class SerieController(object):
                 smd.queue_status = 'Q'
                 smd.save()
 
-                print 'flag6'
+
                 if (Episode.objects.filter(serie=vserie).count() > 0):
                     print 'ingreso'
                     ph = PublishHelper()
@@ -559,15 +560,15 @@ class SerieController(object):
 
             #Obtener los episodios que pertenecen a esta serie
             #publicar nuevamente los episodes
-            print 'despublicacion de episodes'
+
             episodes = Episode.objects.filter(serie=seriemetadata.serie)
             for item in episodes:
-                print 'episode: ' + item.asset.asset_id
+
                 try:
                     # Despublicar los episodios que tengan el mismo idioma que la serie.
                     mde = EpisodeMetadata.objects.filter(episode=item, language=seriemetadata.language)
                     for episodemetadata in mde:
-                        print 'episodemetadata: ' + episodemetadata.episode.asset.asset_id
+
                         # VERIFICAR SI estado de publicacion de EPISODE esta en Q, se debe eliminar
                         publishs = PublishQueue.objects.filter(item_id=episodemetadata.episode.asset.asset_id, status='Q')
                         if publishs.count > 0:
