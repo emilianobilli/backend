@@ -72,15 +72,15 @@ for episode in episode_list:
         print err.value
 """
 
-"""
+
 category_list = Category.objects.all()
 for category in category_list:
     try:
-        enqueue_category(category, "Virginia", 'es')
+        enqueue_category(category, "Virginia", 'pt')
         #enqueue_category(category)
     except EnqueuerException as err:
         print err.value
-"""
+
 
 
 """

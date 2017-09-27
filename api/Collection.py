@@ -41,6 +41,16 @@ class dynamodbCollection(object):
         else:
             self.sk              = None
 
+	if 'index_sk' in db:
+	    self.index_sk = db['index_sk']
+	else:
+	    self.index_sk = None
+
+	if 'index_name' in db:
+	    self.index_name = db['index_name']
+	else:
+	    self.index_name = None
+
         if 'schema' not in db:
             CollectionException('(__init__) Schema not found in config')
 
@@ -76,10 +86,16 @@ class dynamodbCollection(object):
         if 'ResponseMetadata' in ret:
             if 'HTTPStatusCode' in ret['ResponseMetadata']:
                 if ret['ResponseMetadata']['HTTPStatusCode'] == 200:
-                    if 'Item' in ret:
-                        doc['item'] = self.data_mapper.unMap(ret['Item'])
-                    else:
-                        doc['item'] = {}
+		    if 'Count' in ret:
+			if ret['Count'] == 1:
+			    doc['item'] = self.data_mapper.unMap(ret['Items'][0])
+			else:
+			    doc['item'] = {}
+		    else:
+                	if 'Item' in ret:
+            	    	    doc['item'] = self.data_mapper.unMap(ret['Item'])
+                	else:
+                    	    doc['item'] = {}
         return doc
 
 
@@ -97,6 +113,33 @@ class dynamodbCollection(object):
             raise DynamoException(str(e))
 
         return self._check_query_return(ret)
+
+
+    def get_by_index(self, Item={}):
+	to_get = {}
+        
+        if self.pk not in Item:
+            raise CollectionException('(Get) Primary key not found in item (%s)' % self.pk )
+
+        if self.index_sk is not None:
+            if self.index_sk not in Item:
+                raise CollectionException('(Get) Index Sort key not found in item (%s)' % self.index_sk )
+            to_get[self.index_sk] = Item[self.index_sk]
+
+        to_get[self.pk] = Item[self.pk]
+
+        #doc = self.data_mapper.Map(to_get)
+
+	try:
+            ret = self.client.query(TableName=self.table,
+				       IndexName=self.index_name,
+				       KeyConditionExpression='%s = :pk AND %s = :sk' %(self.pk,self.index_sk),
+                            	       ExpressionAttributeValues={':pk': { 'S':'%s' % to_get[self.pk]}, ':sk':{'S':'%s' %to_get[self.index_sk]}})
+	    print ret
+        except Exception, e:
+            raise DynamoException(str(e))
+
+        return self._check_get_return(ret)
 
     def get(self, Item={}):
         

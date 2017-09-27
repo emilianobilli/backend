@@ -25,10 +25,13 @@ backend = Backend({"languages": ['es','pt'],
                         {"database": {
                             "table": "Girls",
                             "pk": "lang",
+			    "index_sk": "human_id",
+			    "index_name": "lang-human_id-index",
                             "sk": "asset_id",
                             "schema": {
                                     "lang": "S",
-                                    "asset_id": "S",
+                                    "human_id": "S",
+				    "asset_id": "S",
                                     "name": "S",
                                     "image_portrait": "S",
                                     "image_landscape": "S",
@@ -51,11 +54,14 @@ backend = Backend({"languages": ['es','pt'],
                             "table": "Girls",
                             "pk": "lang",
                             "sk": "asset_id",
+			    "index_sk": "human_id",
+			    "index_name": "lang-human_id-index",
                             "schema": {
                                     "lang": "S",
                                     "asset_id": "S",
                                     "title": "S",
-                                    "summary_short": "S",
+                                    "human_id": "S",
+				    "summary_short": "S",
                                     "display_runtime": "S",
                                     "runtime": "N",
                                     "seasons": "N",
@@ -94,16 +100,16 @@ backend = Backend({"languages": ['es','pt'],
                         "search_domain": {'es' : {"domain": {
                                                         "id_field": "asset_id",
                                                         "filter_query" : '',
-                                                        "schema": ["channel","asset_id", "title","summary_short","display_runtime","seasons","season","episode","episodes","categories","show_type","year","serie_id","girls_id","name", "image_big", "image_landscape", "image_portrait", "views", "ranking", "asset_type", "blocks", "publish_date", "class", "summary_long", "nationality", "target_country"],
-                                                        "return_fields": ["asset_id", "name", "title", "ranking", "views","display_runtime", "summary_short" ,"categories", "image_landscape", "image_portrait", "channel", "show_type","asset_type", "year", "seasons", "class","episodes", "episode", "serie_id"],
+                                                        "schema": ["channel","asset_id","human_id", "title","summary_short","display_runtime","seasons","season","episode","episodes","categories","show_type","year","serie_id","girls_id","name", "image_big", "image_landscape", "image_portrait", "views", "ranking", "asset_type", "blocks", "publish_date", "class", "summary_long", "nationality", "target_country"],
+                                                        "return_fields": ["asset_id","human_id" ,"name", "title", "ranking", "views","display_runtime", "summary_short" ,"categories", "image_landscape", "image_portrait", "channel", "show_type","asset_type", "year", "seasons", "class","episodes", "episode", "serie_id"],
                                                         "name" : "eshotgodomain",
                                                         }
                                                  },
                                           'pt' : {"domain": {
                                                         "id_field": "asset_id",
                                                         "filter_query" : '',
-                                                        "schema": ["channel","asset_id", "title","summary_short","display_runtime","seasons","season","episode","episodes","categories","show_type","year","serie_id","girls_id","name", "image_big", "image_landscape", "image_portrait", "views", "ranking", "asset_type", "blocks", "publish_date", "class", "summary_long", "nationality", "target_country"],
-                                                        "return_fields": ["asset_id", "name", "title", "ranking", "views","display_runtime", "summary_short" ,"categories", "image_landscape", "image_portrait", "channel", "show_type","asset_type", "year", "seasons", "class","episodes", "episode", "serie_id"],
+                                                        "schema": ["channel","asset_id","human_id" ,"title","summary_short","display_runtime","seasons","season","episode","episodes","categories","show_type","year","serie_id","girls_id","name", "image_big", "image_landscape", "image_portrait", "views", "ranking", "asset_type", "blocks", "publish_date", "class", "summary_long", "nationality", "target_country"],
+                                                        "return_fields": ["asset_id", "human_id","name", "title", "ranking", "views","display_runtime", "summary_short" ,"categories", "image_landscape", "image_portrait", "channel", "show_type","asset_type", "year", "seasons", "class","episodes", "episode", "serie_id"],
                                                         "name" : "pthotgodomain",
                                                         }
                                                  }
@@ -167,7 +173,8 @@ components = Components({
                             "target_country": "SS",
                             "media_type": "S",
                             "linked_asset_id": "S",
-                            "linked_asset_type": "S",
+                            "linked_human_id": "S",
+			    "linked_asset_type": "S",
                             "target": "S"
                         },
                     }
@@ -462,6 +469,28 @@ def urlGetShow(asset_id):
 
     return Response(response=dumps(ret['body']), status=ret['status'])
 
+@application.route('/v1/shows_hid/<string:human_id>/', methods=['GET'])
+@application.route('/v1/shows_hid/<string:human_id>',  methods=['GET'])
+@cross_origin()
+def urlGetShowByHumanId(human_id):
+    ret = {}
+    if 'X-API-KEY' in request.headers:
+        x_api_key = request.headers.get('X-API-KEY')
+        ret       = authorization.check_api_key(x_api_key)
+        if ret['status'] == 200:
+            args = {}
+            args['human_id'] = human_id
+            for k in request.args.keys():
+                args[k] = request.args.get(k)
+            username = ret['body']['username']
+            ret      = backend.get_show_by_human_id(args, username)
+    else:
+        ret['body']     = {'status': 'failure', 'message': 'Missing header'}
+        ret['status']   = 401
+
+    return Response(response=dumps(ret['body']), status=ret['status'])
+
+
 @application.route('/v1/girls/', methods=['GET'])
 @application.route('/v1/girls',  methods=['GET'])
 @cross_origin()
@@ -483,6 +512,19 @@ def urlGetGirl(asset_id):
         args[k] = request.args.get(k)
     ret = backend.get_girl(args)
     return Response(response=dumps(ret['body']), status=ret['status'])
+
+
+@application.route('/v1/girls_hid/<string:human_id>/', methods=['GET'])
+@application.route('/v1/girls_hid/<string:human_id>',  methods=['GET'])
+@cross_origin()
+def urlGetGirlByHumanId(human_id):
+    args = {}
+    args['human_id'] = human_id
+    for k in request.args.keys():
+        args[k] = request.args.get(k)
+    ret = backend.get_girl_by_human_id(args)
+    return Response(response=dumps(ret['body']), status=ret['status'])
+
 
 @application.route('/v1/assets/<string:block_id>/', methods=['GET'])
 @application.route('/v1/assets/<string:block_id>',  methods=['GET'])

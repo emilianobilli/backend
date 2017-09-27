@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 from Collection import dynamodbCollection
 from Collection import cloudsearchCollection
 from Collection import CollectionException
@@ -14,6 +15,26 @@ import json
 import socket
 import httplib2
 import urlparse
+
+import unicodedata
+import re
+
+
+def clean_char(string):
+    string = string.rstrip()
+    s = ''.join((c for c in unicodedata.normalize('NFD',unicode(string)) if unicodedata.category(c) != 'Mn'))
+    bad_char = u'¿¡;:,.?!'
+    return clean_and_clear(s,bad_char).replace(' ', '-').lower()
+
+
+def clean_and_clear(string, chars):
+    s = u''
+    for i in string:
+	if i in chars:
+	    pass
+	else:
+	    s = s + i
+    return s
 
 
 class VideoAuthException(Exception):
@@ -292,7 +313,6 @@ class Backend(object):
         pass
 
     def get_show(self, args, username):
-
         if 'lang' not in args or 'asset_id' not in args:
             status = 422
             ret    = {'status': 'failure', 'message': 'Mandatory argument not found'}
@@ -312,18 +332,14 @@ class Backend(object):
                         img = args['img']
                     else:
                         img = None
-
                     for k in self.images.keys():
                         if k in asset['item']:
                             asset['item'][k] = self.images[k].getUrl(asset['item'][k], self.parse_img_arg(k,img))
-
                     if asset_id is not None and self.views is not None:
                         self.views.add_view(asset_id)
-
                     n = int(asset['item']['ranking'])
                     if n > 0:
                         asset['item']['ranking'] = str(round(float(n)/25,2))
-
                     #
                     # Busca el voto del usuario
                     #
@@ -364,6 +380,116 @@ class Backend(object):
             return None
         return None
 
+
+    def get_show_by_human_id(self, args, username):
+        if 'lang' not in args or 'human_id' not in args:
+            status = 422
+            ret    = {'status': 'failure', 'message': 'Mandatory argument not found'}
+        else:
+            item = {}
+            item['lang']     = args['lang']
+            item['human_id'] = args['human_id']
+            asset_id         = None
+            try:
+                asset = self.shows.get_by_index(item)
+                if asset['item'] != {} and asset['item']['enabled'] == "1":
+                    if asset['item']['show_type'] == 'movie' or asset['item']['show_type'] == 'episode':
+                        asset['item']['video'] = self.videoauth.get_hls_url(asset['item']['asset_id'])
+                        asset_id = asset['item']['asset_id']
+                    else:
+			asset_id = asset['item']['asset_id']
+                    if 'img' in args:
+                        img = args['img']
+                    else:
+                        img = None
+                    for k in self.images.keys():
+                        if k in asset['item']:
+                            asset['item'][k] = self.images[k].getUrl(asset['item'][k], self.parse_img_arg(k,img))
+                    if asset_id is not None and self.views is not None:
+                        self.views.add_view(asset_id)
+                    n = int(asset['item']['ranking'])
+                    if n > 0:
+                        asset['item']['ranking'] = str(round(float(n)/25,2))
+                    #
+                    # Busca el voto del usuario
+                    #
+                    q = {}
+                    q['asset_id'] = asset_id
+                    q['username'] = username
+                    vote = self.vote.get(q)
+                    if vote['item'] != {}:
+                        asset['item']['voted'] = vote['item']['voted']
+
+                    status = 200
+                else:
+                    asset['item'] = {} 
+                    status = 404
+                ret    = asset
+
+	    except CollectionException as e:
+                status = 422
+                ret    = {'status': 'failure', 'message': str(e)}
+            except DynamoException as e:
+                ret    = {'status': 'failure', 'message': str(e)}
+                status = 500
+            except VideoAuthException as e:
+                ret    = {'status': 'failure', 'message': str(e)}
+                status = 500
+            except Exception as e:
+                ret    = {'status': 'failure', 'message': str(e)}
+                status = 500
+
+        return {'status': status, 'body': ret}
+    
+
+    def get_girl_by_human_id(self, args):
+	if 'lang' not in args or 'human_id' not in args:
+            status = 422
+            ret    = {'status': 'failure', 'message': 'Mandatory argument not found'}
+	else:
+	    item = {}
+            item['lang']     = args['lang']
+            item['human_id'] = args['human_id']
+            asset_id         = None
+            try:
+		asset = self.girls.get_by_index(item)
+                if asset['item'] != {} and asset['item']['enabled'] == "1":
+                    asset_id = asset['item']['asset_id']
+                    status   = 200
+                    n = int(asset['item']['ranking'])
+                    if n > 0:
+                        asset['item']['ranking'] = str(round(float(n)/25,2))
+                    if 'img' in args:
+                        img = args['img']
+                    else:
+                        img = None
+
+                    for k in self.images.keys():
+                        if k in asset['item']:
+                            asset['item'][k] = self.images[k].getUrl(asset['item'][k], self.parse_img_arg(k,img))
+            
+                else:
+                    asset['item'] = {} 
+                    status = 404
+    
+                if asset_id is not None and self.views is not None:
+                    self.views.add_view(asset_id)
+
+                ret    = asset
+
+            except CollectionException as e:
+                status = 422
+                ret    = {'status': 'failure', 'message': str(e)}
+            except DynamoException as e:
+                ret    = {'status': 'failure', 'message': str(e)}
+                status = 500
+            except Exception as e:
+                ret    = {'status': 'failure', 'message': str(e)}
+                status = 500
+
+	print ret
+        return {'status': status, 'body': ret}
+
     def get_girl(self, args):
         if 'lang' not in args or 'asset_id' not in args:
             status = 422
@@ -403,9 +529,6 @@ class Backend(object):
                 status = 422
                 ret    = {'status': 'failure', 'message': str(e)}
             except DynamoException as e:
-                ret    = {'status': 'failure', 'message': str(e)}
-                status = 500
-            except VideoAuthException as e:
                 ret    = {'status': 'failure', 'message': str(e)}
                 status = 500
             except Exception as e:
@@ -709,10 +832,15 @@ class Backend(object):
         try:
             if Item['asset_type'] == 'girl':
                 self.asset_type.add(at) # Ojo con las Excepciones
-                return self.__add_asset(self.girls,Item, inmutable_fields)
+                Item['human_id'] = clean_char(Item['name'])
+		return self.__add_asset(self.girls,Item, inmutable_fields)
             if Item['asset_type'] == 'show':
                 self.asset_type.add(at) # Ojo con las Excepciones
                 if Item['show_type'] == 'movie' or Item['show_type'] == 'episode':
+		    if Item['show_type'] == 'movie':
+			Item['human_id'] = clean_char(Item['title'])
+		    else:
+			Item['human_id'] = clean_char('%s temporada %s episodio %s' %(Item['title'],Item['season'],Item['episode']))
                     #
                     # Se agrega subtitluado para los assets que son de tipo Movie o Episode
                     #
@@ -721,6 +849,8 @@ class Backend(object):
                     #
                     # Se agregan los thumbnails
                     Item['thumbnails'] = self.thumbs.get_url(Item['asset_id'])
+		else:
+		    Item['human_id'] = clean_char(Item['title'])
 
                 return self.__add_asset(self.shows,Item, inmutable_fields)
             else:
