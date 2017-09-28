@@ -272,7 +272,7 @@ def publish_items():
                         obj.publish_status = True
                         obj.activated = True
                     else:
-                        item[0]['publish_date'] = obj.publish_date
+                        item[0]['publish_date'] = obj.publish_date.strftime('%s')
                     ep.add(item[0])
                     job.status = 'D'
                     job.save()
