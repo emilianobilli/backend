@@ -8,6 +8,13 @@ from ..Helpers.GlobalValues import *
 from ..Helpers.PublishHelper import PublishHelper
 from ..models import Asset, Setting, Movie,MovieMetadata, Girl,Country, GirlMetadata, Category, Language, Image,PublishZone, PublishQueue
 from django.db.models import Q
+from django.forms import model_to_dict
+
+from urlparse import urlparse
+import httplib2
+import socket
+from django.http import JsonResponse
+
 
 #ApiBackendResource, ApiBackendException,ApiBackendServer
 class GirlController(object):
@@ -52,6 +59,9 @@ class GirlController(object):
             print 'debug2'
             #try:
             vimg.name = vasset.asset_id
+
+
+
             # IMAGEN Portrait
             if (request.FILES.has_key('ThumbHor')):
                 if request.FILES['ThumbHor'].name != '':
@@ -363,7 +373,26 @@ class GirlController(object):
         flag = ''
         page = request.GET.get('page')
         request.POST.get('page')
-        girls_list = None
+        filter = False
+
+        # Filtro de busqueda
+        if request.GET.has_key('search'):
+            search = request.GET.get('search')
+            if search != '':
+                filter = True
+                registros = GirlMetadata.objects.filter(
+                    Q(girl__name__icontains=search) | Q(girl__asset__asset_id__icontains=search)).order_by('-id')
+
+        if filter == False:
+            registros = GirlMetadata.objects.all().order_by('-id')
+            paginator = Paginator(registros, 25)
+            page = request.GET.get('page')
+            try:
+                registros = paginator.page(page)
+            except PageNotAnInteger:
+                registros = paginator.page(1)
+            except EmptyPage:
+                registros = paginator.page(paginator.num_pages)
 
         if request.session.has_key('list_girl_message'):
             if request.session['list_girl_message'] != '':
@@ -380,37 +409,7 @@ class GirlController(object):
             self.message_return =''
             flag='success'
 
-        if request.POST:
-            titulo = request.POST['inputTitulo']
-            selectestado = request.POST['selectestado']
-
-            #FILTROS
-            if titulo != '':
-                assets = Asset.objects.filter(asset_id__icontains=titulo)
-                girls_sel = Girl.objects.filter(Q(name__icontains=titulo)|Q(asset__in=assets))
-            else:
-                girls_sel = Girl.objects.all()
-
-            if selectestado != '':
-                girls_list = GirlMetadata.objects.filter(girl__in=girls_sel, queue_status=selectestado).order_by('-id')
-            else:
-                girls_list = GirlMetadata.objects.filter(girl__in=girls_sel).order_by('-id')
-
-
-        if girls_list is None:
-            girls_list = GirlMetadata.objects.all().order_by('-id')
-
-        paginator = Paginator(girls_list, 20)  # Show 25 contacts per page
-        try:
-            girls = paginator.page(page)
-        except PageNotAnInteger:
-            # If page is not an integer, deliver first page.
-            girls = paginator.page(1)
-        except EmptyPage:
-            # If page is out of range (e.g. 9999), deliver last page of results.
-            girls = paginator.page(paginator.num_pages)
-
-        context = {'message': message,'flag':flag, 'registros': girls,  'usuario': usuario}
+        context = {'message': message,'flag':flag, 'registros': registros,  'usuario': usuario}
         return render(request, 'cawas/girls/list.html', context)
 
 
@@ -426,7 +425,7 @@ class GirlController(object):
             vasset_id = girlmetadata.girl.asset.asset_id
 
             # 1 - VERIFICAR, si estado de publicacion esta en Q, se debe eliminar
-            publishs = PublishQueue.objects.filter(item_id=vasset_id, status='Q', language=girlmetadata.language)
+            publishs = PublishQueue.objects.filter(item_id=vasset_id, status='Q', item_lang=girlmetadata.language)
             if publishs.count > 0:
                 publishs.delete()
 
@@ -464,7 +463,7 @@ class GirlController(object):
 
             self.code_return = 0
             request.session['list_girl_message'] = 'Metadata en ' + girlmetadata.language.name + ' de Chica ' + girlmetadata.girl.asset.asset_id + ' Despublicado Correctamente'
-            request.session['list_girl_flag'] = FLAG_ALERT
+            request.session['list_girl_flag'] = FLAG_SUCCESS
 
         except PublishZone.DoesNotExist as e:
             request.session['list_girl_message'] = 'No existe PublishZone ' +e.message
@@ -480,6 +479,7 @@ class GirlController(object):
             return -1
 
         return self.code_return
+
 
 
 

@@ -58,9 +58,12 @@ class ApiBackendServer(object):
         if response['status'] == '201':
             return content
         else:
-            cont = json.loads(content)
-            print cont
-            raise ApiBackendException(cont['message'])
+            try:
+                cont = json.loads(content)
+                raise ApiBackendException(cont['message'])
+            except ValueError:
+                raise ApiBackendException("Deconding JSON has failed")
+
 
 
     def delete(self, url, apikey, body):
@@ -93,6 +96,7 @@ class ApiBackendResource(object):
         self.apikey = apikey
 
     def add(self, item):
+        print 'backend_sdk_add' + str(item)
         return self.server.post(self.url, self.apikey, {"action":"add", "item":item})
 
     def update(self, item):

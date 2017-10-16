@@ -1,5 +1,5 @@
 $( document ).ready(function() {
-    
+
     console.log( "ready!" );
 
 
@@ -36,18 +36,28 @@ $('#search_category').multiselect({
     });
 
 
+
     if(resultado=="success"){
         $("#myModal-OK").modal();
     }
     if(resultado=="error"){
         $("#myModal-ERROR").modal();
     }
-    
-     $("#btnsearch").click(function(){
-           $("#searchForID").submit();
-    });
+     /* Funcion que cuenta la cantidad de idiomas selecionados, se utiliza al momento de validar la edicion de la movie */
+    var countChecked = function() {
+    langQ = $("input:checked" ).length;
+        $('input[type=checkbox]').each(function(){
+            if (this.checked) {
+                langDesc.push($(this).attr("id"));
+            }
+        });
+
+    };
+
+
 
     $("#btngrabarypublicar").click(function(){
+
         $("#publicar").val("1");
         clickedToSubmit=1;
         checkAll();
@@ -64,7 +74,19 @@ $('#search_category').multiselect({
     var clickedVal; // recoge el valor del ID seleccionado en la lista de movies;
     var clickedText; // recoge el nombre seleccionado en la lista de edición de movies;
     var clickedTextID; // recoge el ID nombre seleccionado en la lista de edición de movies;
-    
+    var pornstars_selected = "";
+    var categories_selected = "";
+    var paises_selected = "";
+    var asset_Id ="";
+    var original_Title = "";
+    var canal_selected="";
+    var director_selected ="";
+    var elenco_selected="" ;
+    var year_selected ="" ;
+    var publicar ="";
+    var myGirls="[]";
+    var myCategories="[]";
+    var myCountries="[]";
     // activar los selects con filtro
     
     $("#serie-edit").select2({placeholder: "Despliega la lista"});
@@ -97,12 +119,14 @@ $('#search_category').multiselect({
     $("#EDBtn").click(function(){
            //window.location.href = "series-edit.html?ID="+clickedTextID;
            window.location.href = "/series/edit/"+clickedTextID;
-    })
+    });
     
     // interacción del usuario al hacer click en el botón debajo de la lista de selección
-    $( "#IDBtn" ).click(function(){ 
-        $( "#idTit" ).html("AGREGANDO ID: "+clickedVal);// Agrega el ID en el título
-        $( "#hidden1" ).show();
+    $( "#IDBtn" ).click(function(){
+
+
+            $( "#hidden1" ).show();
+
     })
     
     //preview de imagenes cargadas por el front end
@@ -180,45 +204,34 @@ $('#search_category').multiselect({
       }
     
     /* triggers for checkALL function */
-    $("#sendBut").click(function(){
+    $("#sendBut").click(function(e){
+        e.preventDefault();
         clickedToSubmit=1;
         checkAll();
-    })
+    });
     
     $("body").mouseup(function(){
         if(checkedOnce>0 && checkVal>0 ){
             clickedToSubmit=0;
             checkAll();      
         }
-    })
+    });
     
-     /* Funcion que cuenta la cantidad de idiomas selecionados, se utiliza al momento de validar la edicion de la movie */
-    var countChecked = function(){
-    langQ = $("input:checked" ).length;
 
-        $('input[type=checkbox]').each(function(){
-            if (this.checked) {
-                langDesc.push($(this).attr("id"));
-            }
-        });
-
-    };
 
     function checkAll(){
         // this function checks for all form values and makes json string to post or alerts user to complete fields.
         console.log("checking form...");
         checkVal = 0;
-        var asset_Id = $('#movieID').val();
-        var original_Title = $('#orginalTitle').val();
-        var canal_selected = $('#canalSelect option:selected');
-        var pornstars_selected = [];
-        var categories_selected = [];
-        var paises_selected = [];
-        var director_selected = $('#director').val();
-        var elenco_selected = $('#elenco').val();
-        var year_selected = $('#releaseYear').val();
-        var publicar = $('#publicar').val();
-         countChecked();
+         asset_Id = $('#movieID').val();
+         original_Title = $('#orginalTitle').val();
+         canal_selected = $('#canalSelect option:selected');
+
+         director_selected = $('#director').val();
+         elenco_selected = $('#elenco').val();
+         year_selected = $('#releaseYear').val();
+         publicar = $('#publicar').val();
+        countChecked();
         // chequea original Title
         if(original_Title=="" || original_Title==" ")
         {
@@ -277,7 +290,7 @@ $('#search_category').multiselect({
                    categories_selected.push(asset_id_aux);
                }
             })
-            console.log("search_girls_to_selected:"+categories_selected);
+            console.log("search_category_to_selected:"+categories_selected);
         }
 
         //search_to_paises - No es obligatorio
@@ -348,18 +361,17 @@ $('#search_category').multiselect({
         }
         
         checkedOnce++;
-        
-                
-        
-        
-        // helper subfunctions
-        
-        
+
+    }
+
+
+
+
             function errorMe(theField){
                 if ($(theField).parent().hasClass('has-success')){
                     $(theField).parent().removeClass('has-success');
                 }
-                
+
                 if($(theField).next(".glyphicon").hasClass('glyphicon-ok')){
                     $(theField).next(".glyphicon").removeClass('glyphicon-ok');
                 }
@@ -370,22 +382,22 @@ $('#search_category').multiselect({
                     $("#channelSelect").children(".select2-selection--single").css("display","none");
                         //.css("border","1px #ff0000 solid!important");
                 }
-                
+
             }
-        
+
             function okMe(theField){
                 if ($(theField).parent().hasClass('has-error')){
                     $(theField).parent().removeClass('has-error');
                 }
-                
+
                 if($(theField).next(".glyphicon").hasClass('glyphicon-remove')){
                     $(theField).next(".glyphicon").removeClass('glyphicon-remove');
                 }
                 $(theField).parent().addClass("has-success");
                 $(theField).next(".glyphicon").addClass("glyphicon-ok");
-                
+
             }
-        
+
             function explodeArray(arr, indexname){
                 var lngth = arr.length;
                 var stringIt = '[';
@@ -398,9 +410,12 @@ $('#search_category').multiselect({
                 stringIt += ']';
                 return(stringIt);
             }
-        
+
             function checkLangs(arr){ // itera sobre los lenguajes seleccionados buscando errores
                 var lngth = arr.length;
+                var lenguajescargados = 0;
+
+                var lengactualok = true; //true
                 for(i=0; i<lngth; i++){
                     var lang=arr[i];
                     /* check title */
@@ -408,28 +423,38 @@ $('#search_category').multiselect({
                     if(titCont==""){
                         errorMe("#tit_"+lang);
                         checkVal++;
+                        lengactualok = false;
                     }else{
                         okMe("#tit_"+lang);
+
                     }
                     /* check desc */
                     var descCont = $("#short_desc_"+lang).val().trim();
                     if(descCont.length < 1){
                         errorMe("#short_desc_"+lang);
                         checkVal++;
+                        lengactualok = false;
                     }else{
                         okMe("#short_desc_"+lang);
                     }
-                    
+
+                    if (lengactualok == true){
+                        lenguajescargados = lenguajescargados + 1 ;
+                    }
+
+
+
+
                 }
             }
-        
+
             function addSerieMetadata(arr){
                 var lngth = arr.length;
                 var myLangs = "";
-                
+
                 for(i=0; i<lngth; i++){
                     var lang=arr[i];
-                    
+
                     var tit = $("#tit_"+lang).val();
                     var short = $("#short_desc_"+lang).val().trim();
                     var long = $("#short_desc_"+lang).val().trim();
@@ -445,27 +470,34 @@ $('#search_category').multiselect({
                 }
                 return(myLangs);
             };
-        
-        
+
+
             function submitJson(){
                 if(checkVal==0){
-                    var myGirls=explodeArray(pornstars_selected,"girl_id");
-                    var myCategories=explodeArray(categories_selected,"category_id");
-                    var myCountries=explodeArray(paises_selected,"country_id");
+
+
+
+                    if (pornstars_selected.length > 0)
+                        myGirls=explodeArray(pornstars_selected,"girl_id");
+
+                    if (categories_selected.length > 0)
+                        myCategories=explodeArray(categories_selected,"category_id");
+
+                    if (paises_selected.length > 0)
+                        myCountries=explodeArray(paises_selected,"country_id");
 
                     var myJSON = '';
                     myJSON+='{"Serie":{';
-                    myJSON+='"asset_id":"'+asset_Id+'",';
                     myJSON+='"original_title":"'+original_Title+'",';
                     myJSON+='"channel_id":"'+canal_selected+'",';
                     myJSON+='"year":'+year_selected+',';
 
-                    if (elenco_selected==''){myJSON+='"cast":null,';}else{myJSON+='"cast":"'+elenco_selected+'",';}
-                    if (director_selected==''){myJSON+='"directors":null,';}else{myJSON+='"directors":"'+director_selected+'",';}
+                    if (elenco_selected==''){myJSON+='"cast":"",';}else{myJSON+='"cast":"'+elenco_selected+'",';}
+                    if (director_selected==''){myJSON+='"directors":"",';}else{myJSON+='"directors":"'+director_selected+'",';}
                     if (myGirls=="[]"){myJSON+='"girls":null,';}else{myJSON+='"girls":'+myGirls+',';}
                     if (myCountries=="[]"){myJSON+='"countries":null,'; }else{myJSON+='"countries":'+myCountries+',';}
+                    if (myCategories=="[]"){myJSON+='"categories":null,'; }else{myJSON+='"categories":'+myCategories+',';}
 
-                    myJSON+='"categories":'+myCategories+',';
                     myJSON+='"publicar":"'+publicar+'",';
                     myJSON+='"Seriemetadatas": [';
                     myJSON+= addSerieMetadata(langDesc);
@@ -473,9 +505,11 @@ $('#search_category').multiselect({
                     console.log(myJSON);
                     $("#varsToJSON").val(myJSON);
                     $("#serieForm").submit();
-                  }  
+                  }
             }
-        
-    }
-    
+
+
+
+
+
 });

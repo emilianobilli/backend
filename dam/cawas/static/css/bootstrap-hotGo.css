@@ -1092,6 +1092,13 @@ ul.generoPick li.placeholder {
     padding: 2px 4px;
 }
 
+td{
+     background-color: #333;
+     display: table-cell;
+     border: 1px dotted #222;
+     padding: 1px 2px;
+}
+
 .tb-btn  {
     padding: 1px 10px!important;
 }
@@ -1118,6 +1125,12 @@ ul.assetPick li{
     width:100%;
     max-width:250px;
 }
+
+
+
+
+
+
 
 ul.assetPick li:hover{
     color:#d6212b!important;

@@ -1,8 +1,5 @@
 $( document ).ready(function() {
 
-    //$('#example').DataTable();
-
-    var dataTable = $('#example').dataTable({"sPaginationType": "full_numbers"});
 
     console.log( "ready!" );
     // inicializar tooltips para los íconos de HELP
@@ -13,8 +10,8 @@ $( document ).ready(function() {
     var clickedToSubmit = 0; //chequea si el botón de submit se ha presionado
     var checkText="";
     var display_runtimeJSON; //necesaria para armar el valor final que debe ir en el JSON
-    var langQ = 0; //Cuenta la cantidad de idiomas elegidos por el usuario
-    var langDesc = [] // recoge qué idiomas son los que se seleccionaron
+
+
     var clickedVal; // recoge el valor del ID seleccionado en la lista de chcas;
     var clickedName; // recoge el valor del Nombre seleccionado en la lista de chcas;
 
@@ -25,10 +22,12 @@ $( document ).ready(function() {
                 langDesc.push($(this).attr("id"));
             }
         });
-    };
 
+    };
     // activar los selects con filtro
-    $("#categoria-select").select2({placeholder: "Despliega la lista"});
+    $("#cableoperator-select").select2({placeholder: "Despliega la lista"});
+    $("#pais").select2({placeholder: "Seleccionar Pais"});
+
 
     $("#btnsearch").click(function(){
            $("#searchForID").submit();
@@ -40,28 +39,28 @@ $( document ).ready(function() {
 
     // simular exit con el botó de salir
     $("#EDBtn").click(function(){
-           window.location.href = "/categories/edit/"+clickedTextID;
+           window.location.href = "/cableoperators/edit/"+clickedTextID;
     });
 
 
 
     // Toma el ID de la chica seleccionada en la lista
    // Toma el nombre de la movie seleccionada en la lista
-    $( "#categoria-select" ).change(function() {
+    $( "#cableoperator-select" ).change(function() {
 
-        $( "#categoria-select option:selected" ).each(function() {
+        $( "#cableoperator-select option:selected" ).each(function() {
             clickedTextID = $(this).val();
             if(clickedTextID >0 )
             {
-                $("#categoryNAME").val(clickedTextID);// Agrega el ID en el input field
-                $("#categoryID").val(clickedTextID);// Agrega el ID en el input field
+                $("#cableoperatorNAME").val(clickedTextID);// Agrega el ID en el input field
+                $("#cableoperatorID").val(clickedTextID);// Agrega el ID en el input field
             }
         });
 
     });
     
     // interacción del usuario al hacer click en el botón debajo de la lista de selección
-    $( "#IDBtn" ).click(function(){ 
+    $( "#IDBtn" ).click(function(){
         $( "#chica-pickerForm" ).submit();// Envía el formulario con el id de la chica
     })
     
@@ -69,7 +68,8 @@ $( document ).ready(function() {
     $( "#ADBtn" ).click(function(){
              $( "#hidden1" ).show();
     });
-    
+
+
     // interacción del usuario al hacer click en el botón cancelar
     $( "#CancelBtn" ).click(function(){ 
          $( "#hidden1" ).hide();
@@ -103,27 +103,7 @@ $( document ).ready(function() {
     });
 
 
-    // checkbox idiomas detecta lo que se chequea y muestra el módulo de idioma
-    $("input[type=checkbox]").on('change', function () {
-        var self = $(this);
-        var showDiv = "#Module_"+self.attr("id");
-        if (self.is(":checked")) {
-            console.log("checkbox  id =" + self.attr("id") + "is checked ");
-            $(showDiv).show('slow');
-            langQ++;
-            langDesc.push(self.attr("id"));
-            
-        } else {
-            console.log("Id = " + self.attr("id") + "is Unchecked ");
-            $(showDiv).hide('fast');
-            langQ--;
-            langDesc.pop();
-        }
-        console.log("idiomas tildados:"+langQ+", y son:"+langDesc);// cantidad de idiomas
-        if(checkedOnce>0){
-            checkAll();
-        }
-    });
+
     
     
     /* triggers for checkALL function */
@@ -151,47 +131,53 @@ $( document ).ready(function() {
         // this function checks for all form values and makes json string to post or alerts user to complete fields.
         console.log("checking form...");
         checkVal = 0;
-        var asset_Id = $('#categoriaID').val();
-        var original_name = $('#orginalName').val();
-
+        var asset_Id = $('#cableoperatorID').val();
+        var nombre = $('#nombre').val();
+        var site = $('#site').val();
+        var phone = $('#phone').val();
+        var paisSelect = $('#pais').val();
         var publicar = $('#publicar').val();
+
         
-        countChecked();
-        // chequea original Name
-        if(original_name=="" || original_name==" ")
-        {
-            errorMe("#orginalName");
+        //Valida Pais
+        if (paisSelect =="0" || paisSelect ==""){
+            errorMe("#pais");
             checkVal++;
         }else{
-            okMe("#orginalName");
+            okMe("#pais");
+            paisSelect=$('#pais').val();
         }
+
+        // chequea Nombre
+        if(nombre=="" || nombre==" ")
+        {
+            errorMe("#nombre");
+            checkVal++;
+        }else{
+            okMe("#nombre");
+        }
+
+        // chequea site
+        if(site=="" || site==" ")
+        {
+            errorMe("#site");
+            checkVal++;
+        }else{
+            okMe("#site");
+        }
+
+
+
         // chequea thumbnail horizaontal
         if(!$('#ThumbHor').val() && !$('#imgantlandscape').val()){
-
             errorMe("#ThumbHor");
             checkVal++;
         }else{
             okMe("#ThumbHor");
         }
 
-        // chequea thumbnail vertical
-        if(!$('#ThumbVer').val() && !$('#imgantportrait').val()){
-            errorMe("#ThumbVer");
-            checkVal++;
-        }else{
-            okMe("#ThumbVer");
-        }
 
 
-
-        // chequeo de idiomas (tit_; desc_; date_)
-        if(langQ==0){
-            errorMe("#pickLang");
-            checkVal++;
-        }else{
-            okMe("#pickLang");
-            checkLangs(langDesc);
-        }
                 
         /* -----------  Sending Routine -----------*/
         
@@ -214,10 +200,7 @@ $( document ).ready(function() {
         checkedOnce++;
         
                 
-        
-        
-        // helper subfunctions
-        
+
         
             function errorMe(theField){
                 if ($(theField).parent().hasClass('has-success')){
@@ -250,71 +233,24 @@ $( document ).ready(function() {
                 
             }
         
-            function explodeArray(arr, indexname){
-                var lngth = arr.length;
-                var stringIt = '[';
-                for(i=0; i<lngth; i++){
-                    stringIt +='{"'+indexname+'":"'+arr[i]+'"}';
-                    if(i<lngth-1){
-                        stringIt += ',';
-                    }
-                }
-                stringIt += ']';
-                return(stringIt);
-            }
-        
-            function checkLangs(arr){
-                var lngth = arr.length;
-                for(i=0; i<lngth; i++){
-                    var lang=arr[i];
 
-                    var descCont = $("#name_"+lang).val().trim();
-                    if(descCont.length < 1){
-                        errorMe("#name_"+lang);
-                        checkVal++;
-                    }else{
-                        okMe("#name_"+lang);
-                    }
-                    
-                }
-            }
-        
-            function addCategoryMetadata(arr){
-                var lngth = arr.length;
-                var myLangs = "";
-                
-                for(i=0; i<lngth; i++){
-                    var lang=arr[i];
-                    var fechapub = $("#date_"+lang).val().trim();
-                    var name = $("#name_"+lang).val().trim();
 
-                    myLangs += '{"Categorymetadata":';
-                    myLangs += '{"language": "'+lang+'",';
-                    myLangs += '"name": "'+name+'",';
-                    myLangs += '"date":"'+fechapub+'"';
 
-                    myLangs += '}}';
-                    if(i<lngth-1){
-                        myLangs += ',';
-                    }
-                }
-                return(myLangs);
-            };
         
         
             function submitJson(){
                 if(checkVal==0){
-
                     var myJSON = '';
-                    myJSON+='{"Category":{';
-                    myJSON+='"original_name":"'+original_name+'",';
-                    myJSON+='"publicar":"'+publicar+'",';
-                    myJSON+='"Categorymetadatas": [';
-                    myJSON+= addCategoryMetadata(langDesc);
-                    myJSON+=']}}';
+                    myJSON+='{"cableoperator":{';
+                    myJSON+='"name":"'+nombre+'",';
+                    myJSON+='"site":"'+site+'",';
+                    myJSON+='"phone":"'+phone+'",';
+                    myJSON+='"country_id":"'+paisSelect+'",';
+                    myJSON+='"publicar":"'+publicar+'"';
+                    myJSON+='}}';
                     console.log(myJSON);
                     $("#varsToJSON").val(myJSON);
-                    $("#categoryForm").submit();
+                    $("#cableoperatorForm").submit();
                   }  
             }
         

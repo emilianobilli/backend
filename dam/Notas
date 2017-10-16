@@ -361,11 +361,6 @@ class ApiBackendResource(object):
 
 
 
-
-
-
-
-
     def cableoperator_serializer(co_id):
         try:
             co = CableOperator.objects.get(cableoperator_id=co_id)
@@ -403,4 +398,6 @@ class SerializerException(Exception):
     def __repr__(self):
         return repr(self.value)
 
+
+-----------------------------------------------------------------
 

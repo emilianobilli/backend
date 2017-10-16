@@ -1,6 +1,8 @@
 
 $( document ).ready(function() {
 
+    var dataTable = $('#example').dataTable({"sPaginationType": "full_numbers"});
+
     $("#slider-select").select2({placeholder: "Despliega la lista"});
     $("#slider-edit").select2({placeholder: "Despliega la lista"});
 

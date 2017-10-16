@@ -170,9 +170,7 @@ class EpisodeController(object):
             #countries = vepisode.serie.asset
             serie = vepisode.serie
             asset = serie.asset
-            print 'serie: ' + str(serie)
-            print 'asset: ' + str(asset)
-            print 'target: ' + str(asset.target_country)
+
             vepisode.save()
 
             vepisode.asset.target_country = []
@@ -285,14 +283,11 @@ class EpisodeController(object):
         vepisode = Episode()
         try:
             vasset = Asset.objects.get(asset_id=episode_id)
-            #print "episode: " + episode_id
             vepisode = Episode.objects.get(asset=vasset)
             i = len(vepisode.image.portrait.name)
             imgport = vepisode.image.portrait.name[5:i]
             i = len(vepisode.image.landscape.name)
             imgland = vepisode.image.landscape.name[5:i]
-            #imgland = vepisode.image.landscape.name
-            #print "episodio " + vepisode.original_title
 
         except Asset.DoesNotExist as e:
             request.session['list_episode_message'] = 'No Existe Asset' +  str(e.message)
@@ -415,17 +410,6 @@ class EpisodeController(object):
                     self.code_return = -1
                     return self.code_return
 
-            # CARGAR Countries al Asset del Episode
-            if (decjson['Episode']['countries'] is not None):
-                countries = decjson['Episode']['countries']
-                for item in countries:
-                    try:
-                        country = Country.objects.get(id=item['country_id'])
-                        vepisode.asset.target_country.add(country)
-                    except Country.DoesNotExist as e:
-                        request.session['list_episode_message'] = "Error: No Existe Pais (" + str(e.message) + ")"
-                        request.session['list_episode_flag'] = FLAG_ALERT
-                        self.code_return = -1
 
             vepisode.save()
 
@@ -464,7 +448,7 @@ class EpisodeController(object):
                     ph.func_publish_image(request, vimg)
 
                     # Se vuelve a publicar la SERIE en el idioma del Episodio publicado
-                    if (PublishQueue.objects.filter(item_id=vepisode.serie.asset.asset_id,status__in=['Q', 'D']).count() < 1):
+                    if (PublishQueue.objects.filter(item_id=vepisode.serie.asset.asset_id,status__in=['Q']).count() < 1):
                         ph = PublishHelper()
                         ph.func_publish_queue(request, vepisode.serie.asset.asset_id, vlang, 'AS', 'Q', vschedule_date)
                         ph.func_publish_image(request, vepisode.serie.image)
@@ -542,6 +526,29 @@ class EpisodeController(object):
         #Cuando hay una Des-publicacion se completa esta variable
         message =''
         flag = ''
+
+        filter = False
+
+        # Filtro de busqueda
+        if request.GET.has_key('search'):
+            search = request.GET.get('search')
+            if search != '':
+                filter = True
+                registros = EpisodeMetadata.objects.filter(
+                    Q(episode__original_title__icontains=search) | Q(episode__asset__asset_id__icontains=search)).order_by('-id')
+
+        if filter == False:
+            registros = EpisodeMetadata.objects.all().order_by('-id')
+            paginator = Paginator(registros, 25)
+            page = request.GET.get('page')
+            try:
+                registros = paginator.page(page)
+            except PageNotAnInteger:
+                registros = paginator.page(1)
+            except EmptyPage:
+                registros = paginator.page(paginator.num_pages)
+
+
         if request.session.has_key('list_episode_message'):
             if request.session['list_episode_message'] != '':
                 message = request.session['list_episode_message']
@@ -554,40 +561,11 @@ class EpisodeController(object):
 
         page = request.GET.get('page')
         request.POST.get('page')
-        episodes_list = None
 
-        if request.POST:
-            titulo = request.POST['inputTitulo']
-            selectestado = request.POST['selectestado']
-            # FILTROS
-            #Q(name__icontains=titulo) | Q(block_id__icontains=titulo)
-            if titulo != '':
-                assets = Asset.objects.filter(asset_id__icontains=titulo)
-                episodes_sel = Episode.objects.filter(Q(original_title__icontains=titulo)|Q(asset__in=assets))
-            else:
-                episodes_sel = Episode.objects.all()
+        episodes = EpisodeMetadata.objects.all().order_by('-id')
+        episodes_sin_metadata = Episode.objects.all().exclude(id__in = episodes)
 
-            if selectestado != '':
-                episodes_list = EpisodeMetadata.objects.filter(episode__in=episodes_sel, queue_status=selectestado).order_by('-id')
-            else:
-                episodes_list = EpisodeMetadata.objects.filter(episode__in=episodes_sel).order_by('-id')
-
-
-
-        if episodes_list is None:
-            episodes_list = EpisodeMetadata.objects.all().order_by('-id')
-
-        paginator = Paginator(episodes_list, 20)  # Show 25 contacts per page
-        try:
-            episodes = paginator.page(page)
-        except PageNotAnInteger:
-            # If page is not an integer, deliver first page.
-            episodes = paginator.page(1)
-        except EmptyPage:
-            # If page is out of range (e.g. 9999), deliver last page of results.
-            episodes = paginator.page(paginator.num_pages)
-
-        context = {'message': message,'flag':flag, 'registros': episodes, 'usuario': usuario}
+        context = {'message': message,'flag':flag, 'registros': registros, 'episodes_sin_metadata':episodes_sin_metadata,'usuario': usuario}
         return render(request, 'cawas/episodes/list.html', context)
 
 
@@ -603,7 +581,7 @@ class EpisodeController(object):
 
 
             # 1 - VERIFICAR, si estado de publicacion esta en Q, se debe eliminar
-            publishs = PublishQueue.objects.filter(item_id=vasset_id, status='Q')
+            publishs = PublishQueue.objects.filter(item_id=vasset_id, status='Q', item_lang=episodemetadata.language)
             if publishs.count > 0:
                 publishs.delete()
 

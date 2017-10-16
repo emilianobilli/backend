@@ -1,5 +1,7 @@
 $( document ).ready(function() {
-    
+
+
+
     console.log( "ready!" );
     var minutos = 0 ;
     var segundos = 0 ;

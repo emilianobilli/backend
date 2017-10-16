@@ -24,55 +24,11 @@
             <!-- First Row -->
               <div class="row">
                   <div class="col-lg-12 col-md-12 col-sm-12">
-                       <h2>Listado de Episodios </h2>
-                      <h3>Nueva búsqueda </h3>
+
+
                   </div>
               </div>
 
-            <!-- Filtros -->
-
-           <!-- Filtros Row -->
-              <div class="row">
-                  <form method="post" action="" name="searchForID"
-                              id="searchForID" enctype="multipart/form-data">
-                  <div class="col-lg-4 col-md-4 col-sm-4">
-
-
-                            <div class="col-xs-12 col-md-2 col-lg-2 ">
-                                 Por <span class="boldIt">Título</span>
-                            </div>
-
-                            <div class="col-xs-11 col-md-9 col-lg-9 ">
-                                <div>
-                                    <input type="text" class="form-control fLEFT top6"
-                                           id="inputTitulo" placeholder="Ingresar un texto..." name="inputTitulo" required>
-                                </div>
-                            </div>
-
-
-                  </div>
-
-                  <div class="col-lg-4 col-md-4 col-sm-4">
-
-                      <div class="col-xs-12 col-md-2 col-lg-2 ">
-                                Por <span class="boldIt">Status Queued</span>
-                         </div>
-                         <div class="col-xs-12 col-md-8 col-lg-8 ">
-                            <select id="selectestado" name="selectestado" class="form-control top6">
-                               <option value=""></option>
-                               <option value="Q">Queued</option>
-                               <option value="D">Done</option>
-                                <option value="E">Error</option>
-                            </select>
-                        </div>
-
-                      <div class="col-xs-1 col-md-1 col-lg-1">
-                            <span name="btnsearch" id="btnsearch"class="glyphicon glyphicon-search GLY-search fRIGHT top6" id="glyID"> </span>
-                       </div>
-                  </div>
-                </form>
-              </div>
-            <!-- Fin de Filtros -->
 
             <div class="row">
 
@@ -84,67 +40,98 @@
                  <div class="col-lg-8 col-md-8 col-sm-8" >
 
                   </div>
-                <div class="col-lg-2 col-md-2 col-sm-2" >
-                    <div class="pagination">
-                            <span class="step-links">
-                                {% if registros.has_previous %}
-                                   <b> <a href="?page={{ registros.previous_page_number }}"> << </a></b>
-                                {% endif %}
 
-                                <span class="current">
-                                    Page {{ registros.number }} of {{ registros.paginator.num_pages }}.
-                                </span>
-
-                                {% if registros.has_next %}
-                                    <b><a href="?page={{ registros.next_page_number }}"> >> </a></b>
-                                {% endif %}
-                            </span>
-                        </div>
-                     </div>
             </div>
 
             <!-- Fin de Filtros -->
 
+
+
             <!-- GRID row -->
             <div class="row">
+                <h2> Episodios sin Metadata</h2>
+                <table class="" id="example2">
+                      <thead>
+                            <th class="tb-cell">ID</th>
+                            <th class="tb-cell">Título</th>
 
-                <div class="table">
-                    <div class="tb-row tb-header">
-                        <div class="tb-cell">ID</div>
-                        <div class="tb-cell">Título</div>
-                        <div class="tb-cell">Idioma</div>
-                        <div class="tb-cell">Estado</div>
-                        <div class="tb-cell">Activado</div>
-                        <div class="tb-cell">En Cola de Pub.</div>
-                        <div class="tb-cell">Fec. Publicación</div>
-                        <div class="tb-cell">Acciones</div>
-                        {% if usuario.is_superuser == true %}
-                            <div class="tb-cell"></div>
-                        {% endif %}
-                        <div class="tb-cell"></div>
+                            <th class="tb-cell">Estado</th>
+
+                            <th class="tb-cell">Acciones</th>
+
+                        </thead>
+
+                     {% for item in episodes_sin_metadata %}
+                        <tr class="tb-row">
+                           <td class="tb-cell">{{ item.asset.asset_id}}</td>
+                            <td class="tb-cell">{{ item.original_title }}</td>
+                            <td class="tb-cell">Sin Publicar</td>
+                            <td class="tb-cell"><a href="/episodes/edit/{{ item.asset.asset_id}}" class="btn-info btn tb-btn" >Editar</a></td>
+
+                        </tr>
+                    {% endfor %}
+                 </table>
+            </div>
+            <br>
+            <div class="row">
+                <div class="col-xs-12 col-md-12 col-lg-12 ">
+                <!-- formulario de busqueda -->
+                <form action="/episodes/list" method="get" id="searchForID" name="searchForId">
+                    <div class="col-xs-2 col-md-2 col-lg-2 ">
+                         <span class="boldIt">Busqueda</span>
                     </div>
+                    <div class="col-xs-7 col-md-7 col-lg-7 ">
+                        <div>
+                            <input type="text" class="form-control fLEFT top6" id="search"
+                                   name="search" placeholder="Ingresar Texto de Busqueda" >
+                        </div>
+                    </div>
+                    <div class="col-xs-2 col-md-2 col-lg-2 unpad">
+                        <button type="submit" class=""><span class="glyphicon glyphicon-filter inverse"></span></button>
+                    </div>
+                </form>
+                </div>
+            </div>
+            <!-- formulario de busqueda -->
+
+            <!-- GRID row -->
+            <div class="row">
+                <div class="col-xs-12 col-md-12 col-lg-12 ">
+                <h2>Listado de Episodios </h2>
+                <table class="tb-row tb-header">
+                      <thead>
+                            <th class="tb-cell">ID</th>
+                            <th class="tb-cell">Título</th>
+                            <th class="tb-cell">Idioma</th>
+                            <th class="tb-cell">Estado</th>
+                            <th class="tb-cell">Activado</th>
+                            <th class="tb-cell">En Cola de Pub.</th>
+                            <th class="tb-cell">Fec. Publicación</th>
+                            <th class="tb-cell">Acciones</th>
+                            {% if usuario.is_superuser == true %}
+                                <th class="tb-cell"></th>
+                            {% endif %}
+                            <th class="tb-cell"></th>
+                        </thead>
 
                      {% for item in registros %}
-                        <div class="tb-row">
-                           <div class="tb-cell">
-                                <input type="checkbox" id="{{ item.episode.asset.asset_id}}" value="{{ item.episode.asset.asset_id}}"> {{ item.episode.asset.asset_id}}
-                            </div>
-
-                            <div class="tb-cell">{{ item.title }}</div>
-                            <div class="tb-cell">{{ item.language.name }}</div>
+                        <tr class="tb-row">
+                           <td class="tb-cell">{{ item.episode.asset.asset_id}}</td>
+                            <td class="tb-cell">{{ item.title }}</td>
+                            <td class="tb-cell">{{ item.language.name }}</td>
                             {% if item.publish_status == 0  %}
-                                <div class="tb-cell">Sin Publicar</div>
+                                <td class="tb-cell">Sin Publicar</td>
                             {% else %}
-                                <div class="tb-cell">Publicado</div>
+                                <td class="tb-cell">Publicado</td>
                             {% endif %}
 
                             {% if item.activated == 0  %}
-                                <div class="tb-cell">NO</div>
+                                <td class="tb-cell">NO</td>
                             {% else %}
-                                <div class="tb-cell">SI</div>
+                                <td class="tb-cell">SI</td>
                             {% endif %}
 
-                            <div class="tb-cell">
+                            <td class="tb-cell">
                                 {% if item.queue_status == 'Q'  %}
                                     Queued
                                 {% elif item.queue_status == 'D' %}
@@ -152,27 +139,42 @@
                                 {% elif item.queue_status == 'E' %}
                                     Error
                                 {% endif %}
-                            </div>
+                            </td>
 
-                            <div class="tb-cell">{{ item.publish_date|date:'d-m-Y' }}</div>
+                            <td class="tb-cell">{{ item.publish_date|date:'d-m-Y' }}</td>
 
-                            <div class="tb-cell"><a href="/episodes/edit/{{ item.episode.asset.asset_id}}" class="btn-info btn tb-btn" >Editar</a></div>
+                            <td class="tb-cell"><a href="/episodes/edit/{{ item.episode.asset.asset_id}}" class="btn-info btn tb-btn" >Editar</a></td>
                             {% if usuario.is_superuser == true %}
-                                <div class="tb-cell"><a href="/episodes/delete/{{ item.episode.asset.asset_id}}" class="btn-danger btn tb-btn eliminar">Borrar</a></div>
+                                <td class="tb-cell"><a href="/episodes/delete/{{ item.episode.asset.asset_id}}" class="btn-danger btn tb-btn eliminar">Borrar</a></td>
                             {% endif %}
 
                            {% if item.activated == 0  %}
-                               <div class="tb-cell"><a href="/episodes/publish/{{ item.id}}"class="btn-success btn tb-btn publicar">Publicar</a></div>
+                               <td class="tb-cell"><a href="/episodes/publish/{{ item.id}}"class="btn-success btn tb-btn publicar">Publicar</a></td>
                                  {% else %}
-                              <div class="tb-cell"><a href="/episodes/unpublish/{{ item.id}}"class="btn-warning btn tb-btn desactivar">Desactivar</a></div>
+                              <td class="tb-cell"><a href="/episodes/unpublish/{{ item.id}}"class="btn-warning btn tb-btn desactivar">Desactivar</a></td>
                            {% endif %}
-
-                        </div>
-
-
+                        </tr>
                     {% endfor %}
+                 </table>
+
+                 <div class="pagination">
+                    <span class="step-links">
+                        {% if registros.has_previous %}
+                            <a href="?page={{ registros.previous_page_number }}">Anterior</a>
+                        {% endif %}
+
+                        <span class="current">
+                            Pag. Actual {{ registros.number }} of {{ registros.paginator.num_pages }}.
+                        </span>
+
+                        {% if registros.has_next %}
+                            <a href="?page={{ registros.next_page_number }}">Siguiente</a>
+                        {% endif %}
+                    </span>
                 </div>
             </div>
+            </div>
+
             <!-- end of GRID row -->
 
             <div class="fNONE"></div>

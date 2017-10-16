@@ -40,7 +40,7 @@ class BlockController(object):
                 vschedule_date = datetime.datetime.strptime(decjson['Block']['publish_date'], '%d-%m-%Y').strftime('%Y-%m-%d')
                 vblock.publish_date = vschedule_date
                 vblock.language = Language.objects.get(code=decjson['Block']['language'])
-                vblock.queue_status = True
+                vblock.queue_status = 'Q'
                 if decjson['Block']['channel_id'] is not None:
                     vblock.channel = Channel.objects.get(pk=decjson['Block']['channel_id'])
 
@@ -84,7 +84,7 @@ class BlockController(object):
                 return self.code_return
             except Exception as e:
                 self.code_return = -1
-                request.session['list_block_message'] = 'Error: ' + str(e.message)
+                request.session['list_block_message'] = 'Error: ' + str(e)
                 request.session['list_block_flag'] = FLAG_ALERT
                 return self.code_return
 
@@ -160,7 +160,9 @@ class BlockController(object):
                     '%Y-%m-%d')
                 vblock.publish_date = vschedule_date
                 vblock.language = Language.objects.get(code=decjson['Block']['language'])
-                vblock.channel = Channel.objects.get(pk=decjson['Block']['channel_id'])
+                if decjson['Block']['channel_id'] is not None:
+                    vblock.channel = Channel.objects.get(pk=decjson['Block']['channel_id'])
+
                 vdevice = Device.objects.get(pk=int(decjson['Block']['target_device_id']))
 
                 vblock.target_device_id = int(decjson['Block']['target_device_id'])
@@ -168,7 +170,7 @@ class BlockController(object):
                 vblock.save()
             except Exception as e:
                 self.code_return = -1
-                request.session['list_block_message'] = 'Error: ' + e.message
+                request.session['list_block_message'] = 'Error: ' + str(e)
                 request.session['list_block_flag'] = FLAG_ALERT
                 return self.code_return
 
@@ -281,7 +283,26 @@ class BlockController(object):
         flag =''
         page = request.GET.get('page')
         request.POST.get('page')
-        blocks_list = None
+        filter = False
+
+        # Filtro de busqueda
+        if request.GET.has_key('search1'):
+            search = request.GET.get('search1')
+            if search != '':
+                filter = True
+                registros = Block.objects.filter(
+                    Q(block_id__icontains=search) | Q(name__icontains=search)).order_by('-id')
+
+        if filter == False:
+            registros = Block.objects.all().order_by('-id')
+            paginator = Paginator(registros, 25)
+            page = request.GET.get('page')
+            try:
+                registros = paginator.page(page)
+            except PageNotAnInteger:
+                registros = paginator.page(1)
+            except EmptyPage:
+                registros = paginator.page(paginator.num_pages)
 
         if request.session.has_key('list_block_message'):
             if request.session['list_block_message'] != '':
@@ -293,36 +314,8 @@ class BlockController(object):
                 flag = request.session['list_block_flag']
                 request.session['list_block_flag'] = ''
 
-
-        if request.POST:
-            titulo = request.POST['inputTitulo']
-            selectestado = request.POST['selectestado']
-
-            # FILTROS
-            if titulo != '':
-                if selectestado != '':
-                    blocks_list = Block.objects.filter(Q(name__icontains=titulo)|Q(block_id__icontains=titulo), queue_status=selectestado).order_by('-id')
-                else:
-                    blocks_list = Block.objects.filter(Q(name__icontains=titulo)|Q(block_id__icontains=titulo)).order_by('-id')
-            elif selectestado != '':
-                blocks_list = Block.objects.filter(queue_status=selectestado).order_by('-id')
-            else:
-                blocks_list = Block.objects.all().order_by('-id')
-
-        if blocks_list is None:
-            blocks_list = Block.objects.all().order_by('-id')
-
-        paginator = Paginator(blocks_list, 20)  # Show 25 contacts per page
-        try:
-            blocks = paginator.page(page)
-        except PageNotAnInteger:
-            # If page is not an integer, deliver first page.
-            blocks = paginator.page(1)
-        except EmptyPage:
-            # If page is out of range (e.g. 9999), deliver last page of results.
-            blocks = paginator.page(paginator.num_pages)
-
-        context = {'message': message, 'flag':flag,  'registros': blocks, 'titulo': titulo, 'usuario': usuario}
+        blocks = Block.objects.all().order_by('-id')
+        context = {'message': message, 'flag':flag,  'registros': registros, 'titulo': titulo, 'usuario': usuario}
         return render(request, 'cawas/blocks/list.html', context)
 
 
@@ -420,7 +413,7 @@ class BlockController(object):
             request.session['list_block_message'] = "Error al despublicar (" + str(e.value) + ")"
             request.session['list_block_flag'] = FLAG_ALERT
         except Exception as e:
-            request.session['list_block_message'] = "Error al despublicar (" + str(e.message) + ")"
+            request.session['list_block_message'] = "Error al despublicar (" + str(e) + ")"
             request.session['list_block_flag'] = FLAG_ALERT
 
         return self.code_return

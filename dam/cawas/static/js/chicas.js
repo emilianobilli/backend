@@ -1,6 +1,5 @@
 $( document ).ready(function() {
 
-
     $('#search_paises').multiselect({
         search: {
             left: '<input type="text" name="q" class="form-control" placeholder="Buscar..." />',

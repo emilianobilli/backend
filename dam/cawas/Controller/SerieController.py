@@ -33,7 +33,7 @@ class SerieController(object):
 
             # Parsear JSON
             strjson = request.POST['varsToJSON']
-            print 'JSON'+ strjson
+
 
             decjson = json.loads(strjson.replace('\r','\\r').replace('\n','\\n'))
 
@@ -139,7 +139,6 @@ class SerieController(object):
             # Fin datos serie
 
             # BORRAR Y CREAR METADATA
-
             vseriemetadatas = decjson['Serie']['Seriemetadatas']
             for item in vseriemetadatas:
                 smd = SerieMetadata()
@@ -194,7 +193,7 @@ class SerieController(object):
             return redirect(lc.login_view(request))
 
         # VARIABLES LOCALES
-        message = ''
+        message  = ''
         flag = ''
         vgrabarypublicar=''
         if request.method == 'POST':
@@ -213,6 +212,7 @@ class SerieController(object):
                 pathfilesland = Setting.objects.get(code='image_repository_path_landscape')
                 base_dir = Setting.objects.get(code='dam_base_dir')
                 print 'flag1'
+
 
             except Exception as e:
                 self.code_return = -1
@@ -262,6 +262,7 @@ class SerieController(object):
 
             if (decjson['Serie']['cast'] is not None):
                 vserie.cast = decjson['Serie']['cast']
+
             if (decjson['Serie']['directors'] is not None):
                 vserie.directors = decjson['Serie']['directors']
 
@@ -352,7 +353,7 @@ class SerieController(object):
                 smd.queue_status = 'Q'
                 smd.save()
 
-                print 'flag6'
+
                 if (Episode.objects.filter(serie=vserie).count() > 0):
                     print 'ingreso'
                     ph = PublishHelper()
@@ -439,9 +440,9 @@ class SerieController(object):
                    'vcategoryselected': vcategoryselected,
                    'vcategorynotselected': vcategorynotselected,
                    'vepisodes':vepisodes,
-                   'flag':flag,
                    'countries_selected':countries_selected,
-                   'countries_notselected':countries_notselected
+                   'countries_notselected':countries_notselected,
+                   'message':message
                    }
 
         return render(request, 'cawas/series/edit.html', context)
@@ -457,10 +458,27 @@ class SerieController(object):
         titulo = ''
         page = request.GET.get('page')
         request.POST.get('page')
-        series_list = None
-
+        filter = False
         message = ''
         flag = ''
+
+        # Filtro de busqueda
+        if request.GET.has_key('search'):
+            search = request.GET.get('search')
+            if search != '':
+                filter = True
+                registros = SerieMetadata.objects.filter(Q(title__icontains=search) | Q(serie__asset__asset_id__icontains=search)).order_by('-id')
+
+        if filter == False:
+            registros = SerieMetadata.objects.all().order_by('-id')
+            paginator = Paginator(registros, 25)
+            page = request.GET.get('page')
+            try:
+                registros = paginator.page(page)
+            except PageNotAnInteger:
+                registros = paginator.page(1)
+            except EmptyPage:
+                registros = paginator.page(paginator.num_pages)
 
         if request.session.has_key('list_serie_message'):
             if request.session['list_serie_message'] != '':
@@ -472,36 +490,10 @@ class SerieController(object):
                 flag = request.session['list_serie_flag']
                 request.session['list_serie_flag'] = ''
 
-        if request.POST:
-            titulo = request.POST['inputTitulo']
-            selectestado = request.POST['selectestado']
-            # FILTROS
-            if titulo != '':
-                assets = Asset.objects.filter(asset_id__icontains=titulo)
-                series_sel = Serie.objects.filter(Q(original_title__icontains=titulo) | Q(asset__in=assets))
-            else:
-                series_sel = Serie.objects.all()
 
-            if selectestado != '':
-                series_list = SerieMetadata.objects.filter(serie__in=series_sel, queue_status=selectestado).order_by('-id')
-            else:
-                series_list = SerieMetadata.objects.filter(serie__in=series_sel).order_by('-id')
+        series = SerieMetadata.objects.all().order_by('-id')
 
-
-        if series_list is None:
-            series_list = SerieMetadata.objects.all().order_by('-id')
-
-        paginator = Paginator(series_list, 20)  # Show 25 contacts per page
-        try:
-            series = paginator.page(page)
-        except PageNotAnInteger:
-            # If page is not an integer, deliver first page.
-            series = paginator.page(1)
-        except EmptyPage:
-            # If page is out of range (e.g. 9999), deliver last page of results.
-            series = paginator.page(paginator.num_pages)
-
-        context = {'message':message, 'flag':flag, 'registros': series, 'titulo': titulo, 'usuario': usuario}
+        context = {'message':message, 'flag':flag, 'registros': registros, 'titulo': titulo, 'usuario': usuario}
         return render(request, 'cawas/series/list.html', context)
 
 
@@ -568,15 +560,15 @@ class SerieController(object):
 
             #Obtener los episodios que pertenecen a esta serie
             #publicar nuevamente los episodes
-            print 'despublicacion de episodes'
+
             episodes = Episode.objects.filter(serie=seriemetadata.serie)
             for item in episodes:
-                print 'episode: ' + item.asset.asset_id
+
                 try:
                     # Despublicar los episodios que tengan el mismo idioma que la serie.
                     mde = EpisodeMetadata.objects.filter(episode=item, language=seriemetadata.language)
                     for episodemetadata in mde:
-                        print 'episodemetadata: ' + episodemetadata.episode.asset.asset_id
+
                         # VERIFICAR SI estado de publicacion de EPISODE esta en Q, se debe eliminar
                         publishs = PublishQueue.objects.filter(item_id=episodemetadata.episode.asset.asset_id, status='Q')
                         if publishs.count > 0:
