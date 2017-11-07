@@ -9,9 +9,8 @@ from ..backend_sdk import ApiBackendServer, ApiBackendResource, ApiBackendExcept
 from django.db.models import Q
 
 
+
 class MovieController(object):
-
-
 
 
     def add(self, request):
@@ -32,7 +31,18 @@ class MovieController(object):
         if request.method == 'POST':
             # parsear JSON
             strjson = request.POST['varsToJSON']
-            decjson = json.loads(strjson.replace('\r','\\r').replace('\n','\\n'))
+            print 'strjson antes: ' + strjson
+
+            print 'strjson: ' +strjson
+            #strjson = strjson.replace('"', '\\"')
+            #decjson = json.loads(strjson)
+            #strjson = json.dumps(strjson, ensure_ascii=False, encoding='utf8')
+            #strjson = simplejson.loads(strjson,encoding='utf-8')
+            strjson = strjson.replace('\r','\\r').replace('\n','\\n')
+
+            #strjson = strjson.encode('utf-8')
+            decjson = json.loads(strjson)
+
             vgrabarypublicar = decjson['Movie']['publicar']
 
             # DECLARACION DE OBJECTOS

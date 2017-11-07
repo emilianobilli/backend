@@ -138,6 +138,7 @@ $( document ).ready(function() {
         var paisSelect = $('#pais').val();
         var publicar = $('#publicar').val();
 
+
         
         //Valida Pais
         if (paisSelect =="0" || paisSelect ==""){
@@ -157,7 +158,15 @@ $( document ).ready(function() {
             okMe("#nombre");
         }
 
+        if (phone ==""|| phone==" ")
+        {
+
+            phone=" "
+            }else{
+            okMe("#phone");
+        }
         // chequea site
+
         if(site=="" || site==" ")
         {
             errorMe("#site");

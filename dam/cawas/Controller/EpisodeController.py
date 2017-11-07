@@ -560,7 +560,7 @@ class EpisodeController(object):
                 request.session['list_episode_flag'] = ''
 
         page = request.GET.get('page')
-        request.POST.get('page')
+        #request.POST.get('page')
 
         episodes = EpisodeMetadata.objects.all().order_by('-id')
         episodes_sin_metadata = Episode.objects.all().exclude(id__in = episodes)
