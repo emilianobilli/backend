@@ -48,6 +48,12 @@ class SliderController(object):
                 vdevice = Device.objects.get(id=decjson['Slider']['target_device_id'])
                 vslider.target_device = vdevice
                 vslider.text = decjson['Slider']['text']
+
+                if decjson['Slider']['url'] is None:
+                    vslider.url = ''
+                else:
+                    vslider.url = decjson['Slider']['url']
+
                 vslider.language = Language.objects.get(code=decjson['Slider']['language'])
                 vslider.save()
 
@@ -200,6 +206,12 @@ class SliderController(object):
                     vslider.text = ''
                 else:
                     vslider.text = decjson['Slider']['text']
+
+                if decjson['Slider']['url'] is None:
+                    vslider.url = ''
+                else:
+                    vslider.url = decjson['Slider']['url']
+
 
                 vslider.language = Language.objects.get(code=decjson['Slider']['language'])
                 if (decjson['Slider']['publish_date'] != ''):

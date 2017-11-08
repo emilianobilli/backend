@@ -434,6 +434,7 @@ $( document ).ready(function() {
                     myJSON+='"publish_date":"'+publish_date+'",';
                     myJSON+='"language":"'+idioma_selected+'",';
                     myJSON+='"media_type":"'+typeslider_selected+'",';
+                    myJSON+='"url:":"'+url+'",';
                     myJSON+='"target_device_id":"'+device_selected+'",';
                     myJSON+='"publicar":"'+publicar+'",';
                     if (typeslider_selected=='' ){
