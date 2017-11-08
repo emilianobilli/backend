@@ -35,7 +35,7 @@ except ImporterException as err:
     print err.value
 """
 
-"""
+
 girls_list = Girl.objects.all()
 for girl in girls_list:
     try:
@@ -43,8 +43,8 @@ for girl in girls_list:
         #enqueue_girl(girl)
     except EnqueuerException as err:
         print err.value
-"""
-"""
+
+
 movies_list = Movie.objects.all()
 for movie in movies_list:
     try:
@@ -52,8 +52,8 @@ for movie in movies_list:
         #enqueue_movie(movie)
     except EnqueuerException as err:
         print err.value
-"""
-"""
+
+
 serie_list = Serie.objects.all()
 for serie in serie_list:
     try:
@@ -61,13 +61,37 @@ for serie in serie_list:
         #enqueue_serie(serie)
     except EnqueuerException as err:
         print err.value
-"""
-"""
+
+
 episode_list = Episode.objects.all()
 for episode in episode_list:
     try:
         enqueue_episode(episode, "Virginia", 'es')
         #enqueue_episode(episode, ENDPOINT)
+    except EnqueuerException as err:
+        print err.value
+"""
+# Publicar Serie con todos los episodios
+asset_id = 'S00115'
+try:
+    asset = Asset.objects.get(asset_id=asset_id)
+except ObjectDoesNotExist:
+    print "Asset ID %s no existe" % asset_id
+
+try:
+    serie = Serie.objects.get(asset=asset)
+except ObjectDoesNotExist:
+    print "Serie con asset ID %s no existe" % asset_id
+
+try:
+    enqueue_serie(serie, "Virginia", "es")
+except EnqueuerException as err:
+    print err.value
+
+episodes = Episode.objects.filter(serie=serie)
+for episode in episodes:
+    try:
+        enqueue_episode(episode, "Virginia", 'es')
     except EnqueuerException as err:
         print err.value
 """
@@ -151,7 +175,6 @@ for girl in girls:
     image = Image.objects.get(name=girl.asset.asset_id)
     enqueue_image(image)
 """
-
 
 """
 categories = Category.objects.all()

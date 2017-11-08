@@ -271,6 +271,7 @@ class Slider(models.Model):
     media_type        = models.CharField(max_length=10, choices=TYPE, help_text="Tipo de Slider")
     image             = models.ForeignKey(Image, blank=True, null=True)
     asset             = models.ForeignKey(Asset, blank=True, null=True)
+    linked_url        = models.CharField(max_length=256, blank=True, help_text="Link del slider a URL")
     target_device     = models.ForeignKey(Device)
     language          = models.ForeignKey(Language)
     target_country    = models.ManyToManyField(Country, blank=True)
@@ -310,6 +311,8 @@ class Slider(models.Model):
         if self.asset is not None:
             dict["linked_asset_id"]   = self.asset.asset_id
             dict["linked_asset_type"] = self.asset.asset_type
+        elif self.linked_url != '':
+            dict["linked_url"] = self.linked_url
         dict["target"] = self.target_device.name
         dict["lang"]   = self.language.code
         dict["text"]   = self.text
