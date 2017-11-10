@@ -39,8 +39,8 @@ except ImporterException as err:
 girls_list = Girl.objects.all()
 for girl in girls_list:
     try:
-        enqueue_girl(girl, "Virginia",'es')
-        #enqueue_girl(girl)
+        #enqueue_girl(girl, "Virginia",'es')
+        enqueue_girl(girl, "Virginia")
     except EnqueuerException as err:
         print err.value
 
@@ -48,8 +48,8 @@ for girl in girls_list:
 movies_list = Movie.objects.all()
 for movie in movies_list:
     try:
-        enqueue_movie(movie, "Virginia", 'es')
-        #enqueue_movie(movie)
+        #enqueue_movie(movie, "Virginia", 'es')
+        enqueue_movie(movie, "Virginia")
     except EnqueuerException as err:
         print err.value
 
@@ -57,8 +57,8 @@ for movie in movies_list:
 serie_list = Serie.objects.all()
 for serie in serie_list:
     try:
-        enqueue_serie(serie, "Virginia", 'es')
-        #enqueue_serie(serie)
+        #enqueue_serie(serie, "Virginia", 'es')
+        enqueue_serie(serie, "Virginia")
     except EnqueuerException as err:
         print err.value
 
@@ -66,10 +66,12 @@ for serie in serie_list:
 episode_list = Episode.objects.all()
 for episode in episode_list:
     try:
-        enqueue_episode(episode, "Virginia", 'es')
-        #enqueue_episode(episode, ENDPOINT)
+        #enqueue_episode(episode, "Virginia", 'es')
+        enqueue_episode(episode, "Virginia")
     except EnqueuerException as err:
         print err.value
+
+
 """
 # Publicar Serie con todos los episodios
 asset_id = 'S00115'
