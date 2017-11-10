@@ -43,9 +43,12 @@ class SliderController(object):
                 decjson = json.loads(strjson.replace('\r','\\r').replace('\n','\\n'))
                 vgrabarypublicar = decjson['Slider']['publicar']
                 print 'debug1'
-                if (decjson['Slider']['asset_id']!='0'):
-                    vasset = Asset.objects.get(asset_id=decjson['Slider']['asset_id'])
-                    vslider.asset = vasset
+                if decjson['Slider']['asset_id'] is not None:
+                    if Asset.objects.filter(asset_id=decjson['Slider']['asset_id']).exists():
+                        vasset = Asset.objects.get(asset_id=decjson['Slider']['asset_id'])
+                        vslider.asset = vasset
+                    else:
+                        vslider.asset = None
                 print 'debug2'
                 vslider.media_type = decjson['Slider']['media_type']
                 vdevice = Device.objects.get(id=decjson['Slider']['target_device_id'])
@@ -198,10 +201,13 @@ class SliderController(object):
 
                 vslider = Slider.objects.get(slider_id=slider_id)
 
+
                 if decjson['Slider']['asset_id'] is not None:
                     if Asset.objects.filter(asset_id=decjson['Slider']['asset_id']).exists():
                         vasset = Asset.objects.get(asset_id=decjson['Slider']['asset_id'])
                         vslider.asset = vasset
+                    else:
+                        vslider.asset = None
 
                 vslider.media_type = decjson['Slider']['media_type']
                 vdevice = Device.objects.get(id=decjson['Slider']['target_device_id'])

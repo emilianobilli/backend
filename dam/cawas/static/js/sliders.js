@@ -218,12 +218,7 @@ $( document ).ready(function() {
 
 
         //VAlidar si url y asset_id es vacio, error
-        if (asset_id=="0"){
-            asset_id = "";
-        }
-
-        if ((asset_Id=="") && (linked_url==""||linked_url==" ")){
-             asset_id="";
+        if ((asset_Id=="0" ||asset_Id=="" ) && (linked_url==""||linked_url==" ")){
              errorMe("#slider-select");
              errorMe("#linked_url");
              checkVal++;
@@ -231,8 +226,6 @@ $( document ).ready(function() {
             okMe("#slider-select");
             okMe("#linked_url");
         }
-
-
 
         // chequea thumbnail horizaontal
         if(!$('#ThumbHor').val() && !$('#imgantlandscape').val()){
