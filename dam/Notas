@@ -1,3 +1,22 @@
+
+
+'''
+DATABASES = {
+    'default': {
+        'ENGINE': 'django.db.backends.mysql',
+        'NAME': 'cawas',
+        'USER': 'cawas',
+        'PASSWORD': 'Caw.1984p',
+        'HOST': 'localhost',
+        'PORT': '',
+	'OPTIONS': {'charset': 'utf8mb4'},
+    }
+}
+'''
+
+
+
+
 Desarrollar:
 
     En Edicion de Metadata, se puede agregar idiomas si todavia no ha sido agregado.

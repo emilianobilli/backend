@@ -32,8 +32,9 @@ class SliderController(object):
             request.session['list_slider_message'] = 'No existe Setting '
             request.session['list_slider_flag'] = FLAG_ALERT
             return self.code_return
-
+        print 'debug'
         if request.method == 'POST':
+            print 'debugPost'
             # VARIABLES
             try:
                 vimg = Image()
@@ -41,18 +42,21 @@ class SliderController(object):
                 strjson = request.POST['varsToJSON']
                 decjson = json.loads(strjson.replace('\r','\\r').replace('\n','\\n'))
                 vgrabarypublicar = decjson['Slider']['publicar']
+                print 'debug1'
                 if (decjson['Slider']['asset_id']!='0'):
                     vasset = Asset.objects.get(asset_id=decjson['Slider']['asset_id'])
                     vslider.asset = vasset
+                print 'debug2'
                 vslider.media_type = decjson['Slider']['media_type']
                 vdevice = Device.objects.get(id=decjson['Slider']['target_device_id'])
                 vslider.target_device = vdevice
                 vslider.text = decjson['Slider']['text']
 
-                if decjson['Slider']['url'] is None:
-                    vslider.url = ''
+
+                if decjson['Slider']['linked_url'] is None:
+                    vslider.linked_url = ''
                 else:
-                    vslider.url = decjson['Slider']['url']
+                    vslider.linked_url = decjson['Slider']['linked_url']
 
                 vslider.language = Language.objects.get(code=decjson['Slider']['language'])
                 vslider.save()
@@ -207,10 +211,10 @@ class SliderController(object):
                 else:
                     vslider.text = decjson['Slider']['text']
 
-                if decjson['Slider']['url'] is None:
-                    vslider.url = ''
+                if decjson['Slider']['linked_url'] is None:
+                    vslider.linked_url = ''
                 else:
-                    vslider.url = decjson['Slider']['url']
+                    vslider.linked_url = decjson['Slider']['linked_url']
 
 
                 vslider.language = Language.objects.get(code=decjson['Slider']['language'])

@@ -25,7 +25,7 @@ SECRET_KEY = 'i+lh0386tk(20b6m8=9r--j2d%+-5xn*$bkyzp$4b@8e=c@4#e'
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['cawas-dev', 'cawas-dev.claxson.com', 'cawas', 'cawas.claxson.com']
+ALLOWED_HOSTS = ['cawas-dev', 'cawas-dev.claxson.com', 'cawas', 'cawas.claxson.com','127.0.0.1']
 
 
 
@@ -94,15 +94,12 @@ DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql',
         'NAME': 'cawas',
-        'USER': 'cawas',
-        'PASSWORD': 'Caw.1984p',
+        'USER': 'root',
+        'PASSWORD': '',
         'HOST': 'localhost',
-        'PORT': '',
-	'OPTIONS': {'charset': 'utf8mb4'},
+        'PORT': ''
     }
 }
-
-
 
 # Password validation
 # https://docs.djangoproject.com/en/1.9/ref/settings/#auth-password-validators

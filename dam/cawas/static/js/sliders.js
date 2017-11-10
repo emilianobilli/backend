@@ -207,8 +207,7 @@ $( document ).ready(function() {
         console.log("checking form...");
         checkVal = 0;
         var asset_Id =$("#slider-select option:selected").attr("value");
-        //var asset_Id = $('#sliderID').attr("value");
-        var url = $('#url').val();
+        var linked_url = $('#linked_url').val();
         var typeslider_selected = $('#typeslider option:selected');
         var device_selected = $('#devices option:selected');
         var idioma_selected = $('#idiomaSelect').val();
@@ -218,14 +217,22 @@ $( document ).ready(function() {
         var paises_selected = [];
 
 
-        // chequea original Title
-        if(url=="" || url==" ")
-        {
-            errorMe("#url");
-            checkVal++;
-        }else{
-            okMe("#url");
+        //VAlidar si url y asset_id es vacio, error
+        if (asset_id=="0"){
+            asset_id = "";
         }
+
+        if ((asset_Id=="") && (linked_url==""||linked_url==" ")){
+             asset_id="";
+             errorMe("#slider-select");
+             errorMe("#linked_url");
+             checkVal++;
+        }else{
+            okMe("#slider-select");
+            okMe("#linked_url");
+        }
+
+
 
         // chequea thumbnail horizaontal
         if(!$('#ThumbHor').val() && !$('#imgantlandscape').val()){
@@ -427,14 +434,14 @@ $( document ).ready(function() {
                     var myJSON = '';
                     myJSON+='{"Slider":{';
                     myJSON+='"asset_id":"'+asset_Id+'",';
-                    //myJSON+='"text":"'+text+'",';
                     if (text=='' ){myJSON+='"text":"",';}else{myJSON+='"text":"'+text+'",';}
                     if (myCountries=="[]"){myJSON+='"countries":null,'; }else{myJSON+='"countries":'+myCountries+',';}
 
                     myJSON+='"publish_date":"'+publish_date+'",';
                     myJSON+='"language":"'+idioma_selected+'",';
                     myJSON+='"media_type":"'+typeslider_selected+'",';
-                    myJSON+='"url:":"'+url+'",';
+                    if (linked_url==''){ myJSON+='"linked_url":"",'; }else{myJSON+='"linked_url":"'+linked_url+'",';}
+
                     myJSON+='"target_device_id":"'+device_selected+'",';
                     myJSON+='"publicar":"'+publicar+'",';
                     if (typeslider_selected=='' ){

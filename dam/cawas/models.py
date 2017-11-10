@@ -280,7 +280,7 @@ class Slider(models.Model):
     publish_status    = models.BooleanField(default=False)
     activated         = models.BooleanField(default=False)
     queue_status      = models.CharField(max_length=1, default='', help_text="Status del item en PublishQueue")
-    url               = models.CharField(max_length=100, unique=False, help_text="Link del Slider",blank=True, null=True)
+
 
     def save(self, *args, **kwargs):
         super(Slider, self).save(*args, **kwargs)
