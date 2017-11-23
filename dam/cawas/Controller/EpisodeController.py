@@ -139,7 +139,7 @@ class EpisodeController(object):
                     try:
                         asset_id = item['girl_id']
                         print "AssetId add episode" + asset_id
-                        vgirl = Girl.objects.get(asset_id=item['girl_id'])
+                        vgirl = Girl.objects.get(id=item['girl_id'])
                         vepisode.girls.add(vgirl)
                     except Girl.DoesNotExist as e:
                         request.session['list_episode_message'] = 'Error: ' + str(e.message)
@@ -390,10 +390,8 @@ class EpisodeController(object):
                 vgirls = decjson['Episode']['girls']
                 for item in vgirls:
                     try:
-                        # print item['asset_id']
                         asset_id = item['girl_id']
-                        print "AssetId add episode" + asset_id
-                        vgirl = Girl.objects.get(asset_id=item['girl_id'])
+                        vgirl = Girl.objects.get(id=item['girl_id'])
                         vepisode.girls.add(vgirl)
                     except Exception as e:
                         request.session['list_episode_message'] = 'Error al Guardar Episodio: ' + str(e.message)
