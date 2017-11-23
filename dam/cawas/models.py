@@ -316,7 +316,6 @@ class Slider(models.Model):
         dict["target"] = self.target_device.name
         dict["lang"]   = self.language.code
         dict["text"]   = self.text
-        dict["url"] = self.url
 
         return dict
 
