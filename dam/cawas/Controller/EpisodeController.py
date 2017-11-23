@@ -281,13 +281,19 @@ class EpisodeController(object):
         vschedule_date = ''
         vasset = Asset()
         vepisode = Episode()
+        imgport = ''
+        imgland = ''
         try:
             vasset = Asset.objects.get(asset_id=episode_id)
             vepisode = Episode.objects.get(asset=vasset)
-            i = len(vepisode.image.portrait.name)
-            imgport = vepisode.image.portrait.name[5:i]
-            i = len(vepisode.image.landscape.name)
-            imgland = vepisode.image.landscape.name[5:i]
+            if vepisode.image is not None:
+                if vepisode.image.portrait is not None:
+                    i = len(vepisode.image.portrait.name)
+                    imgport = vepisode.image.portrait.name[5:i]
+
+                if vepisode.image.landscape is None:
+                    i = len(vepisode.image.landscape.name)
+                    imgland = vepisode.image.landscape.name[5:i]
 
         except Asset.DoesNotExist as e:
             request.session['list_episode_message'] = 'No Existe Asset' +  str(e.message)
@@ -299,8 +305,10 @@ class EpisodeController(object):
             request.session['list_episode_flag'] = FLAG_SUCCESS
             self.code_return = -1
             return self.code_return
+
+
+
         if request.method == 'POST':
-            # VARIABLES
             try:
                 pathfilesport = Setting.objects.get(code='image_repository_path_portrait')
                 pathfilesland = Setting.objects.get(code='image_repository_path_landscape')
@@ -312,7 +320,6 @@ class EpisodeController(object):
                 vepisode.original_title = decjson['Episode']['original_title']
                 vepisode.channel = Channel.objects.get(pk=decjson['Episode']['channel_id'])
                 vepisode.display_runtime = decjson['Episode']['display_runtime']
-                print "Serie_id" + decjson['Episode']['serie_id']
                 vasset_serie = Asset.objects.get(asset_id=decjson['Episode']['serie_id'])
                 vepisode.serie = Serie.objects.get(asset=vasset_serie)
                 vepisode.chapter = decjson['Episode']['chapter']
