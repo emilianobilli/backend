@@ -439,8 +439,7 @@ def publish_girls_view(request, id):
 def publish_series_view(request, id):
     controller = SerieController()
     controller.publish(request, id)
-    if controller.code_return == RETURN_OK:
-        return redirect(list_series_view)
+    return redirect(list_series_view)
 
 
 def publish_blocks_view(request, id):
