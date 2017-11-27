@@ -531,27 +531,40 @@ class EpisodeController(object):
         #Cuando hay una Des-publicacion se completa esta variable
         message =''
         flag = ''
-
+        registros = ''
         filter = False
+        search = ''
 
         # Filtro de busqueda
         if request.GET.has_key('search'):
             search = request.GET.get('search')
             if search != '':
-                filter = True
-                registros = EpisodeMetadata.objects.filter(
-                    Q(episode__original_title__icontains=search) | Q(episode__asset__asset_id__icontains=search)).order_by('-id')
+                #Si se completo el filtro
+                print 'debug1' + str(search)
+                registros = EpisodeMetadata.objects.filter(Q(episode__original_title__icontains=search) | Q(episode__asset__asset_id__icontains=search)).order_by('-id')
+            else:
+                #Si filtro es nada
+                print 'debug2'
+                registros = EpisodeMetadata.objects.all().order_by('-id')
+        else:
+            #Si filtro no existe (vino de otra url), pregunto por cookie
+            if 'search_episode' in request.COOKIES:
+                search =  request.COOKIES['search_episode']
+                registros = EpisodeMetadata.objects.filter(Q(episode__original_title__icontains=search) | Q(episode__asset__asset_id__icontains=search)).order_by('-id')
+            else:
+                #si no existe cookie y no existe key en get
+                registros = EpisodeMetadata.objects.all().order_by('-id')
 
-        if filter == False:
-            registros = EpisodeMetadata.objects.all().order_by('-id')
-            paginator = Paginator(registros, 25)
-            page = request.GET.get('page')
-            try:
-                registros = paginator.page(page)
-            except PageNotAnInteger:
-                registros = paginator.page(1)
-            except EmptyPage:
-                registros = paginator.page(paginator.num_pages)
+
+        print 'registros' + str(registros)
+        paginator = Paginator(registros, 25)
+        page = request.GET.get('page')
+        try:
+            registros = paginator.page(page)
+        except PageNotAnInteger:
+            registros = paginator.page(1)
+        except EmptyPage:
+            registros = paginator.page(paginator.num_pages)
 
 
         if request.session.has_key('list_episode_message'):
@@ -570,8 +583,10 @@ class EpisodeController(object):
         episodes = EpisodeMetadata.objects.all().order_by('-id')
         episodes_sin_metadata = Episode.objects.all().exclude(id__in = episodes)
 
-        context = {'message': message,'flag':flag, 'registros': registros, 'episodes_sin_metadata':episodes_sin_metadata,'usuario': usuario}
-        return render(request, 'cawas/episodes/list.html', context)
+        context = {'message': message,'flag':flag, 'registros': registros, 'episodes_sin_metadata':episodes_sin_metadata,'usuario': usuario, 'search':search}
+        response = render(request, 'cawas/episodes/list.html', context)
+        response.set_cookie('search_episode', search)
+        return response
 
 
     #despublicar
