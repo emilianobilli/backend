@@ -291,7 +291,7 @@ class EpisodeController(object):
                     i = len(vepisode.image.portrait.name)
                     imgport = vepisode.image.portrait.name[5:i]
 
-                if vepisode.image.landscape is None:
+                if vepisode.image.landscape is not None:
                     i = len(vepisode.image.landscape.name)
                     imgland = vepisode.image.landscape.name[5:i]
 
@@ -510,12 +510,19 @@ class EpisodeController(object):
         except Category.DoesNotExist as e:
             return render(request, 'cawas/error.html', {"message": "No existe Categoria. (" + e.message + ")"})
 
-        context = {'message': message, 'vgirlnotselected': vgirlnotselected,
+        context = {'message': message,
+                   'vgirlnotselected': vgirlnotselected,
                    'vgirlselected': vgirlselected,
-                   'imgland': imgland, 'imgport': imgport, 'vepisode': vepisode,
-                   'vcategorynotselected': vcategorynotselected, 'vcategoryselected': vcategoryselected,
-                   'vchannels': vchannels, 'vlangmetadata': vlangmetadata, 'vseries': vseries,
-                   'countries_selected':countries_selected, 'countries_notselected':countries_notselected
+                   'imgland': imgland,
+                   'imgport': imgport,
+                   'vepisode': vepisode,
+                   'vcategorynotselected': vcategorynotselected,
+                   'vcategoryselected': vcategoryselected,
+                   'vchannels': vchannels,
+                   'vlangmetadata': vlangmetadata,
+                   'vseries': vseries,
+                   'countries_selected':countries_selected,
+                   'countries_notselected':countries_notselected
                    }
 
         return render(request, 'cawas/episodes/edit.html', context)
