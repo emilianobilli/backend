@@ -102,6 +102,8 @@
                       <thead>
                             <th class="tb-cell">ID</th>
                             <th class="tb-cell">Título</th>
+                            <th class="tb-cell">Temporada</th>
+                            <th class="tb-cell">Episodio</th>
                             <th class="tb-cell">Idioma</th>
                             <th class="tb-cell">Estado</th>
                             <th class="tb-cell">Activado</th>
@@ -118,6 +120,8 @@
                         <tr class="tb-row">
                            <td class="tb-cell">{{ item.episode.asset.asset_id}}</td>
                             <td class="tb-cell">{{ item.title }}</td>
+                            <td class="tb-cell">{{ item.episode.season }}</td>
+                            <td class="tb-cell">{{ item.episode.chapter }}</td>
                             <td class="tb-cell">{{ item.language.name }}</td>
                             {% if item.publish_status == 0  %}
                                 <td class="tb-cell">Sin Publicar</td>
