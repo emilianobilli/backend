@@ -247,6 +247,12 @@ def edit_movies_view(request, asset_id):
         return redirect(list_movies_view)
 
 
+def api_edit_movies_view(request):
+    mc = MovieController()
+    resp = mc.api_edit(request)
+    return HttpResponse(resp)
+
+
 
 #<GIRL>
 def add_girls_view(request):

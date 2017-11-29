@@ -7,10 +7,133 @@ from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from ..Helpers.GlobalValues import *
 from ..backend_sdk import ApiBackendServer, ApiBackendResource, ApiBackendException
 from django.db.models import Q
-
+from django.http import JsonResponse
+from django.http import HttpResponse
 
 
 class MovieController(object):
+
+
+    def api_edit(self, request):
+        respuesta = 500
+        if request.is_ajax():
+            if request.method == 'POST':
+                respuesta = self.validateParseMovie(request.body)
+                print 'respuesta:' + str(respuesta)
+        return respuesta
+
+
+
+
+
+    def validateParseMovie(self, body):
+        mv = Movie()
+        vasset = Asset()
+
+        # CARGAR MOVIE
+        try:
+            json_data = json.loads(body)
+            vasset = Asset.objects.get(asset_id=json_data['movie']['asset_id'])
+            vchannel = Channel.objects.get(pk=json_data['movie']['channel_id'])
+            mv.asset = vasset
+            mv.channel = vchannel
+            mv.original_title = json_data['movie']['original_title']
+            if (json_data['movie']['year'] is not None):
+                mv.year = json_data['movie']['year']
+
+            if (json_data['movie']['cast'] is not None):
+                mv.cast = json_data['movie']['cast']
+
+            if (json_data['movie']['directors'] is not None):
+                mv.cast = json_data['movie']['directors']
+
+            mv.display_runtime = json_data['movie']['display_runtime']
+            mv.save()
+
+            if (json_data['movie']['girls'] is not None):
+                vgirls = json_data['movie']['girls']
+                for item in vgirls:
+                    vgirl = Girl.objects.get(pk=item['girl_id'])
+                    mv.girls.add(vgirl)
+
+            # CARGAR CATEGORIES
+            if (json_data['movie']['categories'] is not None):
+                vcategories = json_data['movie']['categories']
+                for item in vcategories:
+                    vcategory = Category.objects.get(pk=item['category_id'])
+                    mv.category.add(vcategory)
+
+            #ACTUALIZAR EL ASSET A MOVIE
+            vasset.asset_type = "movie"
+            vasset.save()
+
+            # CARGAR Countries al Asset de la Movie
+            if (json_data['movie']['countries'] is not None):
+                countries = json_data['movie']['countries']
+                for item in countries:
+                    country = Country.objects.get(id=item['country_id'])
+                    mv.asset.target_country.add(country)
+
+            mv.save()
+            # SI hay items en estado Queued, se elimina
+            ph = PublishHelper()
+            vmoviesmetadata = json_data['movie']['moviemetadatas']
+
+            for item in vmoviesmetadata:
+                # CREAR METADATA POR IDIOMA
+                vlanguage = Language.objects.get(code=item['Moviemetadata']['language'])
+                # si no esta cargada la fecha, se guarda con la fecha de hoy
+                if (item['Moviemetadata']['schedule_date'] != ''):
+                    vpublishdate = datetime.datetime.strptime(item['Moviemetadata']['schedule_date'],
+                                                              '%d-%m-%Y').strftime('%Y-%m-%d')
+                else:
+                    vpublishdate = datetime.datetime.now().strftime('%Y-%m-%d')
+
+                try:
+                    mmd = MovieMetadata.objects.get(movie=mv, language=vlanguage)
+                except MovieMetadata.DoesNotExist as e:
+                    mmd = MovieMetadata();
+                mmd.language = vlanguage
+                mmd.title = item['Moviemetadata']['title']
+                mmd.summary_short = item['Moviemetadata']['summary_short']
+                mmd.summary_long = item['Moviemetadata']['summary_long']
+                mmd.publish_date = vpublishdate
+                mmd.movie = mv
+                mmd.save()
+            return 200, "Guardado Correctamente"
+        except Asset.DoesNotExist as e:
+            return 500, "No existe Asset"
+        except Channel.DoesNotExist as e:
+            return 500, "No existe Canal "
+        except Girl.DoesNotExist as e:
+            return 500, "Error: No existe Chica (" + str(e.message) + ")"
+        except Category.DoesNotExist as e:
+            return 500, "Error: No existe Categoria (" + str(e.message) + ")"
+        except Country.DoesNotExist as e:
+            return 500, "Error: No Existe Pais (" + str(e.message) + ")"
+        except Language.DoesNotExist as e:
+            return 500, "Error: Lenguage No Existe (" + str(e.message) + ")"
+
+        except Exception as e:
+            return 500, "Hubo un error:(" + str(e.message) + ")"
+
+        except KeyError:
+            return 500, "Error en decodificacion de datos"
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
     def add(self, request):
@@ -31,18 +154,10 @@ class MovieController(object):
         if request.method == 'POST':
             # parsear JSON
             strjson = request.POST['varsToJSON']
-            print 'strjson antes: ' + strjson
-
-            print 'strjson: ' +strjson
-            #strjson = strjson.replace('"', '\\"')
-            #decjson = json.loads(strjson)
-            #strjson = json.dumps(strjson, ensure_ascii=False, encoding='utf8')
-            #strjson = simplejson.loads(strjson,encoding='utf-8')
-            strjson = strjson.replace('\r','\\r').replace('\n','\\n')
-
-            #strjson = strjson.encode('utf-8')
+            strjson = strjson.replace('"', '\\"')
             decjson = json.loads(strjson)
-
+            strjson = strjson.replace('\r','\\r').replace('\n','\\n')
+            decjson = json.loads(strjson)
             vgrabarypublicar = decjson['Movie']['publicar']
 
             # DECLARACION DE OBJECTOS
@@ -258,7 +373,6 @@ class MovieController(object):
 
 
 
-
     def edit(self, request, asset_id):
         # AUTENTICACION DE USUARIO
         if not request.user.is_authenticated:
@@ -284,7 +398,9 @@ class MovieController(object):
         if request.method == 'POST':
             # parsear JSON
             strjson = request.POST['varsToJSON']
-            decjson = json.loads(strjson.replace('\r','\\r').replace('\n','\\n'))
+            print 'editmovie: ' + str(strjson)
+            #decjson = json.loads(strjson.replace('\r','\\r').replace('\n','\\n'))
+            decjson = json.loads(strjson)
 
             # DECLARACION DE OBJECTOS
             mv = Movie()

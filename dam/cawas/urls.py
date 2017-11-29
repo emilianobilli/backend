@@ -15,6 +15,7 @@ urlpatterns = [
     url(r'^movies/list/$', views.list_movies_view, name='list_movies'),
     url(r'^movies/unpublish/(?P<id>\d*)/$', views.unpublish_movies_view, name='unpublish_movie'),
     url(r'^movies/publish/(?P<id>\d*)/$', views.publish_movies_view, name='publish_movie'),
+    url(r'^api/movies/edit/$', views.api_edit_movies_view, name='api_edit_movie'),
 
     url(r'^girls/add/$', views.add_girls_view, name='add_girls'),
     url(r'^girls/edit/(?P<asset_id>\w*)/$', views.edit_girls_view, name='edit_girls'),

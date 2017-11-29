@@ -1,4 +1,5 @@
 
+
 $( document ).ready(function() {
 
 
@@ -267,6 +268,8 @@ $('#runtime').mask('00:00:00',{placeholder: "HH:mm:ss"});
         var year_selected = $('#releaseYear').val();
         var publicar = $('#publicar').val();
 
+        var json_movie = {};
+        var json_moviemetadatas=[];
 
         countChecked();
         // chequea original Title
@@ -372,6 +375,7 @@ $('#runtime').mask('00:00:00',{placeholder: "HH:mm:ss"});
         }else{
             okMe("#pickLang");
             checkLangs(langDesc);
+
         }
                 
         /* -----------  Sending Routine -----------*/
@@ -489,6 +493,9 @@ $('#runtime').mask('00:00:00',{placeholder: "HH:mm:ss"});
                     var short = $("#short_desc_"+lang).val().trim().substring(0,50)+"...";
                     var long = $("#short_desc_"+lang).val().trim();
                     var fechapub = $("#date_"+lang).val().trim();
+
+
+
                     myLangs += '{"Moviemetadata":';
                     myLangs += '{"language": "'+lang+'",';
                     myLangs += '"title": "'+tit+'",';
@@ -499,6 +506,8 @@ $('#runtime').mask('00:00:00',{placeholder: "HH:mm:ss"});
                     if(i<lngth-1){
                         myLangs += ',';
                     }
+
+                    json_moviemetadatas.push({"Moviemetadata":{"language":lang, "title":tit, "summary_short":short, "summary_long":long, "schedule_date":fechapub}});
                 }
                 return(myLangs);
             };
@@ -506,6 +515,9 @@ $('#runtime').mask('00:00:00',{placeholder: "HH:mm:ss"});
         
             function submitJson(){
                 if(checkVal==0){
+
+
+
                     var myGirls=explodeArray(pornstars_selected,"girl_id");
                     var myCategories=explodeArray(categories_selected,"category_id");
                     var myCountries=explodeArray(paises_selected,"country_id");
@@ -544,8 +556,47 @@ $('#runtime').mask('00:00:00',{placeholder: "HH:mm:ss"});
                     myJSON+= addMovieMetadata(langDesc);
                     myJSON+=']}}';
                     console.log(myJSON);
+                    //var obj = jQuery.parseJSON( myJSON );
                     $("#varsToJSON").val(myJSON);
-                    $("#movieForm").submit();
+
+
+                    //Setear objeto JSON
+                    json_movie= {
+                        "movie":{
+                                "asset_id": asset_Id,
+                                "original_title" : original_Title,
+                                "canal_selected": canal_selected,
+                                "pornstars_selected": pornstars_selected,
+                                "categories_selected": categories_selected,
+                                "paises_selected": paises_selected,
+                                "director_selected": director_selected,
+                                "elenco_selected": elenco_selected,
+                                "display_runtime": display_runtime,
+                                "year_selected": year_selected,
+                                "moviemetadatas": []
+                                }
+                     };
+                     //json_movie.movie.moviemetadatas.push(json_moviemetadatas);
+                     $.extend(json_movie.movie.moviemetadatas, json_moviemetadatas);
+
+                    //Llamada ajax
+                    $.ajax({
+                        url: '/api/movies/edit/',
+                        dataType: 'json',
+                        type: 'post',
+                        contentType: "application/json; charset=utf-8",
+                        data: JSON.stringify( json_movie ),
+                            success: function(data){
+                                alert(data);
+                            },
+                            failure: function(errMsg) {
+                                alert(errMsg);
+                            }
+                    });
+
+
+
+                    //$("#movieForm").submit();
                   }  
             }
         
