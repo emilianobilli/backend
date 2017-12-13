@@ -177,7 +177,8 @@
                 {% block subheader %}
 
                 {% endblock %}
-             {% if message %}
+
+              {% if message %}
               <div class="col-xs-12 col-md-12 col-lg-12 unpad">
                     <div class="notifications">
                       <div class="{{flag}}">
@@ -188,7 +189,20 @@
               </div>
               {% endif %}
 
+              <div class="row">
+              <div id="message" style="display:none">
+                  <div class="col-xs-12 col-md-12 col-lg-12 unpad">
+                    <div class="notifications">
+                      <div id="message_class" class="alert alert-success">
+                          <span class="closebtn" onclick="this.parentElement.style.display='none';">&times;</span>
+                          <div id="message_content">asdfasdf</div>
+                      </div>
+                    </div>
+                  </div>
               </div>
+              </div>
+
+
         </div>
         <!-- HEADER END -->
 
