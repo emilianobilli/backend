@@ -573,6 +573,7 @@ $('#runtime').mask('00:00:00',{placeholder: "HH:mm:ss"});
                                 "cast": elenco_selected,
                                 "display_runtime": display_runtime,
                                 "year": year_selected,
+                                "publicar":publicar,
                                 "moviemetadatas": []
                                 }
                      };

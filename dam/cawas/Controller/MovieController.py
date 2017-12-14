@@ -28,7 +28,8 @@ class MovieController(object):
 
 
     def validateParseMovie(self, body, request):
-
+        nueva_movie= False
+        publicar = False
         vasset = Asset()
         # CARGAR MOVIE
         try:
@@ -43,6 +44,7 @@ class MovieController(object):
                 # ACTUALIZAR EL ASSET A MOVIE
                 vasset.asset_type = "movie"
                 vasset.save()
+                nueva_movie = True
 
             vchannel = Channel.objects.get(pk=json_data['movie']['channel_id'])
             mv.asset = vasset
@@ -58,6 +60,11 @@ class MovieController(object):
                 mv.directors = json_data['movie']['directors']
 
             mv.display_runtime = json_data['movie']['display_runtime']
+
+            if (json_data['movie']['publicar'] is not None):
+                if json_data['movie']['publicar']=="1":
+                    publicar = True
+
             mv.save()
 
             if (json_data['movie']['girls'] is not None):
@@ -113,13 +120,13 @@ class MovieController(object):
                 mmd.movie = mv
                 mmd.save()
 
-
-            metadatas = MovieMetadata.objects.filter(movie=mv)
-            for mdi in metadatas:
-                if ph.func_publish_queue(request, mdi.movie.asset.asset_id, mdi.language, 'AS', 'Q', mdi.publish_date) == RETURN_ERROR:
-                    return HttpResponse("Error al Publicar (" + str(e.message) + ")", None, 500)
-                mdi.queue_status = 'Q'
-                mdi.save()
+            if nueva_movie == True or publicar == True:
+                metadatas = MovieMetadata.objects.filter(movie=mv)
+                for mdi in metadatas:
+                    if ph.func_publish_queue(request, mdi.movie.asset.asset_id, mdi.language, 'AS', 'Q', mdi.publish_date) == RETURN_ERROR:
+                        return HttpResponse("Error al Publicar (" + str(e.message) + ")", None, 500)
+                    mdi.queue_status = 'Q'
+                    mdi.save()
 
             mydata = [{'code': 200, 'message': 'Guardado Correctamente'}]
             #return HttpResponse("Guardado Correctamente", None, 200)
@@ -162,8 +169,9 @@ class MovieController(object):
         if not request.user.is_authenticated:
             lc = LogController()
             return redirect(lc.login_view(request))
-        # return redirect(login_view)
-        # ALTA - MOVIE: en el GET debe cargar variables, y en POST debe leer JSON
+
+        # ALTA - MOVIE GET debe cargar variables,
+        #              POST procesa solo la imagen, los datos se guaran
         # cawas/static/images/landscape/  cawas/static/images/portrait/
 
         vflag = ''
@@ -172,6 +180,9 @@ class MovieController(object):
         ph = PublishHelper()
         pathfilesport= ''
         pathfilesland = ''
+
+
+
         if request.method == 'POST':
             # DECLARACION DE OBJECTOS
             mv = Movie()
@@ -214,7 +225,7 @@ class MovieController(object):
                         os.remove(varchivo_server)
             img.save()
             mv.image = img
-
+            #La Imagen se publica siempre
             ph = PublishHelper()
             if ph.func_publish_image(request, img) == RETURN_ERROR:
                 request.session['list_movie_message'] = 'Error' + request.session['message']
