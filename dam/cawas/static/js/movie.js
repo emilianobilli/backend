@@ -52,6 +52,9 @@ $( document ).ready(function() {
         changeVideo(asset_id, "#repro1");// Cambia el video de acuerdo al ID. la función está en la línea 135. Construye la url relativa del video con la variable path+ID+'.mp4'
     };
 
+    loadVideo("#repro1");
+
+
     if(resultado=="success"){
         $("#myModal-OK").modal();
     }
@@ -208,11 +211,13 @@ $('#runtime').mask('00:00:00',{placeholder: "HH:mm:ss"});
     function changeVideo(src, divId){// para cambiar lo que reproduce el player de acuerdo al ID de la lista.
         path="http://cdnlevel3.zolechamedia.net/" + src + "/mp4/1200/" + src +".mp4";
         var video = $(divId+' video')[0];
-        //http://cdnlevel3.zolechamedia.net/{asset_id}/mp4/350/{asset_id}.mp4
         video.src = path;
-
         video.load();
-        //video.play();
+    }
+
+    function loadVideo(divId){
+        var video = $(divId+' video')[0];
+        video.load();
     }
     
     function showPreviewImage_click(e) {
