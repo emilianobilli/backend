@@ -337,6 +337,7 @@ class MovieController(object):
             img.save()
             mv.image = img
             mv.save()
+
             request.session['list_movie_message'] = 'Guardado Correctamente'
             request.session['list_movie_flag'] = FLAG_SUCCESS
 
