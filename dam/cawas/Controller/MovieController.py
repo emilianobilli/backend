@@ -231,6 +231,7 @@ class MovieController(object):
                         os.remove(varchivo_server)
             img.save()
             mv.image = img
+
             #La Imagen se publica siempre
             ph = PublishHelper()
             if ph.func_publish_image(request, img) == RETURN_ERROR:
@@ -338,6 +339,13 @@ class MovieController(object):
             img.save()
             mv.image = img
             mv.save()
+
+
+            ph = PublishHelper()
+            if ph.func_publish_image(request, img) == RETURN_ERROR:
+                request.session['list_movie_message'] = 'Error' + request.session['message']
+                request.session['list_movie_flag'] = FLAG_ALERT
+                return RETURN_ERROR
 
             request.session['list_movie_message'] = 'Guardado Correctamente'
             request.session['list_movie_flag'] = FLAG_SUCCESS

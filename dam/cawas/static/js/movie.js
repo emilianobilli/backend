@@ -52,7 +52,7 @@ $( document ).ready(function() {
         changeVideo(asset_id, "#repro1");// Cambia el video de acuerdo al ID. la función está en la línea 135. Construye la url relativa del video con la variable path+ID+'.mp4'
     };
 
-    loadVideo("#repro1");
+    //loadVideo("#repro1");
 
 
     if(resultado=="success"){
@@ -217,7 +217,7 @@ $('#runtime').mask('00:00:00',{placeholder: "HH:mm:ss"});
 
     function loadVideo(divId){
         var video = $(divId+' video')[0];
-        video.load();
+        //video.load();
     }
     
     function showPreviewImage_click(e) {
