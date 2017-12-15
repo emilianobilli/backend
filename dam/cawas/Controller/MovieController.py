@@ -60,7 +60,7 @@ class MovieController(object):
                 mv.directors = json_data['movie']['directors']
 
             mv.display_runtime = json_data['movie']['display_runtime']
-            print 'debug1'
+
             if (json_data['movie']['publicar'] is not None):
                 print 'debug3' + str(json_data['movie']['publicar'])
                 if json_data['movie']['publicar']==1:
@@ -70,6 +70,7 @@ class MovieController(object):
 
             if (json_data['movie']['girls'] is not None):
                 vgirls = json_data['movie']['girls']
+                mv.girls = []
                 for item in vgirls:
                     vgirl = Girl.objects.get(pk=item['girl_id'])
                     mv.girls.add(vgirl)
@@ -77,6 +78,7 @@ class MovieController(object):
             # CARGAR CATEGORIES
             if (json_data['movie']['categories'] is not None):
                 vcategories = json_data['movie']['categories']
+                mv.category = []
                 for item in vcategories:
                     vcategory = Category.objects.get(id=item)
                     mv.category.add(vcategory)
