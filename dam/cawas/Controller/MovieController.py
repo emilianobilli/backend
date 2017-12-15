@@ -104,8 +104,7 @@ class MovieController(object):
                 vlanguage = Language.objects.get(code=item['Moviemetadata']['language'])
                 # si no esta cargada la fecha, se guarda con la fecha de hoy
                 if (item['Moviemetadata']['schedule_date'] != ''):
-                    vpublishdate = datetime.datetime.strptime(item['Moviemetadata']['schedule_date'],
-                                                              '%d-%m-%Y').strftime('%Y-%m-%d')
+                    vpublishdate = datetime.datetime.strptime(item['Moviemetadata']['schedule_date'],'%d-%m-%Y').strftime('%Y-%m-%d')
                 else:
                     vpublishdate = datetime.datetime.now().strftime('%Y-%m-%d')
 
@@ -117,14 +116,16 @@ class MovieController(object):
                 mmd.title = item['Moviemetadata']['title']
                 mmd.summary_short = item['Moviemetadata']['summary_short']
                 mmd.summary_long = item['Moviemetadata']['summary_long']
+                print 'debug ' + str(vpublishdate)
                 mmd.publish_date = vpublishdate
                 mmd.movie = mv
                 mmd.save()
 
-            print 'publicar1'
-            if nueva_movie == True or publicar == True:
+            print 'publicar' +str(nueva_movie) + str(publicar)
+            #si la movie existe, entonces se publica
+            if nueva_movie == False or publicar == True:
                 metadatas = MovieMetadata.objects.filter(movie=mv)
-                print 'publicar1'
+                print 'publicar4'
                 for mdi in metadatas:
                     print 'publicar2'
                     if ph.func_publish_queue(request, mdi.movie.asset.asset_id, mdi.language, 'AS', 'Q', mdi.publish_date) == RETURN_ERROR:
