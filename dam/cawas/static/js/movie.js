@@ -1,7 +1,7 @@
 
 
 $( document ).ready(function() {
-
+    var publicar = 0;
 
     $('#search_girls').multiselect({
         search: {
@@ -14,7 +14,7 @@ $( document ).ready(function() {
     });
 
 
-$('#search_category').multiselect({
+    $('#search_category').multiselect({
         search: {
             left: '<input type="text" name="q" class="form-control" placeholder="Buscar..." />',
             right: '<input type="text" name="q" class="form-control" placeholder="Buscar..." />',
@@ -72,6 +72,7 @@ $('#search_category').multiselect({
 
     $("#btngrabarypublicar").click(function(){
         $("#publicar").val("1");
+        publicar = 1;
         clickedToSubmit=1;
         checkAll();
     });
@@ -266,7 +267,7 @@ $('#runtime').mask('00:00:00',{placeholder: "HH:mm:ss"});
         var elenco_selected = $('#elenco').val();
         var display_runtime = $('#runtime').val();
         var year_selected = $('#releaseYear').val();
-        var publicar = $('#publicar').val();
+
 
         var json_movie = {};
         var json_moviemetadatas=[];
@@ -594,9 +595,9 @@ $('#runtime').mask('00:00:00',{placeholder: "HH:mm:ss"});
                                 $("#movieForm").submit();
                                 console.log(response);
                             },
-                        error:function(errorstr){
-                            alert("Error: " + errorstr);
-                            console.log(errorstr);
+                        error:function(request, status, error){
+                            alert(request.responseText);
+
                         }
                     });
 

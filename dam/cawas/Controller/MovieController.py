@@ -60,11 +60,12 @@ class MovieController(object):
                 mv.directors = json_data['movie']['directors']
 
             mv.display_runtime = json_data['movie']['display_runtime']
-
+            print 'debug1'
             if (json_data['movie']['publicar'] is not None):
-                if json_data['movie']['publicar']=="1":
+                print 'debug3' + str(json_data['movie']['publicar'])
+                if json_data['movie']['publicar']==1:
                     publicar = True
-
+            print 'debug2'
             mv.save()
 
             if (json_data['movie']['girls'] is not None):
@@ -120,11 +121,15 @@ class MovieController(object):
                 mmd.movie = mv
                 mmd.save()
 
+            print 'publicar1'
             if nueva_movie == True or publicar == True:
                 metadatas = MovieMetadata.objects.filter(movie=mv)
+                print 'publicar1'
                 for mdi in metadatas:
+                    print 'publicar2'
                     if ph.func_publish_queue(request, mdi.movie.asset.asset_id, mdi.language, 'AS', 'Q', mdi.publish_date) == RETURN_ERROR:
                         return HttpResponse("Error al Publicar (" + str(e.message) + ")", None, 500)
+                    print 'publicar3'
                     mdi.queue_status = 'Q'
                     mdi.save()
 
@@ -332,6 +337,8 @@ class MovieController(object):
             img.save()
             mv.image = img
             mv.save()
+            request.session['list_movie_message'] = 'Guardado Correctamente'
+            request.session['list_movie_flag'] = FLAG_SUCCESS
 
         # VARIABLES PARA GET - CARGAR MOVIE
         try:
