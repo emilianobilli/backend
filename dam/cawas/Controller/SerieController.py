@@ -511,7 +511,6 @@ class SerieController(object):
             ph.func_publish_queue(request, md.serie.asset.asset_id, md.language, 'AS', 'Q',datetime.datetime.now().strftime('%Y-%m-%d'))
             #Publicar los episodios de la serie
             episodes = Episode.objects.filter(serie=md.serie)
-            print 'SeriePublish: ' + str(episodes)
             for e in episodes:
                 #recorrer la metadata en el idioma que se selecciono la serie
                 episodemetadatas = EpisodeMetadata.objects.filter(episode=e, language=md.language)
@@ -520,9 +519,10 @@ class SerieController(object):
                     ph.func_publish_queue(request, em.episode.asset.asset_id, em.language, 'AS', 'Q', datetime.datetime.now().strftime('%Y-%m-%d'))
                     ph.func_publish_image(request, em.episode.image)
 
+
+
             ph = PublishHelper()
             ph.func_publish_queue(request, md.serie.asset.asset_id, md.language, 'AS', 'Q',datetime.datetime.now().strftime('%Y-%m-%d'))
-
             request.session['list_serie_message'] = 'Serie en ' + md.language.name + ' Guardado en Cola de Publicacion'
             request.session['list_serie_flag'] = FLAG_SUCCESS
             self.code_return = 0
@@ -597,6 +597,11 @@ class SerieController(object):
             # 3 - Actualizar Activated a False
             seriemetadata.activated = False
             seriemetadata.save()
+
+            # esto es para que se actualice el campo "episodes" en el backend
+            serie = seriemetadata.serie
+            serie.save()
+
 
             self.code_return = 0
             request.session['list_serie_message'] = 'Metadata '+ str(seriemetadata.id) + ' de Serie '+ str(seriemetadata.serie.asset.asset_id)+ ' Despublicado Correctamente'
