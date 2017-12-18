@@ -1,7 +1,7 @@
 import os, datetime, json
 from LogController import LogController
 from django.shortcuts import render,redirect
-from ..models import Asset, Setting, Girl, Country, Block, Category, Language, Image,PublishZone,PublishQueue, Channel, Device, Serie, Movie, Episode, EpisodeMetadata
+from ..models import Asset, Setting, Girl, Country, Block, Category, Language, Image,PublishZone,PublishQueue, Channel, Device, Serie, Movie, Episode, EpisodeMetadata,SerieMetadata
 from ..Helpers.PublishHelper import PublishHelper
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from ..Helpers.GlobalValues import *
@@ -632,10 +632,18 @@ class EpisodeController(object):
             # actulizar asset a unkwon
             # republicar la serie
 
-
             # 3 - Actualizar Activated a False
             episodemetadata.activated=False
             episodemetadata.save()
+
+            #publicar la serie nuevamente
+            serie = episodemetadata.episode.serie
+            serie_metadatas = SerieMetadata.objects.get(serie=serie)
+            for item in serie_metadatas:
+                ph = PublishHelper()
+                ph.func_publish_queue(request, item.serie.asset.asset_id, item.language, 'AS', 'Q',datetime.datetime.now().strftime('%Y-%m-%d'))
+
+
 
             self.code_return = 0
             self.message_return= 'Episode ' + episodemetadata.episode.asset.asset_id + ' despublicada Correctamente'
@@ -660,6 +668,7 @@ class EpisodeController(object):
             md.publish_date = datetime.datetime.now().strftime('%Y-%m-%d')
             md.queue_status = 'Q'
             md.save()
+
 
             #Publica el Episodio
             ph = PublishHelper()
