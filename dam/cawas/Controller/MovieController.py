@@ -36,10 +36,10 @@ class MovieController(object):
             json_data = json.loads(body)
             asset_id = json_data['movie']['asset_id']
             vasset = Asset.objects.get(asset_id=asset_id)
-            mv = Movie.objects.get(asset=vasset)
-
-            # Nueva movie
-            if mv is None:
+            if Movie.objects.filter(asset=vasset).count() > 0:
+                mv = Movie.objects.get(asset=vasset)
+            else:
+                # Nueva movie
                 mv = Movie()
                 # ACTUALIZAR EL ASSET A MOVIE
                 vasset.asset_type = "movie"
