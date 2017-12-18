@@ -2,6 +2,7 @@
 
 $( document ).ready(function() {
     var publicar = 0;
+    var asset_Id = 0;
 
     $('#search_girls').multiselect({
         search: {
@@ -47,7 +48,7 @@ $( document ).ready(function() {
 
 
 
-    var asset_id = $("#asset_id").val();
+    asset_id = $("#asset_id").val();
     if(asset_id != null){
         changeVideo(asset_id, "#repro1");// Cambia el video de acuerdo al ID. la función está en la línea 135. Construye la url relativa del video con la variable path+ID+'.mp4'
     };
@@ -262,7 +263,7 @@ $('#runtime').mask('00:00:00',{placeholder: "HH:mm:ss"});
         // this function checks for all form values and makes json string to post or alerts user to complete fields.
 
         checkVal = 0;
-        var asset_Id = $('#movieID').val();
+        asset_Id = $('#movieID').val();
         var original_Title = $('#orginalTitle').val();
         var canal_selected = $('#canalSelect option:selected');
         var pornstars_selected = [];
@@ -499,20 +500,6 @@ $('#runtime').mask('00:00:00',{placeholder: "HH:mm:ss"});
                     var short = $("#short_desc_"+lang).val().trim().substring(0,50)+"...";
                     var long = $("#short_desc_"+lang).val().trim();
                     var fechapub = $("#date_"+lang).val().trim();
-
-
-
-                    myLangs += '{"Moviemetadata":';
-                    myLangs += '{"language": "'+lang+'",';
-                    myLangs += '"title": "'+tit+'",';
-                    myLangs += '"summary_short": "'+short+'",';
-                    myLangs += '"summary_long":"'+long+'",';
-					myLangs += '"schedule_date":"'+fechapub+'"';
-                    myLangs += '}}';
-                    if(i<lngth-1){
-                        myLangs += ',';
-                    }
-
                     json_moviemetadatas.push({"Moviemetadata":{"language":lang, "title":tit, "summary_short":short, "summary_long":long, "schedule_date":fechapub}});
                 }
                 return(myLangs);
@@ -529,42 +516,7 @@ $('#runtime').mask('00:00:00',{placeholder: "HH:mm:ss"});
                     var myCountries=explodeArray(paises_selected,"country_id");
 
                     var myJSON = '';
-                    myJSON+='{"Movie":{';
-                    myJSON+='"asset_id":"'+asset_Id+'",';
-                    myJSON+='"original_title":"'+original_Title+'",';
-                    myJSON+='"channel_id":"'+canal_selected+'",';
-                    myJSON+='"publicar":"'+publicar+'",';
-
-                    if (year_selected==''){
-                        myJSON+='"year":null,';
-                       }else{
-                        myJSON+='"year":"'+year_selected+'",';
-                    }
-
-                    if (myGirls=="[]"){
-                        myJSON+='"girls":null,';
-                    }else{
-                        myJSON+='"girls":'+myGirls+',';
-                    }
-                    if (elenco_selected==''){
-                        myJSON+='"cast":null,';
-                    }else{
-                        myJSON+='"cast":"'+elenco_selected+'",';
-                    }
-
-                    if (director_selected==''){myJSON+='"directors":null,';}else{myJSON+='"directors":"'+director_selected+'",';}
-
-                    if (myCountries=="[]"){myJSON+='"countries":null,'; }else{myJSON+='"countries":'+myCountries+',';}
-
-                    myJSON+='"display_runtime": "'+display_runtime+'",';
-                    myJSON+='"categories":'+myCategories+',';
-                    myJSON+='"Moviesmetadata": [';
-                    myJSON+= addMovieMetadata(langDesc);
-                    myJSON+=']}}';
-
-
-                    //$("#varsToJSON").val(myJSON);
-
+                    addMovieMetadata(langDesc);
 
                     //Setear objeto JSON
                     json_movie= {
@@ -583,7 +535,6 @@ $('#runtime').mask('00:00:00',{placeholder: "HH:mm:ss"});
                                 "moviemetadatas": []
                                 }
                      };
-                     //json_movie.movie.moviemetadatas.push(json_moviemetadatas);
                      $.extend(json_movie.movie.moviemetadatas, json_moviemetadatas);
 
                     var respuesta = 0 ;
