@@ -638,7 +638,7 @@ class EpisodeController(object):
 
             #publicar la serie nuevamente
             serie = episodemetadata.episode.serie
-            serie_metadatas = SerieMetadata.objects.get(serie=serie)
+            serie_metadatas = SerieMetadata.objects.filter(serie=serie)
             for item in serie_metadatas:
                 ph = PublishHelper()
                 ph.func_publish_queue(request, item.serie.asset.asset_id, item.language, 'AS', 'Q',datetime.datetime.now().strftime('%Y-%m-%d'))
