@@ -429,21 +429,6 @@ class Serie(models.Model):
             if self.image.landscape.name != '':
                 dict["image_landscape"] = os.path.basename(self.image.landscape.name)
 
-        episodes = Episode.objects.filter(serie=self)
-        metadata_list = EpisodeMetadata.objects.filter(episode__in=episodes, activated=True)
-        episodes_available = []
-        for metadata in metadata_list:
-            if metadata.episode not in episodes_available:
-                print metadata.language.code
-                episodes_available.append(metadata.episode)
-        seasons = []
-        for episode in episodes_available:
-            if str(episode.season) not in seasons:
-                seasons.append(str(episode.season))
-        dict["available_seasons"] = seasons
-        dict["seasons"]  = len(seasons)
-        dict["episodes"] = len(episodes_available)
-
         return dict
 
 
@@ -485,6 +470,16 @@ class SerieMetadata(models.Model):
             dict["summary_long"]   = self.summary_long
         if len(categories) > 0:
             dict["categories"]     = categories
+
+        episodes    = Episode.objects.filter(serie=self.serie)
+        ep_metadata = EpisodeMetadata.objects.filter(episode__in=episodes, activated=True, language=self.language)
+        seasons = []
+        for em in ep_metadata:
+            if str(em.episode.season) not in seasons:
+                seasons.append(str(em.episode.season))
+        dict["available_seasons"] = seasons
+        dict["seasons"]  = len(seasons)
+        dict["episodes"] = len(ep_metadata)
 
         return dict
 
