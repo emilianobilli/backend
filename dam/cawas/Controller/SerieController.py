@@ -501,7 +501,6 @@ class SerieController(object):
     def publish(self, request, id):
         #Publicar la Serie
         try:
-
             md = SerieMetadata.objects.get(id=id)
             md.publish_date = datetime.datetime.now().strftime('%Y-%m-%d')
             md.queue_status = 'Q'
@@ -518,8 +517,6 @@ class SerieController(object):
                     ph = PublishHelper()
                     ph.func_publish_queue(request, em.episode.asset.asset_id, em.language, 'AS', 'Q', datetime.datetime.now().strftime('%Y-%m-%d'))
                     ph.func_publish_image(request, em.episode.image)
-
-
 
             ph = PublishHelper()
             ph.func_publish_queue(request, md.serie.asset.asset_id, md.language, 'AS', 'Q',datetime.datetime.now().strftime('%Y-%m-%d'))

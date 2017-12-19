@@ -627,10 +627,7 @@ class EpisodeController(object):
             # Se deberia hacer algo con las Series?
 
             # mostrar cartel de informaion
-            # eliminar episodiometada en los idiomas
-            # eliminar episodio
-            # actulizar asset a unkwon
-            # republicar la serie
+
 
             # 3 - Actualizar Activated a False
             episodemetadata.activated=False
