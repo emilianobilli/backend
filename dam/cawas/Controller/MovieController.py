@@ -193,15 +193,19 @@ class MovieController(object):
 
         if request.method == 'POST':
             # DECLARACION DE OBJECTOS
-            mv = Movie()
-            vasset = Asset()
+
             # VALIDAR IMAGEN
             try:
+                mv = Movie()
+                vasset = Asset()
                 img = Image()
-                img = Image.objects.get(name=vasset.asset_id)
+                assetid = request.POST['movieID']
+                vasset = Asset.objects.get(asset_id=assetid)
+                mv = Movie.objects.get(asset=vasset)
                 base_dir = Setting.objects.get(code='dam_base_dir')
                 pathfilesport = Setting.objects.get(code='image_repository_path_portrait')
                 pathfilesland = Setting.objects.get(code='image_repository_path_landscape')
+                img = Image.objects.get(name=vasset.asset_id)
             except Setting.DoesNotExist as e:
                 request.session['list_movie_message'] = "Error: No existe Setting (" + str(e.message) + ")"
                 request.session['list_movie_flag'] = FLAG_ALERT
