@@ -199,6 +199,8 @@ class MovieController(object):
             try:
                 #img = Image.objects.get(name=vasset.asset_id)
                 base_dir = Setting.objects.get(code='dam_base_dir')
+                pathfilesport = Setting.objects.get(code='image_repository_path_portrait')
+                pathfilesland = Setting.objects.get(code='image_repository_path_landscape')
                 img = Image()
             except Setting.DoesNotExist as e:
                 request.session['list_movie_message'] = "Error: No existe Setting (" + str(e.message) + ")"
