@@ -305,10 +305,9 @@ class MovieController(object):
                 mv = Movie()
                 vasset = Asset()
                 img = Image()
-
                 vasset = Asset.objects.get(asset_id=asset_id)
                 mv = Movie.objects.get(asset=vasset)
-                #img = Image.objects.get(name=vasset.asset_id)
+                img = Image.objects.get(name=vasset.asset_id)
 
             except Asset.DoesNotExist as e:
                 request.session['list_movie_message'] = "Error: No existe Asset (" + str(e.message) + ")"
