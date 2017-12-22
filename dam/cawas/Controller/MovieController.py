@@ -197,8 +197,9 @@ class MovieController(object):
             vasset = Asset()
             # VALIDAR IMAGEN
             try:
-                img = Image.objects.get(name=vasset.asset_id)
+                #img = Image.objects.get(name=vasset.asset_id)
                 base_dir = Setting.objects.get(code='dam_base_dir')
+                img = Image()
             except Setting.DoesNotExist as e:
                 request.session['list_movie_message'] = "Error: No existe Setting (" + str(e.message) + ")"
                 request.session['list_movie_flag'] = FLAG_ALERT
