@@ -60,6 +60,7 @@ class MovieController(object):
                 mv.directors = json_data['movie']['directors']
 
             mv.display_runtime = json_data['movie']['display_runtime']
+            mv.save()
 
             if (json_data['movie']['publicar'] is not None):
                 print 'debug3' + str(json_data['movie']['publicar'])
@@ -72,9 +73,9 @@ class MovieController(object):
                 vgirls = json_data['movie']['girls']
                 mv.girls = []
                 for item in vgirls:
-                    vgirl = Girl.objects.get(pk=item['girl_id'])
+                    vgirl = Girl.objects.get(id=item)
                     mv.girls.add(vgirl)
-
+            print 'checkgirls'
             # CARGAR CATEGORIES
             if (json_data['movie']['categories'] is not None):
                 vcategories = json_data['movie']['categories']
@@ -82,11 +83,11 @@ class MovieController(object):
                 for item in vcategories:
                     vcategory = Category.objects.get(id=item)
                     mv.category.add(vcategory)
-
+            print 'checkcategories'
             #ACTUALIZAR EL ASSET A MOVIE
             vasset.asset_type = "movie"
             vasset.save()
-
+            print 'check3'
             # CARGAR Countries al Asset de la Movie
             if (json_data['movie']['countries'] is not None):
                 countries = json_data['movie']['countries']
@@ -200,6 +201,7 @@ class MovieController(object):
                 vasset = Asset()
                 img = Image()
                 assetid = request.POST['movieID']
+                print 'debug1' + str(assetid)
                 vasset = Asset.objects.get(asset_id=assetid)
                 mv = Movie.objects.get(asset=vasset)
                 base_dir = Setting.objects.get(code='dam_base_dir')
@@ -212,6 +214,8 @@ class MovieController(object):
                 self.code_return = -1
             except Image.DoesNotExist as e:
                 img = Image()
+
+            print 'debug2' + str(vasset.asset_id)
 
             img.name = vasset.asset_id
             # TRATAMIENTO DE IMAGEN Landscape
@@ -240,7 +244,7 @@ class MovieController(object):
                         os.remove(varchivo_server)
             img.save()
             mv.image = img
-
+            mv.save()
             #La Imagen se publica siempre
             ph = PublishHelper()
             if ph.func_publish_image(request, img) == RETURN_ERROR:
@@ -298,9 +302,13 @@ class MovieController(object):
             vasset = Asset()
 
             try:
+                mv = Movie()
+                vasset = Asset()
+                img = Image()
+
                 vasset = Asset.objects.get(asset_id=asset_id)
                 mv = Movie.objects.get(asset=vasset)
-                img = Image.objects.get(name=vasset.asset_id)
+                #img = Image.objects.get(name=vasset.asset_id)
 
             except Asset.DoesNotExist as e:
                 request.session['list_movie_message'] = "Error: No existe Asset (" + str(e.message) + ")"
@@ -318,7 +326,7 @@ class MovieController(object):
                 request.session['list_movie_flag'] = FLAG_ALERT
                 self.code_return = -1
 
-            img.name = vasset.asset_id
+            #img.name = vasset.asset_id
             # IMAGEN Portrait
             if (request.FILES.has_key('ThumbHor')):
                 print 'debug2'
