@@ -286,7 +286,13 @@ class MovieController(object):
         message= ''
         pathfilesport = ''
         pathfilesland = ''
+        vmovie = Movie()
+        vasset = Asset()
+        imgport = ''
+        imgland = ''
         try:
+            vasset = Asset.objects.get(asset_id=asset_id)
+            vmovie = Movie.objects.get(asset=vasset)
             pathfilesport = Setting.objects.get(code='image_repository_path_portrait')
             pathfilesland = Setting.objects.get(code='image_repository_path_landscape')
             base_dir = Setting.objects.get(code='dam_base_dir')
@@ -294,36 +300,26 @@ class MovieController(object):
             request.session['list_movie_message'] = "Error: No existe Setting (" + str(e.message) + ")"
             request.session['list_movie_flag'] = FLAG_ALERT
             self.code_return = -1
+        except Asset.DoesNotExist as e:
+            request.session['list_movie_message'] = "Error: No existe Asset (" + str(e.message) + ")"
+            request.session['list_movie_flag'] = FLAG_ALERT
+            self.code_return = -1
+        except Movie.DoesNotExist as e:
+            request.session['list_movie_message'] = "Error: No existe Movie (" + str(e.message) + ")"
+            request.session['list_movie_flag'] = FLAG_ALERT
+            self.code_return = -1
+
 
         # Post Movie - Graba datos
         if request.method == 'POST':
             # DECLARACION DE OBJECTOS
-            mv = Movie()
-            vasset = Asset()
-
             try:
-                mv = Movie()
-                vasset = Asset()
                 img = Image()
-                vasset = Asset.objects.get(asset_id=asset_id)
-                mv = Movie.objects.get(asset=vasset)
                 img = Image.objects.get(name=vasset.asset_id)
-
-            except Asset.DoesNotExist as e:
-                request.session['list_movie_message'] = "Error: No existe Asset (" + str(e.message) + ")"
-                request.session['list_movie_flag'] = FLAG_ALERT
-                self.code_return = -1
-            except Movie.DoesNotExist as e:
-                request.session['list_movie_message'] = "Error: No existe Movie asociada al Asset (" + str(e.message) + ")"
-                request.session['list_movie_flag'] = FLAG_ALERT
-                self.code_return = -1
 
             except Image.DoesNotExist as e:
                 img = Image()
-            except Asset.DoesNotExist as e:
-                request.session['list_movie_message'] = "Error: No existe Asset (" + str(e.message) + ")"
-                request.session['list_movie_flag'] = FLAG_ALERT
-                self.code_return = -1
+
 
             #img.name = vasset.asset_id
             # IMAGEN Portrait
@@ -353,8 +349,8 @@ class MovieController(object):
                     if os.path.isfile(varchivo_server):
                         os.remove(varchivo_server)
             img.save()
-            mv.image = img
-            mv.save()
+            vmovie.image = img
+            vmovie.save()
 
 
             ph = PublishHelper()
@@ -370,17 +366,19 @@ class MovieController(object):
         try:
             vasset = Asset.objects.get(asset_id=asset_id)
             vmovie = Movie.objects.get(asset=vasset)
-            i = len(vmovie.image.portrait.name)
-            imgport = vmovie.image.portrait.name[5:i]
-            i = len(vmovie.image.landscape.name)
-            imgland = vmovie.image.landscape.name[5:i]
+            if (vmovie.image is not None):
+                i = len(vmovie.image.portrait.name)
+                imgport = vmovie.image.portrait.name[5:i]
+            if (vmovie.image is not None):
+                i = len(vmovie.image.landscape.name)
+                imgland = vmovie.image.landscape.name[5:i]
+
             vgirlselected = vmovie.girls.all().order_by('name')
             vgirlnotselected = Girl.objects.exclude(id__in=vgirlselected).order_by('name')
             vmoviemetadata = MovieMetadata.objects.filter(movie=vmovie)
             vcategoryselected = vmovie.category.all().order_by('original_name')
             vcategorynotselected = Category.objects.exclude(id__in=vcategoryselected).order_by('original_name')
             languages = Language.objects.all()
-
             countries_selected = vmovie.asset.target_country.all().order_by('name')
             countries_notselected = Country.objects.exclude(id__in=countries_selected).order_by('name')
 
