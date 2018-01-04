@@ -365,8 +365,7 @@ class MovieController(object):
             request.session['list_movie_flag'] = FLAG_ALERT
             self.code_return = RETURN_ERROR
 
-        if self.code_return == RETURN_ERROR:
-            return RETURN_ERROR
+
 
 
 
