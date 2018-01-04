@@ -240,10 +240,15 @@ def add_movies_view(request):
 
 def edit_movies_view(request, asset_id):
     mc = MovieController()
+    response = mc.edit(request, asset_id)
+
     if request.method == 'GET':
-        return mc.edit(request, asset_id)
+        if mc.code_return == RETURN_ERROR:
+            return redirect(list_movies_view)
+        if mc.code_return == RETURN_OK:
+            return response
+
     if request.method == 'POST':
-        mc.edit(request, asset_id)
         return redirect(list_movies_view)
 
 
