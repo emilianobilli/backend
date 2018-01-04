@@ -283,22 +283,21 @@ class MovieController(object):
         if not request.user.is_authenticated:
             lc = LogController()
             return redirect(lc.login_view(request))
-        # EDIT - MOVIE: en el GET debe cargar variables, y en POST debe leer JSON
-        vlangmetadata = []
-        flag=''
-        message= ''
-        pathfilesport = ''
-        pathfilesland = ''
-        vmovie = Movie()
-        vasset = Asset()
-        imgport = ''
-        imgland = ''
-        vgirlselected = ''
-        vgirlnotselected = ''
-        title = 'Editar Movie'
-
         # CARGAR VARIABLES USADAS EN FRONT
         try:
+            vlangmetadata = []
+            flag = ''
+            message = ''
+            pathfilesport = ''
+            pathfilesland = ''
+            vmovie = Movie()
+            vasset = Asset()
+            imgport = ''
+            imgland = ''
+            vgirlselected = ''
+            vgirlnotselected = ''
+            title = 'Editar Movie'
+
             vasset = Asset.objects.get(asset_id=asset_id)
             vmovie = Movie.objects.get(asset=vasset)
             pathfilesport = Setting.objects.get(code='image_repository_path_portrait')
@@ -344,104 +343,105 @@ class MovieController(object):
                 i = len(vmovie.image.landscape.name)
                 imgland = vmovie.image.landscape.name[5:i]
 
-        except Setting.DoesNotExist as e:
-            request.session['list_movie_message'] = "Error: No existe Setting (" + str(e.message) + ")"
-            request.session['list_movie_flag'] = FLAG_ALERT
-            self.code_return = RETURN_ERROR
-        except Asset.DoesNotExist as e:
-            request.session['list_movie_message'] = "Error: No existe Asset (" + str(e.message) + ")"
-            request.session['list_movie_flag'] = FLAG_ALERT
-            self.code_return = RETURN_ERROR
-        except Movie.DoesNotExist as e:
-            request.session['list_movie_message'] = "Error: No existe Movie (" + str(e.message) + ")"
-            request.session['list_movie_flag'] = FLAG_ALERT
-            self.code_return = RETURN_ERROR
-        except Category.DoesNotExist as e:
-            request.session['list_movie_message'] = "Error: No existe Categoria. (" + e.message + ")"
-            request.session['list_movie_flag'] = FLAG_ALERT
-            self.code_return = RETURN_ERROR
-        except MovieMetadata.DoesNotExist as e:
-            request.session['list_movie_message'] = "Error: No existe MovieMetadata. (" + e.message + ")"
-            request.session['list_movie_flag'] = FLAG_ALERT
-            self.code_return = RETURN_ERROR
 
 
+            # Post Movie - Graba datos
+            if request.method == 'POST':
+                # DECLARACION DE OBJECTOS
+                try:
+                    img = Image()
+                    img = Image.objects.get(name=vasset.asset_id)
 
+                except Image.DoesNotExist as e:
+                    img = Image()
 
+                # IMAGEN Portrait
+                if (request.FILES.has_key('ThumbHor')):
+                    print 'debug2'
+                    if request.FILES['ThumbHor'].name != '':
+                        # TRATAMIENTO DE IMAGEN Landscape
+                        img.landscape = request.FILES['ThumbHor']
+                        extension = os.path.splitext(img.landscape.name)[1]
+                        varchivo = pathfilesland.value + img.name + extension
+                        img.landscape.name = varchivo
+                        varchivo_server = base_dir.value + varchivo
+                        if os.path.isfile(varchivo_server):
+                            os.remove(varchivo_server)
 
-        # Post Movie - Graba datos
-        if request.method == 'POST':
-            # DECLARACION DE OBJECTOS
-            try:
-                img = Image()
-                img = Image.objects.get(name=vasset.asset_id)
+                # IMAGEN Landscape
+                if (request.FILES.has_key('ThumbVer')):
+                    print 'debug1'
+                    if request.FILES['ThumbVer'].name != '':
+                        # Landscape
+                        img.portrait = request.FILES['ThumbVer']
+                        extension = os.path.splitext(img.portrait.name)[1]
+                        varchivo = pathfilesport.value + img.name + extension
+                        img.portrait.name = varchivo
+                        # si existe archivo, lo borra
+                        varchivo_server = base_dir.value + varchivo
+                        if os.path.isfile(varchivo_server):
+                            os.remove(varchivo_server)
+                img.save()
+                vmovie.image = img
+                vmovie.save()
 
-            except Image.DoesNotExist as e:
-                img = Image()
-
-            # IMAGEN Portrait
-            if (request.FILES.has_key('ThumbHor')):
-                print 'debug2'
-                if request.FILES['ThumbHor'].name != '':
-                    # TRATAMIENTO DE IMAGEN Landscape
-                    img.landscape = request.FILES['ThumbHor']
-                    extension = os.path.splitext(img.landscape.name)[1]
-                    varchivo = pathfilesland.value + img.name + extension
-                    img.landscape.name = varchivo
-                    varchivo_server = base_dir.value + varchivo
-                    if os.path.isfile(varchivo_server):
-                        os.remove(varchivo_server)
-
-            # IMAGEN Landscape
-            if (request.FILES.has_key('ThumbVer')):
-                print 'debug1'
-                if request.FILES['ThumbVer'].name != '':
-                    # Landscape
-                    img.portrait = request.FILES['ThumbVer']
-                    extension = os.path.splitext(img.portrait.name)[1]
-                    varchivo = pathfilesport.value + img.name + extension
-                    img.portrait.name = varchivo
-                    # si existe archivo, lo borra
-                    varchivo_server = base_dir.value + varchivo
-                    if os.path.isfile(varchivo_server):
-                        os.remove(varchivo_server)
-            img.save()
-            vmovie.image = img
-            vmovie.save()
-
-
-            ph = PublishHelper()
-            if ph.func_publish_image(request, img) == RETURN_ERROR:
-                request.session['list_movie_message'] = 'Error' + request.session['message']
-                request.session['list_movie_flag'] = FLAG_ALERT
-                return RETURN_ERROR
+                ph = PublishHelper()
+                if ph.func_publish_image(request, img) == RETURN_ERROR:
+                    request.session['list_movie_message'] = 'Error' + request.session['message']
+                    request.session['list_movie_flag'] = FLAG_ALERT
+                    return RETURN_ERROR
 
             request.session['list_movie_message'] = 'Guardado Correctamente'
             request.session['list_movie_flag'] = FLAG_SUCCESS
 
+            context = {'title': title,
+                       'assets': assets,
+                       'channels': channels,
+                       'girls': girls,
+                       'categories': categories,
+                       'vmovie': vmovie,
+                       'vgirlselected': vgirlselected,
+                       'vgirlnotselected': vgirlnotselected,
+                       'vcategoryselected': vcategoryselected,
+                       'vcategorynotselected': vcategorynotselected,
+                       'languages': languages,
+                       'vmoviemetadata': vmoviemetadata,
+                       'vlangmetadata': vlangmetadata,
+                       'asset_id': asset_id,
+                       'imgland': imgland,
+                       'imgport': imgport,
+                       'flag': flag,
+                       'message': message,
+                       'countries_selected': countries_selected,
+                       'countries_notselected': countries_notselected}
 
-        context = {'title': title,
-                   'assets': assets,
-                   'channels': channels,
-                   'girls': girls,
-                   'categories': categories,
-                   'vmovie': vmovie,
-                   'vgirlselected': vgirlselected,
-                   'vgirlnotselected': vgirlnotselected,
-                   'vcategoryselected': vcategoryselected,
-                   'vcategorynotselected': vcategorynotselected,
-                   'languages': languages,
-                   'vmoviemetadata': vmoviemetadata,
-                   'vlangmetadata': vlangmetadata,
-                   'asset_id': asset_id,
-                   'imgland': imgland,
-                   'imgport': imgport,
-                   'flag':flag,
-                   'message':message,
-                   'countries_selected':countries_selected,
-                   'countries_notselected':countries_notselected}
+            return render(request, 'cawas/movies/edit.html', context)
 
-        return render(request, 'cawas/movies/edit.html', context)
+        except Setting.DoesNotExist as e:
+            request.session['list_movie_message'] = "Error: No existe Setting (" + str(e.message) + ")"
+            request.session['list_movie_flag'] = FLAG_ALERT
+            self.code_return = RETURN_ERROR
+            return self.code_return
+        except Asset.DoesNotExist as e:
+            request.session['list_movie_message'] = "Error: No existe Asset (" + str(e.message) + ")"
+            request.session['list_movie_flag'] = FLAG_ALERT
+            self.code_return = RETURN_ERROR
+            return self.code_return
+        except Movie.DoesNotExist as e:
+            request.session['list_movie_message'] = "Error: No existe Movie (" + str(e.message) + ")"
+            request.session['list_movie_flag'] = FLAG_ALERT
+            self.code_return = RETURN_ERROR
+            return self.code_return
+        except Category.DoesNotExist as e:
+            request.session['list_movie_message'] = "Error: No existe Categoria. (" + e.message + ")"
+            request.session['list_movie_flag'] = FLAG_ALERT
+            self.code_return = RETURN_ERROR
+            return self.code_return
+        except MovieMetadata.DoesNotExist as e:
+            request.session['list_movie_message'] = "Error: No existe MovieMetadata. (" + e.message + ")"
+            request.session['list_movie_flag'] = FLAG_ALERT
+            self.code_return = RETURN_ERROR
+            return self.code_return
 
 
 
