@@ -275,6 +275,9 @@ class MovieController(object):
 
 
 
+
+
+
     def edit(self, request, asset_id):
         # AUTENTICACION DE USUARIO
         if not request.user.is_authenticated:
@@ -290,12 +293,54 @@ class MovieController(object):
         vasset = Asset()
         imgport = ''
         imgland = ''
+        vgirlselected = ''
+        vgirlnotselected = ''
+
+        # CARGAR VARIABLES USADAS EN FRONT
         try:
             vasset = Asset.objects.get(asset_id=asset_id)
             vmovie = Movie.objects.get(asset=vasset)
             pathfilesport = Setting.objects.get(code='image_repository_path_portrait')
             pathfilesland = Setting.objects.get(code='image_repository_path_landscape')
             base_dir = Setting.objects.get(code='dam_base_dir')
+            vgirlselected = vmovie.girls.all().order_by('name')
+            vgirlnotselected = Girl.objects.exclude(id__in=vgirlselected).order_by('name')
+            vmoviemetadata = MovieMetadata.objects.filter(movie=vmovie)
+            vcategoryselected = vmovie.category.all().order_by('original_name')
+            vcategorynotselected = Category.objects.exclude(id__in=vcategoryselected).order_by('original_name')
+            languages = Language.objects.all()
+            countries_selected = vmovie.asset.target_country.all().order_by('name')
+            countries_notselected = Country.objects.exclude(id__in=countries_selected).order_by('name')
+            assets = Asset.objects.filter(asset_type="unknown")
+            channels = Channel.objects.all().order_by('name')
+            girls = Girl.objects.all().order_by('name')
+            categories = Category.objects.all().order_by('original_name')
+            languages = Language.objects.all()
+            title = 'Editar Movie'
+
+            # nuevo diccionario para completar lenguages y metadata
+            for itemlang in languages:
+                vmoviemetadata = None
+                try:
+                    vmoviemetadata = MovieMetadata.objects.get(movie=vmovie, language=itemlang)
+                    vlangmetadata.append(
+                        {'checked': True, 'code': itemlang.code, 'name': itemlang.name, 'title': vmoviemetadata.title,
+                         'summary_short': vmoviemetadata.summary_short, 'summary_long': vmoviemetadata.summary_long,
+                         'publish_date': vmoviemetadata.publish_date})
+                except MovieMetadata.DoesNotExist as a:
+                    vlangmetadata.append({'checked': False, 'code': itemlang.code, 'name': itemlang.name, 'titulo': '',
+                                          'descripcion': '', 'fechapub': ''})
+
+
+
+            #imagenes
+            if (vmovie.image is not None):
+                i = len(vmovie.image.portrait.name)
+                imgport = vmovie.image.portrait.name[5:i]
+            if (vmovie.image is not None):
+                i = len(vmovie.image.landscape.name)
+                imgland = vmovie.image.landscape.name[5:i]
+
         except Setting.DoesNotExist as e:
             request.session['list_movie_message'] = "Error: No existe Setting (" + str(e.message) + ")"
             request.session['list_movie_flag'] = FLAG_ALERT
@@ -308,6 +353,15 @@ class MovieController(object):
             request.session['list_movie_message'] = "Error: No existe Movie (" + str(e.message) + ")"
             request.session['list_movie_flag'] = FLAG_ALERT
             self.code_return = -1
+        except Category.DoesNotExist as e:
+            request.session['list_movie_message'] = "Error: No existe Categoria. (" + e.message + ")"
+            request.session['list_movie_flag'] = FLAG_ALERT
+            self.code_return = -1
+        except MovieMetadata.DoesNotExist as e:
+            request.session['list_movie_message'] = "Error: No existe MovieMetadata. (" + e.message + ")"
+            request.session['list_movie_flag'] = FLAG_ALERT
+            self.code_return = -1
+
 
 
         # Post Movie - Graba datos
@@ -320,8 +374,6 @@ class MovieController(object):
             except Image.DoesNotExist as e:
                 img = Image()
 
-
-            #img.name = vasset.asset_id
             # IMAGEN Portrait
             if (request.FILES.has_key('ThumbHor')):
                 print 'debug2'
@@ -362,67 +414,8 @@ class MovieController(object):
             request.session['list_movie_message'] = 'Guardado Correctamente'
             request.session['list_movie_flag'] = FLAG_SUCCESS
 
-        # VARIABLES PARA GET - CARGAR MOVIE
-        try:
-            vasset = Asset.objects.get(asset_id=asset_id)
-            vmovie = Movie.objects.get(asset=vasset)
-            if (vmovie.image is not None):
-                i = len(vmovie.image.portrait.name)
-                imgport = vmovie.image.portrait.name[5:i]
-            if (vmovie.image is not None):
-                i = len(vmovie.image.landscape.name)
-                imgland = vmovie.image.landscape.name[5:i]
-
-            vgirlselected = vmovie.girls.all().order_by('name')
-            vgirlnotselected = Girl.objects.exclude(id__in=vgirlselected).order_by('name')
-            vmoviemetadata = MovieMetadata.objects.filter(movie=vmovie)
-            vcategoryselected = vmovie.category.all().order_by('original_name')
-            vcategorynotselected = Category.objects.exclude(id__in=vcategoryselected).order_by('original_name')
-            languages = Language.objects.all()
-            countries_selected = vmovie.asset.target_country.all().order_by('name')
-            countries_notselected = Country.objects.exclude(id__in=countries_selected).order_by('name')
 
 
-            # nuevo diccionario para completar lenguages y metadata
-            for itemlang in languages:
-                vmoviemetadata = None
-                try:
-                    vmoviemetadata = MovieMetadata.objects.get(movie=vmovie, language=itemlang)
-                    vlangmetadata.append(
-                        {'checked': True, 'code': itemlang.code, 'name': itemlang.name, 'title': vmoviemetadata.title,
-                         'summary_short': vmoviemetadata.summary_short, 'summary_long': vmoviemetadata.summary_long,
-                         'publish_date': vmoviemetadata.publish_date})
-                except MovieMetadata.DoesNotExist as a:
-                    vlangmetadata.append({'checked': False, 'code': itemlang.code, 'name': itemlang.name, 'titulo': '',
-                                          'descripcion': '', 'fechapub': ''})
-
-        except Movie.DoesNotExist as e:
-            request.session['list_movie_message'] = "Asset no se encuentra Vinculado a Movie. (" + e.message + ")"
-            request.session['list_movie_flag'] = FLAG_ALERT
-            self.code_return = -1
-
-        except Asset.DoesNotExist as e:
-            request.session['list_movie_message'] = "Error: No existe Asset. (" + e.message + ")"
-            request.session['list_movie_flag'] = FLAG_ALERT
-            self.code_return = -1
-
-        except Category.DoesNotExist as e:
-            request.session['list_movie_message'] = "Error: No existe Categoria. (" + e.message + ")"
-            request.session['list_movie_flag'] = FLAG_ALERT
-            self.code_return = -1
-
-        except MovieMetadata.DoesNotExist as e:
-            request.session['list_movie_message'] = "Error: No existe MovieMetadata. (" + e.message + ")"
-            request.session['list_movie_flag'] = FLAG_ALERT
-            self.code_return = -1
-
-        # CARGAR VARIABLES USADAS EN FRONT
-        assets = Asset.objects.filter(asset_type="unknown")
-        channels = Channel.objects.all().order_by('name')
-        girls = Girl.objects.all().order_by('name')
-        categories = Category.objects.all().order_by('original_name')
-        languages = Language.objects.all()
-        title = 'Editar Movie'
 
         context = {'title': title,
                    'assets': assets,
