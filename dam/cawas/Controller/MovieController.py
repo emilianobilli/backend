@@ -285,6 +285,7 @@ class MovieController(object):
             return redirect(lc.login_view(request))
         # CARGAR VARIABLES USADAS EN FRONT
         try:
+            self.code_return = RETURN_OK
             vlangmetadata = []
             flag = ''
             message = ''
@@ -319,7 +320,6 @@ class MovieController(object):
                     vgirlselected = vmovie.girls.all().order_by('name')
                     vgirlnotselected = Girl.objects.exclude(id__in=vgirlselected).order_by('name')
 
-
             # nuevo diccionario para completar lenguages y metadata
             for itemlang in languages:
                 vmoviemetadata = None
@@ -332,9 +332,6 @@ class MovieController(object):
                 except MovieMetadata.DoesNotExist as a:
                     vlangmetadata.append({'checked': False, 'code': itemlang.code, 'name': itemlang.name, 'titulo': '',
                                           'descripcion': '', 'fechapub': ''})
-
-
-
             #imagenes
             if (vmovie.image is not None):
                 i = len(vmovie.image.portrait.name)
@@ -342,8 +339,6 @@ class MovieController(object):
             if (vmovie.image is not None):
                 i = len(vmovie.image.landscape.name)
                 imgland = vmovie.image.landscape.name[5:i]
-
-
 
             # Post Movie - Graba datos
             if request.method == 'POST':
@@ -422,16 +417,18 @@ class MovieController(object):
             request.session['list_movie_flag'] = FLAG_ALERT
             self.code_return = RETURN_ERROR
             return self.code_return
+
         except Asset.DoesNotExist as e:
             request.session['list_movie_message'] = "Error: No existe Asset (" + str(e.message) + ")"
             request.session['list_movie_flag'] = FLAG_ALERT
             self.code_return = RETURN_ERROR
-            return self.code_return
+
         except Movie.DoesNotExist as e:
             request.session['list_movie_message'] = "Error: No existe Movie (" + str(e.message) + ")"
             request.session['list_movie_flag'] = FLAG_ALERT
             self.code_return = RETURN_ERROR
             return self.code_return
+
         except Category.DoesNotExist as e:
             request.session['list_movie_message'] = "Error: No existe Categoria. (" + e.message + ")"
             request.session['list_movie_flag'] = FLAG_ALERT
