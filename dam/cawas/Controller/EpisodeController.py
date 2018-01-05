@@ -452,12 +452,14 @@ class EpisodeController(object):
                     ph.func_publish_queue(request, vepisode.asset.asset_id, vlang, 'AS', 'Q', vschedule_date)
                     ph.func_publish_image(request, vimg)
 
-                    # Se vuelve a publicar la SERIE en el idioma del Episodio publicado
-                    if (vepisode.serie.activated == 1):
-                        if (PublishQueue.objects.filter(item_id=vepisode.serie.asset.asset_id,status__in=['Q']).count() < 1):
-                            ph = PublishHelper()
-                            ph.func_publish_queue(request, vepisode.serie.asset.asset_id, vlang, 'AS', 'Q', vschedule_date)
-                            ph.func_publish_image(request, vepisode.serie.image)
+                    #Consultar si serie metadata esta del lenguaje esta activada, de ser asi, se publica la serie nuevamente
+                    sm = SerieMetadata.objects.filter(serie=vepisode.serie, language=vlang)
+                    for i in sm:
+                        if i.activated == True:
+                            if (PublishQueue.objects.filter(item_id=vepisode.serie.asset.asset_id,status__in=['Q']).count() < 1):
+                                ph = PublishHelper()
+                                ph.func_publish_queue(request, vepisode.serie.asset.asset_id, vlang, 'AS', 'Q', vschedule_date)
+                                ph.func_publish_image(request, vepisode.serie.image)
 
                     request.session['list_episode_message'] = 'Guardado Correctamente '
                     request.session['list_episode_flag'] = FLAG_SUCCESS
