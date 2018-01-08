@@ -272,7 +272,13 @@ $('#runtime').mask('00:00:00',{placeholder: "HH:mm:ss"});
         var director_selected = $('#director').val();
         var elenco_selected = $('#elenco').val();
         var display_runtime = $('#runtime').val();
-        var year_selected = $('#releaseYear').val();
+
+        var year_selected = parseInt($('#releaseYear').val());
+
+        if (year_selected=="" || year_selected==0){
+            var d = new Date();
+            year_selected = d.getFullYear();
+        }
 
 
         var json_movie = {};
