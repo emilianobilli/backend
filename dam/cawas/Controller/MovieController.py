@@ -51,7 +51,7 @@ class MovieController(object):
             mv.channel = vchannel
             mv.original_title = json_data['movie']['original_title']
             if (json_data['movie']['year'] is not None):
-                mv.year = json_data['movie']['year']
+                mv.year = int(json_data['movie']['year'])
 
             if (json_data['movie']['cast'] is not None):
                 mv.cast = json_data['movie']['cast']
@@ -60,7 +60,7 @@ class MovieController(object):
                 mv.directors = json_data['movie']['directors']
 
             mv.display_runtime = json_data['movie']['display_runtime']
-            mv.save()
+            #mv.save()
 
             if (json_data['movie']['publicar'] is not None):
                 print 'debug3' + str(json_data['movie']['publicar'])
@@ -83,11 +83,11 @@ class MovieController(object):
                 for item in vcategories:
                     vcategory = Category.objects.get(id=item)
                     mv.category.add(vcategory)
-            print 'checkcategories'
+
             #ACTUALIZAR EL ASSET A MOVIE
             vasset.asset_type = "movie"
             vasset.save()
-            print 'check3'
+
             # CARGAR Countries al Asset de la Movie
             if (json_data['movie']['countries'] is not None):
                 countries = json_data['movie']['countries']
@@ -124,21 +124,17 @@ class MovieController(object):
                 mmd.movie = mv
                 mmd.save()
 
-            print 'publicar' +str(nueva_movie) + str(publicar)
             #si la movie existe, entonces se publica
             if nueva_movie == False or publicar == True:
                 metadatas = MovieMetadata.objects.filter(movie=mv)
-                print 'publicar4'
                 for mdi in metadatas:
-                    print 'publicar2'
                     if ph.func_publish_queue(request, mdi.movie.asset.asset_id, mdi.language, 'AS', 'Q', mdi.publish_date) == RETURN_ERROR:
                         return HttpResponse("Error al Publicar (" + str(e.message) + ")", None, 500)
-                    print 'publicar3'
                     mdi.queue_status = 'Q'
                     mdi.save()
 
             mydata = [{'code': 200, 'message': 'Guardado Correctamente'}]
-            #return HttpResponse("Guardado Correctamente", None, 200)
+
             return HttpResponse(json.dumps(mydata), None, 200)
         except Asset.DoesNotExist as e:
             return HttpResponse("No existe Asset",None, 500)
