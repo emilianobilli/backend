@@ -309,6 +309,10 @@ class MovieController(object):
             assets = Asset.objects.filter(asset_type="unknown")
             channels = Channel.objects.all().order_by('name')
             girls = Girl.objects.all().order_by('name')
+
+            vgirlselected = vmovie.girls.all()
+            vgirlnotselected = Girl.objects.exclude(id__in=vgirlselected)
+
             categories = Category.objects.all().order_by('original_name')
             languages = Language.objects.all()
             if vmovie.girls is not None:
