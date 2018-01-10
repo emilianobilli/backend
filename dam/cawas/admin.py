@@ -143,3 +143,6 @@ class SliderAdmin(admin.ModelAdmin):
 class DeviceAdmin(admin.ModelAdmin):
     list_display = ['name']
 
+@admin.register(models.VideoLog)
+class VideoLogAdmin(admin.ModelAdmin):
+    list_display = ['asset', 'tag', 'tc_in', 'tc_out']

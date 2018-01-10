@@ -128,7 +128,7 @@ class Tag(models.Model):
                 id = "0" + id
 
             self.tag_id = "T%s" % (id)
-        metadata = TagMetadata.objects.filter(category=self)
+        metadata = TagMetadata.objects.filter(tag=self)
         for m in metadata:
             m.modification_date = timezone.now()
             m.save()
