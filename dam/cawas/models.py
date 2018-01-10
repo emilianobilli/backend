@@ -112,14 +112,40 @@ class ImageQueue(models.Model):
 
 
 class Tag(models.Model):
-    name     = models.CharField(max_length=128, unique=True, help_text="Nombre del tag")
-    language = models.ForeignKey(Language)
-
-    class Meta:
-        unique_together = ('name', 'language',)
+    tag_id   = models.CharField(max_length=128, unique=True, help_text="Nombre del tag")
+    name     = models.CharField(max_length=128, help_text="Nombre del tag")
 
     def __unicode__(self):
         return self.name
+
+    def save(self, *args, **kwargs):
+        super(Tag, self).save(*args, **kwargs)
+        if self.tag_id == '':
+
+            id = str(self.id)
+
+            while len(id) < 5:
+                id = "0" + id
+
+            self.tag_id = "T%s" % (id)
+        metadata = TagMetadata.objects.filter(category=self)
+        for m in metadata:
+            m.modification_date = timezone.now()
+            m.save()
+        super(Tag, self).save(*args, **kwargs)
+
+
+class TagMetadata(models.Model):
+    tag               = models.ForeignKey(Tag)
+    language          = models.ForeignKey(Language)
+    name              = models.CharField(max_length=128, help_text="Nombre del tag traducido")
+    modification_date = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        unique_together = ('tag', 'language',)
+
+    def __unicode__(self):
+        return ('%s:%s') % (self.tag.tag_id, self.language)
 
 
 class Category(models.Model):
@@ -789,3 +815,14 @@ class Block(models.Model):
             dict["order"] = self.order
 
         return dict
+
+
+class VideoLog(models.Model):
+    asset  = models.ForeignKey(Asset)
+    tag    = models.ForeignKey(Tag)
+    tc_in  = models.IntegerField(help_text="TC IN")
+    tc_out = models.IntegerField(help_text="TC OUT")
+
+    def __unicode__(self):
+        return ('%s:%s') % (self.asset.asset_id, self.tag.name)
+
