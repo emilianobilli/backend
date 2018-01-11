@@ -64,6 +64,12 @@ urlpatterns = [
     url(r'^cableoperators/publish/(?P<id>\w*)$', views.publish_cableoperators_view, name='publish_cableoperators'),
 
 
+
+    url(r'^videotags/$', views.list_videotag_view, name='list_videotags'),
+    url(r'^videotags/edit/(?P<asset_id>\w*)/$', views.edit_videotag_view, name='edit_videotag'),
+    url(r'^ajax/tags/$', views.ajax_tags_view, name='ajax_tags'),
+
+
     #<#POST Json CAWAS>
 
     url(r'^api/add_asset/$', views.add_asset_view, name='api_add_asset')

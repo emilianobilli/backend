@@ -89,7 +89,7 @@ WSGI_APPLICATION = 'dam.wsgi.application'
 #        'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
 #    }
 #}
-'''
+
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql',
@@ -100,8 +100,8 @@ DATABASES = {
         'PORT':'3306'
     }
 }
-'''
 
+'''
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql',
@@ -113,6 +113,7 @@ DATABASES = {
 	'OPTIONS': {'charset': 'utf8mb4'},
     }
 }
+'''
 
 
 # Password validation

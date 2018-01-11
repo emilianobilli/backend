@@ -1,0 +1,17 @@
+<tr class="tb-row">
+    <td class="tb-cell">
+        AssetID
+    </td>
+    <td class="tb-cell">
+         <select id="movie-select" class="form-control" size="6">
+            {% for item in assets %}
+               <option value="{{ item.asset_id }}">{{ item.asset_id }} </option>
+            {% endfor %}
+        </select>
+    </td>
+    <td class="tb-cell"><button class="btn-sm btn-default"><span class="glyphicon glyphicon-play"> </span> In</button></td>
+    <td class="tb-cell">00:00:00</td>
+    <td class="tb-cell"><button class="btn-sm btn-default"><span class="glyphicon glyphicon-stop"> </span> Out</button></td>
+    <td class="tb-cell">00:00:00</td>
+    <td class="tb-cell"></td>
+</tr>

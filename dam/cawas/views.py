@@ -6,6 +6,7 @@ from django.db import IntegrityError
 from django.http import  HttpResponse
 from django.core.urlresolvers import reverse
 from Controller.MovieController import MovieController
+from Controller.VideoTagController import VideoTagController
 from Controller.SerieController import SerieController
 from Controller.GirlController import GirlController
 from Controller.EpisodeController import EpisodeController
@@ -225,6 +226,45 @@ def prueba_json_view(request):
 
     context = {}
     return render(request, 'cawas/pruebas/prueba_json.html', context)
+
+
+
+
+
+def ajax_tags_view(request):
+    c = VideoTagController()
+    return c.ajaxtags(request)
+
+
+
+def list_videotag_view(request):
+    c = VideoTagController()
+    return c.index(request)
+
+
+def add_videotag_view(request):
+    c = VideoTagController()
+    if request.method == 'GET':
+        return c.add(request)
+    if request.method == 'POST':
+        c.add(request)
+        return redirect(list_videotag_view)
+
+
+def edit_videotag_view(request, asset_id):
+    c = VideoTagController()
+    response = c.edit(request, asset_id)
+
+    if request.method == 'GET':
+        if c.code_return == RETURN_ERROR:
+            return redirect(list_movies_view)
+        if c.code_return == RETURN_OK:
+            return response
+
+    if request.method == 'POST':
+        return redirect(list_movies_view)
+
+
 
 
 

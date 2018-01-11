@@ -1,0 +1,106 @@
+
+{% extends "cawas/base.html" %}
+{% load staticfiles %}
+{% block extra_head %}
+    <script src="/static/js/movie.js"></script>
+    <script src="/static/js/videotag.js"></script>
+    <script>
+        var listaTags=[];
+          {% for t in tags %}
+
+            listaTags.push({"id":{{t.id}}, "descripcion":"{{ t.asset_id}}"} );
+
+        {% endfor %}
+
+
+    </script>
+
+ <!--
+    <link rel="stylesheet" href="http://ajax.googleapis.com/ajax/libs/jqueryui/1.9.2/themes/base/jquery-ui.css" />
+    <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.8.3/jquery.min.js"></script>
+    <script src="http://ajax.googleapis.com/ajax/libs/jqueryui/1.9.2/jquery-ui.min.js"></script>
+
+
+    <link rel="stylesheet" href="{% static 'css/pqgrid.min.css' %}" />
+    <script type="text/javascript" src="{% static 'js/pqgrid.min.js' %}"></script>
+    <link rel="stylesheet" href="{% static 'css/themes/office/pqgrid.css' %}" />
+-->
+{% endblock %}
+
+
+
+
+
+
+{% block subheader %}
+<div class="col-xs-12 col-md-12 col-lg-12 unpad">
+    <div class="subHeader">
+        <div class="notifications">
+            {% if user.is_authenticated %}
+                  <a href="{% url 'menu_view' %}"><span class="glyphicon glyphicon-home GLY-med">
+                               </span> &nbsp;Inicio / </a>
+                  <a href="{% url 'list_movies' %}">VideoTags</a>
+
+                 <button class="btn btn-lg btn-primary btn-block logOFF" type="button" id="exitBtn" data-toggle="modal" data-target="#myModal">LOG-OUT</button>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock subheader %}
+
+{% block content %}
+        <div class="container">
+            <div class="row">
+                <div class="col-md-1"></div>
+                <div class="col-md-8 col-xs-12">
+                <div  id="repro1">
+                       <video width="650" controls >
+                          <source src="" type=video/mp4 id="videomp4">
+                       </video>
+                   </div>
+                    </div>
+            </div>
+            <br>
+            <br>
+            <div class="row">
+
+
+                <div class="col-md-1"></div>
+
+                <div class="col-md-8 col-xs-12">
+
+                <table class="tb-row tb-header" id="tabletags">
+                    <div class="col-md-3">
+                         <div id="agregartag"class="btn-sm btn-success"><span class="glyphicon glyphicon-plus"> </span>Agregar Tag</div>
+                    </div>
+                    <thead>
+
+                        <th class="tb-cell">Asset ID</th>
+                        <th class="tb-cell">Tag</th>
+                        <th class="tb-cell">In-Action</th>
+                        <th class="tb-cell">In-Time </th>
+                        <th class="tb-cell">Out-Action</th>
+                        <th class="tb-cell">Out-Time</th>
+
+                    </thead>
+
+
+                </table>
+
+
+
+            </div>
+            </div>
+
+
+        </div>
+
+
+
+
+
+
+
+
+
+{% endblock content %}

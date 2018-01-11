@@ -38,8 +38,6 @@ $( document ).ready(function() {
 
 
  // rellena el formulario con los datos recogidos en la variable requestedData
-
-
     $("#btnsearch").click(function(){
            $("#searchForID").submit();
     });
