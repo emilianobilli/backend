@@ -6,7 +6,7 @@ from django.db import IntegrityError
 from django.http import  HttpResponse
 from django.core.urlresolvers import reverse
 from Controller.MovieController import MovieController
-from Controller.VideoTagController import VideoTagController
+from Controller.VideoLogController import VideoLogController
 from Controller.SerieController import SerieController
 from Controller.GirlController import GirlController
 from Controller.EpisodeController import EpisodeController
@@ -14,6 +14,8 @@ from Controller.BlockController import BlockController
 from Controller.CategoryController import CategoryController
 from Controller.SliderController import SliderController
 from Controller.CableOperatorController import CableOperatorController
+from Controller.TagController import TagController
+
 
 from Controller.LogController import LogController
 from models import Channel, Device, Slider,  Episode, EpisodeMetadata, ImageQueue, PublishQueue, \
@@ -231,40 +233,43 @@ def prueba_json_view(request):
 
 
 
-def ajax_tags_view(request):
-    c = VideoTagController()
-    return c.ajaxtags(request)
+
+#ABM VIDEOLOG
+def list_videolog_view(request):
+    c = VideoLogController()
+    return c.index(request)
+
+def add_videolog_view(request, asset_id):
+    c = VideoLogController()
+    return c.add(request,asset_id)
 
 
+def edit_videolog_view(request, asset_id):
+    c = VideoLogController()
+    return c.edit(request, asset_id)
 
-def list_videotag_view(request):
-    c = VideoTagController()
+# ABM VIDEOLOG - FIN
+
+
+#ABM TAGS
+def list_tags_view(request):
+    c = TagController()
     return c.index(request)
 
 
-def add_videotag_view(request):
-    c = VideoTagController()
-    if request.method == 'GET':
-        return c.add(request)
-    if request.method == 'POST':
-        c.add(request)
-        return redirect(list_videotag_view)
+def add_tag_view(request):
+    c = TagController()
+    return c.add(request)
 
 
-def edit_videotag_view(request, asset_id):
-    c = VideoTagController()
-    response = c.edit(request, asset_id)
 
-    if request.method == 'GET':
-        if c.code_return == RETURN_ERROR:
-            return redirect(list_movies_view)
-        if c.code_return == RETURN_OK:
-            return response
-
-    if request.method == 'POST':
-        return redirect(list_movies_view)
+def edit_tag_view(request, tag_id):
+    c = TagController()
+    return c.edit(request, tag_id)
 
 
+
+#ABM TAGS - Fin
 
 
 
