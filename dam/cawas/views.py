@@ -248,6 +248,18 @@ def edit_videolog_view(request, asset_id):
     c = VideoLogController()
     return c.edit(request, asset_id)
 
+
+def findbyassetid_videolog_view(request):
+    c = VideoLogController()
+    return c.findByAssetId(request)
+
+
+def delete_videolog_view(request):
+    c = VideoLogController()
+    return c.delete(request)
+
+
+
 # ABM VIDEOLOG - FIN
 
 
