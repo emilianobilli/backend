@@ -2,13 +2,17 @@
 {% extends "cawas/base.html" %}
 {% load staticfiles %}
 {% block extra_head %}
-    <script src="/static/js/movie.js"></script>
+ <!--   <script src="/static/js/movie.js"></script> -->
     <script src="/static/js/videotag.js"></script>
+    <script src="https://content.jwplatform.com/libraries/8cRCwCjK.js"></script>
+
+
     <script>
         var listaTags=[];
+
           {% for t in tags %}
 
-            listaTags.push({"id":{{t.id}}, "descripcion":"{{ t.asset_id}}"} );
+            listaTags.push({"id":"{{t.tag_id}}", "descripcion":"{{t.tag_id}} - {{ t.name}}"} );
 
         {% endfor %}
 
@@ -50,20 +54,65 @@
 
 {% block content %}
         <div class="container">
+
+        <div class="row">
+        <div class="col-xs-12 col-md-6">
+            <div class="modal fade" id="myModal-OK" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
+              <div class="modal-dialog" role="document">
+                <div class="modal-content">
+                  <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                    <h4 class="modal-title" id="myModalLabel">Información.</h4>
+                  </div>
+                  <div id="message" class="modal-body">
+
+                  </div>
+                  <div class="modal-footer">
+                    <button type="button" class="btn btn-default" data-dismiss="modal">OK</button>
+                  </div>
+                </div>
+              </div>
+            </div>
+            </div>
+        </div>
+
+
+
+
+
+
+
+
+
+
             <div class="row">
                 <div class="col-md-1"></div>
                 <div class="col-md-8 col-xs-12">
                 <div  id="repro1">
-                       <video width="650" controls >
-                          <source src="" type=video/mp4 id="videomp4">
-                       </video>
+
                    </div>
                     </div>
             </div>
             <br>
             <br>
             <div class="row">
+                <div class="col-xs-12 col-md-3">
+                         <div id="agregartag"class="btn-sm btn-success"><span class="glyphicon glyphicon-plus"> </span>Agregar Tag</div>
+                </div>
+            </div>
+            <br>
 
+
+            <div class="row">
+                <div class="col-md-offset-1 col-md-5 col-xs-12">
+                    <h2>ASSET: {{asset_id}} </h2>
+                </div>
+            </div>
+
+
+            <div class="row">
+
+                <input id="asset_id" type="hidden" value="{{ asset_id }}">
 
                 <div class="col-md-1"></div>
 
@@ -71,20 +120,29 @@
 
                 <table class="tb-row tb-header" id="tabletags">
                     <div class="col-md-3">
-                         <div id="agregartag"class="btn-sm btn-success"><span class="glyphicon glyphicon-plus"> </span>Agregar Tag</div>
+
                     </div>
                     <thead>
 
-                        <th class="tb-cell">Asset ID</th>
                         <th class="tb-cell">Tag</th>
                         <th class="tb-cell">In-Action</th>
                         <th class="tb-cell">In-Time </th>
                         <th class="tb-cell">Out-Action</th>
                         <th class="tb-cell">Out-Time</th>
+                        <th class="tb-cell">Delete</th>
 
                     </thead>
 
-
+                    {% for item in registros %}
+                        <tr class="tb-row" data="{{item.id}}">
+                            <td class="tb-cell" style="width:450px;">{{ item.tag.tag_id}}</td>
+                            <td class="tb-cell"><button class="btn-sm btn-default" disabled data-id="" name="btnin"><span class="glyphicon glyphicon-play"> </span> In</button></td>
+                            <td data-id="'+indexrow+'" name="inputin" class="tb-cell" data="{{item.tc_in}}"></td>
+                            <td class="tb-cell"><button data-id="" disabled class="btn-sm btn-default" name="btnout"><span class="glyphicon glyphicon-stop"> </span> Out</button></td>
+                            <td data-id="'+indexrow+'" name="inputout" class="tb-cell" data="{{item.tc_out}}"></td>
+                            <td class="tb-cell"><button data="{{item.id}}"  name="btndelete" class="btn-md btn-danger" ><span class="glyphicon glyphicon-trash"></span>Del  </button></td>
+                        </tr>
+                    {% endfor %}
                 </table>
 
 
