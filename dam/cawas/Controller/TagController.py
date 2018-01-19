@@ -38,6 +38,8 @@ class TagController(object):
 
 
 
+
+
     def add(self, request):
         if request.is_ajax():
             if request.method == 'POST':
@@ -163,7 +165,7 @@ class TagController(object):
 
 
     def delete(self, request):
-        data = {'code': 200, 'message': 'Guardado Correctamente'}
+        data = {'code': 200, 'message': 'Eliminado Correctamente'}
         return HttpResponse(json.dumps(data), None, 200)
 
 
