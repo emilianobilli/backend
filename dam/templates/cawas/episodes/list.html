@@ -181,6 +181,7 @@
                                  {% else %}
                               <td class="tb-cell"><a href="/episodes/unpublish/{{ item.id}}"class="btn-warning btn tb-btn desactivar">Desactivar</a></td>
                            {% endif %}
+                            <td class="tb-cell"><a href="/videologs/add/{{ item.episode.asset.asset_id}}" class="btn-default btn tb-btn">Registrar Tags</a></td>
                         </tr>
                     {% endfor %}
                  </table>
