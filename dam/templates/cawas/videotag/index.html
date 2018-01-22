@@ -53,105 +53,57 @@
 {% endblock subheader %}
 
 {% block content %}
-        <div class="container">
+<div class="row">
+        <div class="col-md-12">
 
-        <div class="row">
-        <div class="col-xs-12 col-md-6">
-            <div class="modal fade" id="myModal-OK" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
-              <div class="modal-dialog" role="document">
-                <div class="modal-content">
-                  <div class="modal-header">
-                    <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
-                    <h4 class="modal-title" id="myModalLabel">Información.</h4>
-                  </div>
-                  <div id="message" class="modal-body">
-
-                  </div>
-                  <div class="modal-footer">
-                    <button type="button" class="btn btn-default" data-dismiss="modal">OK</button>
-                  </div>
-                </div>
-              </div>
+            <div class="col-md-6">
+                <div  id="repro1"></div>
             </div>
-            </div>
-        </div>
 
-
-
-
-
-
-
-
-
+            <div class="col-xs-12 col-md-6">
 
             <div class="row">
-                <div class="col-md-1"></div>
-                <div class="col-md-8 col-xs-12">
-                <div  id="repro1">
-
-                   </div>
-                    </div>
-            </div>
-            <br>
-            <br>
-            <div class="row">
-                <div class="col-xs-12 col-md-3">
-                         <div id="agregartag"class="btn-sm btn-success"><span class="glyphicon glyphicon-plus"> </span>Agregar Tag</div>
-                </div>
-            </div>
-            <br>
-
-
-            <div class="row">
-                <div class="col-md-offset-1 col-md-5 col-xs-12">
+                <div class="col-md-3">
                     <h2>ASSET: {{asset_id}} </h2>
                 </div>
+                <div class="col-md-6">
+                    <h2><div id="agregartag"class="btn-sm btn-success"><span class="glyphicon glyphicon-plus"> </span>Agregar Tag</div></div></h2>
+                </div>
             </div>
 
 
-            <div class="row">
-
+<div class="row">
                 <input id="asset_id" type="hidden" value="{{ asset_id }}">
+                    <table class="tb-row tb-header" id="tabletags">
 
-                <div class="col-md-1"></div>
+                        <thead>
 
-                <div class="col-md-8 col-xs-12">
+                            <th class="tb-cell">Tag</th>
+                            <th class="tb-cell">In-Action</th>
+                            <th class="tb-cell">In-Time </th>
+                            <th class="tb-cell">Out-Action</th>
+                            <th class="tb-cell">Out-Time</th>
+                            <th class="tb-cell">Delete</th>
 
-                <table class="tb-row tb-header" id="tabletags">
-                    <div class="col-md-3">
+                        </thead>
 
-                    </div>
-                    <thead>
-
-                        <th class="tb-cell">Tag</th>
-                        <th class="tb-cell">In-Action</th>
-                        <th class="tb-cell">In-Time </th>
-                        <th class="tb-cell">Out-Action</th>
-                        <th class="tb-cell">Out-Time</th>
-                        <th class="tb-cell">Delete</th>
-
-                    </thead>
-
-                    {% for item in registros %}
-                        <tr class="tb-row" data="{{item.id}}">
-                            <td class="tb-cell" style="width:450px;">{{ item.tag.tag_id}}</td>
-                            <td class="tb-cell"><button class="btn-sm btn-default" disabled data-id="" name="btnin"><span class="glyphicon glyphicon-play"> </span> In</button></td>
-                            <td data-id="'+indexrow+'" name="inputin" class="tb-cell" data="{{item.tc_in}}"></td>
-                            <td class="tb-cell"><button data-id="" disabled class="btn-sm btn-default" name="btnout"><span class="glyphicon glyphicon-stop"> </span> Out</button></td>
-                            <td data-id="'+indexrow+'" name="inputout" class="tb-cell" data="{{item.tc_out}}"></td>
-                            <td class="tb-cell"><button data="{{item.id}}"  name="btndelete" class="btn-md btn-danger" ><span class="glyphicon glyphicon-trash"></span>Del  </button></td>
-                        </tr>
-                    {% endfor %}
-                </table>
-
-
-
-            </div>
+                        {% for item in registros %}
+                            <tr class="tb-row" data="{{item.id}}">
+                                <td class="tb-cell" style="width:450px;">{{ item.tag.tag_id}}</td>
+                                <td class="tb-cell"><button class="btn-sm btn-default" disabled data-id="" name="btnin"><span class="glyphicon glyphicon-play"> </span> In</button></td>
+                                <td data-id="'+indexrow+'" name="inputin" class="tb-cell" data="{{item.tc_in}}"></td>
+                                <td class="tb-cell"><button data-id="" disabled class="btn-sm btn-default" name="btnout"><span class="glyphicon glyphicon-stop"> </span> Out</button></td>
+                                <td data-id="'+indexrow+'" name="inputout" class="tb-cell" data="{{item.tc_out}}"></td>
+                                <td class="tb-cell"><button data="{{item.id}}"  name="btndelete" class="btn-md btn-danger" ><span class="glyphicon glyphicon-trash"></span>Del  </button></td>
+                            </tr>
+                        {% endfor %}
+                    </table>
+</div>
             </div>
 
 
-        </div>
+            </div>
+</div>
 
 
 
