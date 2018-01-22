@@ -43,8 +43,8 @@
             min = 0;
             seg = 0;
             if ( val > 60 ) {
-                min = Math.round(val / 60);
-                seg = Math.round(val % 60);
+                min = Math.floor(val / 60);
+                seg = Math.floor(val % 60);
                 console.log(min);
                 console.log(seg);
             }else{
