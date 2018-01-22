@@ -124,7 +124,7 @@
 
                             var timeinteger_in = Math.round(p.getPosition());
                             if (timeinteger_in ==0){
-                                alert("El Video no se esta reproduciendo, Esssstupido!");
+                                alert("El Video no se esta reproduciendo!");
                                 return false;
                             }
                             tdin.attr("data", timeinteger_in.toString());
@@ -140,7 +140,7 @@
 
                         var timeinteger_out = Math.round(p.getPosition());
                         if (timeinteger_out ==0){
-                                alert("El Video no se esta reproduciendo, Esssstupido!");
+                                alert("El Video no se esta reproduciendo!");
                                 return false;
                             }
                         var tdout = $("td[name='inputout'][data-id='"+index+"']");
