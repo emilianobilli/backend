@@ -90,7 +90,7 @@
 
                             {% for item in registros %}
                                 <tr class="tb-row" data="{{item.id}}">
-                                    <td class="tb-cell" style="width:450px;">{{ item.tag.tag_id}}</td>
+                                    <td class="tb-cell" style="width:450px;">{{ item.tag.tag_id }} - {{ item.tag.name }}</td>
                                     <td class="tb-cell"><button class="btn-sm btn-default" disabled data-id="" name="btnin"><span class="glyphicon glyphicon-play"> </span> In</button></td>
                                     <td data-id="'+indexrow+'" name="inputin" class="tb-cell" data="{{item.tc_in}}"></td>
                                     <td class="tb-cell"><button data-id="" disabled class="btn-sm btn-default" name="btnout"><span class="glyphicon glyphicon-stop"> </span> Out</button></td>
