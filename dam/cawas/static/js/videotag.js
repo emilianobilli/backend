@@ -238,7 +238,7 @@
                             //index es el numero de fila
                             //videolog_id es la PK de la tabla videolog
                             addButtonDelete(index, videolog_id)
-                            alert("Guardado Correctamente");
+                            //alert("Guardado Correctamente");
 
 
 
