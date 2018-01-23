@@ -144,20 +144,21 @@ class SerieController(object):
                 smd = SerieMetadata()
                 try:
                     smd.language = Language.objects.get(code=item['Seriemetadata']['language'])
+                    vschedule_date = datetime.datetime.now().strftime('%Y-%m-%d')
+                    smd.title = item['Seriemetadata']['title']
+                    smd.summary_short = item['Seriemetadata']['summary_short']
+                    smd.summary_long = item['Seriemetadata']['summary_long']
+                    smd.serie = vserie
+                    smd.publish_date = vschedule_date
+                    smd.queue_status = 'Q'
+                    smd.save()
                 except Language.DoesNotExist as e:
                     self.code_return = -1
                     request.session['list_serie_message'] = 'Error No existe Lenguaje ' + e.message
                     request.session['list_serie_flag'] = FLAG_ALERT
                     return self.code_return
 
-                vschedule_date = datetime.datetime.now().strftime('%Y-%m-%d')
-                smd.title = item['Seriemetadata']['title']
-                smd.summary_short = item['Seriemetadata']['summary_short']
-                smd.summary_long = item['Seriemetadata']['summary_long']
-                smd.serie = vserie
-                smd.publish_date = vschedule_date
-                smd.queue_status = 'Q'
-                smd.save()
+
 
             flag = 'success'
             self.code_return = 0
