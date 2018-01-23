@@ -65,21 +65,42 @@
 
         }
 
-        formatTimeList();
+        applyFunctionsList();
 
-        function formatTimeList(){
 
+
+        function applyFunctionsList(){
+
+            //Lee el valor de Data, lo formatea en minutos y segundos, luego lo asigna a la propiedad HTML
             $("td[name='inputin']").each(function() {
                 var tdin = $(this);
                 timeinteger_in = tdin.attr("data");
                 tdin.html(toSecString(timeinteger_in));
             });
+
             $("td[name='inputout']").each(function() {
                 var tdout =$(this);
                 timeinteger_out = tdout.attr("data");
                 tdout.html(toSecString(timeinteger_out));
             });
 
+            //Asigna Efecto Hover en la primer columana
+            $("td[name='tdselect']").hover(function(){
+                $(this).addClass('hover'); // 500 is ms to animate class transition
+                }, function()  //mouseout
+                {
+                  $(this).removeClass('hover');
+            });
+
+            //Lleva la reproduccion del video a la posicion del tag seleccionado
+            $("td[name='tdselect']").click(function(){
+                var td = $(this);
+                var dataid = td.attr("data-id");
+                //leer el tiempo
+                var strselector = "td[name='inputin'][data-id="+dataid+"]";
+                var timein = $(strselector).attr("data");
+                p.seek(timein);
+            });
 
         }
 
@@ -88,14 +109,12 @@
             //AGREGAR TAG
             $("#agregartag").click(function(){
                 indexrow = indexrow +1;
-
-
-
                     //Cargar con ajax el contenido de tags y generar el row
                     var tags =listaTags;
                     if(tags.length > 0)
                     {
-                        var tdselect = '<td class="tb-cell"><select data-id="'+indexrow+'" class="form-control select2" size="6">';
+                        var tdselect = '<td class="tb-cell" name="tdselect" data-id="'+indexrow+'">';
+                        tdselect += '<select data-id="'+indexrow+'" class="form-control select2" size="6">';
                         for(d in tags)
                         {
                             tdselect +='<option data="'+tags[d]['id']+'">'+tags[d]['descripcion']+'</option>';
@@ -105,7 +124,7 @@
                     var rowtag='<tr class="tb-row" data="" data-id="'+indexrow+'">';
 
                     rowtag+= tdselect;
-                    rowtag+= '<td class="tb-cell"><button class="btn-sm btn-default" data-id="'+indexrow+'" name="btnin"><span class="glyphicon glyphicon-play"> </span> In</button></td>';
+                    rowtag+= '<td class="tb-cell" ><button class="btn-sm btn-default" data-id="'+indexrow+'" name="btnin"><span class="glyphicon glyphicon-play"> </span> In</button></td>';
                     rowtag+='<td data-id="'+indexrow+'" name="inputin" class="tb-cell" data="">00:00</td>';
                     rowtag+='<td class="tb-cell"><button data-id="'+indexrow+'" class="btn-sm btn-default" name="btnout"><span class="glyphicon glyphicon-stop"> </span> Out</button></td>';
                     rowtag+='<td data-id="'+indexrow+'" name="inputout" class="tb-cell" data="">00:00</td>';
@@ -114,6 +133,9 @@
 
                     $("#tabletags tr:last").after(rowtag);
                     $(".form-control.select2").select2({placeholder: "Despliega la lista"});
+
+
+
 
                     //CLICK IN
                     $("button[name='btnin']").click(function(){
@@ -191,6 +213,11 @@
                         $(timeout).focus();
                         return false;
                     }
+                    if (timeout <= timein){
+                        alert("Time In no puede ser mayor a Time Out.");
+                        return false;
+                    }
+
                     return true;
 
                 }
@@ -212,6 +239,17 @@
             // se actualiza el campo de la fila para poder hacer el HIDE
             var tr = $("tr[data-id='"+index+"']");
             tr.attr("data",id);
+        }
+
+        function removeClassSelect2(index, id){
+            //Quitar clase Select2 de la columna tag
+            var strselector = "select[data-id='"+index+"'] option:selected";
+            //var tag_id   = $(strselector).attr("data");
+            var tag_name = $(strselector).html();
+            //var strhtml = tag_id + " - " + tag_name;
+            strselector = "td[name='tdselect'][data-id='"+index+"']";
+            $(strselector).html(tag_name);
+
         }
 
 
@@ -238,10 +276,8 @@
                             //index es el numero de fila
                             //videolog_id es la PK de la tabla videolog
                             addButtonDelete(index, videolog_id)
-                            //alert("Guardado Correctamente");
-
-
-
+                            removeClassSelect2(index, videolog_id);
+                            applyFunctionsList();
                         },
                     error:function(request, status, error){
                         alert(request.responseText);
