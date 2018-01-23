@@ -2,6 +2,12 @@
 {% extends "cawas/base.html" %}
 {% load staticfiles %}
 {% block extra_head %}
+<style>
+    .hover{
+        background: #CCC;
+        opacity:0.4
+    }
+</style>
  <!--   <script src="/static/js/movie.js"></script> -->
     <script src="/static/js/videotag.js"></script>
     <script src="https://content.jwplatform.com/libraries/8cRCwCjK.js"></script>
@@ -90,9 +96,9 @@
 
                             {% for item in registros %}
                                 <tr class="tb-row" data="{{item.id}}">
-                                    <td class="tb-cell" style="width:450px;">{{ item.tag.tag_id }} - {{ item.tag.name }}</td>
+                                    <td class="tb-cell" name="tdselect" data-id="{{item.id}}" style="width:450px;" data="{{ item.tag.name }}">{{ item.tag.tag_id }} - {{ item.tag.name }}</td>
                                     <td class="tb-cell"><button class="btn-sm btn-default" disabled data-id="" name="btnin"><span class="glyphicon glyphicon-play"> </span> In</button></td>
-                                    <td data-id="'+indexrow+'" name="inputin" class="tb-cell" data="{{item.tc_in}}"></td>
+                                    <td data-id="{{item.id}}" name="inputin" class="tb-cell" data="{{item.tc_in}}"></td>
                                     <td class="tb-cell"><button data-id="" disabled class="btn-sm btn-default" name="btnout"><span class="glyphicon glyphicon-stop"> </span> Out</button></td>
                                     <td data-id="'+indexrow+'" name="inputout" class="tb-cell" data="{{item.tc_out}}"></td>
                                     <td class="tb-cell"><button data="{{item.id}}"  name="btndelete" class="btn-md btn-danger" ><span class="glyphicon glyphicon-trash"></span>Del  </button></td>
