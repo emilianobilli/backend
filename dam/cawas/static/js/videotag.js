@@ -24,10 +24,12 @@
 
          function changeVideo(src, divId){// para cambiar lo que reproduce el player de acuerdo al ID de la lista.
                return jwplayer(divId).setup({
-                    "file": "http://cdnlevel3.zolechamedia.net/" + src + "/mp4/1200/" + src +".mp4",
+                    file: "http://cdnlevel3.zolechamedia.net/" + src + "/hls/" + src +".m3u8",
+                    aspectratio: "16:9",
+                    width: '100%',
                 });
         }
-        p = changeVideo($("#asset_id").val(),"repro1");
+        p = changeVideo($("#asset_id").val(),"pepito");
 
 
 
