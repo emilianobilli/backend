@@ -168,9 +168,10 @@
                             }
                         var tdout = $("td[name='inputout'][data-id='"+index+"']");
                         tdout.attr("data",timeinteger_out.toString());
-                        tdout.html(toSecString(timeinteger_out));
+
 
                         if(validar(index)){
+                            tdout.html(toSecString(timeinteger_out));
                             guardar(index);
 
                         };
