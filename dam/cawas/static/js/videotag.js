@@ -126,9 +126,9 @@
 
                     rowtag+= tdselect;
                     rowtag+= '<td class="tb-cell" ><button class="btn-sm btn-default" data-id="'+indexrow+'" name="btnin"><span class="glyphicon glyphicon-play"> </span> In</button></td>';
-                    rowtag+='<td data-id="'+indexrow+'" name="inputin" class="tb-cell" data="">00:00</td>';
+                    rowtag+='<td data-id="'+indexrow+'" name="inputin" class="tb-cell" data=""></td>';
                     rowtag+='<td class="tb-cell"><button data-id="'+indexrow+'" class="btn-sm btn-default" name="btnout"><span class="glyphicon glyphicon-stop"> </span> Out</button></td>';
-                    rowtag+='<td data-id="'+indexrow+'" name="inputout" class="tb-cell" data="">00:00</td>';
+                    rowtag+='<td data-id="'+indexrow+'" name="inputout" class="tb-cell" data=""></td>';
                     rowtag+='<td class="tb-cell"><button style="display:none" data="" data-id="'+indexrow+'" name="btndelete" class="btn-md btn-danger" ><span class="glyphicon glyphicon-trash"></span>Del  </button></td>';
                     rowtag+= '</tr>';
 
