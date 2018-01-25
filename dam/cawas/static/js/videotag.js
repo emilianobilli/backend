@@ -47,8 +47,7 @@
             if ( val > 60 ) {
                 min = Math.floor(val / 60);
                 seg = Math.floor(val % 60);
-                console.log(min);
-                console.log(seg);
+
             }else{
                 min = 0;
                 seg = val;
@@ -215,7 +214,7 @@
                         $(timeout).focus();
                         return false;
                     }
-                    if (timeout <= timein){
+                    if (parseInt(timeout) <= parseInt(timein)){
                         alert("Time In no puede ser mayor a Time Out.");
                         return false;
                     }
