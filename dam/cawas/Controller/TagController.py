@@ -165,8 +165,18 @@ class TagController(object):
 
 
     def delete(self, request):
-        data = {'code': 200, 'message': 'Eliminado Correctamente'}
-        return HttpResponse(json.dumps(data), None, 200)
+        if request.is_ajax():
+            if request.method == 'POST':
+                try:
+                    json_data = json.loads(request.body)
+                    id = json_data['id']
+                    Tag.objects.filter(id=id).delete()
+                    data = {'code': 200, 'message': 'Eliminado Correctamente'}
+                    return JsonResponse({'code': 200, 'message': 'Eliminado Correctamente'})
+                except Exception as e:
+                    return JsonResponse({'code': 500, 'message': e.message})
+
+        return JsonResponse({'code': 500, 'message': ''})
 
 
 
