@@ -73,10 +73,11 @@
                     <tbody>
 
                      {% for item in registros %}
-                        <tr>
+                        <tr data-id="{{item.id}}">
                             <td class="tb-cell">{{ item.tag_id}}</td>
                             <td class="tb-cell">{{ item.name}}</td>
-                            <td ><a href="/tags/edit/{{ item.tag_id}}" class="btn-info btn tb-btn" >Editar</a></td>
+                            <td ><a href="/tags/edit/{{ item.tag_id}}" class="btn-info btn tb-btn" ><span class="glyphicon glyphicon-pencil" ></span>Editar</a></td>
+                            <td ><div name="eliminar" data-id = "{{item.id}}" class="btn-danger btn tb-btn" ><span class="glyphicon glyphicon-trash" ></span>Eliminar</div></td>
                         </tr>
                     {% endfor %}
                     </tbody>
