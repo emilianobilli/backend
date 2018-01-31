@@ -25,6 +25,36 @@ $( document ).ready(function() {
     });
 
 
+        //CLICK BOTON ELIMINAR
+    $("div[name='eliminar']").click(function(){
+        var button = $(this);
+        var id = button.attr("data-id");
+         eliminar(id);
+    });
+
+    function eliminar(id){
+        url = "/tags/delete";
+        json_data = { 'id':id }
+
+        $.ajax({
+                url: url,
+                dataType: 'json',
+                type: 'POST',
+                contentType: "application/json; charset=utf-8",
+                data: JSON.stringify( json_data ),
+                success: function(response){
+                        //alert("Eliminado Correctamente");
+                        $("tr[data-id='"+id+"']").fadeOut(1000);
+
+                    },
+                error:function(request, status, error){
+                    alert(request.responseText);
+
+                }
+            });
+    }
+
+
 
     function guardar(){
         tag_id = $("#tag_id").val();
