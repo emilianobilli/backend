@@ -273,12 +273,13 @@ def add_tag_view(request):
     c = TagController()
     return c.add(request)
 
-
-
 def edit_tag_view(request, tag_id):
     c = TagController()
     return c.edit(request, tag_id)
 
+def delete_tag_view(request):
+    c = TagController()
+    return c.delete(request)
 
 
 #ABM TAGS - Fin

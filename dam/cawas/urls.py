@@ -75,7 +75,7 @@ urlpatterns = [
     url(r'^tags/$', views.list_tags_view, name='list_tags'),
     url(r'^tags/add/$', views.add_tag_view, name='edit_tag'),
     url(r'^tags/edit/(?P<tag_id>\w*)/$', views.edit_tag_view, name='edit_tag'),
-
+    url(r'^tags/delete$', views.delete_tag_view, name='delete_tag'),
     #<#POST Json CAWAS>
 
     url(r'^api/add_asset/$', views.add_asset_view, name='api_add_asset')
