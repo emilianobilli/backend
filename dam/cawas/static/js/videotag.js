@@ -19,6 +19,8 @@
             var timeinteger_out;
             var videolog_id;
             var p;
+            var agregando = false;;
+            var index_anterior = '';
 
         $(".form-control.select2").select2({placeholder: "Despliega la lista"});
 
@@ -27,6 +29,10 @@
                     file: "http://cdnlevel3.zolechamedia.net/" + src + "/hls/" + src +".m3u8",
                     aspectratio: "16:9",
                     width: '100%',
+                     tracks: [{
+                        file: "https://cdnlevel3.zolechamedia.net/"+src+"/thumbs/"+src+".vtt ",
+                        kind: "thumbnails"
+                    }]
                 });
         }
         p = changeVideo($("#asset_id").val(),"pepito");
@@ -109,6 +115,8 @@
 
             //AGREGAR TAG
             $("#agregartag").click(function(){
+
+
                 indexrow = indexrow +1;
                     //Cargar con ajax el contenido de tags y generar el row
                     var tags =listaTags;
@@ -138,6 +146,8 @@
 
 
 
+
+
                     //CLICK IN
                     $("button[name='btnin']").click(function(){
                             var buttonin = $(this);
@@ -153,29 +163,35 @@
                             tdin.attr("data", timeinteger_in.toString());
                             tdin.html(toSecString(timeinteger_in));
 
-                    });
+                    }); // fin click in
 
                     //CLICK OUT
                     $("button[name='btnout']").click(function(){
+
                         var button = $(this);
                         var index = button.attr("data-id");
+                        if (index_anterior != index){
                         //Enviar Json por ajax para guardar el videotag
 
-                        var timeinteger_out = Math.round(p.getPosition());
-                        if (timeinteger_out ==0){
-                                alert("El Video no se esta reproduciendo!");
-                                return false;
-                            }
-                        var tdout = $("td[name='inputout'][data-id='"+index+"']");
-                        tdout.attr("data",timeinteger_out.toString());
+                            var timeinteger_out = Math.round(p.getPosition());
+                            if (timeinteger_out ==0){
+                                    alert("El Video no se esta reproduciendo!");
+                                    return false;
+                                }
+                            var tdout = $("td[name='inputout'][data-id='"+index+"']");
+                            tdout.attr("data",timeinteger_out.toString());
+
+                            if(validar(index)){
+                                tdout.html(toSecString(timeinteger_out));
+                                guardar(index);
+                                index_anterior = index;
+
+                            };
+                        }
 
 
-                        if(validar(index)){
-                            tdout.html(toSecString(timeinteger_out));
-                            guardar(index);
 
-                        };
-                    });
+                    }); //fin click out
 
 
 
@@ -185,7 +201,7 @@
                     $("button[name='btndelete']").click(function(){
                         var data = $(this).attr("data");
                         deleteVideoLog(data);
-                    });
+                    }); // fin click delete
 
 
                 function validar(index){
@@ -222,7 +238,7 @@
 
                     return true;
 
-                }
+                }// fin validar
 
 
 
@@ -280,6 +296,7 @@
                             addButtonDelete(index, videolog_id)
                             removeClassSelect2(index, videolog_id);
                             applyFunctionsList();
+
                         },
                     error:function(request, status, error){
                         alert(request.responseText);
