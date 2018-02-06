@@ -64,13 +64,11 @@ urlpatterns = [
     url(r'^cableoperators/publish/(?P<id>\w*)$', views.publish_cableoperators_view, name='publish_cableoperators'),
 
 
-
     url(r'^videologs/$', views.list_videolog_view, name='list_videologs'),
     url(r'^videologs/edit/(?P<asset_id>\w*)/$', views.edit_videolog_view, name='edit_videolog'),
     url(r'^videologs/add/(?P<asset_id>\w*)/$', views.add_videolog_view, name='add_videolog'),
     url(r'^videologs/findbyassetid/$', views.findbyassetid_videolog_view, name='add_videolog'),
     url(r'^videologs/delete/$', views.delete_videolog_view, name='delete_videolog'),
-
 
     url(r'^tags/$', views.list_tags_view, name='list_tags'),
     url(r'^tags/add/$', views.add_tag_view, name='edit_tag'),
