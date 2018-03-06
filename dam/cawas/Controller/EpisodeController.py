@@ -283,6 +283,7 @@ class EpisodeController(object):
         vepisode = Episode()
         imgport = ''
         imgland = ''
+        publicar = 0
         try:
             vasset = Asset.objects.get(asset_id=episode_id)
             vepisode = Episode.objects.get(asset=vasset)
@@ -324,6 +325,8 @@ class EpisodeController(object):
                 vepisode.serie = Serie.objects.get(asset=vasset_serie)
                 vepisode.chapter = decjson['Episode']['chapter']
                 vepisode.season = decjson['Episode']['season']
+                publicar = decjson['Episode']['publicar']
+
 
                 # Datos OPCIONALES
                 if (decjson['Episode']['year'] is not None):
@@ -434,22 +437,24 @@ class EpisodeController(object):
 
                     # convertDateYMDnowIsNull
                     if (item['Episodemetadata']['schedule_date'] != ''):
-                        vschedule_date = datetime.datetime.strptime(item['Episodemetadata']['schedule_date'],
-                                                                    '%d-%m-%Y').strftime('%Y-%m-%d')
+                        vschedule_date = datetime.datetime.strptime(item['Episodemetadata']['schedule_date'],'%d-%m-%Y').strftime('%Y-%m-%d')
                     else:
                         vschedule_date = datetime.datetime.now().strftime('%Y-%m-%d')
-                    emd.language = vlang
-                    emd.title = item['Episodemetadata']['title']
+
+                    emd.language      = vlang
+                    emd.title         = item['Episodemetadata']['title']
                     emd.summary_short = item['Episodemetadata']['summary_short']
-                    emd.summary_long = item['Episodemetadata']['summary_long']
-                    emd.publish_date = vschedule_date
-                    emd.episode = vepisode
-                    emd.queue_status = 'Q'
+                    emd.summary_long  = item['Episodemetadata']['summary_long']
+                    emd.publish_date  = vschedule_date
+                    emd.episode       = vepisode
+                    emd.queue_status  = 'Q'
                     emd.save()
                     #
                     #Publicar el Episodio
                     ph = PublishHelper()
-                    ph.func_publish_queue(request, vepisode.asset.asset_id, vlang, 'AS', 'Q', vschedule_date)
+                    if publicar > 0:
+                        ph.func_publish_queue(request, vepisode.asset.asset_id, vlang, 'AS', 'Q', vschedule_date)
+
                     ph.func_publish_image(request, vimg)
 
                     #Consultar si serie metadata esta del lenguaje esta activada, de ser asi, se publica la serie nuevamente
@@ -458,7 +463,8 @@ class EpisodeController(object):
                         if i.activated == True:
                             if (PublishQueue.objects.filter(item_id=vepisode.serie.asset.asset_id,status__in=['Q']).count() < 1):
                                 ph = PublishHelper()
-                                ph.func_publish_queue(request, vepisode.serie.asset.asset_id, vlang, 'AS', 'Q', vschedule_date)
+                                if publicar > 0:
+                                    ph.func_publish_queue(request, vepisode.serie.asset.asset_id, vlang, 'AS', 'Q', vschedule_date)
                                 ph.func_publish_image(request, vepisode.serie.image)
 
                     request.session['list_episode_message'] = 'Guardado Correctamente '
