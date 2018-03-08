@@ -15,7 +15,7 @@ from Controller.CategoryController import CategoryController
 from Controller.SliderController import SliderController
 from Controller.CableOperatorController import CableOperatorController
 from Controller.TagController import TagController
-
+from Controller.ContractController import ContractController
 
 from Controller.LogController import LogController
 from models import Channel, Device, Slider,  Episode, EpisodeMetadata, ImageQueue, PublishQueue, \
@@ -315,6 +315,31 @@ def api_edit_movies_view(request):
     resp = mc.api_edit(request)
     return HttpResponse(resp)
 
+
+
+#<CONTRACTS>
+def add_contracts_view(request):
+    mc = ContractController()
+    resp = mc.add(request)
+    return HttpResponse(resp)
+
+
+def edit_contracts_view(request):
+    mc = ContractController()
+    resp = mc.edit(request)
+    return HttpResponse(resp)
+
+def delete_contracts_view(request):
+    mc = ContractController()
+    resp = mc.delete(request)
+    return HttpResponse(resp)
+
+def list_contracts_view(request):
+    mc = ContractController()
+    resp = mc.list(request)
+    return HttpResponse(resp)
+
+#</CONTRACTS>
 
 
 #<GIRL>
