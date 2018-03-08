@@ -269,12 +269,13 @@
                 <div class="row form-row">
                     <div class="col-xs-12 col-md-4 col-lg-4 form-group">
                         <div class="form-group has-feedback" id="channelSelect">
-                            <label class="label-left" for="canal">Canal: *</label>
+                            <label class="label-left" for="canal">Canal: </label>
                             <div class="helpright"><span class="glyphicon glyphicon-question-sign" data-toggle="tooltip" title="Selecciona el canal al que pertenece esta movie (ej: Venus)"></span></div>
 
                             <!-- ------------------Reemplazar por listado de canales ----------------- -->
 
                             <select type="text" class="form-control" name="canal" id="canalSelect">
+                                <option value=""></option>
                                 {% for item in vchannels %}
                                      <option value="{{item.id}}">{{item.name}}</option>
                                 {% endfor %}

@@ -356,12 +356,13 @@ $('#runtime').mask('00:00:00',{placeholder: "HH:mm:ss"});
         }
 
         // chequea canal
-
+        //NO OBLIGATORIO
         if ( $('#canalSelect').val()=="0" || $('#canalSelect').val()==0)
         {
-            errorMe("#canalSelect");
-            $(".select2-selection--single").css("border","1px #a94442 solid");
-            checkVal++;
+            okMe("#canalSelect");
+            $(".select2-selection--single").css("border","1px #3c763d solid");
+            canal_selected = null;
+
         }else{
             okMe("#canalSelect");
              $(".select2-selection--single").css("border","1px #3c763d solid");

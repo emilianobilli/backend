@@ -63,6 +63,7 @@
                     <thead>
                         <th class="tb-cell">ID</th>
                         <th class="tb-cell">Nombre</th>
+                        <th class="tb-cell">Dispositivo</th>
                         <th class="tb-cell">Idioma</th>
                         <th class="tb-cell">Estado</th>
                         <th class="tb-cell">Activado</th>
@@ -83,6 +84,7 @@
                                 {{ item.block_id }}
                             </td>
                             <td class="tb-cell">{{ item.name }}</td>
+                            <td class="tb-cell">{{ item.target_device.name }}</td>
                             <td class="tb-cell">{{ item.language.name }}</td>
                             {% if item.publish_status == 0  %}
                                 <td class="tb-cell">Sin Publicar</td>
