@@ -24,6 +24,24 @@ class Device(models.Model):
     def __unicode__(self):
         return self.name
 
+class Contract(models.Model):
+    name              = models.CharField(max_length=128, unique=True, help_text="Nombre del contrato")
+    start_date        = models.DateTimeField()
+    end_date          = models.DateTimeField()
+    description       = models.CharField(max_length=1024)
+
+    def __unicode__(self):
+        return self.name
+
+class FatherAsset(models.Model):
+    contract          = models.ForeignKey(Contract)
+    asset_id          = models.CharField(max_length=8)
+    arrival_date      = models.DateTimeField()
+    duration          = models.IntegerField()
+
+    def __unicode__(self):
+        return self.asset_id
+
 
 class PublishZone(models.Model):
     name              = models.CharField(max_length=128, help_text="Nombre de la zona")
@@ -512,6 +530,7 @@ class SerieMetadata(models.Model):
 
 class Episode(models.Model):
     asset           = models.ForeignKey(Asset)
+    father_asset    = models.ForeignKey(FatherAsset, default=6)
     original_title  = models.CharField(max_length=128, help_text="Titulo original")
     channel         = models.ForeignKey(Channel)
     year            = models.IntegerField(default=2000, help_text="Fecha de produccion")
@@ -631,6 +650,7 @@ class EpisodeMetadata(models.Model):
 
 class Movie(models.Model):
     asset           = models.ForeignKey(Asset)
+    father_asset    = models.ForeignKey(FatherAsset,default=6)
     original_title  = models.CharField(max_length=128, help_text="Titulo original")
     channel         = models.ForeignKey(Channel)
     year            = models.IntegerField(default=2000, help_text="Fecha de produccion",blank=True, null=True)
@@ -764,6 +784,7 @@ class CableOperator(models.Model):
             dict["co_site"] = self.site
             dict["co_country"] = self.country.code
         return dict
+
 
 
 class Block(models.Model):

@@ -146,3 +146,12 @@ class DeviceAdmin(admin.ModelAdmin):
 @admin.register(models.VideoLog)
 class VideoLogAdmin(admin.ModelAdmin):
     list_display = ['asset', 'tag', 'tc_in', 'tc_out']
+
+@admin.register(models.Contract)
+class ContractAdmin(admin.ModelAdmin):
+    list_display = ['name']
+
+@admin.register(models.FatherAsset)
+class FatherAssetAdmin(admin.ModelAdmin):
+    list_display = ['id','asset_id']
+
