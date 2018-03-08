@@ -76,9 +76,14 @@ urlpatterns = [
     url(r'^tags/delete$', views.delete_tag_view, name='delete_tag'),
     #<#POST Json CAWAS>
 
-    url(r'^api/add_asset/$', views.add_asset_view, name='api_add_asset')
+    url(r'^api/add_asset/$', views.add_asset_view, name='api_add_asset'),
     #</ POST Json CAWAS>
 
 
+
+    url(r'^contracts/$', views.list_contracts_view, name='list_contracts'),
+    url(r'^contracts/add/$', views.add_contracts_view, name='add_contracts'),
+    url(r'^contracts/edit/$', views.edit_contracts_view, name='edit_contracts'),
+    url(r'^contracts/delete/$', views.delete_contracts_view, name='edit_contracts')
 
 ]
