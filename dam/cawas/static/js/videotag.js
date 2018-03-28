@@ -140,7 +140,7 @@
                     rowtag+='<td class="tb-cell"><button style="display:none" data="" data-id="'+indexrow+'" name="btndelete" class="btn-md btn-danger" ><span class="glyphicon glyphicon-trash"></span>Del  </button></td>';
                     rowtag+= '</tr>';
 
-                    $("#tabletags tr:last").after(rowtag);
+                    $("#tabletags tr:first").after(rowtag);
                     $(".form-control.select2").select2({placeholder: "Despliega la lista"});
 
 

@@ -78,6 +78,13 @@ $( document ).ready(function() {
         clickedToSubmit=1;
         checkAll();
     });
+
+    $("#btn_grabar").click(function(){
+        $("#publicar").val("0");
+        publicar = 0;
+        clickedToSubmit=1;
+        checkAll();
+    });
     
     var checkedOnce = 0; //chequea si el formulario se ha intentado enviar alguna vez
     var checkVal=0; //chequea la cantidad de errores en el formulario

@@ -67,6 +67,13 @@ $('#search_category').multiselect({
         checkAll();
     });
 
+    $("#btn_grabar").click(function(){
+        $("#publicar").val("0");
+        publicar = 0;
+        clickedToSubmit=1;
+        checkAll();
+    });
+
     var asset_id = $("#asset_id").val();
     if(asset_id != null){
         changeVideo(asset_id, "#repro1");// Cambia el video de acuerdo al ID. la función está en la línea 135. Construye la url relativa del video con la variable path+ID+'.mp4'
