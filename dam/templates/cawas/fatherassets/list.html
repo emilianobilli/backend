@@ -1,0 +1,159 @@
+{% extends "cawas/base.html" %}
+
+{% block extra_head %}
+    <script src="/static/js/contracts.js"></script>
+{% endblock %}
+
+{% block subheader %}
+<div class="col-xs-12 col-md-12 col-lg-12 unpad">
+    <div class="subHeader">
+        <div class="notifications">
+            {% if user.is_authenticated %}
+                  <a href="{% url 'menu_view' %}"><span class="glyphicon glyphicon-home GLY-med">
+                               </span> &nbsp;Inicio</a>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock subheader %}
+
+{% block content %}
+<!-- CONTENT -->
+        <div class="container">
+            <!-- First Row -->
+              <div class="row">
+                  <div class="col-lg-12 col-md-12 col-sm-12">
+
+
+                  </div>
+              </div>
+
+
+            <div class="row">
+
+                <br>
+                 <div class="col-lg-2 col-md-2 col-sm-2" >
+                     <a href="/fatherassets/add" class="btn btn-lg btn-primary btn-block logOFF" >Nuevo</a>
+                 </div>
+
+                 <div class="col-lg-8 col-md-8 col-sm-8" >
+
+                  </div>
+
+            </div>
+
+            <!-- Fin de Filtros -->
+
+
+
+
+            <br>
+            <div class="row">
+                <div class="col-xs-12 col-md-12 col-lg-12 ">
+                <!-- formulario de busqueda
+                <form action="/episodes/list" method="get" id="searchForID" name="searchForId">
+                    <div class="col-xs-2 col-md-2 col-lg-2 ">
+                         <span class="boldIt">Busqueda</span>
+                    </div>
+                    <div class="col-xs-7 col-md-7 col-lg-7 ">
+                        <div>
+                            <input type="text" class="form-control fLEFT top6" id="search"
+                                   name="search" placeholder="Ingresar Texto de Busqueda" >
+                        </div>
+                    </div>
+                    <div class="col-xs-2 col-md-2 col-lg-2 unpad">
+                        <button type="submit" class=""><span class="glyphicon glyphicon-filter inverse"></span></button>
+                    </div>
+                </form>
+                -->
+                </div>
+
+            </div>
+            <!-- formulario de busqueda -->
+
+            <!-- GRID row -->
+            {% if search %}
+            {% if search != '' %}
+            <div class="row">
+                <div class="col-xs-12 col-md-12 col-lg-12 ">
+                     <h3>
+                        Filtrado por: "{{search}}"
+                    </h3>
+                    <form action="/episodes/list" method="get" id="searchForID2" name="searchForId">
+                     <input type="hidden" class="form-control fLEFT top6" id="search"
+                                   name="search" placeholder="Ingresar Texto de Busqueda" >
+
+
+                        <button type="submit" class="btn btn-flat btn-xs btn-success">Quitar Filtro</button>
+
+                    </form>
+                </div>
+            </div>
+            {% endif %}
+            {% endif %}
+            <div class="row">
+                <div class="col-xs-12 col-md-12 col-lg-12 ">
+
+
+                <h2>Listado de Contratos </h2>
+
+                <table class="tb-row tb-header">
+                      <thead>
+                            <th class="tb-cell">ID</th>
+                            <th class="tb-cell">AssetId</th>
+                            <th class="tb-cell">Contract</th>
+                            <th class="tb-cell">Arrival Date</th>
+                            <th class="tb-cell">Duration</th>
+
+                            <th class="tb-cell">Acciones</th>
+                        </thead>
+
+                     {% for item in registros %}
+                        <tr data-id="{{item.id}}">
+                        <td class="tb-cell">{{ item.id }}</td>
+                        <td class="tb-cell">{{ item.asset_id }}</td>
+                        <td class="tb-cell">{{ item.contract.name }}</td>
+                        <td class="tb-cell">{{ item.arrival_date|date:'d-m-Y' }}</td>
+                        <td class="tb-cell">{{ item.duration }}</td>
+                        <td class="tb-cell">
+
+                        <a href="/contracts/edit/{{ item.id}}" class="btn btn-flat btn-default"
+                            data-toggle="tooltip" title="Editar">
+                            <span class="glyphicon glyphicon-pencil"></span>
+                        </a>
+
+                        <a href="#" name="eliminar" data-id="{{item.id}}"
+                           class="btn btn-flat btn-danger"
+                           data-toggle="tooltip" title="Eliminar">
+                            <span class="glyphicon glyphicon-trash" ></span>
+                        </a></td>
+
+
+                            </td>
+                        </tr>
+                    {% endfor %}
+                 </table>
+
+                 <div class="pagination">
+                    <span class="step-links">
+                        {% if registros.has_previous %}
+                            <a href="?page={{ registros.previous_page_number }}">Anterior</a>
+                        {% endif %}
+
+                        <span class="current">
+                            Pag. Actual {{ registros.number }} of {{ registros.paginator.num_pages }}.
+                        </span>
+
+                        {% if registros.has_next %}
+                            <a href="?page={{ registros.next_page_number }}">Siguiente</a>
+                        {% endif %}
+                    </span>
+                </div>
+            </div>
+            </div>
+
+            <!-- end of GRID row -->
+
+            <div class="fNONE"></div>
+        </div>
+{% endblock content %}

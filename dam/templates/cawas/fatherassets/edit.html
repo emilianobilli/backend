@@ -1,0 +1,96 @@
+{% extends "cawas/base.html" %}
+{% block extra_head %}
+    <script src="/static/js/fatherasset.js"></script>
+{% endblock %}
+
+{% block subheader %}
+<div class="col-xs-12 col-md-12 col-lg-12 unpad">
+    <div class="subHeader">
+        <div class="notifications">
+            {% if user.is_authenticated %}
+                   <a href="{% url 'menu_view' %}"><span class="glyphicon glyphicon-home GLY-med">
+                               </span> &nbsp;Inicio / </a>
+                  <a href="{% url 'list_contracts' %}">Contratos</a>
+                  <button class="btn btn-lg btn-primary btn-block logOFF" type="button" id="exitBtn" data-toggle="modal" data-target="#myModal">LOG-OUT</button>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock subheader %}
+
+{% block content %}
+
+
+ <!-- hidden form -->
+<div class="container" >
+        
+     <div class="row">
+               <!-- left col -->
+               <div class="col-xs-12 col-md-6 col-lg-6 sepTOP-big">
+                   <div class="col-xs-12 col-md-12 col-lg-12">
+                    <h2>Editar Contrato </h2>
+                   </div>
+               </div>
+      </div>
+              
+
+        <!-- Form manda imagenes y vars en un JSON hecho string -->
+        <form method="post" action="" name="contrato-completeForm"  class="content-picker movieChoose" id="contratoForm">
+            <input type="hidden" class="form-control" name="codigo" id="codigo" value="{{item.id}}"/>
+            <div class="col-xs-12 col-md-8 col-lg-8 form-group">
+                    <div class="form-group has-feedback">
+                        <label class="label-left" for="nombre">Nombre: *</label>
+                        <input type="text" class="form-control" name="nombre" id="nombre" value="{{item.name}}"/>
+                            <span class="glyphicon form-control-feedback"></span>
+                    </div>
+            </div>
+
+            <div class="col-xs-12 col-md-12 col-lg-12 form-group">
+                    <div class="form-group has-feedback">
+                        <label class="label-left" for="descripcion">Descripcion: *</label>
+                        <textarea  class="form-control" name="descripcion" id="descripcion" value="{{item.description}}" >{{item.description}}</textarea>
+                        <span class="glyphicon form-control-feedback"></span>
+                    </div>
+            </div>
+
+              <div class="col-xs-12 col-md-3 col-lg-3 form-group inlang">
+                   <div class="form-group has-feedback">
+                        <div class="helpright">
+                        <span class="glyphicon glyphicon-question-sign"
+                                 data-toggle="tooltip" title=""></span></div>
+                        <label class="label-left" for="fecha_inicio">Fecha de Inicio:</label>
+                        <input type="text" class="form-control datePick" name="fecha_inicio"
+                               id="fecha_inicio" value="{{ item.start_date|date:'d-m-Y' }}"/>
+                        <span class="glyphicon form-control-feedback"></span>
+                   </div>
+               </div>
+
+              <div class="col-xs-12 col-md-3 col-lg-3 form-group inlang">
+                   <div class="form-group has-feedback">
+                        <div class="helpright"><span class="glyphicon glyphicon-question-sign" data-toggle="tooltip" title="Al ingresar una fecha, el sistema publicará la movie en español en esa fecha."></span></div>
+                        <label class="label-left" for="fecha_fin">Fecha de Finalización:</label>
+                        <input type="text" class="form-control datePick" name="fecha_fin" id="fecha_fin"
+                        value="{{ item.end_date|date:'d-m-Y' }}"/>
+                        <span class="glyphicon form-control-feedback"></span>
+                   </div>
+              </div>
+
+
+        </form>
+            
+
+
+
+        
+</div>
+
+<div class="row">
+    <div class="col-xs-offset-4 col-xs-12 col-md-4 col-lg-4 ">
+        <button class="btn btn-primary btn-block form-control" type="submit" id="btn_actualizar">Grabar</button>
+    </div>
+
+
+
+</div>
+
+{% endblock content %}

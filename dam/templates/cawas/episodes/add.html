@@ -72,13 +72,13 @@
            </div>
            <div class="fRIGHT-lg">
 
-                       <!-- ------------------Reemplazar por listado de capítulos ----------------- -->
-                        <select id="episode-edit" class="form-control movie-edit fRIGHT-lg" size="6">
-                            {% for item in vcapitulos %}
-                              <option value="{{ item.asset.asset_id }}"> ID: {{ item.asset.asset_id }} - {{ item.original_title }} - Temp.: {{ item.season }} - Cap.: {{ item.chapter }}</option>
-                            {% endfor %}
-                        </select>
-                      <!-- ---------------------- Fin de  listado de capítulos ------------------- -->
+               <!-- ------------------Reemplazar por listado de capítulos ----------------- -->
+                <select id="episode-edit" class="form-control movie-edit fRIGHT-lg" size="6">
+                    {% for item in vcapitulos %}
+                      <option value="{{ item.asset.asset_id }}"> ID: {{ item.asset.asset_id }} - {{ item.original_title }} - Temp.: {{ item.season }} - Cap.: {{ item.chapter }}</option>
+                    {% endfor %}
+                </select>
+              <!-- ---------------------- Fin de  listado de capítulos ------------------- -->
            </div>
 
            <div class="col-xs-12 col-md-4 col-lg-4 fRIGHT-lg unpad">
