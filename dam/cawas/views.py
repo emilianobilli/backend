@@ -16,6 +16,7 @@ from Controller.SliderController import SliderController
 from Controller.CableOperatorController import CableOperatorController
 from Controller.TagController import TagController
 from Controller.ContractController import ContractController
+from Controller.FatherAssetController import FatherAssetController
 
 from Controller.LogController import LogController
 from models import Channel, Device, Slider,  Episode, EpisodeMetadata, ImageQueue, PublishQueue, \
@@ -318,15 +319,31 @@ def api_edit_movies_view(request):
 
 
 #<CONTRACTS>
+def api_add_contracts_view(request):
+    mc = ContractController()
+    resp = mc.api_add(request)
+    return HttpResponse(resp)
+
+def api_edit_contracts_view(request):
+    mc = ContractController()
+    resp = mc.api_edit(request)
+    return HttpResponse(resp)
+
+def api_delete_contracts_view(request):
+    mc = ContractController()
+    resp = mc.api_delete(request)
+    return HttpResponse(resp)
+
+
+
 def add_contracts_view(request):
     mc = ContractController()
     resp = mc.add(request)
     return HttpResponse(resp)
 
-
-def edit_contracts_view(request):
+def edit_contracts_view(request, id):
     mc = ContractController()
-    resp = mc.edit(request)
+    resp = mc.edit(request, id)
     return HttpResponse(resp)
 
 def delete_contracts_view(request):
@@ -338,8 +355,51 @@ def list_contracts_view(request):
     mc = ContractController()
     resp = mc.list(request)
     return HttpResponse(resp)
-
 #</CONTRACTS>
+
+
+
+
+#<FATHERASSET>
+def api_add_fatherassets_view(request):
+    mc = FatherAssetController()
+    resp = mc.api_add(request)
+    return HttpResponse(resp)
+
+def api_edit_fatherassets_view(request):
+    mc = FatherAssetController()
+    resp = mc.api_edit(request)
+    return HttpResponse(resp)
+
+def api_delete_fatherassets_view(request):
+    mc = FatherAssetController()
+    resp = mc.api_delete(request)
+    return HttpResponse(resp)
+
+
+
+def add_fatherassets_view(request):
+    mc = FatherAssetController()
+    resp = mc.add(request)
+    return HttpResponse(resp)
+
+def edit_fatherassets_view(request, id):
+    mc = FatherAssetController()
+    resp = mc.edit(request, id)
+    return HttpResponse(resp)
+
+def delete_fatherassets_view(request):
+    mc = FatherAssetController()
+    resp = mc.delete(request)
+    return HttpResponse(resp)
+
+def list_fatherassets_view(request):
+    mc = FatherAssetController()
+    resp = mc.list(request)
+    return HttpResponse(resp)
+#</FATHERASSET>
+
+
 
 
 #<GIRL>
