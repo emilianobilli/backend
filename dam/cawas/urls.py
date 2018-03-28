@@ -80,10 +80,25 @@ urlpatterns = [
     #</ POST Json CAWAS>
 
 
-
+    #<Contracts>
     url(r'^contracts/$', views.list_contracts_view, name='list_contracts'),
     url(r'^contracts/add/$', views.add_contracts_view, name='add_contracts'),
-    url(r'^contracts/edit/$', views.edit_contracts_view, name='edit_contracts'),
-    url(r'^contracts/delete/$', views.delete_contracts_view, name='edit_contracts')
+    url(r'^contracts/edit/(?P<id>\w*)/$', views.edit_contracts_view, name='edit_contracts'),
+    url(r'^contracts/delete/$', views.delete_contracts_view, name='delete_contracts'),
 
+    url(r'^api/contracts/add/$', views.api_add_contracts_view, name='api_add_contracts'),
+    url(r'^api/contracts/edit/$', views.api_edit_contracts_view, name='api_edit_contracts'),
+    url(r'^api/contracts/delete/$', views.api_delete_contracts_view, name='api_delete_contracts'),
+    #</Contracts>
+
+    #<FatherAsset>
+    url(r'^fatherassets/$', views.list_fatherassets_view, name='list_fatherassets'),
+    url(r'^fatherassets/add/$', views.add_fatherassets_view, name='add_fatherassets'),
+    url(r'^fatherassets/edit/(?P<id>\w*)/$', views.edit_fatherassets_view, name='edit_fatherassets'),
+    url(r'^fatherassets/delete/$', views.delete_fatherassets_view, name='delete_fatherassets'),
+
+    url(r'^api/fatherassets/add/$', views.api_add_fatherassets_view, name='api_add_fatherassets'),
+    url(r'^api/fatherassets/edit/$', views.api_edit_fatherassets_view, name='api_edit_fatherassets'),
+    url(r'^api/fatherassets/delete/$', views.api_delete_fatherassets_view, name='api_delete_fatherassets')
+    #</FatherAsset>
 ]
