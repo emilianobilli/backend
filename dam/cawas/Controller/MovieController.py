@@ -105,6 +105,7 @@ class MovieController(object):
             for item in vmoviesmetadata:
                 # CREAR METADATA POR IDIOMA
                 vlanguage = Language.objects.get(code=item['Moviemetadata']['language'])
+                vlanguage = Language.objects.get(code=item['Moviemetadata']['language'])
                 # si no esta cargada la fecha, se guarda con la fecha de hoy
                 if (item['Moviemetadata']['schedule_date'] != ''):
                     vpublishdate = datetime.datetime.strptime(item['Moviemetadata']['schedule_date'],'%d-%m-%Y').strftime('%Y-%m-%d')

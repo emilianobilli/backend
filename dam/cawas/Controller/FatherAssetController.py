@@ -1,32 +1,31 @@
 from django.http import HttpResponse
-from ..models import Asset, Contract
+from ..models import Asset, Contract, FatherAsset
 import os, datetime, json, logging
 from django.shortcuts import render,redirect
 
 
-class ContractController(object):
-
-
-
+class FatherAssetController(object):
 
 
     #Get
     def add(self,request):
-        context = {}
-        return render(request, 'cawas/contracts/add.html', context)
+        contracts = Contract.objects.all()
+        context = {'contracts':contracts}
+        return render(request, 'cawas/fatherassets/add.html', context)
 
     #Get
     def edit(self,request, id):
-        item = Contract.objects.get(id=id)
+        item = FatherAsset.objects.get(id=id)
         context = {'item':item}
-        return render(request, 'cawas/contracts/edit.html', context)
+        return render(request, 'cawas/fatherassets/edit.html', context)
 
 
     def list(self, request):
         try:
-            registros = Contract.objects.all()
-            context = {'registros':registros}
-            return render(request, 'cawas/contracts/list.html', context)
+            contracts = Contract.objects.all()
+            registros = FatherAsset.objects.all()
+            context = {'registros':registros, 'contracts':contracts }
+            return render(request, 'cawas/fatherassets/list.html', context)
         except Asset.DoesNotExist as e:
             return HttpResponse("No existe Asset", None, 500)
         except KeyError:
@@ -80,21 +79,22 @@ class ContractController(object):
     def getDataFormAndSave(self,request):
         try:
             json_data    = json.loads(request.body)
-            contract = Contract()
-            if ('id' in json_data['contract']):
-                id           = json_data['contract']['id']
-                contract = Contract.objects.get(id=id)
+            fatherasset = FatherAsset()
+            if ('id' in json_data['item']):
+                id           = json_data['item']['id']
+                fatherasset = FatherAsset.objects.get(id=id)
 
-            nombre       = json_data['contract']['nombre']
-            descripcion  = json_data['contract']['descripcion']
-            fecha_inicio = datetime.datetime.strptime(json_data['contract']['fecha_inicio'], '%d-%m-%Y').strftime('%Y-%m-%d')
-            fecha_fin    = datetime.datetime.strptime(json_data['contract']['fecha_fin'], '%d-%m-%Y').strftime('%Y-%m-%d')
+            asset_id       = json_data['item']['asset_id']
+            contract       = Contract.objects.get(id=json_data['item']['contract'])
+            duration = int(json_data['item']['duration'])
+            arrival_date   = datetime.datetime.strptime(json_data['item']['arrival_date'], '%d-%m-%Y').strftime('%Y-%m-%d')
 
-            contract.name = nombre
-            contract.description = descripcion
-            contract.start_date = fecha_inicio
-            contract.end_date = fecha_fin
-            contract.save()
+
+            fatherasset.asset_id     = asset_id
+            fatherasset.contract     = contract
+            fatherasset.arrival_date = arrival_date
+            fatherasset.duration     = duration
+            fatherasset.save()
 
         except Exception as e:
             logging.exception("Error: " + e.message)
@@ -103,9 +103,9 @@ class ContractController(object):
     def getDataFormAndDelete(self, request):
         try:
             json_data = json.loads(request.body)
-            id = json_data['contract']['id']
-            contract = Contract()
-            contract = Contract.objects.get(id=id)
-            contract.delete()
+            id = json_data['item']['id']
+            fatherasset = FatherAsset()
+            fatherasset = fatherasset.objects.get(id=id)
+            fatherasset.delete()
         except Exception as e:
             logging.exception("Error: " + e.message)
