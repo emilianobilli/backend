@@ -1,7 +1,7 @@
 {% extends "cawas/base.html" %}
 
 {% block extra_head %}
-    <script src="/static/js/contracts.js"></script>
+    <script src="/static/js/fatherasset.js"></script>
 {% endblock %}
 
 {% block subheader %}
@@ -95,9 +95,9 @@
                 <div class="col-xs-12 col-md-12 col-lg-12 ">
 
 
-                <h2>Listado de Contratos </h2>
+                <h2>Listado de FatherAssets </h2>
 
-                <table class="tb-row tb-header">
+                <table class="tb-row tb-header" id="tablefatherassets">
                       <thead>
                             <th class="tb-cell">ID</th>
                             <th class="tb-cell">AssetId</th>
@@ -114,10 +114,10 @@
                         <td class="tb-cell">{{ item.asset_id }}</td>
                         <td class="tb-cell">{{ item.contract.name }}</td>
                         <td class="tb-cell">{{ item.arrival_date|date:'d-m-Y' }}</td>
-                        <td class="tb-cell">{{ item.duration }}</td>
+                        <td class="tb-cell" name="cellduration" data="{{ item.duration }}">{{ item.duration }}</td>
                         <td class="tb-cell">
 
-                        <a href="/contracts/edit/{{ item.id}}" class="btn btn-flat btn-default"
+                        <a href="/fatherassets/edit/{{ item.id}}" class="btn btn-flat btn-default"
                             data-toggle="tooltip" title="Editar">
                             <span class="glyphicon glyphicon-pencil"></span>
                         </a>
