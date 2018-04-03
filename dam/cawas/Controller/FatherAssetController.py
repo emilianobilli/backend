@@ -16,7 +16,8 @@ class FatherAssetController(object):
     #Get
     def edit(self,request, id):
         item = FatherAsset.objects.get(id=id)
-        context = {'item':item}
+        contracts = Contract.objects.all()
+        context = {'item':item, 'contracts':contracts}
         return render(request, 'cawas/fatherassets/edit.html', context)
 
 
@@ -81,12 +82,13 @@ class FatherAssetController(object):
             json_data    = json.loads(request.body)
             fatherasset = FatherAsset()
             if ('id' in json_data['item']):
-                id           = json_data['item']['id']
-                fatherasset = FatherAsset.objects.get(id=id)
+                if json_data['item']['id'] != '':
+                    id           = int(json_data['item']['id'])
+                    fatherasset = FatherAsset.objects.get(id=id)
 
             asset_id       = json_data['item']['asset_id']
             contract       = Contract.objects.get(id=json_data['item']['contract'])
-            duration = int(json_data['item']['duration'])
+            duration       = int(json_data['item']['duration'])
             arrival_date   = datetime.datetime.strptime(json_data['item']['arrival_date'], '%d-%m-%Y').strftime('%Y-%m-%d')
 
 
@@ -102,10 +104,9 @@ class FatherAssetController(object):
 
     def getDataFormAndDelete(self, request):
         try:
-            json_data = json.loads(request.body)
-            id = json_data['item']['id']
-            fatherasset = FatherAsset()
-            fatherasset = fatherasset.objects.get(id=id)
+            json_data   = json.loads(request.body)
+            id          = int(json_data['item']['id'])
+            fatherasset = FatherAsset.objects.get(id=id)
             fatherasset.delete()
         except Exception as e:
             logging.exception("Error: " + e.message)
