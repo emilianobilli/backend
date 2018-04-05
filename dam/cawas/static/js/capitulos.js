@@ -18,8 +18,6 @@ $( document ).ready(function() {
         }
     });
 
-
-
     $('#search_category').multiselect({
         search: {
             left: '<input type="text" name="q" class="form-control" placeholder="Buscar..." />',
@@ -29,8 +27,6 @@ $( document ).ready(function() {
             return value.length > 3;
         }
     });
-
-
 
     if(resultado=="success"){
         $("#myModal-OK").modal();
@@ -61,7 +57,7 @@ $( document ).ready(function() {
 
     };
 
-  $("#btngrabarypublicar").click(function(){
+    $("#btngrabarypublicar").click(function(){
         $("#publicar").val("1");
         clickedToSubmit=1;
         checkAll();
@@ -95,7 +91,7 @@ $( document ).ready(function() {
     
     $("#serie-edit").select2({placeholder: "Despliega la lista"});
     var $mySerieSelect = $("#serie-id").select2();
-    $('#fatherasset-id').select2();
+
     var $myVerifSelect = $("#canalSelect").select2();
     var $myVerifEpisodeSelect = $("#episode-select").select2();
 
@@ -291,7 +287,7 @@ $( document ).ready(function() {
         var display_runtime = $('#runtime').val();
         var year_selected = $('#releaseYear').val().toString();
         var publicar = $('#publicar').val();
-        var fatherasset_selected = $('#fatherasset').val();
+
 
         countChecked();
         // chequea original Title
@@ -323,14 +319,7 @@ $( document ).ready(function() {
             okMe("#chapter");
         }
 
-        //FatherAsset Obligatorio
-        if(fatherasset_selected=="" || fatherasset_selected==" ")
-        {
-            errorMe("#fatherasset");
-            checkVal++;
-        }else{
-            okMe("#fatherasset");
-        }
+
         
         //chequea temporada
         if(season_selected=="" || season_selected==" ")
@@ -646,7 +635,6 @@ $( document ).ready(function() {
                     myJSON+='"serie_id": "'+serie_selected+'",';   
                     myJSON+='"chapter": "'+chapter_selected+'",';   
                     myJSON+='"season": "'+season_selected+'",';
-                    myJSON+='"fatherasset": "'+fatherasset_selected+'",';
                     myJSON+='"categories":'+myCategories+',';
                     myJSON+='"Episodemetadatas": [';
                     myJSON+= addMetadata(langDesc);
