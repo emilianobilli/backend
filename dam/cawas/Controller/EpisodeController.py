@@ -1,7 +1,7 @@
 import os, datetime, json
 from LogController import LogController
 from django.shortcuts import render,redirect
-from ..models import Asset, Setting, Girl, Country, Block, Category, Language, Image,PublishZone,PublishQueue, Channel, Device, Serie, Movie, Episode, EpisodeMetadata,SerieMetadata
+from ..models import Asset, Setting, Girl, Country, Block,FatherAsset, Category, Language, Image,PublishZone,PublishQueue, Channel, Device, Serie, Movie, Episode, EpisodeMetadata,SerieMetadata
 from ..Helpers.PublishHelper import PublishHelper
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from ..Helpers.GlobalValues import *
@@ -22,9 +22,7 @@ class EpisodeController(object):
 
         # VARIABLES LOCALES
         message = ''
-        vflag = ''
         vschedule_date = ''
-        vgrabarypublicar = ''
         if request.method == 'POST':
             # VARIABLES
             vepisode = Episode()
@@ -41,14 +39,15 @@ class EpisodeController(object):
                 vasset.asset_type = "episode"
                 vasset.save()
                 vepisode.asset = vasset
-                vepisode.original_title = decjson['Episode']['original_title']
-                vepisode.channel = Channel.objects.get(pk=decjson['Episode']['channel_id'])
+                vepisode.original_title  = decjson['Episode']['original_title']
+                vepisode.channel         = Channel.objects.get(pk=decjson['Episode']['channel_id'])
                 vepisode.display_runtime = decjson['Episode']['display_runtime']
-                vasset_serie = Asset.objects.get(asset_id=decjson['Episode']['serie_id'])
-                vepisode.serie = Serie.objects.get(asset=vasset_serie)
-                vepisode.chapter = decjson['Episode']['chapter']
-                vepisode.season = decjson['Episode']['season']
-                vgrabarypublicar = decjson['Episode']['publicar']
+                vasset_serie             = Asset.objects.get(asset_id=decjson['Episode']['serie_id'])
+                vepisode.serie           = Serie.objects.get(asset=vasset_serie)
+                vepisode.chapter         = decjson['Episode']['chapter']
+                vepisode.season          = decjson['Episode']['season']
+                vgrabarypublicar         = decjson['Episode']['publicar']
+                vepisode.fatherasset     = FatherAsset.objects.get(id=decjson['Episode']['fatherasset_id'])
 
                 # Datos OPCIONALES
                 if (decjson['Episode']['year'] is not None):
@@ -170,7 +169,6 @@ class EpisodeController(object):
             #countries = vepisode.serie.asset
             serie = vepisode.serie
             asset = serie.asset
-
             vepisode.save()
 
             vepisode.asset.target_country = []
@@ -259,10 +257,18 @@ class EpisodeController(object):
         vcapitulos = Episode.objects.all()
         vassets = Asset.objects.filter(asset_type="unknown")
         countries = Country.objects.all().order_by('name')
-
-        context = {'message': message, 'vcategories': vcategories, 'vchannels': vchannels, 'vgirls': vgirls,
-                   'vlanguages': vlanguages, 'vseries': vseries, 'vmovies': vmovies, 'vcapitulos': vcapitulos,
-                   'vassets': vassets,'countries':countries}
+        fatherassets = FatherAsset.objects.order_by('contract');
+        context = {'message': message,
+                   'vcategories': vcategories,
+                   'vchannels': vchannels,
+                   'vgirls': vgirls,
+                   'vlanguages': vlanguages,
+                   'vseries': vseries,
+                   'vmovies': vmovies,
+                   'vcapitulos': vcapitulos,
+                   'vassets': vassets,
+                   'countries':countries,
+                   'fatherassets':fatherassets}
 
         return render(request, 'cawas/episodes/add.html', context)
 
@@ -318,14 +324,15 @@ class EpisodeController(object):
                 strjson = request.POST['varsToJSON']
                 decjson = json.loads(strjson.replace('\r','\\r').replace('\n','\\n'))
                 # DATOS OBLIGATORIOS
-                vepisode.original_title = decjson['Episode']['original_title']
-                vepisode.channel = Channel.objects.get(pk=decjson['Episode']['channel_id'])
+                vepisode.original_title  = decjson['Episode']['original_title']
+                vepisode.channel         = Channel.objects.get(pk=decjson['Episode']['channel_id'])
                 vepisode.display_runtime = decjson['Episode']['display_runtime']
-                vasset_serie = Asset.objects.get(asset_id=decjson['Episode']['serie_id'])
-                vepisode.serie = Serie.objects.get(asset=vasset_serie)
-                vepisode.chapter = decjson['Episode']['chapter']
-                vepisode.season = decjson['Episode']['season']
-                publicar = decjson['Episode']['publicar']
+                vasset_serie             = Asset.objects.get(asset_id=decjson['Episode']['serie_id'])
+                vepisode.serie           = Serie.objects.get(asset=vasset_serie)
+                vepisode.chapter         = decjson['Episode']['chapter']
+                vepisode.season          = decjson['Episode']['season']
+                publicar                 = decjson['Episode']['publicar']
+                vepisode.fatherasset     = FatherAsset.objects.get(id=decjson['Episode']['fatherasset_id'])
 
 
                 # Datos OPCIONALES
@@ -495,7 +502,7 @@ class EpisodeController(object):
             vcategoryselected = vepisode.category.all()
             vcategorynotselected = Category.objects.exclude(id__in=vcategoryselected)
             vseries = Serie.objects.all()
-
+            fatherassets = FatherAsset.objects.all()
             countries_selected = vepisode.asset.target_country.all().order_by('name')
             countries_notselected = Country.objects.exclude(id__in=countries_selected).order_by('name')
 
@@ -530,7 +537,8 @@ class EpisodeController(object):
                    'vlangmetadata': vlangmetadata,
                    'vseries': vseries,
                    'countries_selected':countries_selected,
-                   'countries_notselected':countries_notselected
+                   'countries_notselected':countries_notselected,
+                   'fatherassets':fatherassets
                    }
 
         return render(request, 'cawas/episodes/edit.html', context)
