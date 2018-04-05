@@ -1,7 +1,7 @@
 import os, datetime, json
 from LogController import LogController
 from django.shortcuts import render,redirect
-from ..models import Asset, Setting, Country, Movie, MovieMetadata, MovieMetadata, Category, Language, Image, Girl, PublishZone, Channel, PublishQueue, ImageQueue
+from ..models import Asset, Setting, Country, Movie, FatherAsset, MovieMetadata, MovieMetadata, Category, Language, Image, Girl, PublishZone, Channel, PublishQueue, ImageQueue
 from ..Helpers.PublishHelper import PublishHelper
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from ..Helpers.GlobalValues import *
@@ -60,7 +60,7 @@ class MovieController(object):
                 mv.directors = json_data['movie']['directors']
 
             mv.display_runtime = json_data['movie']['display_runtime']
-            #mv.save()
+            mv.father_asset = FatherAsset.objects.get(id=json_data['movie']['fatherasset'])
 
             if (json_data['movie']['publicar'] is not None):
                 print 'debug3' + str(json_data['movie']['publicar'])
@@ -191,28 +191,24 @@ class MovieController(object):
 
         if request.method == 'POST':
             # DECLARACION DE OBJECTOS
-
-            # VALIDAR IMAGEN
             try:
                 mv = Movie()
                 vasset = Asset()
                 img = Image()
                 assetid = request.POST['movieID']
-                print 'debug1' + str(assetid)
-                vasset = Asset.objects.get(asset_id=assetid)
-                mv = Movie.objects.get(asset=vasset)
-                base_dir = Setting.objects.get(code='dam_base_dir')
+                vasset      = Asset.objects.get(asset_id=assetid)
+                mv          = Movie.objects.get(asset=vasset)
+                base_dir    = Setting.objects.get(code='dam_base_dir')
                 pathfilesport = Setting.objects.get(code='image_repository_path_portrait')
                 pathfilesland = Setting.objects.get(code='image_repository_path_landscape')
                 img = Image.objects.get(name=vasset.asset_id)
+
             except Setting.DoesNotExist as e:
                 request.session['list_movie_message'] = "Error: No existe Setting (" + str(e.message) + ")"
                 request.session['list_movie_flag'] = FLAG_ALERT
                 self.code_return = -1
             except Image.DoesNotExist as e:
                 img = Image()
-
-            print 'debug2' + str(vasset.asset_id)
 
             img.name = vasset.asset_id
             # TRATAMIENTO DE IMAGEN Landscape
@@ -241,6 +237,9 @@ class MovieController(object):
                         os.remove(varchivo_server)
             img.save()
             mv.image = img
+
+
+
             mv.save()
             #La Imagen se publica siempre
             ph = PublishHelper()
@@ -260,13 +259,21 @@ class MovieController(object):
         girls = Girl.objects.all().order_by('name')
         categories = Category.objects.all().order_by('original_name')
         countries = Country.objects.all().order_by('name')
-
+        fatherassets = FatherAsset.objects.order_by('contract');
         vlanguages = Language.objects.all()
         title = 'Nueva Movie'
-        context = {'title': title, 'assets': assets, 'channels': channels,
-                   'girls': girls, 'categories': categories, 'movies': vmovies,
-                   'vlanguages': vlanguages, 'flag': vflag, 'message': message,
-                   'countries':countries}
+        context = {'title': title,
+                   'assets': assets,
+                   'channels': channels,
+                   'girls': girls,
+                   'categories': categories,
+                   'movies': vmovies,
+                   'vlanguages': vlanguages,
+                   'flag': vflag,
+                   'message': message,
+                   'countries':countries,
+                   'fatherassets': fatherassets
+                   }
         return render(request, 'cawas/movies/add.html', context)
 
 
@@ -310,7 +317,7 @@ class MovieController(object):
             assets = Asset.objects.filter(asset_type="unknown")
             channels = Channel.objects.all().order_by('name')
             girls = Girl.objects.all().order_by('name')
-
+            fatherassets = FatherAsset.objects.order_by('contract');
             vgirlselected = vmovie.girls.all()
             vgirlnotselected = Girl.objects.exclude(id__in=vgirlselected)
 
@@ -409,7 +416,9 @@ class MovieController(object):
                        'flag': flag,
                        'message': message,
                        'countries_selected': countries_selected,
-                       'countries_notselected': countries_notselected}
+                       'countries_notselected': countries_notselected,
+                       'fatherassets': fatherassets
+                       }
 
             return render(request, 'cawas/movies/edit.html', context)
 
