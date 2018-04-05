@@ -20,7 +20,7 @@ $( document ).ready(function() {
 
 
 
-$('#search_category').multiselect({
+    $('#search_category').multiselect({
         search: {
             left: '<input type="text" name="q" class="form-control" placeholder="Buscar..." />',
             right: '<input type="text" name="q" class="form-control" placeholder="Buscar..." />',
@@ -95,6 +95,7 @@ $('#search_category').multiselect({
     
     $("#serie-edit").select2({placeholder: "Despliega la lista"});
     var $mySerieSelect = $("#serie-id").select2();
+    $('#fatherasset-id').select2();
     var $myVerifSelect = $("#canalSelect").select2();
     var $myVerifEpisodeSelect = $("#episode-select").select2();
 
@@ -275,19 +276,22 @@ $('#search_category').multiselect({
         // this function checks for all form values and makes json string to post or alerts user to complete fields.
         console.log("checking form...");
         checkVal = 0;
-        var asset_Id = $('#episodeID').val();
-        var original_Title = $('#orginalTitle').val();
-        var serie_selected; 
-        var chapter_selected = $('#chapter').val();
-        var season_selected = $('#season').val();
-        var canal_selected; $('#canalSelect option:selected');
+        var serie_selected;
+        var canal_selected;
         var pornstars_selected = [];
         var categories_selected = [];
+
+        var asset_Id            = $('#episodeID').val();
+        var original_Title      = $('#orginalTitle').val();
+        var chapter_selected    = $('#chapter').val();
+        var season_selected     = $('#season').val();
+        $('#canalSelect option:selected');
         var director_selected = $('#director').val();
         var elenco_selected = $('#elenco').val();
         var display_runtime = $('#runtime').val();
         var year_selected = $('#releaseYear').val().toString();
         var publicar = $('#publicar').val();
+        var fatherasset_selected = $('#fatherasset').val();
 
         countChecked();
         // chequea original Title
@@ -304,14 +308,9 @@ $('#search_category').multiselect({
         if ( $('#serie-id').val()=="0" || $('#serie-id').val()==0)
         {
             errorMe("#serie-id");
-            //$(".select2-selection--single").css("border","1px #a94442 solid");
             checkVal++;
         }else{
-            
-           
             okMe("#serie-id");
-            
-            //$(".select2-selection--single").css("border","1px #3c763d solid");
             serie_selected=$('#serie-id').val();
         }
         
@@ -322,6 +321,15 @@ $('#search_category').multiselect({
             checkVal++;
         }else{
             okMe("#chapter");
+        }
+
+        //FatherAsset Obligatorio
+        if(fatherasset_selected=="" || fatherasset_selected==" ")
+        {
+            errorMe("#fatherasset");
+            checkVal++;
+        }else{
+            okMe("#fatherasset");
         }
         
         //chequea temporada
@@ -637,7 +645,8 @@ $('#search_category').multiselect({
                     myJSON+='"display_runtime": "'+display_runtime+'",';
                     myJSON+='"serie_id": "'+serie_selected+'",';   
                     myJSON+='"chapter": "'+chapter_selected+'",';   
-                    myJSON+='"season": "'+season_selected+'",';   
+                    myJSON+='"season": "'+season_selected+'",';
+                    myJSON+='"fatherasset": "'+fatherasset_selected+'",';
                     myJSON+='"categories":'+myCategories+',';
                     myJSON+='"Episodemetadatas": [';
                     myJSON+= addMetadata(langDesc);
