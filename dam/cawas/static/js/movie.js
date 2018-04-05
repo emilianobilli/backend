@@ -103,16 +103,10 @@ $( document ).ready(function() {
     $("#movie-edit").select2({placeholder: "Despliega la lista"});
     var $myVerifSelect = $("#canalSelect").select2();
 
-    // activar timepicker
-    //leerRuntime();
+    $('#fatherasset').select2();
 
+    $('#runtime').mask('00:00:00',{placeholder: "HH:mm:ss"});
 
-
-//$("#runtime").durationPicker();
-
-$('#runtime').mask('00:00:00',{placeholder: "HH:mm:ss"});
-
-   // completarRuntime();
 
     // simular exit con el botón de salir
     $("#getOut").click(function(){
@@ -277,8 +271,9 @@ $('#runtime').mask('00:00:00',{placeholder: "HH:mm:ss"});
         var director_selected = $('#director').val();
         var elenco_selected = $('#elenco').val();
         var display_runtime = $('#runtime').val();
-
         var year_selected = parseInt($('#releaseYear').val());
+
+        var fatherasset_selected = $('#fatherasset').val();
 
         if (year_selected=="" || year_selected==0){
             var d = new Date();
@@ -290,6 +285,7 @@ $('#runtime').mask('00:00:00',{placeholder: "HH:mm:ss"});
         var json_moviemetadatas=[];
 
         countChecked();
+
         // chequea original Title
         if(original_Title=="" || original_Title==" ")
         {
@@ -313,6 +309,16 @@ $('#runtime').mask('00:00:00',{placeholder: "HH:mm:ss"});
             checkVal++;
         }else{
             okMe("#ThumbVer");
+        }
+
+
+        //FatherAsset Obligatorio
+        if(fatherasset_selected=="" || fatherasset_selected==" ")
+        {
+            errorMe("#fatherasset");
+            checkVal++;
+        }else{
+            okMe("#fatherasset");
         }
 
 
@@ -520,9 +526,6 @@ $('#runtime').mask('00:00:00',{placeholder: "HH:mm:ss"});
         
             function submitJson(){
                 if(checkVal==0){
-
-
-
                     var myGirls=explodeArray(pornstars_selected,"girl_id");
                     var myCategories=explodeArray(categories_selected,"category_id");
                     var myCountries=explodeArray(paises_selected,"country_id");
@@ -542,6 +545,7 @@ $('#runtime').mask('00:00:00',{placeholder: "HH:mm:ss"});
                                 "directors": director_selected,
                                 "cast": elenco_selected,
                                 "display_runtime": display_runtime,
+                                "fatherasset":fatherasset_selected,
                                 "year": year_selected,
                                 "publicar":publicar,
                                 "moviemetadatas": []
