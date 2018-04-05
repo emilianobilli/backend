@@ -126,23 +126,7 @@
 
 
 
-                <div class="row form-row">
-                    <div class="col-xs-12 col-md-12 col-lg-12">
-                        <div class="form-group has-feedback">
-                            <label class="label-left" for="fatherasset">FatherAsset: *</label>
 
-                              <!--------------------Reemplazar por listado de series ----------------- -->
-                                <select type="text" id="fatherasset" name="fatherasset" class="form-control movie-edit" size="6">
-                                     {% for item in fatherassets %}
-                                            <option value="{{ item.id }}"> {{item.asset_id}} - {{ item.contract.name }} - {{ item.arrival_date|date:'d/m/Y' }}</option>
-                                     {% endfor %}
-                                </select>
-                              <!------------------------ Fin de  listado de series ------------------- -->
-
-                        </div>
-
-                    </div>
-                </div>
 
 
                 <!-- Row : Serie -->
