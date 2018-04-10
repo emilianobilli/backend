@@ -194,10 +194,11 @@ function submitJson(option){
         contentType: "application/json; charset=utf-8",
         data: JSON.stringify( json ),
         success: function(response){
-                alert(cartel);
+                //alert(cartel);
                 if (option==OPTION_DELETE){
                     $("tr[data-id='"+id+"']").fadeOut(1000);
                 }
+                window.location.href = "/fatherassets/";
             },
         error:function(request, status, error){
             alert(request.responseText);
