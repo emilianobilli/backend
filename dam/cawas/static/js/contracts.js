@@ -102,10 +102,7 @@ function submitJson(option){
         cartel="Actualizado Correctamente";
     }
 
-    if (option == OPTION_DELETE){
-        url="/api/contracts/delete/";
-        cartel="Eliminado Correctamente";
-    }
+
 
     json= {
         "contract":{
