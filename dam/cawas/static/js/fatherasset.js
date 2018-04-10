@@ -172,10 +172,6 @@ function submitJson(option){
         cartel="Actualizado Correctamente";
     }
 
-    if (option == OPTION_DELETE){
-        url="/api/fatherassets/delete/";
-        cartel="Eliminado Correctamente";
-    }
 
     json= {
         "item":{
