@@ -260,7 +260,7 @@ class MovieController(object):
         girls = Girl.objects.all().order_by('name')
         categories = Category.objects.all().order_by('original_name')
         countries = Country.objects.all().order_by('name')
-        fatherassets = FatherAsset.objects.all().exclude(id=6).order_by('contract');
+        fatherassets = FatherAsset.objects.exclude(id=6).order_by('contract');
         vlanguages = Language.objects.all()
         title = 'Nueva Movie'
         context = {'title': title,
@@ -318,7 +318,7 @@ class MovieController(object):
             assets = Asset.objects.filter(asset_type="unknown")
             channels = Channel.objects.all().order_by('name')
             girls = Girl.objects.all().order_by('name')
-            fatherassets = FatherAsset.objects.all().exclude(id=6).order_by('contract');
+            fatherassets = FatherAsset.objects.exclude(id=6).order_by('contract');
             vgirlselected = vmovie.girls.all()
             vgirlnotselected = Girl.objects.exclude(id__in=vgirlselected)
 
