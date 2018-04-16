@@ -6,6 +6,7 @@ $( document ).ready(function() {
     var id            = "";
     var nombre        = "";
     var descripcion   = "";
+    var provider      = "";
     var fecha_inicio  = "";
     var fecha_fin     = "";
     var json = {};
@@ -39,8 +40,6 @@ $( document ).ready(function() {
     });
 
     // activar los selects con filtro
-    $("#movie-select").select2({placeholder: "Despliega la lista"});
-    $("#movie-edit").select2({placeholder: "Despliega la lista"});
     var $myVerifSelect = $("#canalSelect").select2();
 
     //VALIDACION
@@ -48,6 +47,7 @@ $( document ).ready(function() {
         validate = true;
         nombre          = $('#nombre').val();
         descripcion     = $('#descripcion').val();
+        provider        = $('#provider').val();
         fecha_inicio    = $('#fecha_inicio').val();
         fecha_fin       = $('#fecha_fin').val();
         id              = $('#codigo').val();
@@ -68,6 +68,14 @@ $( document ).ready(function() {
             validate = false;
         }else{
             okMe("#descripcion");
+        }
+
+        if(!provider)
+        {
+            errorMe("#provider");
+            validate = false;
+        }else{
+            okMe("#provider");
         }
 
         if(!fecha_inicio)
@@ -109,6 +117,7 @@ function submitJson(option){
                 "id":id,
                 "nombre" : nombre,
                 "descripcion": descripcion,
+                "provider": provider,
                 "fecha_inicio": fecha_inicio,
                 "fecha_fin": fecha_fin
                 }
