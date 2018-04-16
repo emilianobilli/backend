@@ -6,10 +6,6 @@ from django.shortcuts import render,redirect
 
 class ContractController(object):
 
-
-
-
-
     #Get
     def add(self,request):
         context = {}
@@ -87,13 +83,15 @@ class ContractController(object):
 
             nombre       = json_data['contract']['nombre']
             descripcion  = json_data['contract']['descripcion']
+            provider     = json_data['contract']['provider']
             fecha_inicio = datetime.datetime.strptime(json_data['contract']['fecha_inicio'], '%d-%m-%Y').strftime('%Y-%m-%d')
             fecha_fin    = datetime.datetime.strptime(json_data['contract']['fecha_fin'], '%d-%m-%Y').strftime('%Y-%m-%d')
 
-            contract.name = nombre
+            contract.name        = nombre
             contract.description = descripcion
-            contract.start_date = fecha_inicio
-            contract.end_date = fecha_fin
+            contract.start_date  = fecha_inicio
+            contract.end_date    = fecha_fin
+            contract.provider    = provider
             contract.save()
 
         except Exception as e:
