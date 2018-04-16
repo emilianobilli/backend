@@ -36,15 +36,15 @@ $( document ).ready(function() {
     });
 
 
-    $('#duration').mask('00:00:00',{placeholder: "HH:mm:ss"});
+    //$('#duration').mask('00:00:00',{placeholder: "HH:mm:ss"});
 
     $("#contracts").select2({placeholder: "Despliega la lista"});
 
 
     var $myVerifSelect = $("#canalSelect").select2();
 
-    loadForm();
-    listFormatDuration();
+    //loadForm();
+    //listFormatDuration();
 
 
 
@@ -54,8 +54,8 @@ $( document ).ready(function() {
 function loadForm(){
     var dur        = $("#duration");
     var segundos   = dur.attr("data") ;
-    segundosFormat = toSecString(segundos);
-    dur.val(segundosFormat);
+    //segundosFormat = toSecString(segundos);
+    //dur.val(segundosFormat);
 
 
 }
@@ -116,7 +116,7 @@ function toSecString(val)
         asset_id        = $('#asset_id').val();
         contracts       = $('#contracts').val();
         arrival_date    = $('#arrival_date').val();
-        duration        = getSecToString($('#duration').val());
+        duration        = $('#duration').val();
         id              = $('#codigo').val();
 
         // chequea original Title
