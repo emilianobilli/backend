@@ -62,13 +62,7 @@ $( document ).ready(function() {
             okMe("#nombre");
         }
 
-        if(!descripcion)
-        {
-            errorMe("#descripcion");
-            validate = false;
-        }else{
-            okMe("#descripcion");
-        }
+
 
         if(!provider)
         {
