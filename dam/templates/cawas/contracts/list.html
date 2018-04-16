@@ -100,10 +100,10 @@
                 <table class="tb-row tb-header">
                       <thead>
                             <th class="tb-cell">ID</th>
-                            <th class="tb-cell">AssetID</th>
-                            <th class="tb-cell">Contract</th>
-                            <th class="tb-cell">Arrival Date</th>
-                            <th class="tb-cell">Duration</th>
+                            <th class="tb-cell">Nombre</th>
+                            <th class="tb-cell">Provider</th>
+                            <th class="tb-cell">Date Start</th>
+                            <th class="tb-cell">Date End</th>
 
                             <th class="tb-cell">Acciones</th>
                         </thead>
@@ -114,7 +114,7 @@
 
                                 <td class="tb-cell">{{ item.id }}</td>
                                 <td class="tb-cell">{{ item.name }}</td>
-                                <td class="tb-cell">{{ item.description }}</td>
+                                <td class="tb-cell">{{ item.provider }}</td>
                                 <td class="tb-cell"> {{ item.start_date|date:'d-m-Y' }}</td>
                                 <td class="tb-cell"> {{ item.end_date|date:'d-m-Y' }}</td>
                                 <td class="tb-cell">
