@@ -28,7 +28,7 @@ class Contract(models.Model):
     name              = models.CharField(max_length=128, unique=True, help_text="Nombre del contrato")
     start_date        = models.DateTimeField()
     end_date          = models.DateTimeField()
-    provider          = models.CharField(max_length=128)
+    provider          = models.CharField(max_length=128, default='')
     description       = models.CharField(max_length=1024)
 
     def __unicode__(self):
