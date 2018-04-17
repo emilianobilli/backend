@@ -37,7 +37,7 @@ class FatherAsset(models.Model):
     contract          = models.ForeignKey(Contract)
     asset_id          = models.CharField(max_length=8)
     arrival_date      = models.DateTimeField()
-    duration          = models.IntegerField()
+    duration          = models.IntegerField(default=90)
 
     def __unicode__(self):
         return self.asset_id
