@@ -146,14 +146,6 @@ function toSecString(val)
             okMe("#arrival_date");
         }
 
-        if(!duration)
-        {
-            errorMe("#duration");
-            validate = false;
-        }else{
-            okMe("#duration");
-        }
-
 
 
         return validate;
