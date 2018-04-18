@@ -312,14 +312,6 @@ $( document ).ready(function() {
         }
 
 
-        //FatherAsset Obligatorio
-        if(fatherasset_selected=="" || fatherasset_selected==" ")
-        {
-            errorMe("#fatherasset");
-            checkVal++;
-        }else{
-            okMe("#fatherasset");
-        }
 
 
 
