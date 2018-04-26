@@ -438,7 +438,7 @@ class GirlController(object):
                 movie.save()
 
                 # Las movies modificadas, volver a publicarlas PublishQueue
-                metadatas = MovieMetadata.objects.filter(movie=movie)
+                metadatas = MovieMetadata.objects.filter(movie=movie, activated=True)
                 for metadata in metadatas:
                     ph = PublishHelper()
                     ph.func_publish_queue(request, movie.asset.asset_id, metadata.language, 'AS', 'Q', metadata.publish_date)
