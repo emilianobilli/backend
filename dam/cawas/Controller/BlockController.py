@@ -38,7 +38,7 @@ class BlockController(object):
                 vblock.order = decjson['Block']['order']
                 vgrabarypublicar = decjson['Block']['publicar']
                 vschedule_date = datetime.datetime.strptime(decjson['Block']['publish_date'], '%d-%m-%Y').strftime('%Y-%m-%d')
-                vblock.publish_date = vschedule_date
+                #vblock.publish_date = vschedule_date
                 vblock.language = Language.objects.get(code=decjson['Block']['language'])
                 vblock.queue_status = 'Q'
                 if decjson['Block']['channel_id'] is not None:
@@ -99,7 +99,7 @@ class BlockController(object):
 
                         # Publica en PublishQueue
                         # Eliminar cola de publicacion para el item en estado Queued
-                        ph.func_publish_queue(request, asset_id, vblock.language, 'AS', 'Q', vblock.publish_date)
+                        ph.func_publish_queue(request, asset_id, vblock.language, 'AS', 'Q', vschedule_date)
 
                     except Asset.DoesNotExist as e:
                         self.code_return = -1
