@@ -133,29 +133,29 @@ class GirlController(object):
                 except GirlMetadata.DoesNotExist as e:
                     gmd = GirlMetadata()
 
-                vschedule_date = datetime.datetime.now().strftime('%Y-%m-%d')
+                if (item['Girlmetadata']['schedule_date'] != ''):
+                    vschedule_date = datetime.datetime.strptime(item['Girlmetadata']['schedule_date'],'%d-%m-%Y').strftime('%Y-%m-%d')
+                else:
+                    vschedule_date = datetime.datetime.now().strftime('%Y-%m-%d')
+
                 gmd.language = vlanguage
                 gmd.description = item['Girlmetadata']['description']
                 gmd.nationality = item['Girlmetadata']['nationality']
-                gmd.publish_date = vschedule_date
+                #gmd.publish_date = vschedule_date
                 gmd.girl = vgirl
                 gmd.save()
 
-
-            #PUBLICAR METADATA
-            if vgrabarypublicar == '1':
-                try:
-                    ph = PublishHelper()
-                    ph.func_publish_image(request, vimg)
-                    metadatas = GirlMetadata.objects.filter(girl=vgirl)
-                    for mdi in metadatas:
-                        # Publica en PublishQueue
-                        ph.func_publish_queue(request, mdi.girl.asset.asset_id, mdi.language, 'AS', 'Q', vschedule_date)
+                #PUBLICAR METADATA
+                if vgrabarypublicar == '1':
+                    try:
+                        ph = PublishHelper()
+                        ph.func_publish_image(request, vimg)
+                        ph.func_publish_queue(request, gmd.girl.asset.asset_id, gmd.language, 'AS', 'Q', vschedule_date)
                         gmd.queue_status = 'Q'
-                except GirlMetadata.DoesNotExist as e:
-                    request.session['list_girl_message'] = 'No existe GirlMetadata ' + e.message
-                    request.session['list_girl_flag'] = FLAG_ALERT
-                    return -1
+                    except GirlMetadata.DoesNotExist as e:
+                        request.session['list_girl_message'] = 'No existe GirlMetadata ' + e.message
+                        request.session['list_girl_flag'] = FLAG_ALERT
+                        return -1
 
             request.session['list_girl_message'] = 'Guardado Correctamente'
             request.session['list_girl_flag'] = FLAG_SUCCESS
@@ -331,14 +331,19 @@ class GirlController(object):
                 except GirlMetadata.DoesNotExist as e:
                     gmd = GirlMetadata()
 
-                vschedule_date = datetime.datetime.now().strftime('%Y-%m-%d')
+                if (item['Girlmetadata']['schedule_date'] != ''):
+                    vschedule_date = datetime.datetime.strptime(item['Girlmetadata']['schedule_date'],'%d-%m-%Y').strftime('%Y-%m-%d')
+                else:
+                    vschedule_date = datetime.datetime.now().strftime('%Y-%m-%d')
+
                 gmd.language = vlanguage
                 gmd.description = item['Girlmetadata']['description']
                 gmd.nationality = item['Girlmetadata']['nationality']
-                gmd.publish_date = vschedule_date
+                #gmd.publish_date = vschedule_date
                 gmd.girl = vgirl
                 gmd.queue_status = 'Q'
                 gmd.save()
+
                 # Publica en PublishQueue
                 ph = PublishHelper()
                 ph.func_publish_queue(request, vasset.asset_id, vlanguage, 'AS', 'Q', vschedule_date)
@@ -441,7 +446,7 @@ class GirlController(object):
                 metadatas = MovieMetadata.objects.filter(movie=movie, activated=True)
                 for metadata in metadatas:
                     ph = PublishHelper()
-                    ph.func_publish_queue(request, movie.asset.asset_id, metadata.language, 'AS', 'Q', metadata.publish_date)
+                    ph.func_publish_queue(request, movie.asset.asset_id, metadata.language, 'AS', 'Q', datetime.datetime.now().strftime('%Y-%m-%d'))
                     print 'asset_id Despublicacion: '+ movie.asset.asset_id
 
             #  Realizar delete al backend
@@ -488,7 +493,7 @@ class GirlController(object):
     def publish(self, request, id):
 
         gmd = GirlMetadata.objects.get(id=id)
-        gmd.publish_date = datetime.datetime.now().strftime('%Y-%m-%d')
+        #gmd.publish_date = datetime.datetime.now().strftime('%Y-%m-%d')
         #gmd.activated = True
         gmd.queue_status = 'Q'
         gmd.save()
@@ -496,7 +501,7 @@ class GirlController(object):
         #verifica si existe cola de publicacion en Q para el item, se borra
 
         ph.func_publish_queue(request, gmd.girl.asset.asset_id, gmd.language, 'AS', 'Q', datetime.datetime.now().strftime('%Y-%m-%d'))
-        ph.func_publish_image(request,gmd.girl.image)
+        ph.func_publish_image(request, gmd.girl.image)
         request.session['list_girl_message'] = 'Metadata en ' + gmd.language.name + ' de Chica ' + gmd.girl.asset.asset_id + ' Guardado en Cola de Publicacion'
         request.session['list_girl_flag'] = FLAG_SUCCESS
         self.code_return = 0
@@ -509,12 +514,10 @@ class GirlController(object):
         mditems = GirlMetadata.objects.filter(girl=param_girl, language=param_lang)
         #Actualizar la fecha de publicacion
         for md in mditems:
-            md.publish_date = datetime.datetime.now().strftime('%Y-%m-%d')
-            #md.activated = True
-            md.save()
+
             #Dejar en cola de publicacion para cada idioma
             ph = PublishHelper()
-            ph.func_publish_queue(request, md.girl.asset.asset_id, md.language, 'AS', 'Q', md.publish_date)
+            ph.func_publish_queue(request, md.girl.asset.asset_id, md.language, 'AS', 'Q', datetime.datetime.now().strftime('%Y-%m-%d'))
             ph.func_publish_image(request, md.girl.image)
             self.code_return = 0
 
