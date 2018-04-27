@@ -203,7 +203,7 @@ class EpisodeController(object):
                     emd.title = item['Episodemetadata']['title']
                     emd.summary_short = item['Episodemetadata']['summary_short']
                     emd.summary_long = item['Episodemetadata']['summary_long']
-                    emd.publish_date = vschedule_date
+                    #emd.publish_date = vschedule_date
                     emd.episode = vepisode
                     emd.save()
                 except Language.DoesNotExist as e:
@@ -455,7 +455,7 @@ class EpisodeController(object):
                     emd.title         = item['Episodemetadata']['title']
                     emd.summary_short = item['Episodemetadata']['summary_short']
                     emd.summary_long  = item['Episodemetadata']['summary_long']
-                    emd.publish_date  = vschedule_date
+                    #emd.publish_date  = vschedule_date
                     emd.episode       = vepisode
                     emd.queue_status  = 'Q'
                     emd.save()
