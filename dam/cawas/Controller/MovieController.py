@@ -121,7 +121,7 @@ class MovieController(object):
                 mmd.summary_short = item['Moviemetadata']['summary_short']
                 mmd.summary_long = item['Moviemetadata']['summary_long']
                 print 'debug ' + str(vpublishdate)
-                mmd.publish_date = vpublishdate
+                #mmd.publish_date = vpublishdate
                 mmd.movie = mv
                 mmd.save()
 
@@ -129,7 +129,7 @@ class MovieController(object):
             if nueva_movie == False or publicar == True:
                 metadatas = MovieMetadata.objects.filter(movie=mv)
                 for mdi in metadatas:
-                    if ph.func_publish_queue(request, mdi.movie.asset.asset_id, mdi.language, 'AS', 'Q', mdi.publish_date) == RETURN_ERROR:
+                    if ph.func_publish_queue(request, mdi.movie.asset.asset_id, mdi.language, 'AS', 'Q', vpublishdate) == RETURN_ERROR:
                         return HttpResponse("Error al Publicar (" + str(e.message) + ")", None, 500)
                     mdi.queue_status = 'Q'
                     mdi.save()
@@ -560,13 +560,14 @@ class MovieController(object):
 
     def publish(self, request, id):
         md = MovieMetadata.objects.get(id=id)
-        md.publish_date = datetime.datetime.now().strftime('%Y-%m-%d')
+        #md.publish_date = datetime.datetime.now().strftime('%Y-%m-%d')
         md.queue_status = 'Q'
         md.save()
 
         ph = PublishHelper()
         # SI hay items en estado Queued, se elimina
-        ph.func_publish_queue(request, md.movie.asset.asset_id, md.language, 'AS', 'Q', datetime.datetime.now().strftime('%Y-%m-%d'))
+        schedule_date = datetime.datetime.now().strftime('%Y-%m-%d')
+        ph.func_publish_queue(request, md.movie.asset.asset_id, md.language, 'AS', 'Q',schedule_date )
         ph.func_publish_image(request, md.movie.image)
         request.session['list_movie_message'] = 'Metadata en ' + md.language.name + ' de Movie ' + md.movie.asset.asset_id + ' Guardado en Cola de Publicacion'
         request.session['list_movie_flag'] = FLAG_SUCCESS
