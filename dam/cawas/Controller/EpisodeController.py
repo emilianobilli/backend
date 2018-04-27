@@ -679,10 +679,9 @@ class EpisodeController(object):
 
         try:
             md = EpisodeMetadata.objects.get(id=id)
-            md.publish_date = datetime.datetime.now().strftime('%Y-%m-%d')
+            #md.publish_date = datetime.datetime.now().strftime('%Y-%m-%d')
             md.queue_status = 'Q'
             md.save()
-
 
             #Publica el Episodio
             ph = PublishHelper()
@@ -718,8 +717,6 @@ class EpisodeController(object):
         mditems = EpisodeMetadata.objects.filter(episode=param_episode, language=param_lang)
         #Actualizar la fecha de publicacion
         for md in mditems:
-            md.publish_date = datetime.datetime.now().strftime('%Y-%m-%d')
-            md.save()
             #Dejar en cola de publicacion para cada idioma
             ph = PublishHelper()
             ph.func_publish_queue(request, md.episode.asset.asset_id, md.language, 'AS', 'Q', md.publish_date)
