@@ -463,7 +463,6 @@ class EpisodeController(object):
                     ph = PublishHelper()
                     if publicar > 0:
                         ph.func_publish_queue(request, vepisode.asset.asset_id, vlang, 'AS', 'Q', vschedule_date)
-
                     ph.func_publish_image(request, vimg)
 
                     #Consultar si serie metadata esta del lenguaje esta activada, de ser asi, se publica la serie nuevamente
