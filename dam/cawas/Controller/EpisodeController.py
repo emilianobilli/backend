@@ -206,6 +206,33 @@ class EpisodeController(object):
                     #emd.publish_date = vschedule_date
                     emd.episode = vepisode
                     emd.save()
+
+                    # PUBLICAR METADATA
+                    if vgrabarypublicar == '1':
+                        try:
+                            # Publicar el Episodio
+                            emd.queue_status = True
+                            emd.save()
+                            ph = PublishHelper()
+                            ph.func_publish_queue(request, emd.episode.asset.asset_id, emd.language, 'AS', 'Q',vschedule_date)
+                            ph.func_publish_image(request, vimg)
+
+                            # Se vuelve a publicar la SERIE en el idioma del Episodio publicado
+                            if (PublishQueue.objects.filter(item_id=emd.episode.serie.asset.asset_id, status__in=['Q', 'D']).count() < 1):
+                                ph = PublishHelper()
+                                ph.func_publish_queue(request, vepisode.serie.asset.asset_id, vlang, 'AS', 'Q',vschedule_date)
+                                ph.func_publish_image(request, vepisode.serie.image)
+                        except EpisodeMetadata.DoesNotExist as e:
+                            self.code_return = -1
+                            request.session['list_episode_message'] = 'Error al Publicar el Episodio ' + e.message
+                            request.session['list_episode_flag'] = FLAG_ALERT
+                            return self.code_return
+                        except Exception as e:
+                            self.code_return = -1
+                            request.session['list_episode_message'] = 'Error al Republicar la SERIE' + e.message
+                            request.session['list_episode_flag'] = FLAG_ALERT
+                            return self.code_return
+
                 except Language.DoesNotExist as e:
                     request.session['list_episode_message'] = 'Error: ' + str(e.message)
                     request.session['list_episode_flag'] = FLAG_ALERT
@@ -213,35 +240,7 @@ class EpisodeController(object):
                     return self.code_return
             request.session['list_episode_message'] = 'Guardado Correctamente'
             request.session['list_episode_flag'] = FLAG_SUCCESS
-            #PUBLICAR METADATA
-            if vgrabarypublicar == '1':
-                try:
-                    ph = PublishHelper()
-                    ph.func_publish_image(request, vimg)
-                    metadatas = EpisodeMetadata.objects.filter(episode=vepisode)
-                    for mdi in metadatas:
-                        # Publicar el Episodio
-                        mdi.queue_status = True
-                        mdi.save()
-                        ph = PublishHelper()
-                        ph.func_publish_queue(request, mdi.episode.asset.asset_id, mdi.language, 'AS', 'Q',vschedule_date)
-                        ph.func_publish_image(request, vimg)
 
-                        # Se vuelve a publicar la SERIE en el idioma del Episodio publicado
-                        if (PublishQueue.objects.filter(item_id=mdi.episode.serie.asset.asset_id,status__in=['Q', 'D']).count() < 1):
-                            ph = PublishHelper()
-                            ph.func_publish_queue(request, vepisode.serie.asset.asset_id, vlang, 'AS', 'Q', vschedule_date)
-                            ph.func_publish_image(request, vepisode.serie.image)
-                except EpisodeMetadata.DoesNotExist as e:
-                    self.code_return = -1
-                    request.session['list_episode_message'] = 'Error al Publicar el Episodio ' + e.message
-                    request.session['list_episode_flag'] = FLAG_ALERT
-                    return self.code_return
-                except Exception as e:
-                    self.code_return = -1
-                    request.session['list_episode_message'] = 'Error al Republicar la SERIE' + e.message
-                    request.session['list_episode_flag'] = FLAG_ALERT
-                    return self.code_return
 
             vflag = "success"
             message ='Guardado Correctamente'
