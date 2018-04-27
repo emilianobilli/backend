@@ -118,7 +118,7 @@ class SliderController(object):
                     # se debe publicar asset asociado antes de publicar el slider
 
                     ph = PublishHelper()
-                    ph.func_publish_queue(request, vslider.slider_id, vslider.language, 'SL', 'Q', vslider.publish_date)
+                    ph.func_publish_queue(request, vslider.slider_id, vslider.language, 'SL', 'Q', vschedule_date)
                     ph.func_publish_image(request, vslider.image)
 
 
@@ -225,8 +225,7 @@ class SliderController(object):
 
                 vslider.language = Language.objects.get(code=decjson['Slider']['language'])
                 if (decjson['Slider']['publish_date'] != ''):
-                    vschedule_date = datetime.datetime.strptime(decjson['Slider']['publish_date'], '%d-%m-%Y').strftime(
-                        '%Y-%m-%d')
+                    vschedule_date = datetime.datetime.strptime(decjson['Slider']['publish_date'], '%d-%m-%Y').strftime('%Y-%m-%d')
                 else:
                     vschedule_date = datetime.datetime.now().strftime('%Y-%m-%d')
                 vslider.publish_date = vschedule_date
