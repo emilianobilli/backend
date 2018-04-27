@@ -503,7 +503,7 @@ class SerieController(object):
         #Publicar la Serie
         try:
             md = SerieMetadata.objects.get(id=id)
-            md.publish_date = datetime.datetime.now().strftime('%Y-%m-%d')
+            #md.publish_date = datetime.datetime.now().strftime('%Y-%m-%d')
             md.queue_status = 'Q'
             md.save()
 
@@ -630,12 +630,12 @@ class SerieController(object):
         mditems = SerieMetadata.objects.filter(serie=param_serie, language=param_lang)
         #Actualizar la fecha de publicacion
         for md in mditems:
-            md.publish_date = datetime.datetime.now().strftime('%Y-%m-%d')
+            #md.publish_date = datetime.datetime.now().strftime('%Y-%m-%d')
             md.activated = True
             md.save()
             #Dejar en cola de publicacion para cada idioma
             ph = PublishHelper()
-            ph.func_publish_queue(request, md.serie.asset.asset_id, md.language, 'AS', 'Q', md.publish_date)
+            ph.func_publish_queue(request, md.serie.asset.asset_id, md.language, 'AS', 'Q',datetime.datetime.now().strftime('%Y-%m-%d'))
             ph.func_publish_image(request, md.serie.image)
             self.code_return = 0
 
