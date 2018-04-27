@@ -120,19 +120,15 @@ class MovieController(object):
                 mmd.title = item['Moviemetadata']['title']
                 mmd.summary_short = item['Moviemetadata']['summary_short']
                 mmd.summary_long = item['Moviemetadata']['summary_long']
-                print 'debug ' + str(vpublishdate)
-                #mmd.publish_date = vpublishdate
                 mmd.movie = mv
                 mmd.save()
 
-            #si la movie existe, entonces se publica
-            if nueva_movie == False or publicar == True:
-                metadatas = MovieMetadata.objects.filter(movie=mv)
-                for mdi in metadatas:
-                    if ph.func_publish_queue(request, mdi.movie.asset.asset_id, mdi.language, 'AS', 'Q', vpublishdate) == RETURN_ERROR:
+                #si la movie existe, entonces se publica
+                if nueva_movie == False or publicar == True:
+                    if ph.func_publish_queue(request, mmd.movie.asset.asset_id, mmd.language, 'AS', 'Q', vpublishdate) == RETURN_ERROR:
                         return HttpResponse("Error al Publicar (" + str(e.message) + ")", None, 500)
-                    mdi.queue_status = 'Q'
-                    mdi.save()
+                    mmd.queue_status = 'Q'
+                    mmd.save()
 
             mydata = [{'code': 200, 'message': 'Guardado Correctamente'}]
 
@@ -578,16 +574,14 @@ class MovieController(object):
 
     def publish_all(self, request,param_movie, param_lang):
         #Publica nuevamente la movie para
-
         mditems = MovieMetadata.objects.filter(movie=param_movie, language=param_lang)
         #Actualizar la fecha de publicacion
         for md in mditems:
-            md.publish_date = datetime.datetime.now().strftime('%Y-%m-%d')
             md.activated = True
             md.save()
             #Dejar en cola de publicacion para cada idioma
             ph = PublishHelper()
-            ph.func_publish_queue(request, md.movie.asset.asset_id, md.language, 'AS', 'Q', md.publish_date)
+            ph.func_publish_queue(request, md.movie.asset.asset_id, md.language, 'AS', 'Q', datetime.datetime.now().strftime('%Y-%m-%d'))
             ph.func_publish_image(request, md.movie.image)
             self.code_return = 0
 
