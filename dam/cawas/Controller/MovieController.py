@@ -60,7 +60,10 @@ class MovieController(object):
                 mv.directors = json_data['movie']['directors']
 
             mv.display_runtime = json_data['movie']['display_runtime']
-            mv.father_asset = FatherAsset.objects.get(id=json_data['movie']['fatherasset'])
+
+            if (json_data['movie']['fatherasset'] is not None):
+                mv.father_asset = FatherAsset.objects.get(id=json_data['movie']['fatherasset'])
+
 
             if (json_data['movie']['publicar'] is not None):
                 print 'debug3' + str(json_data['movie']['publicar'])
@@ -104,7 +107,6 @@ class MovieController(object):
 
             for item in vmoviesmetadata:
                 # CREAR METADATA POR IDIOMA
-                vlanguage = Language.objects.get(code=item['Moviemetadata']['language'])
                 vlanguage = Language.objects.get(code=item['Moviemetadata']['language'])
                 # si no esta cargada la fecha, se guarda con la fecha de hoy
                 if (item['Moviemetadata']['schedule_date'] != ''):
