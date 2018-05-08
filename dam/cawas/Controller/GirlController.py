@@ -133,10 +133,10 @@ class GirlController(object):
                 except GirlMetadata.DoesNotExist as e:
                     gmd = GirlMetadata()
 
-                if (item['Girlmetadata']['schedule_date'] != ''):
-                    vschedule_date = datetime.datetime.strptime(item['Girlmetadata']['schedule_date'],'%d-%m-%Y').strftime('%Y-%m-%d')
-                else:
-                    vschedule_date = datetime.datetime.now().strftime('%Y-%m-%d')
+                #if (item['Girlmetadata']['schedule_date'] != ''):
+                #    vschedule_date = datetime.datetime.strptime(item['Girlmetadata']['schedule_date'],'%d-%m-%Y').strftime('%Y-%m-%d')
+                #else:
+                vschedule_date = datetime.datetime.now().strftime('%Y-%m-%d')
 
                 gmd.language = vlanguage
                 gmd.description = item['Girlmetadata']['description']
