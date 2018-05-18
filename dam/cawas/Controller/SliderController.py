@@ -377,13 +377,6 @@ class SliderController(object):
             if (Slider.objects.filter(slider_id=id).count() > 0 ):
                 slider = Slider.objects.get(slider_id=id)
 
-            if not slider.activated:
-                slider.delete()
-                self.code_return = 0
-                request.session['list_slider_message'] = 'Slider Eliminado Correctamente '
-                request.session['list_slider_flag'] = FLAG_SUCCESS
-                return self.code_return
-
             # 1 - VERIFICAR, si estado de publicacion esta en Q, se debe eliminar
             publishs = PublishQueue.objects.filter(item_id=slider.slider_id, status='Q')
             if publishs.count > 0:
@@ -393,20 +386,24 @@ class SliderController(object):
             setting = Setting.objects.get(code='backend_slider_url')
             api_key = Setting.objects.get(code='backend_api_key')
             vzones = PublishZone.objects.filter(enabled=True)
+
             #SE COMENTA PARA
+            hasErrorBackend = False
             for zone in vzones:
                 abr = ApiBackendResource(zone.backend_url, setting.value, api_key.value)
-                param = {"slider_id": slider.slider_id,
-                         "lang": slider.language.code}
-                abr.delete(param)
+                param = {"slider_id": slider.slider_id, "lang": slider.language.code}
+                respuesta = abr.delete(param)
+                if respuesta['status'] != '200':
+                    hasErrorBackend = True
 
-            # 3 - Actualizar Activated a False
-            slider.activated=False
-            slider.save()
-            slider.delete()
-            self.code_return = 0
-            request.session['list_slider_message'] = 'Slider en ' + slider.language.name +' de Slider ' + slider.slider_id + ' Despublicado Correctamente'
-            request.session['list_slider_flag'] = FLAG_SUCCESS
+
+            if not hasErrorBackend:
+                slider.delete()
+                self.code_return = 0
+                request.session['list_slider_message'] = 'Slider Eliminado Correctamente '
+                request.session['list_slider_flag'] = FLAG_SUCCESS
+                return self.code_return
+
         except PublishZone.DoesNotExist as e:
             self.code_return = -1
             request.session['list_slider_message'] = 'Error: ' + e.message
