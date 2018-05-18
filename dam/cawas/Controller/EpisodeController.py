@@ -458,25 +458,35 @@ class EpisodeController(object):
                     emd.episode       = vepisode
                     emd.queue_status  = 'Q'
                     emd.save()
-                    #
+
+
+
+
+
+
+
+
+
                     #Publicar el Episodio
                     ph = PublishHelper()
                     if publicar > 0:
-                        ph.func_publish_queue(request, vepisode.asset.asset_id, vlang, 'AS', 'Q', vschedule_date)
-                    ph.func_publish_image(request, vimg)
+                        # Consultar si serie metadata esta del lenguaje esta activada, de ser asi, se publica la serie nuevamente
+                        if (SerieMetadata.objects.get(serie=vepisode.serie, language=vlang, activated=False).count() > 0):
+                            ph.func_publish_queue(request, vepisode.serie.asset.asset_id, vlang, 'AS', 'Q', vschedule_date)
+                            ph.func_publish_image(request, vepisode.serie.image)
 
-                    #Consultar si serie metadata esta del lenguaje esta activada, de ser asi, se publica la serie nuevamente
-                    sm = SerieMetadata.objects.filter(serie=vepisode.serie, language=vlang)
-                    for i in sm:
-                        if i.activated == True:
-                            if (PublishQueue.objects.filter(item_id=vepisode.serie.asset.asset_id,status__in=['Q']).count() < 1):
-                                ph = PublishHelper()
-                                if publicar > 0:
-                                    ph.func_publish_queue(request, vepisode.serie.asset.asset_id, vlang, 'AS', 'Q', vschedule_date)
-                                ph.func_publish_image(request, vepisode.serie.image)
+
+                        ph.func_publish_queue(request, vepisode.asset.asset_id, vlang, 'AS', 'Q', vschedule_date)
+                        ph.func_publish_image(request, vimg)
+
+                        #Se publica
+                        ph.func_publish_queue(request, vepisode.serie.asset.asset_id, vlang, 'AS', 'Q', vschedule_date)
+                        ph.func_publish_image(request, vepisode.serie.image)
+
 
                     request.session['list_episode_message'] = 'Guardado Correctamente '
                     request.session['list_episode_flag'] = FLAG_SUCCESS
+
 
                 except Language.DoesNotExist as e:
                     self.code_return = -1
@@ -683,17 +693,22 @@ class EpisodeController(object):
             md.queue_status = 'Q'
             md.save()
 
+            #Si la serie NO esta activada en el idioma, la vuelvo a publicar
+            if (SerieMetadata.objects.filter(serie=md.episode.serie, language = md.language, activated=False ).count() > 0):
+                ph = PublishHelper()
+                ph.func_publish_queue(request, md.episode.serie.asset.asset_id, md.language, 'AS', 'Q',datetime.datetime.now().strftime('%Y-%m-%d'))
+                ph.func_publish_image(request, md.vepisode.serie.image)
+
+
             #Publica el Episodio
             ph = PublishHelper()
             ph.func_publish_queue(request, md.episode.asset.asset_id, md.language, 'AS', 'Q', datetime.datetime.now().strftime('%Y-%m-%d'))
             ph.func_publish_image(request, md.episode.image)
 
-            # Se vuelve a publicar la SERIE en el idioma del Episodio publicado
-            #Si no existe serie en estado publicado, se pub
-            if (PublishQueue.objects.filter(item_id=md.episode.serie.asset.asset_id, status__in=['Q','D']).count() < 1):
-                ph = PublishHelper()
-                ph.func_publish_queue(request, md.episode.serie.asset.asset_id, md.language, 'AS', 'Q', datetime.datetime.now().strftime('%Y-%m-%d'))
-                ph.func_publish_image(request, md.vepisode.serie.image)
+
+            ph = PublishHelper()
+            ph.func_publish_queue(request, md.episode.serie.asset.asset_id, md.language, 'AS', 'Q', datetime.datetime.now().strftime('%Y-%m-%d'))
+            ph.func_publish_image(request, md.vepisode.serie.image)
 
             request.session['list_episode_message'] = 'Episodio en ' + md.language.name
             request.session['list_episode_flag'] = FLAG_SUCCESS
