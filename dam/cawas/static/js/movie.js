@@ -1,6 +1,8 @@
 
-$( document ).ready(function() {
 
+$( document ).ready(function() {
+    var publicar = 0;
+    var asset_Id = 0;
 
     $('#search_girls').multiselect({
         search: {
@@ -13,7 +15,7 @@ $( document ).ready(function() {
     });
 
 
-$('#search_category').multiselect({
+    $('#search_category').multiselect({
         search: {
             left: '<input type="text" name="q" class="form-control" placeholder="Buscar..." />',
             right: '<input type="text" name="q" class="form-control" placeholder="Buscar..." />',
@@ -36,8 +38,6 @@ $('#search_category').multiselect({
 
 
  // rellena el formulario con los datos recogidos en la variable requestedData
-
-
     $("#btnsearch").click(function(){
            $("#searchForID").submit();
     });
@@ -45,11 +45,14 @@ $('#search_category').multiselect({
 
 
 
-    console.log( "ready!" );
-    var asset_id = $("#asset_id").val();
+
+    asset_id = $("#asset_id").val();
     if(asset_id != null){
         changeVideo(asset_id, "#repro1");// Cambia el video de acuerdo al ID. la función está en la línea 135. Construye la url relativa del video con la variable path+ID+'.mp4'
     };
+
+    //loadVideo("#repro1");
+
 
     if(resultado=="success"){
         $("#myModal-OK").modal();
@@ -71,6 +74,14 @@ $('#search_category').multiselect({
 
     $("#btngrabarypublicar").click(function(){
         $("#publicar").val("1");
+        publicar = 1;
+        clickedToSubmit=1;
+        checkAll();
+    });
+
+    $("#btn_grabar").click(function(){
+        $("#publicar").val("0");
+        publicar = 0;
         clickedToSubmit=1;
         checkAll();
     });
@@ -92,16 +103,10 @@ $('#search_category').multiselect({
     $("#movie-edit").select2({placeholder: "Despliega la lista"});
     var $myVerifSelect = $("#canalSelect").select2();
 
-    // activar timepicker
-    //leerRuntime();
+    $('#fatherasset').select2();
 
+    $('#runtime').mask('00:00:00',{placeholder: "HH:mm:ss"});
 
-
-//$("#runtime").durationPicker();
-
-$('#runtime').mask('00:00:00',{placeholder: "HH:mm:ss"});
-
-   // completarRuntime();
 
     // simular exit con el botón de salir
     $("#getOut").click(function(){
@@ -117,7 +122,7 @@ $('#runtime').mask('00:00:00',{placeholder: "HH:mm:ss"});
           clickedVal= $(this).val();
             if(clickedVal!="")
             {
-                console.log( "clickedVal="+clickedVal ); // debug
+
                 $( "#movieID" ).val(clickedVal);// Agrega el ID en el input field
                 changeVideo(clickedVal, "#repro1");// Cambia el video de acuerdo al ID. la función está en la línea 135. Construye la url relativa del video con la variable path+ID+'.mp4'
                 
@@ -184,18 +189,18 @@ $('#runtime').mask('00:00:00',{placeholder: "HH:mm:ss"});
         var self = $(this);
         var showDiv = "#Module_"+self.attr("id");
         if (self.is(":checked")) {
-            console.log("checkbox  id =" + self.attr("id") + "is checked ");
+
             $(showDiv).show('slow');
             //langQ++;
             //langDesc.push(self.attr("id"));
             
         } else {
-            console.log("Id = " + self.attr("id") + "is Unchecked ");
+
             $(showDiv).hide('fast');
             //langQ--;
             //langDesc.pop();
         }
-        console.log("idiomas tildados:"+langQ+", y son:"+langDesc);// cantidad de idiomas
+
         if(checkedOnce>0){
             checkAll();
         }
@@ -206,11 +211,13 @@ $('#runtime').mask('00:00:00',{placeholder: "HH:mm:ss"});
     function changeVideo(src, divId){// para cambiar lo que reproduce el player de acuerdo al ID de la lista.
         path="http://cdnlevel3.zolechamedia.net/" + src + "/mp4/1200/" + src +".mp4";
         var video = $(divId+' video')[0];
-        //http://cdnlevel3.zolechamedia.net/{asset_id}/mp4/350/{asset_id}.mp4
         video.src = path;
-        console.log(video.src);
         video.load();
-        //video.play();
+    }
+
+    function loadVideo(divId){
+        var video = $(divId+' video')[0];
+        //video.load();
     }
     
     function showPreviewImage_click(e) {
@@ -253,9 +260,9 @@ $('#runtime').mask('00:00:00',{placeholder: "HH:mm:ss"});
     
     function checkAll(){
         // this function checks for all form values and makes json string to post or alerts user to complete fields.
-        console.log("checking form...");
+
         checkVal = 0;
-        var asset_Id = $('#movieID').val();
+        asset_Id = $('#movieID').val();
         var original_Title = $('#orginalTitle').val();
         var canal_selected = $('#canalSelect option:selected');
         var pornstars_selected = [];
@@ -264,11 +271,21 @@ $('#runtime').mask('00:00:00',{placeholder: "HH:mm:ss"});
         var director_selected = $('#director').val();
         var elenco_selected = $('#elenco').val();
         var display_runtime = $('#runtime').val();
-        var year_selected = $('#releaseYear').val();
-        var publicar = $('#publicar').val();
+        var year_selected = parseInt($('#releaseYear').val());
 
+        var fatherasset_selected = $('#fatherasset').val();
+
+        if (year_selected=="" || year_selected==0){
+            var d = new Date();
+            year_selected = d.getFullYear();
+        }
+
+
+        var json_movie = {};
+        var json_moviemetadatas=[];
 
         countChecked();
+
         // chequea original Title
         if(original_Title=="" || original_Title==" ")
         {
@@ -296,6 +313,8 @@ $('#runtime').mask('00:00:00',{placeholder: "HH:mm:ss"});
 
 
 
+
+
         //search_to_girls
         if ( $('#search_girls_to option').length > 0 )
         {
@@ -307,7 +326,7 @@ $('#runtime').mask('00:00:00',{placeholder: "HH:mm:ss"});
                    pornstars_selected.push(asset_id_aux);
                }
             })
-            console.log("search_girls_to_selected:"+pornstars_selected);
+
         }
 
         //search_category_to
@@ -324,7 +343,7 @@ $('#runtime').mask('00:00:00',{placeholder: "HH:mm:ss"});
                    categories_selected.push(asset_id_aux);
                }
             })
-            console.log("search_girls_to_selected:"+categories_selected);
+
         }
 
         //search_to_paises - No es obligatorio
@@ -338,16 +357,17 @@ $('#runtime').mask('00:00:00',{placeholder: "HH:mm:ss"});
                    paises_selected.push(asset_id_aux);
                }
             })
-            console.log("search_paises_to_selected:"+paises_selected);
+
         }
 
         // chequea canal
-        console.log("#canalSelect"+$('#canalSelect').val());
+        //NO OBLIGATORIO
         if ( $('#canalSelect').val()=="0" || $('#canalSelect').val()==0)
         {
-            errorMe("#canalSelect");
-            $(".select2-selection--single").css("border","1px #a94442 solid");
-            checkVal++;
+            okMe("#canalSelect");
+            $(".select2-selection--single").css("border","1px #3c763d solid");
+            canal_selected = null;
+
         }else{
             okMe("#canalSelect");
              $(".select2-selection--single").css("border","1px #3c763d solid");
@@ -372,6 +392,7 @@ $('#runtime').mask('00:00:00',{placeholder: "HH:mm:ss"});
         }else{
             okMe("#pickLang");
             checkLangs(langDesc);
+
         }
                 
         /* -----------  Sending Routine -----------*/
@@ -380,7 +401,7 @@ $('#runtime').mask('00:00:00',{placeholder: "HH:mm:ss"});
             if(checkedOnce<1){// envía por primera vez y tiene error
                 $("#myModal2").modal();
             }
-            console.log("checkVal:"+checkVal);
+
         }else{
             if(checkedOnce<1){// envía por primera vez y NO tiene error
                 submitJson();
@@ -406,7 +427,7 @@ $('#runtime').mask('00:00:00',{placeholder: "HH:mm:ss"});
                 $(theField).parent().addClass('has-error');
                 $(theField).next(".glyphicon").addClass('glyphicon-remove');
                 if(theField=="#canalSelect"){
-                    console.log("canalSelect selected");
+
                     $("#channelSelect").children(".select2-selection--single").css("display","none");
                         //.css("border","1px #ff0000 solid!important");
                 }
@@ -489,16 +510,7 @@ $('#runtime').mask('00:00:00',{placeholder: "HH:mm:ss"});
                     var short = $("#short_desc_"+lang).val().trim().substring(0,50)+"...";
                     var long = $("#short_desc_"+lang).val().trim();
                     var fechapub = $("#date_"+lang).val().trim();
-                    myLangs += '{"Moviemetadata":';
-                    myLangs += '{"language": "'+lang+'",';
-                    myLangs += '"title": "'+tit+'",';
-                    myLangs += '"summary_short": "'+short+'",';
-                    myLangs += '"summary_long":"'+long+'",';
-					myLangs += '"schedule_date":"'+fechapub+'"';
-                    myLangs += '}}';
-                    if(i<lngth-1){
-                        myLangs += ',';
-                    }
+                    json_moviemetadatas.push({"Moviemetadata":{"language":lang, "title":tit, "summary_short":short, "summary_long":long, "schedule_date":fechapub}});
                 }
                 return(myLangs);
             };
@@ -511,41 +523,53 @@ $('#runtime').mask('00:00:00',{placeholder: "HH:mm:ss"});
                     var myCountries=explodeArray(paises_selected,"country_id");
 
                     var myJSON = '';
-                    myJSON+='{"Movie":{';
-                    myJSON+='"asset_id":"'+asset_Id+'",';
-                    myJSON+='"original_title":"'+original_Title+'",';
-                    myJSON+='"channel_id":"'+canal_selected+'",';
-                    myJSON+='"publicar":"'+publicar+'",';
+                    addMovieMetadata(langDesc);
 
-                    if (year_selected==''){
-                        myJSON+='"year":null,';
-                       }else{
-                        myJSON+='"year":"'+year_selected+'",';
-                    }
+                    //Setear objeto JSON
+                    json_movie= {
+                        "movie":{
+                                "asset_id": asset_Id,
+                                "original_title" : original_Title,
+                                "channel_id": canal_selected,
+                                "girls": pornstars_selected,
+                                "categories": categories_selected,
+                                "countries": paises_selected,
+                                "directors": director_selected,
+                                "cast": elenco_selected,
+                                "display_runtime": display_runtime,
+                                "fatherasset":fatherasset_selected,
+                                "year": year_selected,
+                                "publicar":publicar,
+                                "moviemetadatas": []
+                                }
+                     };
+                     $.extend(json_movie.movie.moviemetadatas, json_moviemetadatas);
 
-                    if (myGirls=="[]"){
-                        myJSON+='"girls":null,';
-                    }else{
-                        myJSON+='"girls":'+myGirls+',';
-                    }
-                    if (elenco_selected==''){
-                        myJSON+='"cast":null,';
-                    }else{
-                        myJSON+='"cast":"'+elenco_selected+'",';
-                    }
+                    var respuesta = 0 ;
+                    //Llamada ajax
 
-                    if (director_selected==''){myJSON+='"directors":null,';}else{myJSON+='"directors":"'+director_selected+'",';}
+                    $.ajax({
+                        url: '/api/movies/edit/',
+                        dataType: 'json',
+                        type: 'POST',
+                        contentType: "application/json; charset=utf-8",
+                        data: JSON.stringify( json_movie ),
+                        success: function(response){
+                                //alert("Guardado Correctamente");
+                                $("#movieForm").submit();
+                                console.log(response);
+                            },
+                        error:function(request, status, error){
+                            alert(request.responseText);
 
-                    if (myCountries=="[]"){myJSON+='"countries":null,'; }else{myJSON+='"countries":'+myCountries+',';}
+                        }
+                    });
 
-                    myJSON+='"display_runtime": "'+display_runtime+'",';
-                    myJSON+='"categories":'+myCategories+',';
-                    myJSON+='"Moviesmetadata": [';
-                    myJSON+= addMovieMetadata(langDesc);
-                    myJSON+=']}}';
-                    console.log(myJSON);
-                    $("#varsToJSON").val(myJSON);
-                    $("#movieForm").submit();
+
+
+
+
+
                   }  
             }
         

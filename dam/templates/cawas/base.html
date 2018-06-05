@@ -7,7 +7,7 @@
         <title>HotGo Backend</title>
         <!-- CSS files -->
         <link rel="stylesheet" href="{% static 'css/bootstrap.css' %}">
-        <link rel="stylesheet" href="{% static 'css/bootstrap-hotGo.css' %}">
+       <link rel="stylesheet" href="{% static 'css/bootstrap-hotGo.css' %}">
         <link rel="stylesheet" href="{% static 'css/dcalendar.picker.css' %}">
         <link rel="stylesheet" href="{% static 'css/duration-picker.css' %}">
         <link rel="stylesheet" href="{% static 'css/select2.css' %}">
@@ -26,6 +26,7 @@
 
         <script src="{% static 'js/multiselect.min.js' %}"></script>
         <script src="{% static 'js/script.js' %}"></script>
+
         <link rel="stylesheet" href="//code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
         <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
 
@@ -40,6 +41,8 @@
 
        -->
         {% block extra_head %}
+
+
         {% endblock %}
 
 
@@ -177,7 +180,8 @@
                 {% block subheader %}
 
                 {% endblock %}
-             {% if message %}
+
+              {% if message %}
               <div class="col-xs-12 col-md-12 col-lg-12 unpad">
                     <div class="notifications">
                       <div class="{{flag}}">
@@ -188,7 +192,20 @@
               </div>
               {% endif %}
 
+              <div class="row">
+              <div id="message" style="display:none">
+                  <div class="col-xs-12 col-md-12 col-lg-12 unpad">
+                    <div class="notifications">
+                      <div id="message_class" class="alert alert-success">
+                          <span class="closebtn" onclick="this.parentElement.style.display='none';">&times;</span>
+                          <div id="message_content">asdfasdf</div>
+                      </div>
+                    </div>
+                  </div>
               </div>
+              </div>
+
+
         </div>
         <!-- HEADER END -->
 

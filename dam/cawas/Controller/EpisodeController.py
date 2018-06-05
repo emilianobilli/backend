@@ -1,7 +1,7 @@
 import os, datetime, json
 from LogController import LogController
 from django.shortcuts import render,redirect
-from ..models import Asset, Setting, Girl, Country, Block, Category, Language, Image,PublishZone,PublishQueue, Channel, Device, Serie, Movie, Episode, EpisodeMetadata
+from ..models import Asset, Setting, Girl, Country, Block, Category, Language, Image,PublishZone,PublishQueue, Channel, Device, Serie, Movie, Episode, EpisodeMetadata,SerieMetadata
 from ..Helpers.PublishHelper import PublishHelper
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from ..Helpers.GlobalValues import *
@@ -22,9 +22,7 @@ class EpisodeController(object):
 
         # VARIABLES LOCALES
         message = ''
-        vflag = ''
         vschedule_date = ''
-        vgrabarypublicar = ''
         if request.method == 'POST':
             # VARIABLES
             vepisode = Episode()
@@ -33,26 +31,30 @@ class EpisodeController(object):
                 pathfilesport = Setting.objects.get(code='image_repository_path_portrait')
                 pathfilesland = Setting.objects.get(code='image_repository_path_landscape')
                 base_dir = Setting.objects.get(code='dam_base_dir')
+
                 # Parsear JSON
                 strjson = request.POST['varsToJSON']
                 decjson = json.loads(strjson.replace('\r','\\r').replace('\n','\\n'))
+
                 # DATOS OBLIGATORIOS
                 vasset = Asset.objects.get(asset_id=decjson['Episode']['asset_id'])
                 vasset.asset_type = "episode"
                 vasset.save()
                 vepisode.asset = vasset
-                vepisode.original_title = decjson['Episode']['original_title']
-                vepisode.channel = Channel.objects.get(pk=decjson['Episode']['channel_id'])
+                vepisode.original_title  = decjson['Episode']['original_title']
+                vepisode.channel         = Channel.objects.get(pk=decjson['Episode']['channel_id'])
                 vepisode.display_runtime = decjson['Episode']['display_runtime']
-                vasset_serie = Asset.objects.get(asset_id=decjson['Episode']['serie_id'])
-                vepisode.serie = Serie.objects.get(asset=vasset_serie)
-                vepisode.chapter = decjson['Episode']['chapter']
-                vepisode.season = decjson['Episode']['season']
-                vgrabarypublicar = decjson['Episode']['publicar']
+                vasset_serie             = Asset.objects.get(asset_id=decjson['Episode']['serie_id'])
+                vepisode.serie           = Serie.objects.get(asset=vasset_serie)
+                vepisode.chapter         = decjson['Episode']['chapter']
+                vepisode.season          = decjson['Episode']['season']
+                vgrabarypublicar         = decjson['Episode']['publicar']
+
 
                 # Datos OPCIONALES
                 if (decjson['Episode']['year'] is not None):
                     vepisode.year = decjson['Episode']['year']
+
 
                 if (decjson['Episode']['cast'] is not None):
                     vepisode.cast = decjson['Episode']['cast']
@@ -139,7 +141,7 @@ class EpisodeController(object):
                     try:
                         asset_id = item['girl_id']
                         print "AssetId add episode" + asset_id
-                        vgirl = Girl.objects.get(asset_id=item['girl_id'])
+                        vgirl = Girl.objects.get(id=item['girl_id'])
                         vepisode.girls.add(vgirl)
                     except Girl.DoesNotExist as e:
                         request.session['list_episode_message'] = 'Error: ' + str(e.message)
@@ -170,7 +172,6 @@ class EpisodeController(object):
             #countries = vepisode.serie.asset
             serie = vepisode.serie
             asset = serie.asset
-
             vepisode.save()
 
             vepisode.asset.target_country = []
@@ -202,9 +203,36 @@ class EpisodeController(object):
                     emd.title = item['Episodemetadata']['title']
                     emd.summary_short = item['Episodemetadata']['summary_short']
                     emd.summary_long = item['Episodemetadata']['summary_long']
-                    emd.publish_date = vschedule_date
+                    #emd.publish_date = vschedule_date
                     emd.episode = vepisode
                     emd.save()
+
+                    # PUBLICAR METADATA
+                    if vgrabarypublicar == '1':
+                        try:
+                            # Publicar el Episodio
+                            emd.queue_status = True
+                            emd.save()
+                            ph = PublishHelper()
+                            ph.func_publish_queue(request, emd.episode.asset.asset_id, emd.language, 'AS', 'Q',vschedule_date)
+                            ph.func_publish_image(request, vimg)
+
+                            # Se vuelve a publicar la SERIE en el idioma del Episodio publicado
+                            if (PublishQueue.objects.filter(item_id=emd.episode.serie.asset.asset_id, status__in=['Q', 'D']).count() < 1):
+                                ph = PublishHelper()
+                                ph.func_publish_queue(request, vepisode.serie.asset.asset_id, vlang, 'AS', 'Q',vschedule_date)
+                                ph.func_publish_image(request, vepisode.serie.image)
+                        except EpisodeMetadata.DoesNotExist as e:
+                            self.code_return = -1
+                            request.session['list_episode_message'] = 'Error al Publicar el Episodio ' + e.message
+                            request.session['list_episode_flag'] = FLAG_ALERT
+                            return self.code_return
+                        except Exception as e:
+                            self.code_return = -1
+                            request.session['list_episode_message'] = 'Error al Republicar la SERIE' + e.message
+                            request.session['list_episode_flag'] = FLAG_ALERT
+                            return self.code_return
+
                 except Language.DoesNotExist as e:
                     request.session['list_episode_message'] = 'Error: ' + str(e.message)
                     request.session['list_episode_flag'] = FLAG_ALERT
@@ -212,35 +240,7 @@ class EpisodeController(object):
                     return self.code_return
             request.session['list_episode_message'] = 'Guardado Correctamente'
             request.session['list_episode_flag'] = FLAG_SUCCESS
-            #PUBLICAR METADATA
-            if vgrabarypublicar == '1':
-                try:
-                    ph = PublishHelper()
-                    ph.func_publish_image(request, vimg)
-                    metadatas = EpisodeMetadata.objects.filter(episode=vepisode)
-                    for mdi in metadatas:
-                        # Publicar el Episodio
-                        mdi.queue_status = True
-                        mdi.save()
-                        ph = PublishHelper()
-                        ph.func_publish_queue(request, mdi.episode.asset.asset_id, mdi.language, 'AS', 'Q',vschedule_date)
-                        ph.func_publish_image(request, vimg)
 
-                        # Se vuelve a publicar la SERIE en el idioma del Episodio publicado
-                        if (PublishQueue.objects.filter(item_id=mdi.episode.serie.asset.asset_id,status__in=['Q', 'D']).count() < 1):
-                            ph = PublishHelper()
-                            ph.func_publish_queue(request, vepisode.serie.asset.asset_id, vlang, 'AS', 'Q', vschedule_date)
-                            ph.func_publish_image(request, vepisode.serie.image)
-                except EpisodeMetadata.DoesNotExist as e:
-                    self.code_return = -1
-                    request.session['list_episode_message'] = 'Error al Publicar el Episodio ' + e.message
-                    request.session['list_episode_flag'] = FLAG_ALERT
-                    return self.code_return
-                except Exception as e:
-                    self.code_return = -1
-                    request.session['list_episode_message'] = 'Error al Republicar la SERIE' + e.message
-                    request.session['list_episode_flag'] = FLAG_ALERT
-                    return self.code_return
 
             vflag = "success"
             message ='Guardado Correctamente'
@@ -260,9 +260,17 @@ class EpisodeController(object):
         vassets = Asset.objects.filter(asset_type="unknown")
         countries = Country.objects.all().order_by('name')
 
-        context = {'message': message, 'vcategories': vcategories, 'vchannels': vchannels, 'vgirls': vgirls,
-                   'vlanguages': vlanguages, 'vseries': vseries, 'vmovies': vmovies, 'vcapitulos': vcapitulos,
-                   'vassets': vassets,'countries':countries}
+        context = {'message': message,
+                   'vcategories': vcategories,
+                   'vchannels': vchannels,
+                   'vgirls': vgirls,
+                   'vlanguages': vlanguages,
+                   'vseries': vseries,
+                   'vmovies': vmovies,
+                   'vcapitulos': vcapitulos,
+                   'vassets': vassets,
+                   'countries':countries,
+                   }
 
         return render(request, 'cawas/episodes/add.html', context)
 
@@ -281,13 +289,20 @@ class EpisodeController(object):
         vschedule_date = ''
         vasset = Asset()
         vepisode = Episode()
+        imgport = ''
+        imgland = ''
+        publicar = 0
         try:
             vasset = Asset.objects.get(asset_id=episode_id)
             vepisode = Episode.objects.get(asset=vasset)
-            i = len(vepisode.image.portrait.name)
-            imgport = vepisode.image.portrait.name[5:i]
-            i = len(vepisode.image.landscape.name)
-            imgland = vepisode.image.landscape.name[5:i]
+            if vepisode.image is not None:
+                if vepisode.image.portrait is not None:
+                    i = len(vepisode.image.portrait.name)
+                    imgport = vepisode.image.portrait.name[5:i]
+
+                if vepisode.image.landscape is not None:
+                    i = len(vepisode.image.landscape.name)
+                    imgland = vepisode.image.landscape.name[5:i]
 
         except Asset.DoesNotExist as e:
             request.session['list_episode_message'] = 'No Existe Asset' +  str(e.message)
@@ -299,8 +314,10 @@ class EpisodeController(object):
             request.session['list_episode_flag'] = FLAG_SUCCESS
             self.code_return = -1
             return self.code_return
+
+
+
         if request.method == 'POST':
-            # VARIABLES
             try:
                 pathfilesport = Setting.objects.get(code='image_repository_path_portrait')
                 pathfilesland = Setting.objects.get(code='image_repository_path_landscape')
@@ -309,14 +326,16 @@ class EpisodeController(object):
                 strjson = request.POST['varsToJSON']
                 decjson = json.loads(strjson.replace('\r','\\r').replace('\n','\\n'))
                 # DATOS OBLIGATORIOS
-                vepisode.original_title = decjson['Episode']['original_title']
-                vepisode.channel = Channel.objects.get(pk=decjson['Episode']['channel_id'])
+                vepisode.original_title  = decjson['Episode']['original_title']
+                vepisode.channel         = Channel.objects.get(pk=decjson['Episode']['channel_id'])
                 vepisode.display_runtime = decjson['Episode']['display_runtime']
-                print "Serie_id" + decjson['Episode']['serie_id']
-                vasset_serie = Asset.objects.get(asset_id=decjson['Episode']['serie_id'])
-                vepisode.serie = Serie.objects.get(asset=vasset_serie)
-                vepisode.chapter = decjson['Episode']['chapter']
-                vepisode.season = decjson['Episode']['season']
+                vasset_serie             = Asset.objects.get(asset_id=decjson['Episode']['serie_id'])
+                vepisode.serie           = Serie.objects.get(asset=vasset_serie)
+                vepisode.chapter         = decjson['Episode']['chapter']
+                vepisode.season          = decjson['Episode']['season']
+                publicar                 = decjson['Episode']['publicar']
+
+
 
                 # Datos OPCIONALES
                 if (decjson['Episode']['year'] is not None):
@@ -383,10 +402,8 @@ class EpisodeController(object):
                 vgirls = decjson['Episode']['girls']
                 for item in vgirls:
                     try:
-                        # print item['asset_id']
                         asset_id = item['girl_id']
-                        print "AssetId add episode" + asset_id
-                        vgirl = Girl.objects.get(asset_id=item['girl_id'])
+                        vgirl = Girl.objects.get(id=item['girl_id'])
                         vepisode.girls.add(vgirl)
                     except Exception as e:
                         request.session['list_episode_message'] = 'Error al Guardar Episodio: ' + str(e.message)
@@ -429,29 +446,43 @@ class EpisodeController(object):
 
                     # convertDateYMDnowIsNull
                     if (item['Episodemetadata']['schedule_date'] != ''):
-                        vschedule_date = datetime.datetime.strptime(item['Episodemetadata']['schedule_date'],
-                                                                    '%d-%m-%Y').strftime('%Y-%m-%d')
+                        vschedule_date = datetime.datetime.strptime(item['Episodemetadata']['schedule_date'],'%d-%m-%Y').strftime('%Y-%m-%d')
                     else:
                         vschedule_date = datetime.datetime.now().strftime('%Y-%m-%d')
-                    emd.language = vlang
-                    emd.title = item['Episodemetadata']['title']
+
+                    emd.language      = vlang
+                    emd.title         = item['Episodemetadata']['title']
                     emd.summary_short = item['Episodemetadata']['summary_short']
-                    emd.summary_long = item['Episodemetadata']['summary_long']
-                    emd.publish_date = vschedule_date
-                    emd.episode = vepisode
-                    emd.queue_status = 'Q'
+                    emd.summary_long  = item['Episodemetadata']['summary_long']
+                    #emd.publish_date  = vschedule_date
+                    emd.episode       = vepisode
+                    emd.queue_status  = 'Q'
                     emd.save()
-                    #
+
+
+
+
+
+
+
+
+
                     #Publicar el Episodio
                     ph = PublishHelper()
-                    ph.func_publish_queue(request, vepisode.asset.asset_id, vlang, 'AS', 'Q', vschedule_date)
-                    ph.func_publish_image(request, vimg)
+                    if publicar > 0:
+                        # Consultar si serie metadata esta del lenguaje esta activada, de ser asi, se publica la serie nuevamente
+                        if (SerieMetadata.objects.filter(serie=vepisode.serie, language=vlang, activated=False).count() > 0):
+                            ph.func_publish_queue(request, vepisode.serie.asset.asset_id, vlang, 'AS', 'Q', vschedule_date)
+                            ph.func_publish_image(request, vepisode.serie.image)
 
-                    # Se vuelve a publicar la SERIE en el idioma del Episodio publicado
-                    if (PublishQueue.objects.filter(item_id=vepisode.serie.asset.asset_id,status__in=['Q']).count() < 1):
-                        ph = PublishHelper()
+
+                        ph.func_publish_queue(request, vepisode.asset.asset_id, vlang, 'AS', 'Q', vschedule_date)
+                        ph.func_publish_image(request, vimg)
+
+                        #Se publica
                         ph.func_publish_queue(request, vepisode.serie.asset.asset_id, vlang, 'AS', 'Q', vschedule_date)
                         ph.func_publish_image(request, vepisode.serie.image)
+
 
                     request.session['list_episode_message'] = 'Guardado Correctamente '
                     request.session['list_episode_flag'] = FLAG_SUCCESS
@@ -505,12 +536,20 @@ class EpisodeController(object):
         except Category.DoesNotExist as e:
             return render(request, 'cawas/error.html', {"message": "No existe Categoria. (" + e.message + ")"})
 
-        context = {'message': message, 'vgirlnotselected': vgirlnotselected,
+        context = {'message': message,
+                   'vgirlnotselected': vgirlnotselected,
                    'vgirlselected': vgirlselected,
-                   'imgland': imgland, 'imgport': imgport, 'vepisode': vepisode,
-                   'vcategorynotselected': vcategorynotselected, 'vcategoryselected': vcategoryselected,
-                   'vchannels': vchannels, 'vlangmetadata': vlangmetadata, 'vseries': vseries,
-                   'countries_selected':countries_selected, 'countries_notselected':countries_notselected
+                   'imgland': imgland,
+                   'imgport': imgport,
+                   'vepisode': vepisode,
+                   'vcategorynotselected': vcategorynotselected,
+                   'vcategoryselected': vcategoryselected,
+                   'vchannels': vchannels,
+                   'vlangmetadata': vlangmetadata,
+                   'vseries': vseries,
+                   'countries_selected':countries_selected,
+                   'countries_notselected':countries_notselected,
+
                    }
 
         return render(request, 'cawas/episodes/edit.html', context)
@@ -526,27 +565,40 @@ class EpisodeController(object):
         #Cuando hay una Des-publicacion se completa esta variable
         message =''
         flag = ''
-
+        registros = ''
         filter = False
+        search = ''
 
         # Filtro de busqueda
         if request.GET.has_key('search'):
             search = request.GET.get('search')
             if search != '':
-                filter = True
-                registros = EpisodeMetadata.objects.filter(
-                    Q(episode__original_title__icontains=search) | Q(episode__asset__asset_id__icontains=search)).order_by('-id')
+                #Si se completo el filtro
+                print 'debug1' + str(search)
+                registros = EpisodeMetadata.objects.filter(Q(episode__original_title__icontains=search) | Q(episode__asset__asset_id__icontains=search)).order_by('-id')
+            else:
+                #Si filtro es nada
+                print 'debug2'
+                registros = EpisodeMetadata.objects.all().order_by('-id')
+        else:
+            #Si filtro no existe (vino de otra url), pregunto por cookie
+            if 'search_episode' in request.COOKIES:
+                search =  request.COOKIES['search_episode']
+                registros = EpisodeMetadata.objects.filter(Q(episode__original_title__icontains=search) | Q(episode__asset__asset_id__icontains=search)).order_by('-id')
+            else:
+                #si no existe cookie y no existe key en get
+                registros = EpisodeMetadata.objects.all().order_by('-id')
 
-        if filter == False:
-            registros = EpisodeMetadata.objects.all().order_by('-id')
-            paginator = Paginator(registros, 25)
-            page = request.GET.get('page')
-            try:
-                registros = paginator.page(page)
-            except PageNotAnInteger:
-                registros = paginator.page(1)
-            except EmptyPage:
-                registros = paginator.page(paginator.num_pages)
+
+        print 'registros' + str(registros)
+        paginator = Paginator(registros, 25)
+        page = request.GET.get('page')
+        try:
+            registros = paginator.page(page)
+        except PageNotAnInteger:
+            registros = paginator.page(1)
+        except EmptyPage:
+            registros = paginator.page(paginator.num_pages)
 
 
         if request.session.has_key('list_episode_message'):
@@ -560,13 +612,15 @@ class EpisodeController(object):
                 request.session['list_episode_flag'] = ''
 
         page = request.GET.get('page')
-        request.POST.get('page')
+        #request.POST.get('page')
 
         episodes = EpisodeMetadata.objects.all().order_by('-id')
         episodes_sin_metadata = Episode.objects.all().exclude(id__in = episodes)
 
-        context = {'message': message,'flag':flag, 'registros': registros, 'episodes_sin_metadata':episodes_sin_metadata,'usuario': usuario}
-        return render(request, 'cawas/episodes/list.html', context)
+        context = {'message': message,'flag':flag, 'registros': registros, 'episodes_sin_metadata':episodes_sin_metadata,'usuario': usuario, 'search':search}
+        response = render(request, 'cawas/episodes/list.html', context)
+        response.set_cookie('search_episode', search)
+        return response
 
 
     #despublicar
@@ -600,15 +654,20 @@ class EpisodeController(object):
             # Se deberia hacer algo con las Series?
 
             # mostrar cartel de informaion
-            # eliminar episodiometada en los idiomas
-            # eliminar episodio
-            # actulizar asset a unkwon
-            # republicar la serie
 
 
             # 3 - Actualizar Activated a False
             episodemetadata.activated=False
             episodemetadata.save()
+
+            #publicar la serie nuevamente
+            serie = episodemetadata.episode.serie
+            serie_metadatas = SerieMetadata.objects.filter(serie=serie)
+            for item in serie_metadatas:
+                ph = PublishHelper()
+                ph.func_publish_queue(request, item.serie.asset.asset_id, item.language, 'AS', 'Q',datetime.datetime.now().strftime('%Y-%m-%d'))
+
+
 
             self.code_return = 0
             self.message_return= 'Episode ' + episodemetadata.episode.asset.asset_id + ' despublicada Correctamente'
@@ -630,21 +689,26 @@ class EpisodeController(object):
 
         try:
             md = EpisodeMetadata.objects.get(id=id)
-            md.publish_date = datetime.datetime.now().strftime('%Y-%m-%d')
+            #md.publish_date = datetime.datetime.now().strftime('%Y-%m-%d')
             md.queue_status = 'Q'
             md.save()
+
+            #Si la serie NO esta activada en el idioma, la vuelvo a publicar
+            if (SerieMetadata.objects.filter(serie=md.episode.serie, language = md.language, activated=False ).count() > 0):
+                ph = PublishHelper()
+                ph.func_publish_queue(request, md.episode.serie.asset.asset_id, md.language, 'AS', 'Q',datetime.datetime.now().strftime('%Y-%m-%d'))
+                ph.func_publish_image(request, md.vepisode.serie.image)
+
 
             #Publica el Episodio
             ph = PublishHelper()
             ph.func_publish_queue(request, md.episode.asset.asset_id, md.language, 'AS', 'Q', datetime.datetime.now().strftime('%Y-%m-%d'))
             ph.func_publish_image(request, md.episode.image)
 
-            # Se vuelve a publicar la SERIE en el idioma del Episodio publicado
-            #Si no existe serie en estado publicado, se pub
-            if (PublishQueue.objects.filter(item_id=md.episode.serie.asset.asset_id, status__in=['Q','D']).count() < 1):
-                ph = PublishHelper()
-                ph.func_publish_queue(request, md.episode.serie.asset.asset_id, md.language, 'AS', 'Q', datetime.datetime.now().strftime('%Y-%m-%d'))
-                ph.func_publish_image(request, md.vepisode.serie.image)
+
+            ph = PublishHelper()
+            ph.func_publish_queue(request, md.episode.serie.asset.asset_id, md.language, 'AS', 'Q', datetime.datetime.now().strftime('%Y-%m-%d'))
+            ph.func_publish_image(request, md.vepisode.serie.image)
 
             request.session['list_episode_message'] = 'Episodio en ' + md.language.name
             request.session['list_episode_flag'] = FLAG_SUCCESS
@@ -668,8 +732,6 @@ class EpisodeController(object):
         mditems = EpisodeMetadata.objects.filter(episode=param_episode, language=param_lang)
         #Actualizar la fecha de publicacion
         for md in mditems:
-            md.publish_date = datetime.datetime.now().strftime('%Y-%m-%d')
-            md.save()
             #Dejar en cola de publicacion para cada idioma
             ph = PublishHelper()
             ph.func_publish_queue(request, md.episode.asset.asset_id, md.language, 'AS', 'Q', md.publish_date)

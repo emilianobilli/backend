@@ -24,6 +24,25 @@ class Device(models.Model):
     def __unicode__(self):
         return self.name
 
+class Contract(models.Model):
+    name              = models.CharField(max_length=128, unique=True, help_text="Nombre del contrato")
+    start_date        = models.DateTimeField()
+    end_date          = models.DateTimeField()
+    provider          = models.CharField(max_length=128, default='')
+    description       = models.CharField(max_length=1024)
+
+    def __unicode__(self):
+        return self.name
+
+class FatherAsset(models.Model):
+    contract          = models.ForeignKey(Contract)
+    asset_id          = models.CharField(max_length=8)
+    arrival_date      = models.DateTimeField()
+    duration          = models.IntegerField(default=90)
+
+    def __unicode__(self):
+        return self.asset_id
+
 
 class PublishZone(models.Model):
     name              = models.CharField(max_length=128, help_text="Nombre de la zona")
@@ -112,14 +131,40 @@ class ImageQueue(models.Model):
 
 
 class Tag(models.Model):
-    name     = models.CharField(max_length=128, unique=True, help_text="Nombre del tag")
-    language = models.ForeignKey(Language)
-
-    class Meta:
-        unique_together = ('name', 'language',)
+    tag_id   = models.CharField(max_length=128, unique=True, help_text="Nombre del tag")
+    name     = models.CharField(max_length=128, help_text="Nombre del tag")
 
     def __unicode__(self):
         return self.name
+
+    def save(self, *args, **kwargs):
+        super(Tag, self).save(*args, **kwargs)
+        if self.tag_id == '':
+
+            id = str(self.id)
+
+            while len(id) < 5:
+                id = "0" + id
+
+            self.tag_id = "T%s" % (id)
+        metadata = TagMetadata.objects.filter(tag=self)
+        for m in metadata:
+            m.modification_date = timezone.now()
+            m.save()
+        super(Tag, self).save(*args, **kwargs)
+
+
+class TagMetadata(models.Model):
+    tag               = models.ForeignKey(Tag)
+    language          = models.ForeignKey(Language)
+    name              = models.CharField(max_length=128, help_text="Nombre del tag traducido")
+    modification_date = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        unique_together = ('tag', 'language',)
+
+    def __unicode__(self):
+        return ('%s:%s') % (self.tag.tag_id, self.language)
 
 
 class Category(models.Model):
@@ -271,6 +316,7 @@ class Slider(models.Model):
     media_type        = models.CharField(max_length=10, choices=TYPE, help_text="Tipo de Slider")
     image             = models.ForeignKey(Image, blank=True, null=True)
     asset             = models.ForeignKey(Asset, blank=True, null=True)
+    linked_url        = models.CharField(max_length=256, blank=True, help_text="Link del slider a URL")
     target_device     = models.ForeignKey(Device)
     language          = models.ForeignKey(Language)
     target_country    = models.ManyToManyField(Country, blank=True)
@@ -280,15 +326,13 @@ class Slider(models.Model):
     activated         = models.BooleanField(default=False)
     queue_status      = models.CharField(max_length=1, default='', help_text="Status del item en PublishQueue")
 
+
     def save(self, *args, **kwargs):
         super(Slider, self).save(*args, **kwargs)
         if self.slider_id == '':
-
             id = str(self.id)
-
             while len(id) < 5:
                 id = "0" + id
-
             self.slider_id = "L%s" % (id)
         super(Slider, self).save(*args, **kwargs)
 
@@ -312,6 +356,8 @@ class Slider(models.Model):
         if self.asset is not None:
             dict["linked_asset_id"]   = self.asset.asset_id
             dict["linked_asset_type"] = self.asset.asset_type
+        elif self.linked_url != '':
+            dict["linked_url"] = self.linked_url
         dict["target"] = self.target_device.name
         dict["lang"]   = self.language.code
         dict["text"]   = self.text
@@ -428,21 +474,6 @@ class Serie(models.Model):
             if self.image.landscape.name != '':
                 dict["image_landscape"] = os.path.basename(self.image.landscape.name)
 
-        episodes = Episode.objects.filter(serie=self)
-        metadata_list = EpisodeMetadata.objects.filter(episode__in=episodes, activated=True)
-        episodes_available = []
-        for metadata in metadata_list:
-            if metadata.episode not in episodes_available:
-                print metadata.language.code
-                episodes_available.append(metadata.episode)
-        seasons = []
-        for episode in episodes_available:
-            if str(episode.season) not in seasons:
-                seasons.append(str(episode.season))
-        dict["available_seasons"] = seasons
-        dict["seasons"]  = len(seasons)
-        dict["episodes"] = len(episodes_available)
-
         return dict
 
 
@@ -485,11 +516,22 @@ class SerieMetadata(models.Model):
         if len(categories) > 0:
             dict["categories"]     = categories
 
+        episodes    = Episode.objects.filter(serie=self.serie)
+        ep_metadata = EpisodeMetadata.objects.filter(episode__in=episodes, activated=True, language=self.language)
+        seasons = []
+        for em in ep_metadata:
+            if str(em.episode.season) not in seasons:
+                seasons.append(str(em.episode.season))
+        dict["available_seasons"] = seasons
+        dict["seasons"]  = len(seasons)
+        dict["episodes"] = len(ep_metadata)
+
         return dict
 
 
 class Episode(models.Model):
     asset           = models.ForeignKey(Asset)
+    father_asset    = models.ForeignKey(FatherAsset, default=6)
     original_title  = models.CharField(max_length=128, help_text="Titulo original")
     channel         = models.ForeignKey(Channel)
     year            = models.IntegerField(default=2000, help_text="Fecha de produccion")
@@ -609,6 +651,7 @@ class EpisodeMetadata(models.Model):
 
 class Movie(models.Model):
     asset           = models.ForeignKey(Asset)
+    father_asset    = models.ForeignKey(FatherAsset,default=6)
     original_title  = models.CharField(max_length=128, help_text="Titulo original")
     channel         = models.ForeignKey(Channel)
     year            = models.IntegerField(default=2000, help_text="Fecha de produccion",blank=True, null=True)
@@ -744,6 +787,7 @@ class CableOperator(models.Model):
         return dict
 
 
+
 class Block(models.Model):
     block_id          = models.CharField(max_length=8, unique=True, help_text="ID del Bloque")
     name              = models.CharField(max_length=128, help_text="Nombre del bloque")
@@ -793,3 +837,14 @@ class Block(models.Model):
             dict["order"] = self.order
 
         return dict
+
+
+class VideoLog(models.Model):
+    asset  = models.ForeignKey(Asset)
+    tag    = models.ForeignKey(Tag)
+    tc_in  = models.IntegerField(help_text="TC IN")
+    tc_out = models.IntegerField(help_text="TC OUT")
+
+    def __unicode__(self):
+        return ('%s:%s') % (self.asset.asset_id, self.tag.name)
+

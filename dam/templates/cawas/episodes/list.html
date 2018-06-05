@@ -90,18 +90,44 @@
                         <button type="submit" class=""><span class="glyphicon glyphicon-filter inverse"></span></button>
                     </div>
                 </form>
+
                 </div>
+
             </div>
             <!-- formulario de busqueda -->
 
             <!-- GRID row -->
+            {% if search %}
+            {% if search != '' %}
             <div class="row">
                 <div class="col-xs-12 col-md-12 col-lg-12 ">
+                     <h3>
+                        Filtrado por: "{{search}}"
+                    </h3>
+                    <form action="/episodes/list" method="get" id="searchForID2" name="searchForId">
+                     <input type="hidden" class="form-control fLEFT top6" id="search"
+                                   name="search" placeholder="Ingresar Texto de Busqueda" >
+
+
+                        <button type="submit" class="btn btn-flat btn-xs btn-success">Quitar Filtro</button>
+
+                    </form>
+                </div>
+            </div>
+            {% endif %}
+            {% endif %}
+            <div class="row">
+                <div class="col-xs-12 col-md-12 col-lg-12 ">
+
+
                 <h2>Listado de Episodios </h2>
+
                 <table class="tb-row tb-header">
                       <thead>
                             <th class="tb-cell">ID</th>
                             <th class="tb-cell">Título</th>
+                            <th class="tb-cell">Temporada</th>
+                            <th class="tb-cell">Episodio</th>
                             <th class="tb-cell">Idioma</th>
                             <th class="tb-cell">Estado</th>
                             <th class="tb-cell">Activado</th>
@@ -118,6 +144,8 @@
                         <tr class="tb-row">
                            <td class="tb-cell">{{ item.episode.asset.asset_id}}</td>
                             <td class="tb-cell">{{ item.title }}</td>
+                            <td class="tb-cell">{{ item.episode.season }}</td>
+                            <td class="tb-cell">{{ item.episode.chapter }}</td>
                             <td class="tb-cell">{{ item.language.name }}</td>
                             {% if item.publish_status == 0  %}
                                 <td class="tb-cell">Sin Publicar</td>
@@ -153,6 +181,7 @@
                                  {% else %}
                               <td class="tb-cell"><a href="/episodes/unpublish/{{ item.id}}"class="btn-warning btn tb-btn desactivar">Desactivar</a></td>
                            {% endif %}
+                            <td class="tb-cell"><a href="/videologs/add/{{ item.episode.asset.asset_id}}" class="btn-default btn tb-btn">Registrar Tags</a></td>
                         </tr>
                     {% endfor %}
                  </table>

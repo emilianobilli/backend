@@ -2,6 +2,7 @@ import django
 import os
 os.environ.setdefault("DJANGO_SETTINGS_MODULE", "dam.settings")
 django.setup()
+import requests
 
 #+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 # App Model
@@ -47,6 +48,21 @@ class UploaderException(Exception):
         return repr(self.value)
 
 
+def purge_imgix_image(filename, itype):
+    PURGE_EP = Setting.objects.get(code="imgix_purge_endpoint").value
+    API_KEY  = Setting.objects.get(code="imgix_apikey").value
+    if itype == "landscape":
+        url = Setting.objects.get(code="image_cdn_landscape").value + filename
+    elif itype == "portrait":
+        url  = Setting.objects.get(code="image_cdn_portrait").value + filename
+    else:
+        return
+    try:
+        requests.post(PURGE_EP, auth=(API_KEY, ''), data={"url": url})
+    except:
+        pass
+
+
 def upload_images():
 
     try:
@@ -75,6 +91,7 @@ def upload_images():
                         job.save()
                         s3.upload(src_path, filename, job.publish_zone.s3_bucket, dest_path)
                         logging.info("upload_images(): File %s/%s uploaded successfully" % (src_path, filename))
+                        purge_imgix_image(filename, "portrait")
                     else:
                         job.status = 'E'
                         msg = "File does not exist: %s" % img
@@ -98,6 +115,7 @@ def upload_images():
                         job.save()
                         s3.upload(src_path, filename, job.publish_zone.s3_bucket, dest_path)
                         logging.info("upload_images(): File %s/%s uploaded successfully" % (src_path, filename))
+                        purge_imgix_image(filename, "landscape")
                     else:
                         job.status = 'E'
                         msg = "File does not exist: %s" % img

@@ -32,8 +32,9 @@ class SliderController(object):
             request.session['list_slider_message'] = 'No existe Setting '
             request.session['list_slider_flag'] = FLAG_ALERT
             return self.code_return
-
+        print 'debug'
         if request.method == 'POST':
+            print 'debugPost'
             # VARIABLES
             try:
                 vimg = Image()
@@ -41,13 +42,25 @@ class SliderController(object):
                 strjson = request.POST['varsToJSON']
                 decjson = json.loads(strjson.replace('\r','\\r').replace('\n','\\n'))
                 vgrabarypublicar = decjson['Slider']['publicar']
-                if (decjson['Slider']['asset_id']!='0'):
-                    vasset = Asset.objects.get(asset_id=decjson['Slider']['asset_id'])
-                    vslider.asset = vasset
+                print 'debug1'
+                if decjson['Slider']['asset_id'] is not None:
+                    if Asset.objects.filter(asset_id=decjson['Slider']['asset_id']).exists():
+                        vasset = Asset.objects.get(asset_id=decjson['Slider']['asset_id'])
+                        vslider.asset = vasset
+                    else:
+                        vslider.asset = None
+                print 'debug2'
                 vslider.media_type = decjson['Slider']['media_type']
                 vdevice = Device.objects.get(id=decjson['Slider']['target_device_id'])
                 vslider.target_device = vdevice
                 vslider.text = decjson['Slider']['text']
+
+
+                if decjson['Slider']['linked_url'] is None:
+                    vslider.linked_url = ''
+                else:
+                    vslider.linked_url = decjson['Slider']['linked_url']
+
                 vslider.language = Language.objects.get(code=decjson['Slider']['language'])
                 vslider.save()
 
@@ -105,7 +118,7 @@ class SliderController(object):
                     # se debe publicar asset asociado antes de publicar el slider
 
                     ph = PublishHelper()
-                    ph.func_publish_queue(request, vslider.slider_id, vslider.language, 'SL', 'Q', vslider.publish_date)
+                    ph.func_publish_queue(request, vslider.slider_id, vslider.language, 'SL', 'Q', vschedule_date)
                     ph.func_publish_image(request, vslider.image)
 
 
@@ -188,10 +201,13 @@ class SliderController(object):
 
                 vslider = Slider.objects.get(slider_id=slider_id)
 
+
                 if decjson['Slider']['asset_id'] is not None:
                     if Asset.objects.filter(asset_id=decjson['Slider']['asset_id']).exists():
                         vasset = Asset.objects.get(asset_id=decjson['Slider']['asset_id'])
                         vslider.asset = vasset
+                    else:
+                        vslider.asset = None
 
                 vslider.media_type = decjson['Slider']['media_type']
                 vdevice = Device.objects.get(id=decjson['Slider']['target_device_id'])
@@ -201,10 +217,15 @@ class SliderController(object):
                 else:
                     vslider.text = decjson['Slider']['text']
 
+                if decjson['Slider']['linked_url'] is None:
+                    vslider.linked_url = ''
+                else:
+                    vslider.linked_url = decjson['Slider']['linked_url']
+
+
                 vslider.language = Language.objects.get(code=decjson['Slider']['language'])
                 if (decjson['Slider']['publish_date'] != ''):
-                    vschedule_date = datetime.datetime.strptime(decjson['Slider']['publish_date'], '%d-%m-%Y').strftime(
-                        '%Y-%m-%d')
+                    vschedule_date = datetime.datetime.strptime(decjson['Slider']['publish_date'], '%d-%m-%Y').strftime('%Y-%m-%d')
                 else:
                     vschedule_date = datetime.datetime.now().strftime('%Y-%m-%d')
                 vslider.publish_date = vschedule_date
@@ -356,13 +377,6 @@ class SliderController(object):
             if (Slider.objects.filter(slider_id=id).count() > 0 ):
                 slider = Slider.objects.get(slider_id=id)
 
-            if not slider.activated:
-                slider.delete()
-                self.code_return = 0
-                request.session['list_slider_message'] = 'Slider Eliminado Correctamente '
-                request.session['list_slider_flag'] = FLAG_SUCCESS
-                return self.code_return
-
             # 1 - VERIFICAR, si estado de publicacion esta en Q, se debe eliminar
             publishs = PublishQueue.objects.filter(item_id=slider.slider_id, status='Q')
             if publishs.count > 0:
@@ -372,20 +386,24 @@ class SliderController(object):
             setting = Setting.objects.get(code='backend_slider_url')
             api_key = Setting.objects.get(code='backend_api_key')
             vzones = PublishZone.objects.filter(enabled=True)
+
             #SE COMENTA PARA
+            hasErrorBackend = False
             for zone in vzones:
                 abr = ApiBackendResource(zone.backend_url, setting.value, api_key.value)
-                param = {"slider_id": slider.slider_id,
-                         "lang": slider.language.code}
-                abr.delete(param)
+                param = {"slider_id": slider.slider_id, "lang": slider.language.code}
+                respuesta = abr.delete(param)
+                if respuesta['status'] != '200':
+                    hasErrorBackend = True
 
-            # 3 - Actualizar Activated a False
-            slider.activated=False
-            slider.save()
-            slider.delete()
-            self.code_return = 0
-            request.session['list_slider_message'] = 'Slider en ' + slider.language.name +' de Slider ' + slider.slider_id + ' Despublicado Correctamente'
-            request.session['list_slider_flag'] = FLAG_SUCCESS
+
+            if not hasErrorBackend:
+                slider.delete()
+                self.code_return = 0
+                request.session['list_slider_message'] = 'Slider Eliminado Correctamente '
+                request.session['list_slider_flag'] = FLAG_SUCCESS
+                return self.code_return
+
         except PublishZone.DoesNotExist as e:
             self.code_return = -1
             request.session['list_slider_message'] = 'Error: ' + e.message

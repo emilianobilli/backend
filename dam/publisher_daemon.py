@@ -85,6 +85,8 @@ def publish_serie(asset, lang):
         msg = "Serie with asset ID %s has not %s metadata" % (asset.asset_id, lang.name)
         logging.error(msg)
         raise PublisherException(msg)
+    metadata.publish_date = timezone.now()
+    metadata.save()
     return metadata
 
 

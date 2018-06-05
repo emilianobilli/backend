@@ -63,6 +63,7 @@
                     <thead>
                         <th class="tb-cell">ID</th>
                         <th class="tb-cell">Nombre</th>
+                        <th class="tb-cell">Dispositivo</th>
                         <th class="tb-cell">Idioma</th>
                         <th class="tb-cell">Estado</th>
                         <th class="tb-cell">Activado</th>
@@ -83,6 +84,7 @@
                                 {{ item.block_id }}
                             </td>
                             <td class="tb-cell">{{ item.name }}</td>
+                            <td class="tb-cell">{{ item.target_device.name }}</td>
                             <td class="tb-cell">{{ item.language.name }}</td>
                             {% if item.publish_status == 0  %}
                                 <td class="tb-cell">Sin Publicar</td>
@@ -115,7 +117,6 @@
                             {% if item.activated == 0 %}
                                 <td class="tb-cell">
                                     <a href="/blocks/publish/{{ item.id}}" class="btn-success btn tb-btn publicar">Publicar</a>
-
                                     <a href="/blocks/unpublish/{{ item.id}}" class="btn-danger btn tb-btn eliminar">Eliminar</a>
                                 </td>
                             {% else %}
@@ -123,21 +124,19 @@
                             {% endif %}
 
                         </tr>
-
-
                     {% endfor %}
-                  <!-- Third Row -->
-
                 </table>
+
                 <div class="pagination">
                     <span class="step-links">
+
                         {% if registros.has_previous %}
-                            <a href="?page={{ registros.previous_page_number }}">Anterior</a>
+                         <li class="active"><a href="?page={{ registros.previous_page_number }}">1 <span class="sr-only">(current)</span></a></li>
+                        {% else %}
+                         <li class="disabled"><a href="#" aria-label="Previous"><span aria-hidden="true">&laquo;</span></a></li>
                         {% endif %}
 
-                        <span class="current">
-                            Pag. Actual {{ registros.number }} of {{ registros.paginator.num_pages }}.
-                        </span>
+
 
                         {% if registros.has_next %}
                             <a href="?page={{ registros.next_page_number }}">Siguiente</a>

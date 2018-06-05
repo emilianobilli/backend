@@ -72,13 +72,13 @@
            </div>
            <div class="fRIGHT-lg">
 
-                       <!-- ------------------Reemplazar por listado de capítulos ----------------- -->
-                        <select id="episode-edit" class="form-control movie-edit fRIGHT-lg" size="6">
-                            {% for item in vcapitulos %}
-                              <option value="{{ item.asset.asset_id }}"> ID: {{ item.asset.asset_id }} - {{ item.original_title }} - Temp.: {{ item.season }} - Cap.: {{ item.chapter }}</option>
-                            {% endfor %}
-                        </select>
-                      <!-- ---------------------- Fin de  listado de capítulos ------------------- -->
+               <!-- ------------------Reemplazar por listado de capítulos ----------------- -->
+                <select id="episode-edit" class="form-control movie-edit fRIGHT-lg" size="6">
+                    {% for item in vcapitulos %}
+                      <option value="{{ item.asset.asset_id }}"> ID: {{ item.asset.asset_id }} - {{ item.original_title }} - Temp.: {{ item.season }} - Cap.: {{ item.chapter }}</option>
+                    {% endfor %}
+                </select>
+              <!-- ---------------------- Fin de  listado de capítulos ------------------- -->
            </div>
 
            <div class="col-xs-12 col-md-4 col-lg-4 fRIGHT-lg unpad">
@@ -114,8 +114,6 @@
                             <label for="orginalTitle" id="idTit">AGREGANDO ID:</label>
                         </div>
 
-
-
                         <div class="form-group has-feedback" id="oriTit-container">
                             <label class="label-left" for="orginalTitle">Título original: *</label>
                             <input type="text" class="form-control" name="orginalTitle" id="orginalTitle" autofocus>
@@ -126,23 +124,25 @@
                     </div>
                 </div>
 
+
+
+
+
+
                 <!-- Row : Serie -->
                 <div class="row form-row">
                     <div class="col-xs-12 col-md-4 col-lg-4" id="seriess">
                         <div class="form-group has-feedback" id="SeriePick">
                             <label class="label-left" for="serie_id">Elegir Serie a la que pertenece: *</label>
 
-                                       <!-- ------------------Reemplazar por listado de series ----------------- -->
-                                        <select type="text" id="serie-id" class="form-control movie-edit" size="6">
-                                             {% for item in vseries %}
-                                                <option value="{{ item.asset.asset_id }}"> {{ item.original_title }} </option>
-                                             {% endfor %}
-                                        </select>
-                                      <!-- ---------------------- Fin de  listado de series ------------------- -->
-
-                            <span class="glyphicon form-control-feedback"></span>
+                                <!------------------- Reemplazar por listado de series ----------------- -->
+                                <select type="text" id="serie-id" name="serie-id" class="form-control movie-edit" size="6">
+                                     {% for item in vseries %}
+                                        <option value="{{ item.asset.asset_id }}"> {{ item.original_title }} </option>
+                                     {% endfor %}
+                                </select>
+                                <!------------------- Fin de  listado de series ------------------- -->
                         </div>
-
                     </div>
 
 
@@ -269,12 +269,13 @@
                 <div class="row form-row">
                     <div class="col-xs-12 col-md-4 col-lg-4 form-group">
                         <div class="form-group has-feedback" id="channelSelect">
-                            <label class="label-left" for="canal">Canal: *</label>
+                            <label class="label-left" for="canal">Canal: </label>
                             <div class="helpright"><span class="glyphicon glyphicon-question-sign" data-toggle="tooltip" title="Selecciona el canal al que pertenece esta movie (ej: Venus)"></span></div>
 
                             <!-- ------------------Reemplazar por listado de canales ----------------- -->
 
                             <select type="text" class="form-control" name="canal" id="canalSelect">
+                                <option value=""></option>
                                 {% for item in vchannels %}
                                      <option value="{{item.id}}">{{item.name}}</option>
                                 {% endfor %}

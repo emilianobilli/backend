@@ -25,7 +25,7 @@ SECRET_KEY = 'i+lh0386tk(20b6m8=9r--j2d%+-5xn*$bkyzp$4b@8e=c@4#e'
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['cawas-dev', 'cawas-dev.claxson.com', 'cawas', 'cawas.claxson.com','127.0.0.1']
 
 
 
@@ -60,7 +60,11 @@ ROOT_URLCONF = 'dam.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': ['templates'],
+        'DIRS': [
+            os.path.join(BASE_DIR, 'templates'),
+            os.path.join(BASE_DIR, 'accounts','templates'),
+            os.path.join(BASE_DIR, 'reports', 'templates'),
+        ],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -79,15 +83,37 @@ WSGI_APPLICATION = 'dam.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/1.9/ref/settings/#databases
 
+#DATABASES = {
+#    'default': {
+#        'ENGINE': 'django.db.backends.sqlite3',
+#        'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
+#    }
+#}
+'''
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql',
-        'NAME':'cawas',
+        'OPTIONS': {
+                    'sql_mode': 'traditional'
+                    },
+        'NAME':'cawas2',
         'USER':'root',
         'PASSWORD':'',
         'HOST':'localhost',
         'PORT':'3306'
+    }
+}
+'''
 
+DATABASES = {
+    'default': {
+        'ENGINE': 'django.db.backends.mysql',
+        'NAME': 'cawas',
+        'USER': 'cawas',
+        'PASSWORD': 'Caw.1984p',
+        'HOST': 'localhost',
+        'PORT': '',
+	'OPTIONS': {'charset': 'utf8mb4'},
     }
 }
 
@@ -129,4 +155,8 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/1.9/howto/static-files/
 
 STATIC_URL = '/static/'
-static_files_movies = '/static/files/movies/'
+#STATICFILES_DIRS = [
+#    os.path.join(BASE_DIR, "static"),
+#]
+STATIC_ROOT = os.path.join(BASE_DIR, "cawas/static/")
+MEDIA_ROOT = os.path.join(BASE_DIR, "./")

@@ -52,6 +52,15 @@ class CategoryMetadataAdmin(admin.ModelAdmin):
     list_display = ['category', 'language', 'name']
     search_fields = ['category__category_id']
 
+@admin.register(models.Tag)
+class TagAdmin(admin.ModelAdmin):
+    list_display = ['tag_id', 'name']
+
+
+@admin.register(models.TagMetadata)
+class TagMetadataAdmin(admin.ModelAdmin):
+    list_display = ['tag', 'language', 'name']
+
 
 @admin.register(models.Channel)
 class ChannelAdmin(admin.ModelAdmin):
@@ -133,3 +142,16 @@ class SliderAdmin(admin.ModelAdmin):
 @admin.register(models.Device)
 class DeviceAdmin(admin.ModelAdmin):
     list_display = ['name']
+
+@admin.register(models.VideoLog)
+class VideoLogAdmin(admin.ModelAdmin):
+    list_display = ['asset', 'tag', 'tc_in', 'tc_out']
+
+@admin.register(models.Contract)
+class ContractAdmin(admin.ModelAdmin):
+    list_display = ['name']
+
+@admin.register(models.FatherAsset)
+class FatherAssetAdmin(admin.ModelAdmin):
+    list_display = ['id','asset_id']
+

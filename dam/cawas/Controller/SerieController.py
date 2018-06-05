@@ -144,20 +144,21 @@ class SerieController(object):
                 smd = SerieMetadata()
                 try:
                     smd.language = Language.objects.get(code=item['Seriemetadata']['language'])
+                    vschedule_date = datetime.datetime.now().strftime('%Y-%m-%d')
+                    smd.title = item['Seriemetadata']['title']
+                    smd.summary_short = item['Seriemetadata']['summary_short']
+                    smd.summary_long = item['Seriemetadata']['summary_long']
+                    smd.serie = vserie
+                    smd.publish_date = vschedule_date
+                    smd.queue_status = 'Q'
+                    smd.save()
                 except Language.DoesNotExist as e:
                     self.code_return = -1
                     request.session['list_serie_message'] = 'Error No existe Lenguaje ' + e.message
                     request.session['list_serie_flag'] = FLAG_ALERT
                     return self.code_return
 
-                vschedule_date = datetime.datetime.now().strftime('%Y-%m-%d')
-                smd.title = item['Seriemetadata']['title']
-                smd.summary_short = item['Seriemetadata']['summary_short']
-                smd.summary_long = item['Seriemetadata']['summary_long']
-                smd.serie = vserie
-                smd.publish_date = vschedule_date
-                smd.queue_status = 'Q'
-                smd.save()
+
 
             flag = 'success'
             self.code_return = 0
@@ -501,9 +502,8 @@ class SerieController(object):
     def publish(self, request, id):
         #Publicar la Serie
         try:
-
             md = SerieMetadata.objects.get(id=id)
-            md.publish_date = datetime.datetime.now().strftime('%Y-%m-%d')
+            #md.publish_date = datetime.datetime.now().strftime('%Y-%m-%d')
             md.queue_status = 'Q'
             md.save()
 
@@ -518,6 +518,9 @@ class SerieController(object):
                     ph = PublishHelper()
                     ph.func_publish_queue(request, em.episode.asset.asset_id, em.language, 'AS', 'Q', datetime.datetime.now().strftime('%Y-%m-%d'))
                     ph.func_publish_image(request, em.episode.image)
+
+            ph = PublishHelper()
+            ph.func_publish_queue(request, md.serie.asset.asset_id, md.language, 'AS', 'Q',datetime.datetime.now().strftime('%Y-%m-%d'))
             request.session['list_serie_message'] = 'Serie en ' + md.language.name + ' Guardado en Cola de Publicacion'
             request.session['list_serie_flag'] = FLAG_SUCCESS
             self.code_return = 0
@@ -527,6 +530,7 @@ class SerieController(object):
             request.session['list_serie_flag'] = FLAG_ALERT
             return self.code_return
 
+        return self.code_return
 
 
     # despublicar
@@ -592,6 +596,11 @@ class SerieController(object):
             seriemetadata.activated = False
             seriemetadata.save()
 
+            # esto es para que se actualice el campo "episodes" en el backend
+            serie = seriemetadata.serie
+            serie.save()
+
+
             self.code_return = 0
             request.session['list_serie_message'] = 'Metadata '+ str(seriemetadata.id) + ' de Serie '+ str(seriemetadata.serie.asset.asset_id)+ ' Despublicado Correctamente'
             request.session['list_serie_flag'] = FLAG_SUCCESS
@@ -621,12 +630,12 @@ class SerieController(object):
         mditems = SerieMetadata.objects.filter(serie=param_serie, language=param_lang)
         #Actualizar la fecha de publicacion
         for md in mditems:
-            md.publish_date = datetime.datetime.now().strftime('%Y-%m-%d')
+            #md.publish_date = datetime.datetime.now().strftime('%Y-%m-%d')
             md.activated = True
             md.save()
             #Dejar en cola de publicacion para cada idioma
             ph = PublishHelper()
-            ph.func_publish_queue(request, md.serie.asset.asset_id, md.language, 'AS', 'Q', md.publish_date)
+            ph.func_publish_queue(request, md.serie.asset.asset_id, md.language, 'AS', 'Q',datetime.datetime.now().strftime('%Y-%m-%d'))
             ph.func_publish_image(request, md.serie.image)
             self.code_return = 0
 

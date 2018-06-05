@@ -6,6 +6,7 @@ from django.db import IntegrityError
 from django.http import  HttpResponse
 from django.core.urlresolvers import reverse
 from Controller.MovieController import MovieController
+from Controller.VideoLogController import VideoLogController
 from Controller.SerieController import SerieController
 from Controller.GirlController import GirlController
 from Controller.EpisodeController import EpisodeController
@@ -13,6 +14,9 @@ from Controller.BlockController import BlockController
 from Controller.CategoryController import CategoryController
 from Controller.SliderController import SliderController
 from Controller.CableOperatorController import CableOperatorController
+from Controller.TagController import TagController
+from Controller.ContractController import ContractController
+from Controller.FatherAssetController import FatherAssetController
 
 from Controller.LogController import LogController
 from models import Channel, Device, Slider,  Episode, EpisodeMetadata, ImageQueue, PublishQueue, \
@@ -229,6 +233,61 @@ def prueba_json_view(request):
 
 
 
+
+
+#ABM VIDEOLOG
+def list_videolog_view(request):
+    c = VideoLogController()
+    return c.index(request)
+
+def add_videolog_view(request, asset_id):
+    c = VideoLogController()
+    return c.add(request,asset_id)
+
+
+def edit_videolog_view(request, asset_id):
+    c = VideoLogController()
+    return c.edit(request, asset_id)
+
+
+def findbyassetid_videolog_view(request):
+    c = VideoLogController()
+    return c.findByAssetId(request)
+
+
+def delete_videolog_view(request):
+    c = VideoLogController()
+    return c.delete(request)
+
+
+
+# ABM VIDEOLOG - FIN
+
+
+#ABM TAGS
+def list_tags_view(request):
+    c = TagController()
+    return c.index(request)
+
+
+def add_tag_view(request):
+    c = TagController()
+    return c.add(request)
+
+def edit_tag_view(request, tag_id):
+    c = TagController()
+    return c.edit(request, tag_id)
+
+def delete_tag_view(request):
+    c = TagController()
+    return c.delete(request)
+
+
+#ABM TAGS - Fin
+
+
+
+
 def add_movies_view(request):
     mc = MovieController()
     if request.method == 'GET':
@@ -240,11 +299,106 @@ def add_movies_view(request):
 
 def edit_movies_view(request, asset_id):
     mc = MovieController()
+    response = mc.edit(request, asset_id)
+
     if request.method == 'GET':
-        return mc.edit(request, asset_id)
+        if mc.code_return == RETURN_ERROR:
+            return redirect(list_movies_view)
+        if mc.code_return == RETURN_OK:
+            return response
+
     if request.method == 'POST':
-        mc.edit(request, asset_id)
         return redirect(list_movies_view)
+
+
+def api_edit_movies_view(request):
+    mc = MovieController()
+    resp = mc.api_edit(request)
+    return HttpResponse(resp)
+
+
+
+#<CONTRACTS>
+def api_add_contracts_view(request):
+    mc = ContractController()
+    resp = mc.api_add(request)
+    return HttpResponse(resp)
+
+def api_edit_contracts_view(request):
+    mc = ContractController()
+    resp = mc.api_edit(request)
+    return HttpResponse(resp)
+
+def api_delete_contracts_view(request):
+    mc = ContractController()
+    resp = mc.api_delete(request)
+    return HttpResponse(resp)
+
+
+
+def add_contracts_view(request):
+    mc = ContractController()
+    resp = mc.add(request)
+    return HttpResponse(resp)
+
+def edit_contracts_view(request, id):
+    mc = ContractController()
+    resp = mc.edit(request, id)
+    return HttpResponse(resp)
+
+def delete_contracts_view(request):
+    mc = ContractController()
+    resp = mc.delete(request)
+    return HttpResponse(resp)
+
+def list_contracts_view(request):
+    mc = ContractController()
+    resp = mc.list(request)
+    return HttpResponse(resp)
+#</CONTRACTS>
+
+
+
+
+#<FATHERASSET>
+def api_add_fatherassets_view(request):
+    mc = FatherAssetController()
+    resp = mc.api_add(request)
+    return HttpResponse(resp)
+
+def api_edit_fatherassets_view(request):
+    mc = FatherAssetController()
+    resp = mc.api_edit(request)
+    return HttpResponse(resp)
+
+def api_delete_fatherassets_view(request):
+    mc = FatherAssetController()
+    resp = mc.api_delete(request)
+    return HttpResponse(resp)
+
+
+
+def add_fatherassets_view(request):
+    mc = FatherAssetController()
+    resp = mc.add(request)
+    return HttpResponse(resp)
+
+def edit_fatherassets_view(request, id):
+    mc = FatherAssetController()
+    resp = mc.edit(request, id)
+    return HttpResponse(resp)
+
+def delete_fatherassets_view(request):
+    mc = FatherAssetController()
+    resp = mc.delete(request)
+    return HttpResponse(resp)
+
+def list_fatherassets_view(request):
+    mc = FatherAssetController()
+    resp = mc.list(request)
+    return HttpResponse(resp)
+#</FATHERASSET>
+
 
 
 
@@ -439,8 +593,7 @@ def publish_girls_view(request, id):
 def publish_series_view(request, id):
     controller = SerieController()
     controller.publish(request, id)
-    if controller.code_return == RETURN_OK:
-        return redirect(list_series_view)
+    return redirect(list_series_view)
 
 
 def publish_blocks_view(request, id):

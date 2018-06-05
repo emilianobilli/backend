@@ -99,25 +99,15 @@ class CategoryController(object):
 
                 gmd.language = vlanguage
                 gmd.name = item['Categorymetadata']['name']
-                gmd.publish_date = vschedule_date
                 gmd.category = vcategory
-
                 gmd.save()
 
-            #PUBLICAR METADATA
-            if vgrabarypublicar == '1':
-                try:
+                #PUBLICAR METADATA
+                if vgrabarypublicar == '1':
                     ph = PublishHelper()
                     ph.func_publish_image(request, vimg)
-                    metadatas = CategoryMetadata.objects.filter(category=vcategory)
-                    for mdi in metadatas:
-                        # Publica en PublishQueue
-                        mdi.queue_status = 'Q'
-                        mdi.save()
-                        ph.func_publish_queue(request, mdi.category.category_id, mdi.language, 'CA', 'Q', vschedule_date)
-                except CategoryMetadata.DoesNotExist as e:
-                    return render(request, 'cawas/error.html',
-                                  {"message": "No existe Metadata de Categoria. (" + e.message + ")"})
+                    ph.func_publish_queue(request, gmd.category.category_id, gmd.language, 'CA', 'Q', vschedule_date)
+
 
             request.session['list_category_message'] = 'Guardado Correctamente'
             request.session['list_category_flag'] = FLAG_SUCCESS
@@ -259,9 +249,7 @@ class CategoryController(object):
             # Eliminar cola de publicacion para el item en estado Queued
             ph = PublishHelper()
             vcategorymetadatas = decjson['Category']['Categorymetadatas']
-            print vcategorymetadatas
             for item in vcategorymetadatas:
-                print 'debug4'
                 vlanguage = Language.objects.get(code=item['Categorymetadata']['language'])
                 #Solo se agrega la metadata nueva. No se modifica la existente.
                 try:
@@ -276,17 +264,11 @@ class CategoryController(object):
 
                     gmd.language = vlanguage
                     gmd.name = item['Categorymetadata']['name']
-                    gmd.publish_date = vschedule_date
                     gmd.category = vcategory
                     gmd.queue_status = 'Q'
                     gmd.save()
-
-            #En Edicion, siempre se Publica Metadata
-            metadatas = CategoryMetadata.objects.filter(category=vcategory)
-            for item in metadatas:
-                ph = PublishHelper()
-                ph.func_publish_queue(request, item.category.category_id, item.language, 'CA', 'Q', item.publish_date)
-                ph.func_publish_image(request, vimg)
+                    ph.func_publish_queue(request, gmd.category.category_id, gmd.language, 'CA', 'Q', vschedule_date)
+                    ph.func_publish_image(request, vimg)
 
             request.session['list_category_message'] = 'Guardado Correctamente'
             request.session['list_category_flag'] = FLAG_SUCCESS
@@ -358,7 +340,7 @@ class CategoryController(object):
             return redirect(lc.login_view(request))
 
         try:
-            print 'debugmetadata'
+
             # si es la ultima categoria metadata, se debe eliminar la metadata y la categoria
             categorymetadata = CategoryMetadata.objects.get(id=id)
             c = categorymetadata.category
@@ -420,7 +402,7 @@ class CategoryController(object):
     def publish(self, request, id):
         try:
             gmd = CategoryMetadata.objects.get(id=id)
-            gmd.publish_date = datetime.datetime.now().strftime('%Y-%m-%d')
+
             gmd.queue_status = 'Q'
             gmd.save()
             ph = PublishHelper()
@@ -442,14 +424,15 @@ class CategoryController(object):
         #Publica nuevamente la Category para todos los idiomas
 
         mditems = CategoryMetadata.objects.filter(category=param_category, language=param_lang)
+        date_str = datetime.datetime.now().strftime('%Y-%m-%d')
         #Actualizar la fecha de publicacion
         for md in mditems:
-            md.publish_date = datetime.datetime.now().strftime('%Y-%m-%d')
+            #md.publish_date = datetime.datetime.now().strftime('%Y-%m-%d')
             md.activated = True
             md.save()
             #Dejar en cola de publicacion para cada idioma
             ph = PublishHelper()
-            ph.func_publish_queue(request, md.category.asset.asset_id, md.language, 'CA', 'Q', md.publish_date)
+            ph.func_publish_queue(request, md.category.asset.asset_id, md.language, 'CA', 'Q', date_str)
             ph.func_publish_image(request, md.category.image)
             self.code_return = 0
 

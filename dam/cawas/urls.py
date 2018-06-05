@@ -15,6 +15,7 @@ urlpatterns = [
     url(r'^movies/list/$', views.list_movies_view, name='list_movies'),
     url(r'^movies/unpublish/(?P<id>\d*)/$', views.unpublish_movies_view, name='unpublish_movie'),
     url(r'^movies/publish/(?P<id>\d*)/$', views.publish_movies_view, name='publish_movie'),
+    url(r'^api/movies/edit/$', views.api_edit_movies_view, name='api_edit_movie'),
 
     url(r'^girls/add/$', views.add_girls_view, name='add_girls'),
     url(r'^girls/edit/(?P<asset_id>\w*)/$', views.edit_girls_view, name='edit_girls'),
@@ -63,11 +64,41 @@ urlpatterns = [
     url(r'^cableoperators/publish/(?P<id>\w*)$', views.publish_cableoperators_view, name='publish_cableoperators'),
 
 
+    url(r'^videologs/$', views.list_videolog_view, name='list_videologs'),
+    url(r'^videologs/edit/(?P<asset_id>\w*)/$', views.edit_videolog_view, name='edit_videolog'),
+    url(r'^videologs/add/(?P<asset_id>\w*)/$', views.add_videolog_view, name='add_videolog'),
+    url(r'^videologs/findbyassetid/$', views.findbyassetid_videolog_view, name='add_videolog'),
+    url(r'^videologs/delete/$', views.delete_videolog_view, name='delete_videolog'),
+
+    url(r'^tags/$', views.list_tags_view, name='list_tags'),
+    url(r'^tags/add/$', views.add_tag_view, name='edit_tag'),
+    url(r'^tags/edit/(?P<tag_id>\w*)/$', views.edit_tag_view, name='edit_tag'),
+    url(r'^tags/delete$', views.delete_tag_view, name='delete_tag'),
     #<#POST Json CAWAS>
 
-    url(r'^api/add_asset/$', views.add_asset_view, name='api_add_asset')
+    url(r'^api/add_asset/$', views.add_asset_view, name='api_add_asset'),
     #</ POST Json CAWAS>
 
 
+    #<Contracts>
+    url(r'^contracts/$', views.list_contracts_view, name='list_contracts'),
+    url(r'^contracts/add/$', views.add_contracts_view, name='add_contracts'),
+    url(r'^contracts/edit/(?P<id>\w*)/$', views.edit_contracts_view, name='edit_contracts'),
+    url(r'^contracts/delete/$', views.delete_contracts_view, name='delete_contracts'),
 
+    url(r'^api/contracts/add/$', views.api_add_contracts_view, name='api_add_contracts'),
+    url(r'^api/contracts/edit/$', views.api_edit_contracts_view, name='api_edit_contracts'),
+    url(r'^api/contracts/delete/$', views.api_delete_contracts_view, name='api_delete_contracts'),
+    #</Contracts>
+
+    #<FatherAsset>
+    url(r'^fatherassets/$', views.list_fatherassets_view, name='list_fatherassets'),
+    url(r'^fatherassets/add/$', views.add_fatherassets_view, name='add_fatherassets'),
+    url(r'^fatherassets/edit/(?P<id>\w*)/$', views.edit_fatherassets_view, name='edit_fatherassets'),
+    url(r'^fatherassets/delete/$', views.delete_fatherassets_view, name='delete_fatherassets'),
+
+    url(r'^api/fatherassets/add/$', views.api_add_fatherassets_view, name='api_add_fatherassets'),
+    url(r'^api/fatherassets/edit/$', views.api_edit_fatherassets_view, name='api_edit_fatherassets'),
+    url(r'^api/fatherassets/delete/$', views.api_delete_fatherassets_view, name='api_delete_fatherassets')
+    #</FatherAsset>
 ]

@@ -39,11 +39,8 @@ class CableOperatorController(object):
             operator = CableOperator()
             try:
                 pathfilesland = Setting.objects.get(code='image_repository_path_landscape')
-                print 'deb1'
                 api_key = Setting.objects.get(code='backend_api_key')
-                print 'deb2'
                 co_url = Setting.objects.get(code='backend_co_url')
-                print 'deb3'
                 base_dir = Setting.objects.get(code='dam_base_dir')
                 print 'deb4'
                 zones = PublishZone.objects.filter(enabled=True)
@@ -66,6 +63,8 @@ class CableOperatorController(object):
                         if os.path.isfile(varchivo_server):
                             os.remove(varchivo_server)
                 vimg.save()
+                #operator = CableOperator.objects.get(cableoperator_id=operator.cableoperator_id)
+                #operator.update(image=vimg)
                 operator.image = vimg
                 operator.save()
                 #Publicar en BKD
@@ -107,13 +106,9 @@ class CableOperatorController(object):
         #VARIABLES PARA GET - CARGA OPERADOR
         try:
             pathfilesland = Setting.objects.get(code='image_repository_path_landscape')
-            print 'deb1'
             api_key = Setting.objects.get(code='backend_api_key')
-            print 'deb2'
             co_url = Setting.objects.get(code='backend_co_url')
-            print 'deb3'
             base_dir = Setting.objects.get(code='dam_base_dir')
-            print 'deb4'
             zones = PublishZone.objects.filter(enabled=True)
             operator = CableOperator.objects.get(cableoperator_id=cableoperator_id)
             # carga imagenes
@@ -137,14 +132,15 @@ class CableOperatorController(object):
             # Parsear JSON
             strjson = request.POST['varsToJSON']
             decjson = json.loads(strjson.replace('\r','\\r').replace('\n','\\n'))
-            operator.name = decjson['cableoperator']['name']
-            operator.phone = decjson['cableoperator']['phone']
-            operator.site = decjson['cableoperator']['site']
+            name = decjson['cableoperator']['name']
+            phone = decjson['cableoperator']['phone']
+            site = decjson['cableoperator']['site']
 
-            # Leer GIRL desde AssetID
+            # Se mantiene la imagen actual
             try:
                 operator = CableOperator.objects.get(cableoperator_id=cableoperator_id)
                 vimg = operator.image
+
             except Asset.DoesNotExist as e:
                 request.session['list_CableOperator_message'] = "Error al Guardar Cable Operador. (" + e.message + ")"
                 request.session['list_CableOperator_flag'] = FLAG_ALERT
@@ -167,6 +163,9 @@ class CableOperatorController(object):
                     operator.image = vimg
 
             #Actualiza CableOperator
+            operator.name = name
+            operator.phone = phone
+            operator.site = site
             operator.save()
             # Publicar en BKD
             #co_id = operator.cableoperator_id
@@ -298,12 +297,15 @@ class CableOperatorController(object):
     def publish(self, request, id):
         try:
             co = CableOperator.objects.get(id=id)
+            print 'Publish: debug1'
             zones = PublishZone.objects.all()
             api_key = Setting.objects.get(code='backend_api_key')
             co_url = Setting.objects.get(code='backend_co_url')
 
             for z in zones:
+                print 'Publish: debug4'+ str(co.cableoperator_id) + ' ' + str(co_url.value) + ' ' + str(api_key.value) + ' ' + str(z)
                 resultado = self.publish_cableoperator(co.cableoperator_id, co_url.value, api_key.value, z)
+                print 'Publish: debug5'
                 if resultado[0] == -1:
                     request.session['list_CableOperator_message'] = "Error al Guardar Imagen de Cable Operador. (" + str(resultado[1]) + ")"
                     request.session['list_CableOperator_flag'] = FLAG_ALERT
@@ -319,6 +321,7 @@ class CableOperatorController(object):
             request.session['list_CableOperator_message'] = ' Cable operador  ' + co.name + ' publicado (' + co.cableoperator_id + ')'
             request.session['list_CableOperator_flag'] = FLAG_SUCCESS
             self.code_return = 0
+            return self.code_return
         except Exception as e:
             request.session['list_CableOperator_message'] = "Error al Publicar (" + str(e.message) + ")"
             request.session['list_CableOperator_flag'] = FLAG_ALERT
@@ -329,6 +332,7 @@ class CableOperatorController(object):
 
     def publish_cableoperator(self, co_id, co_url, apikey, publish_zone):
         try:
+
             co = self.cableoperator_serializer(co_id)
             print 'cableoperator_serializer: ' + str(co)
             endpoint = publish_zone.backend_url
@@ -338,8 +342,10 @@ class CableOperatorController(object):
             ep.add(co)
             return 0, "success"
         except ApiBackendException as err:
+            print 'debug6'
             return -1, str(err.value)
         except SerializerException as e:
+            print 'debug7'
             return -1, str(e.value)
 
 
