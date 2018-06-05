@@ -338,6 +338,8 @@ class cloudsearchCollection(object):
 	doc['type'] = 'delete'
 
 	response, content = self.doPost(json.dumps([doc]))
+	print response
+	print content
 	if response and 'status' in response:
 	    if response['status'] != '200':
 		raise CloudSearchException(str(content))
@@ -416,7 +418,7 @@ class cloudsearchCollection(object):
         p.size    = size
         p.sort    = sort
         qString   = p.make()
-
+#	print qString
         ret = self.doGet(qString)
 #        print ret
         return self._check_query_return(ret)
@@ -430,7 +432,7 @@ class cloudsearchCollection(object):
         p.size    = size
 
         qString   = p.make()
-
+	print qString
         ret = self.doGet(qString)
         return self._check_query_return(ret)
 

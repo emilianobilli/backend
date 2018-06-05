@@ -13,6 +13,25 @@ class Views(object):
                     return True
         return False
 
+    def add_custom_view(self,asset_id,n):
+	try:
+            ret = self.client.update_item(TableName=self.table_name,
+                                          Key={'asset_id': {'S': asset_id}},
+                                          UpdateExpression="SET asset_views = asset_views + :r, commited = :c",
+                                          ExpressionAttributeValues={
+                                                    ':r': {'N':str(n)},
+                                                    ':c': {'S':'0'}
+                                          })
+            return self._check_ret(ret)
+        except Exception as e:
+            # Esta exception se puede dar porque el item no existe
+            # Voy a ignorar cualquier otro tipo de exception
+            item = {'asset_id': {'S': asset_id},
+                    'asset_views': {'N': '1'},
+                    'commited': {'S': '0'}}
+            ret = self.client.put_item(TableName=self.table_name, Item=item)
+            return self._check_ret(ret)
+
     def add_view(self, asset_id):
         try:
             ret = self.client.update_item(TableName=self.table_name,

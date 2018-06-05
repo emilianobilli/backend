@@ -23,7 +23,7 @@ import re
 def clean_char(string):
     string = string.rstrip()
     s = ''.join((c for c in unicodedata.normalize('NFD',unicode(string)) if unicodedata.category(c) != 'Mn'))
-    bad_char = u'¿¡;:,.?!'
+    bad_char = u'¿¡;:,.?!%\''
     return clean_and_clear(s,bad_char).replace(' ', '-').lower()
 
 
@@ -57,9 +57,31 @@ class VideoAuth(object):
         uri    = urlparse.urlparse(url)
         return self.h.request(uri.geturl(),method,json.dumps(body),{'Content-type':'application/json'})
 
+    def doPostToolbox(self, asset_id, apikey, toolbox_user_token):
+	method = 'POST'
+        url    = '%s/checkauth/' % self.ep
+        body   = {'house_id': asset_id, 'api_key': apikey, 'toolbox_user_token': toolbox_user_token }
+        uri    = urlparse.urlparse(url)
+        return self.h.request(uri.geturl(),method,json.dumps(body),{'Content-type':'application/json'})
+
     def get_hls_url(self, asset_id):
         try:
             response,content = self.doPost(asset_id)
+        except socket.error as err:
+            raise VideoAuthException(err)
+        
+        if 'status' in response:
+            if response['status'] == '200':
+                ret = json.loads(content)
+                return ret['hls']
+            else:
+                raise VideoAuthException(content)
+        else:
+            raise VideoAuthException('Flens')
+
+    def get_hls_url_toolbox(self, asset_id, apikey, toolbox_user_token):
+	try:
+            response,content = self.doPostToolbox(asset_id,apikey,toolbox_user_token)
         except socket.error as err:
             raise VideoAuthException(err)
         
@@ -88,8 +110,12 @@ class Components(object):
 
 
         self.images    = {}
-        self.images['image_landscape'] = CdnImg(['http://cdnimages.zolechamedia.net/','http://cdnimages1.zolechamedia.net/','http://cdnimages2.zolechamedia.net/','http://cdnimages3.zolechamedia.net/','http://cdnimages4.zolechamedia.net/','http://cdnimages5.zolechamedia.net/'], 'landscape/')
-        self.images['image_portrait']  = CdnImg(['http://cdnimages.zolechamedia.net/','http://cdnimages1.zolechamedia.net/','http://cdnimages2.zolechamedia.net/','http://cdnimages3.zolechamedia.net/','http://cdnimages4.zolechamedia.net/','http://cdnimages5.zolechamedia.net/'], 'landscape/')
+        #self.images['image_landscape'] = CdnImg(['http://cdnimages.zolechamedia.net/','http://cdnimages1.zolechamedia.net/','http://cdnimages2.zolechamedia.net/','http://cdnimages3.zolechamedia.net/','http://cdnimages4.zolechamedia.net/','http://cdnimages5.zolechamedia.net/'], 'landscape/')
+        #self.images['image_portrait']  = CdnImg(['http://cdnimages.zolechamedia.net/','http://cdnimages1.zolechamedia.net/','http://cdnimages2.zolechamedia.net/','http://cdnimages3.zolechamedia.net/','http://cdnimages4.zolechamedia.net/','http://cdnimages5.zolechamedia.net/'], 'landscape/')
+
+	self.images['image_landscape'] = CdnImg(['https://joflu.imgix.net/'], 'landscape/')
+        self.images['image_portrait']  = CdnImg(['https://joflu.imgix.net/'], 'landscape/')
+
 
 
     def __query(self, where, q, qfilter=None):
@@ -128,6 +154,24 @@ class Components(object):
 
         return {'status': status, 'body': ret}
 
+    def __get(self, where, item):
+	try:
+            ret    = where.get(item)
+        #    print ret
+            status = 200
+        except CollectionException as e:
+            status = 422
+            ret    = {'status': 'failure', 'message': str(e)}
+        except DynamoException as e:
+            ret    = {'status': 'failure', 'message': str(e)}
+            status = 500
+        except Exception as e:
+            status = 500
+            ret    = {'status': 'failure', 'message': str(e)}
+
+        return {'status': status, 'body': ret}
+
+	    
 
     def __del(self, where, item):
         try:
@@ -208,6 +252,8 @@ class Components(object):
     def add_co(self, Item={}):
         return self.__add(self.co, Item)
 
+    def get_block(self,Item={}):
+	return self.__get(self.blocks,Item)
 
     '''
         Del Methods for Slider, Block and Category
@@ -302,17 +348,19 @@ class Backend(object):
             self.vote       = dynamodbCollection(config['vote'])
 
         self.videoauth = VideoAuth("https://videoauth.zolechamedia.net/video/", "7a407d4ae99b7c1a1655daddf218ef05")
-        self.subtitle  = Subtitle("http://videoauth.zolechamedia.net/subtitle")
-        self.thumbs    = Thumbs("http://cdnlevel3.zolechamedia.net")
+        self.subtitle  = Subtitle("https://videoauth.zolechamedia.net/subtitle")
+        self.thumbs    = Thumbs("https://cdnlevel3.zolechamedia.net")
         self.images    = {}
-        self.images['image_landscape'] = CdnImg(['http://cdnimages.zolechamedia.net/','http://cdnimages1.zolechamedia.net/','http://cdnimages2.zolechamedia.net/','http://cdnimages3.zolechamedia.net/','http://cdnimages4.zolechamedia.net/','http://cdnimages5.zolechamedia.net/'], 'landscape/')
-        self.images['image_portrait']  = CdnImg(['http://cdnimages.zolechamedia.net/','http://cdnimages1.zolechamedia.net/','http://cdnimages2.zolechamedia.net/','http://cdnimages3.zolechamedia.net/','http://cdnimages4.zolechamedia.net/','http://cdnimages5.zolechamedia.net/'], 'portrait/')
+        #self.images['image_landscape'] = CdnImg(['http://cdnimages.zolechamedia.net/','http://cdnimages1.zolechamedia.net/','http://cdnimages2.zolechamedia.net/','http://cdnimages3.zolechamedia.net/','http://cdnimages4.zolechamedia.net/','http://cdnimages5.zolechamedia.net/'], 'landscape/')
+        #self.images['image_portrait']  = CdnImg(['http://cdnimages.zolechamedia.net/','http://cdnimages1.zolechamedia.net/','http://cdnimages2.zolechamedia.net/','http://cdnimages3.zolechamedia.net/','http://cdnimages4.zolechamedia.net/','http://cdnimages5.zolechamedia.net/'], 'portrait/')
+	self.images['image_landscape'] = CdnImg(['https://joflu.imgix.net/'], 'landscape/')
+        self.images['image_portrait']  = CdnImg(['https://joflu.imgix.net/'], 'portrait/')
 
 
     def del_asset():     # borra asset
         pass
 
-    def get_show(self, args, username):
+    def get_show(self, args, username, video=True, idp_hotgo=True ,idp_apikey=None, toolbox_user_token=None):
         if 'lang' not in args or 'asset_id' not in args:
             status = 422
             ret    = {'status': 'failure', 'message': 'Mandatory argument not found'}
@@ -325,7 +373,15 @@ class Backend(object):
                 asset = self.shows.get(item)
                 if asset['item'] != {} and asset['item']['enabled'] == "1":
                     if asset['item']['show_type'] == 'movie' or asset['item']['show_type'] == 'episode':
-                        asset['item']['video'] = self.videoauth.get_hls_url(asset['item']['asset_id'])
+			if idp_hotgo:
+			    if video:
+                    		asset['item']['video'] = self.videoauth.get_hls_url(asset['item']['asset_id'])
+			else:
+			    if idp_apikey is not None and toolbox_user_token is not None:
+				asset['item']['video'] = self.videoauth.get_hls_url_toolbox(asset['item']['asset_id'], idp_apikey, toolbox_user_token)
+			    else:
+				pass
+
                         asset_id = asset['item']['asset_id']
                     
                     if 'img' in args:
@@ -343,12 +399,13 @@ class Backend(object):
                     #
                     # Busca el voto del usuario
                     #
-                    q = {}
-                    q['asset_id'] = args['asset_id']
-                    q['username'] = username
-                    vote = self.vote.get(q)
-                    if vote['item'] != {}:
-                        asset['item']['voted'] = vote['item']['voted']
+		    if idp_hotgo and video:
+                	q = {}
+            	        q['asset_id'] = args['asset_id']
+                	q['username'] = username
+            	        vote = self.vote.get(q)
+                	if vote['item'] != {}:
+                    	    asset['item']['voted'] = vote['item']['voted']
 
                     status = 200
                 else:
@@ -364,7 +421,7 @@ class Backend(object):
                 status = 500
             except VideoAuthException as e:
                 ret    = {'status': 'failure', 'message': str(e)}
-                status = 500
+                status = 401
             except Exception as e:
                 ret    = {'status': 'failure', 'message': str(e)}
                 status = 500
@@ -373,6 +430,8 @@ class Backend(object):
 
 
     def parse_img_arg(self, field, img):
+#	img = img.replace("'","\"")
+#	print img
         try:
             i = json.loads(img)
             return i[field]
@@ -381,7 +440,7 @@ class Backend(object):
         return None
 
 
-    def get_show_by_human_id(self, args, username):
+    def get_show_by_human_id(self, args, username, video=True, idp_hotgo=True ,idp_apikey=None, toolbox_user_token=None):
         if 'lang' not in args or 'human_id' not in args:
             status = 422
             ret    = {'status': 'failure', 'message': 'Mandatory argument not found'}
@@ -394,7 +453,15 @@ class Backend(object):
                 asset = self.shows.get_by_index(item)
                 if asset['item'] != {} and asset['item']['enabled'] == "1":
                     if asset['item']['show_type'] == 'movie' or asset['item']['show_type'] == 'episode':
-                        asset['item']['video'] = self.videoauth.get_hls_url(asset['item']['asset_id'])
+			if idp_hotgo:
+			    if video:
+                    		asset['item']['video'] = self.videoauth.get_hls_url(asset['item']['asset_id'])
+			else:
+			    if idp_apikey is not None and toolbox_user_token is not None:
+				asset['item']['video'] = self.videoauth.get_hls_url_toolbox(asset['item']['asset_id'], idp_apikey, toolbox_user_token)
+			    else:
+				pass
+
                         asset_id = asset['item']['asset_id']
                     else:
 			asset_id = asset['item']['asset_id']
@@ -413,12 +480,13 @@ class Backend(object):
                     #
                     # Busca el voto del usuario
                     #
-                    q = {}
-                    q['asset_id'] = asset_id
-                    q['username'] = username
-                    vote = self.vote.get(q)
-                    if vote['item'] != {}:
-                        asset['item']['voted'] = vote['item']['voted']
+		    if idp_hotgo and video:
+                	q = {}
+            	        q['asset_id'] = asset_id
+            	        q['username'] = username
+            	        vote = self.vote.get(q)
+            	        if vote['item'] != {}:
+                    	    asset['item']['voted'] = vote['item']['voted']
 
                     status = 200
                 else:
@@ -487,7 +555,7 @@ class Backend(object):
                 ret    = {'status': 'failure', 'message': str(e)}
                 status = 500
 
-	print ret
+#	print ret
         return {'status': status, 'body': ret}
 
     def get_girl(self, args):
@@ -551,7 +619,7 @@ class Backend(object):
         return {'status': status, 'body': ret}
 
     def doVote(self, asset_id, username, voted):
-        print "Backend: %s" % username 
+#        print "Backend: %s" % username 
         update = False
         previous_vote = {}
         previous_vote['asset_id'] = asset_id
@@ -819,28 +887,47 @@ class Backend(object):
 
         return {'status': status, 'body': ret}
  
-        
+    def add_human_id_in_asset_type(self, asset_type, human_id, lang):
+	if 'asset_human_id' in asset_type:
+	    v = json.loads(asset_type['asset_human_id'])
+	    v[lang] = human_id
+	    asset_type['asset_human_id'] = json.dumps(v)
+	else:
+	    asset_type['asset_human_id'] = json.dumps({lang : human_id})
+	return asset_type
+
     def add_asset(self, Item={}):
         inmutable_fields = ['views', 'ranking']
         if not 'asset_type' in Item:
             status = 422
-            ret    = {'status': 'failure', 'message': 'Mandatory parameter not found in item(lang)'}
-
-        at = {}
+            ret    = {'status': 'failure', 'message': 'Mandatory parameter not found in item(asset_type)'}
+#	print Item
+	at = {}
         at['asset_id']   = Item['asset_id']
-        at['asset_type'] = Item['asset_type']
+	query_at = self.asset_type.get(at)
+	if query_at['item'] != {}:
+	    at = query_at['item']
+	else:
+	    at['asset_type'] = Item['asset_type']
         try:
             if Item['asset_type'] == 'girl':
+		Item['human_id'] = clean_char(Item['name'])
+		at = self.add_human_id_in_asset_type(at,Item['human_id'], Item['lang'])
                 self.asset_type.add(at) # Ojo con las Excepciones
-                Item['human_id'] = clean_char(Item['name'])
 		return self.__add_asset(self.girls,Item, inmutable_fields)
             if Item['asset_type'] == 'show':
-                self.asset_type.add(at) # Ojo con las Excepciones
+                
                 if Item['show_type'] == 'movie' or Item['show_type'] == 'episode':
 		    if Item['show_type'] == 'movie':
 			Item['human_id'] = clean_char(Item['title'])
 		    else:
 			Item['human_id'] = clean_char('%s temporada %s episodio %s' %(Item['title'],Item['season'],Item['episode']))
+			if 'serie_id' in Item:
+			    try:
+				ats = self.asset_type.get({'asset_id': Item['serie_id']})
+				Item['serie_human_id'] = json.loads(ats['item']['asset_human_id'])[Item['lang']]
+			    except:
+				pass
                     #
                     # Se agrega subtitluado para los assets que son de tipo Movie o Episode
                     #
@@ -852,12 +939,15 @@ class Backend(object):
 		else:
 		    Item['human_id'] = clean_char(Item['title'])
 
+		at = self.add_human_id_in_asset_type(at,Item['human_id'], Item['lang'])
+                self.asset_type.add(at) # Ojo con las Excepciones
                 return self.__add_asset(self.shows,Item, inmutable_fields)
             else:
                 status = 422
                 ret    = {'status': 'failure', 'message': 'Invalid show type: %s' % Item['asset_type']}
 
         except Exception as e:
+#	    print e
             status = 500
             ret    = {'status': 'failure', 'message': str(e)}
 
@@ -914,17 +1004,22 @@ class Backend(object):
             try:
                 doc  = where.get(item)
                 Item = doc['item']
-                if Item != {}:
-                    for k in item.keys():
-                        if k != 'lang' or k != 'asset_id':
-                            Item[k] = item[k]
+		if Item['enabled'] == '1':
+
+            	    if Item != {}:
+                	for k in item.keys():
+                    	    if k != 'lang' or k != 'asset_id':
+                        	Item[k] = item[k]
                     
-                    self.domain[lang].add(Item)
-                    ret = where.add(Item)
-                    status = 201
-                else:
-                    status = 404
-                    ret    = {'status': 'failure', 'message': 'Item not found %s' % str(Item)}
+                	self.domain[lang].add(Item)
+                	ret = where.add(Item)
+                	status = 201
+            	    else:
+                	status = 404
+                	ret    = {'status': 'failure', 'message': 'Item not found %s' % str(Item)}
+		else:
+		    status = 201
+		    ret    = {'status': 'success', 'message': 'not item enabled'}
             except CollectionException as e:
                 status = 422
                 ret    = {'status': 'failure', 'message': str(e)}
@@ -1030,7 +1125,8 @@ class Backend(object):
             return Items
         return ret
 
-    def suggest(self, args):
+
+    def suggest_mode(self, args, full=True):
         if 'lang' in args and args['lang'] in self.lang:
             if 'asset_id' in args:
                 lang     = args['lang']
@@ -1054,14 +1150,26 @@ class Backend(object):
                             show = ret['item']
                             if 'img' in args:
                                 if 'target_country' in args:
-                                    qret  = self.query_show({'lang':lang,'channel': show['channel'],'target_country':args['target_country'] ,'img': args['img'], 'size':1000})
+				    if full:
+                                	qret  = self.query_show_full({'lang':lang,'channel': show['channel'],'target_country':args['target_country'] ,'img': args['img'], 'size':1000})
+				    else:
+					qret  = self.query_show_half({'lang':lang,'channel': show['channel'],'target_country':args['target_country'] ,'img': args['img'], 'size':1000})
                                 else:
-                                    qret  = self.query_show({'lang':lang,'channel': show['channel'], 'img': args['img'], 'size':1000})
+				    if full:	
+                                	qret  = self.query_show_full({'lang':lang,'channel': show['channel'], 'img': args['img'], 'size':1000})
+				    else:
+					qret  = self.query_show_half({'lang':lang,'channel': show['channel'], 'img': args['img'], 'size':1000})
                             else:
                                 if 'target_country' in args:
-                                    qret  = self.query_show({'lang':lang,'channel': show['channel'],'target_country':args['target_country'] ,'size': 1000})
+				    if full:
+                                	qret  = self.query_show_full({'lang':lang,'channel': show['channel'],'target_country':args['target_country'] ,'size': 1000})
+				    else:
+					qret  = self.query_show_half({'lang':lang,'channel': show['channel'],'target_country':args['target_country'] ,'size': 1000})
                                 else:
-                                    qret  = self.query_show({'lang':lang,'channel': show['channel'], 'size': 1000})
+				    if full:
+                                	qret  = self.query_show_full({'lang':lang,'channel': show['channel'], 'size': 1000})
+				    else:
+					qret  = self.query_show_half({'lang':lang,'channel': show['channel'], 'size': 1000})
 
                     status = 200
                     ret = self.__commit_suggest(qret)
@@ -1078,13 +1186,33 @@ class Backend(object):
 
         return {'status': status, 'body': ret}
 
+    def suggest(self,args):
+	if 'mode' in args:
+	    if args['mode'] == 'full':
+		return suggest_mode(args)
+	    elif args['mode'] == 'half':
+		return suggest_mode(args,False)
+	    else:
+		status = 422
+                ret    = {'status': 'failure', 'message': 'Invalid Parameter Value mode=%s' % args['mode']}
+		return {'status': status, 'body': ret}
+	else:
+	    return self.suggest_mode(args)
 
-    def query_show(self, args):
+    def query_show_full(self, args):
         exclude = {'show_type' :'episode'}
         fq      = {'asset_type':'show'}
         qArgs   = ['ranking', 'views', 'show_type', 'channel', 'girls_id', 'year', 'categories', 'target_country']
 
         return self._cs_query(args,qArgs,fq,exclude)
+
+    def query_show_half(self, args):
+        exclude = [{'show_type' :'episode'},{'channel':'Penthouse'},{'channel':'Brazzers'}]
+        fq      = {'asset_type':'show'}
+        qArgs   = ['ranking', 'views', 'show_type', 'channel', 'girls_id', 'year', 'categories', 'target_country']
+
+        return self._cs_query(args,qArgs,fq,exclude)
+
 
 
     def query_girl(self, args):
@@ -1117,6 +1245,16 @@ class Backend(object):
         return self._cs_query(args,qArgs,None,exclude)
 
     def search(self, args):
-        exclude = {'show_type':'episode'}
+	if 'mode' in args:
+	    if args['mode'] == 'full':
+		exclude = {'show_type':'episode'}
+	    elif args['mode'] == 'half':
+		exclude = [{'show_type' :'episode'},{'channel':'Penthouse'},{'channel':'Brazzers'}]
+	    else:
+		status = 422
+                ret    = {'status': 'failure', 'message': 'Invalid Parameter Value mode=%s' % args['mode']}
+		return {'status': status, 'body': ret}
+        else:
+	    exclude = {'show_type':'episode'}
 
         return self._cs_search(args,exclude)

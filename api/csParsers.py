@@ -16,15 +16,28 @@ class Structured(object):
             self.fq.append(kv)
 
     def _exclude(self):
-        if self.exclude is not None and type(self.exclude).__name__ == 'dict':
-            exclude = self.exclude
-            ek = (exclude.keys())[0]     
-            ev = self._check_range(exclude[ek])
-            if ev is not None:
-                return "(not %s:%s)" % (ek,ev)
-            return ''
-        else:
-            return ''
+	if self.exclude is not None:
+	    if type(self.exclude).__name__ == 'dict':
+		exclude = self.exclude
+                ek = (exclude.keys())[0]     
+                ev = self._check_range(exclude[ek])
+                if ev is not None:
+                    return "(not %s:%s)" % (ek,ev)
+                return ''
+	    elif type(self.exclude).__name__ == 'list':
+		exclude = self.exclude
+		ret = []
+		for edict in exclude:
+		    ek = (edict.keys())[0]
+		    ev = self._check_range(edict[ek])
+		    if ev is not None:
+			ret.append('%s:%s' % (ek,ev))
+		if ret is not []:
+		    return '(not (or ' + ' '.join(ret) + '))'
+	    else:
+		return ''
+	else:
+	    return ''
 
     def _check_range(self, v=None):
         if (v.startswith('[') or v.startswith('{')) and (v.endswith(']') or v.endswith('}')):
@@ -44,7 +57,7 @@ class Structured(object):
     def _make_q(self, q=[]):
         ret = ''
         if len(q) == 0:
-            return ret
+            return self._exclude()
         
         if len(q) > 1:
             ret = ret + '(and '

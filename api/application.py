@@ -86,6 +86,7 @@ backend = Backend({"languages": ['es','pt'],
                                     "girls_display": "SS",
                                     "publish_date": "N",
                                     "summary_long": "S",
+				    "serie_human_id": "S",
                                     "cast":"S",
                                     "directors":"S",
                                     "enabled": "N",
@@ -95,13 +96,13 @@ backend = Backend({"languages": ['es','pt'],
                          }},
                         "ranking": {'table_name': 'Ranking', 'commit_index': 'lala'},
                         "views" : {'table_name': 'Views', 'commit_index':'lala'},
-                        "asset_type": {'database': {'table': 'AssetType', 'pk': 'asset_id', 'schema': {'asset_id': 'S', 'asset_type':'S'}}},
+                        "asset_type": {'database': {'table': 'AssetType', 'pk': 'asset_id', 'schema': {'asset_id': 'S', 'asset_type':'S', 'asset_human_id':'S','human_id':'S'}}},
                         "vote": {'database': {'table': 'Vote', 'pk': 'asset_id', 'sk':'username', 'schema': {'asset_id': 'S', 'username':'S', 'voted':'N'}}},
                         "search_domain": {'es' : {"domain": {
                                                         "id_field": "asset_id",
                                                         "filter_query" : '',
                                                         "schema": ["channel","asset_id","human_id", "title","summary_short","display_runtime","seasons","season","episode","episodes","categories","show_type","year","serie_id","girls_id","name", "image_big", "image_landscape", "image_portrait", "views", "ranking", "asset_type", "blocks", "publish_date", "class", "summary_long", "nationality", "target_country"],
-                                                        "return_fields": ["asset_id","human_id" ,"name", "title", "ranking", "views","display_runtime", "summary_short" ,"categories", "image_landscape", "image_portrait", "channel", "show_type","asset_type", "year", "seasons", "class","episodes", "episode", "serie_id"],
+                                                        "return_fields": ["publish_date","asset_id","human_id" ,"name", "title", "ranking", "views","display_runtime", "summary_short" ,"categories", "image_landscape", "image_portrait", "channel", "show_type","asset_type", "year", "seasons", "class","episodes", "episode", "serie_id"],
                                                         "name" : "eshotgodomain",
                                                         }
                                                  },
@@ -175,7 +176,8 @@ components = Components({
                             "linked_asset_id": "S",
                             "linked_human_id": "S",
 			    "linked_asset_type": "S",
-                            "target": "S"
+                            "target": "S",
+			    "linked_url": "S"
                         },
                     }
                 },
@@ -190,6 +192,8 @@ components = Components({
                             "block_name": "S",
                             "target_country": "SS",
                             "order": "N",
+			    "type": "S",
+			    "query": "S",
                             "channel": "S",
                             "target": "S",
                         },
@@ -294,17 +298,53 @@ def urlSliders():
             if private_key == CAWAS:
                 body = loads(request.data)
                 if body['action'] == 'add':
-                    ret  = components.add_slider(body['item'])
+		    if 'linked_asset_id' in body['item']:
+			asset_type = backend.asset_type.get({'asset_id':body['item']['linked_asset_id']})
+			if 'asset_human_id' in asset_type['item']:
+			    body['item']['linked_human_id'] = loads(asset_type['item']['asset_human_id'])[body['item']['lang']]
+                	    ret  = components.add_slider(body['item'])
+			else:
+			    ret = {}
+			    ret['status'] = 422
+        		    ret['body']   = {'status': 'failure', 'message': 'No asset/human_id in Asset_Type'}
+		    else:
+			asset_type = {}
+			ret  = components.add_slider(body['item'])
+		    
                 elif body['action'] == 'del':
                     ret  = components.del_slider(body['item'])
             else:
+		ret = {}
                 ret['status'] = 401
                 ret['body']   = {'status': 'failure', 'message': 'Unauthorized'}
         else:
+	    ret = {}	
             ret['status'] = 422
             ret['body']   = {'status': 'failure', 'message': 'Missing Header'}
 
         return Response(response=dumps(ret['body']), status=ret['status'])
+
+@application.route('/v1/human_id/<string:asset_id>/', methods=['GET'])
+@application.route('/v1/human_id/<string:asset_id>', methods=['GET'])
+def getHumanId(asset_id):
+    return Response(response=dumps(backend.asset_type.get({'asset_id':asset_id})))
+
+
+@application.route('/v1/block/<string:block_id>/', methods=['GET'])
+@application.route('/v1/block/<string:block_id>', methods=['GET'])
+@cross_origin()
+def urlGetBlock(block_id):
+    args = {}
+    for k in request.args.keys():
+        args[k] = request.args.get(k)
+    if 'lang' not in args:
+	ret = {}
+	ret['status'] = 422
+        ret['body']   = {'status': 'failure', 'message': 'Mandatory Parameter is Missing'}
+    else:
+	ret = components.get_block({'lang': args['lang'],'block_id':block_id})
+
+    return Response(response=dumps(ret['body']), status=ret['status'])
 
 @application.route('/v1/blocks/',     methods=['GET', 'POST'])
 @application.route('/v1/blocks',      methods=['GET', 'POST'])
@@ -412,7 +452,17 @@ def urlShow():
         args  = {}
         for k in request.args.keys():
             args[k] = request.args.get(k)
-        ret = backend.query_show(args)
+	if 'mode' in args:
+	    if args['mode'] == 'full':
+		ret = backend.query_show_full(args)
+	    elif args['mode'] == 'half':
+		ret = backend.query_show_half(args)
+	    else:
+		ret = {}
+		ret['body']   = {'status': 'failure', 'message': 'Invalid Argument: mode=%s' % args['mode']}
+        	ret['status'] = 422
+	else:
+    	    ret = backend.query_show_full(args)
         return Response(response=dumps(ret['body']), status=ret['status'])
 
 
@@ -422,8 +472,14 @@ def urlShow():
 def urlVote():
     if request.method == 'POST':
         ret = {}
-        data = loads(request.data)
-        if 'asset_id' in data:
+	try:
+    	    data = loads(request.data)
+	except Exception as e:
+	    ret['body']   = {'status': 'failure', 'message': 'Invalid Argument: %s' % str(e)}
+            ret['status'] = 422
+	    return Response(response=dumps(ret['body']), status=ret['status'])
+
+    	if 'asset_id' in data:
             if 'voted' in data:
                 asset_id = data['asset_id']
                 voted    = data['voted']
@@ -452,42 +508,75 @@ def urlVote():
 @application.route('/v1/shows/<string:asset_id>',  methods=['GET'])
 @cross_origin()
 def urlGetShow(asset_id):
-    ret = {}
-    if 'X-API-KEY' in request.headers:
-        x_api_key = request.headers.get('X-API-KEY')
-        ret       = authorization.check_api_key(x_api_key)
-        if ret['status'] == 200:
-            args = {}
-            args['asset_id'] = asset_id
-            for k in request.args.keys():
-                args[k] = request.args.get(k)
-            username = ret['body']['username']
-            ret      = backend.get_show(args, username)
-    else:
-        ret['body']     = {'status': 'failure', 'message': 'Missing header'}
-        ret['status']   = 401
+    ret  = {}
+    args = {}
+    args['asset_id'] = asset_id
+    for k in request.args.keys():
+        args[k] = request.args.get(k)
 
+    if 'video' in args:
+	if args['video'] == 'false':
+	    video = False
+	else:
+	    video = True
+    else:
+	video = True
+    
+    if video:
+	if 'X-API-KEY' in request.headers:
+	    x_api_key = request.headers.get('X-API-KEY')
+    	    ret       = authorization.check_api_key(x_api_key)
+    	    if ret['status'] == 200:
+        	username = ret['body']['username']
+        	ret      = backend.get_show(args, username)
+	else:
+	    if 'IDP-X-API-KEY' in request.headers and 'TOOLBOX-USER-TOKEN' in request.headers:
+		ret = backend.get_show(args, None,True, False,request.headers['IDP-X-API-KEY'],request.headers['TOOLBOX-USER-TOKEN'] )
+	    else:
+		ret['body']     = {'status': 'failure', 'message': 'Missing header'}
+    		ret['status']   = 401
+
+    else:
+	ret = backend.get_show(args, None,False)
+    print ret        
     return Response(response=dumps(ret['body']), status=ret['status'])
+
 
 @application.route('/v1/shows_hid/<string:human_id>/', methods=['GET'])
 @application.route('/v1/shows_hid/<string:human_id>',  methods=['GET'])
 @cross_origin()
 def urlGetShowByHumanId(human_id):
     ret = {}
-    if 'X-API-KEY' in request.headers:
-        x_api_key = request.headers.get('X-API-KEY')
-        ret       = authorization.check_api_key(x_api_key)
-        if ret['status'] == 200:
-            args = {}
-            args['human_id'] = human_id
-            for k in request.args.keys():
-                args[k] = request.args.get(k)
-            username = ret['body']['username']
-            ret      = backend.get_show_by_human_id(args, username)
-    else:
-        ret['body']     = {'status': 'failure', 'message': 'Missing header'}
-        ret['status']   = 401
+    args = {}
+    args['human_id'] = human_id
+    for k in request.args.keys():
+        args[k] = request.args.get(k)
 
+    if 'video' in args:
+	if args['video'] == 'false':
+	    video = False
+	else:
+	    video = True
+    else:
+	video = True
+    
+    if video:
+	if 'X-API-KEY' in request.headers:
+	    x_api_key = request.headers.get('X-API-KEY')
+    	    ret       = authorization.check_api_key(x_api_key)
+    	    if ret['status'] == 200:
+        	username = ret['body']['username']
+        	ret      = backend.get_show_by_human_id(args, username)
+	else:
+	    if 'IDP-X-API-KEY' in request.headers and 'TOOLBOX-USER-TOKEN' in request.headers:
+		ret = backend.get_show_by_human_id(args, None,True, False,request.headers['IDP-X-API-KEY'],request.headers['TOOLBOX-USER-TOKEN'] )
+	    else:
+		ret['body']     = {'status': 'failure', 'message': 'Missing header'}
+    		ret['status']   = 401
+
+    else:
+	ret = backend.get_show_by_human_id(args, None,False)
+        
     return Response(response=dumps(ret['body']), status=ret['status'])
 
 

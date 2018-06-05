@@ -19,8 +19,10 @@ class Subtitle(object):
 
     def check(self, asset_id, lang, format='vtt'):
         url = self.__get_url(asset_id, lang, 'check', format)
+	print url
         if url is not None:
             ret, _x = self.doGet(url)
+	    print ret
             if 'status' in ret:
                 if ret['status'] == '200':
                     return True
