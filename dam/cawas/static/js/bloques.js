@@ -133,6 +133,11 @@ $( document ).ready(function() {
         var canal_selected = $('#canalSelect').val();
         var publish_date = $('#date_blq').val().trim();
         var device_selected = $('#deviceSelect').val();
+        var tipo = $('#tipo').val();
+        var query = $('#query').val();
+
+
+
         var asset_selected = [];
         var paises_selected = [];
         var publicar = $('#publicar').val();
@@ -196,7 +201,19 @@ $( document ).ready(function() {
             okMe("#deviceSelect");
             device_selected=$('#deviceSelect').val();
         }
-        
+
+
+        //
+        if (tipo =="D" && query==""){
+            errorMe("#tipo");
+            checkVal++;
+        }else{
+            okMe("#tipo");
+        }
+
+
+
+
          // chequea assets
         if ( $('#search_to option').length < 1 )
         {
@@ -347,6 +364,8 @@ $( document ).ready(function() {
                     myJSON+='{"Block":{';
                     myJSON+='"block_id":"'+block_id+'",';
                     myJSON+='"name":"'+original_name+'",';
+                    myJSON+='"tipo":"'+tipo+'",';
+                    myJSON+='"query":"'+query+'",';
                     myJSON+='"language":"'+idioma_selected+'",';
                     if (canal_selected==''){
                         myJSON+='"channel_id":null,';
