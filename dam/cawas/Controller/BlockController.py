@@ -25,7 +25,6 @@ class BlockController(object):
         vflag = ''
         vschedule_date = ''
         vgrabarypublicar = ''
-        print 'Debug1'
         if request.method == 'POST':
             # VARIABLES
             vblock = Block()
@@ -36,6 +35,13 @@ class BlockController(object):
                 decjson = json.loads(strjson.replace('\r','\\r').replace('\n','\\n'))
                 vblock.name = decjson['Block']['name']
                 vblock.order = decjson['Block']['order']
+
+                if (decjson['Block']['tipo'] is not None):
+                    vblock.type = decjson['Block']['tipo']
+
+                if (decjson['Block']['query'] is not None):
+                    vblock.query = decjson['Block']['query']
+
                 vgrabarypublicar = decjson['Block']['publicar']
                 vschedule_date = datetime.datetime.strptime(decjson['Block']['publish_date'], '%d-%m-%Y').strftime('%Y-%m-%d')
                 #vblock.publish_date = vschedule_date
@@ -129,9 +135,18 @@ class BlockController(object):
         vcapitulos = Episode.objects.all().order_by('original_title')
         vseries = Serie.objects.all().order_by('original_title')
         countries = Country.objects.all().order_by('name')
-        context = {'message': message, 'vblocks': vblocks, 'vchannels': vchannels, 'vdevices': vdevices, 'vgirls': vgirls,
-                   'vlanguages': vlanguages, 'vseries': vseries,
-                   'vmovies': vmovies, 'vcapitulos': vcapitulos, 'countries':countries}
+
+        context = {'message': message,
+                   'vblocks': vblocks,
+                   'vchannels': vchannels,
+                   'vdevices': vdevices,
+                   'vgirls': vgirls,
+                   'vlanguages': vlanguages,
+                   'vseries': vseries,
+                   'vmovies': vmovies,
+                   'vcapitulos': vcapitulos,
+                   'countries':countries,
+                   'block_type':BLOCK_TYPE}
         return render(request, 'cawas/blocks/add.html', context)
 
 
@@ -162,6 +177,12 @@ class BlockController(object):
                 vblock.language = Language.objects.get(code=decjson['Block']['language'])
                 if decjson['Block']['channel_id'] is not None:
                     vblock.channel = Channel.objects.get(pk=decjson['Block']['channel_id'])
+
+                if (decjson['Block']['tipo'] is not None):
+                    vblock.type = decjson['Block']['tipo']
+
+                if (decjson['Block']['query'] is not None):
+                    vblock.query = decjson['Block']['query']
 
                 vdevice = Device.objects.get(pk=int(decjson['Block']['target_device_id']))
 
@@ -257,15 +278,24 @@ class BlockController(object):
         vgirls = Girl.objects.all()
         vlanguages = Language.objects.all()
         vdevices = Device.objects.all()
-        context = {'message': message, 'vchannels': vchannels,
-                   'vgirls': vgirls, 'vlanguages': vlanguages,
-                   'vseries': vseries, 'vblock': vblock,
+        context = {'message': message,
+                   'vchannels': vchannels,
+                   'vgirls': vgirls,
+                   'vlanguages': vlanguages,
+                   'vseries': vseries,
+                   'vblock': vblock,
                    'vdevices':vdevices,
-                   'vmovienotselect': vmovienotselect, 'vgirlnotselect': vgirlnotselect,
-                   'vepisodenotselect': vepisodenotselect, 'vmovieselect': vmovieselect,
-                   'vgirlselect': vgirlselect, 'vepisodeselect': vepisodeselect,
-                   'vserienotselect': vserienotselect, 'vserieselect': vserieselect,
-                   'countries_selected':countries_selected, 'countries_notselected':countries_notselected
+                   'vmovienotselect': vmovienotselect,
+                   'vgirlnotselect': vgirlnotselect,
+                   'vepisodenotselect': vepisodenotselect,
+                   'vmovieselect': vmovieselect,
+                   'vgirlselect': vgirlselect,
+                   'vepisodeselect': vepisodeselect,
+                   'vserienotselect': vserienotselect,
+                   'vserieselect': vserieselect,
+                   'countries_selected':countries_selected,
+                   'countries_notselected':countries_notselected,
+                   'block_type': BLOCK_TYPE
                    }
         return render(request, 'cawas/blocks/edit.html', context)
 
