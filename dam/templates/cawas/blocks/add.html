@@ -188,11 +188,32 @@
 
                     <div class="col-xs-12 col-md-4 col-lg-4 form-group">
                         <div class="form-group has-feedback">
-                            <label class="label-left" for="order">Nro de Orden: *</label>
+                            <label class="label-left" for="order">Nro de Orden: </label>
                             <input type="number" class="form-control" name="order" id="order" min="1" max="999" oninput="maxLengthCheck(this)" >
                             <span class="glyphicon form-control-feedback"></span>
                         </div>
                     </div>
+
+
+                    <!-- Type Query -->
+                    <div class="col-xs-12 col-md-3 col-lg-3 form-group">
+                        <div class="form-group has-feedback">
+                            <label class="label-left" for="tipo">Tipo: </label>
+                            <select class="form-control" name="tipo" id="tipo">
+                                {% for item in block_type %}
+                                    <option value="{{item.0}}">{{ item.1 }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                    </div>
+                    <div class="col-xs-12 col-md-9 col-lg-9 form-group">
+                        <div class="form-group has-feedback">
+                            <label class="label-left" for="query">Query: </label>
+                            <input type="text" class="form-control" name="query" id="query" >
+                            <span class="glyphicon form-control-feedback"></span>
+                        </div>
+                    </div>
+                    <!-- /Type Query -->
 
 
                 </div>
@@ -285,20 +306,17 @@
 
 
 
-            <!-- Last Row : Buttons -->
-            <div class="row form-row">
-
-                <div class="col-xs-offset-2 col-xs-4 col-md-4 col-lg-4 ">
-                    <button class="btn btn-primary btn-block form-control" type="submit" id="sendBut">Grabar</button>
+                <!-- Last Row : Buttons -->
+                <div class="row form-row">
+                    <div class="col-xs-offset-2 col-xs-4 col-md-4 col-lg-4 ">
+                        <button class="btn btn-primary btn-block form-control" type="submit" id="sendBut">Grabar</button>
+                    </div>
+                    <input type="hidden" class="form-control" name="publicar" id="publicar" value="0">
+                    <div class="col-xs-4 col-md-4 col-lg-4">
+                        <button class="btn btn-primary btn-block form-control" type="submit" id="btngrabarypublicar">Grabar y Publicar</button>
+                    </div>
                 </div>
-                <input type="hidden" class="form-control" name="publicar" id="publicar" value="0">
-                <div class="col-xs-4 col-md-4 col-lg-4">
-                    <button class="btn btn-primary btn-block form-control" type="submit" id="btngrabarypublicar">Grabar y Publicar</button>
-                </div>
-
-            </div>
             </form>
-
         </div>
 
 {% endblock content %}
