@@ -3,10 +3,12 @@ from __future__ import unicode_literals
 from django.db import models
 from django.utils import timezone
 from django.core.exceptions import *
-
+from Helpers.GlobalValues import *
 # Create your models here.
 import json
 import os
+
+
 from datetime import datetime
 
 class Setting(models.Model):
@@ -233,7 +235,8 @@ class CategoryMetadata(models.Model):
 
 class Channel(models.Model):
     name              = models.CharField(max_length=128, unique=True, help_text="Nombre del canal")
-    logo              = models.FileField(help_text="Logo image", null=True, blank=True)
+    logo              = models.FileField(help_text="Logo Image", null=True, blank=True)
+    logo_hover        = models.FileField(help_text="Logo Hover image", null=True, blank=True)
     modification_date = models.DateTimeField(auto_now=True)
     publish_date      = models.DateTimeField(auto_now=False, auto_now_add=False, blank=True, null=True)
     publish_status    = models.BooleanField(default=False)
@@ -802,6 +805,8 @@ class Block(models.Model):
     publish_status    = models.BooleanField(default=False)
     activated         = models.BooleanField(default=False)
     queue_status      = models.CharField(max_length=1, default='', blank=True, help_text="Status del item en PublishQueue")
+    type              = models.CharField(max_length=1, choices=BLOCK_TYPE, default='P')
+    query             = models.CharField(max_length=2048, help_text="Query")
 
     def save(self, *args, **kwargs):
         super(Block, self).save(*args, **kwargs)
