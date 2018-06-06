@@ -70,9 +70,7 @@
 
             <!-- Form manda imagenes y vars en un JSON hecho string -->
                 <form method="post" action="" name="asset-completeForm"  class="content-picker movieChoose" id="assetForm" enctype="multipart/form-data">
-
-
-                <input type="hidden" name="varsToJSON" id="varsToJSON" value="">
+                    <input type="hidden" name="varsToJSON" id="varsToJSON" value="">
 
                </form>
 
@@ -169,6 +167,37 @@
                             <span class="glyphicon form-control-feedback"></span>
                         </div>
                     </div>
+
+
+                     <!-- Type Query -->
+                    <div class="col-xs-12 col-md-3 col-lg-3 form-group">
+                        <div class="form-group has-feedback">
+                            <label class="label-left" for="tipo">Tipo: </label>
+                            <select class="form-control" name="tipo" id="tipo">
+                                {% for item in block_type %}
+                                    {% if vblock.type == item.0 %}
+                                        <option value="{{item.0}}" selected >{{ item.1 }}</option>
+                                    {% else %}
+                                        <option value="{{item.0}}" >{{ item.1 }}</option>
+                                    {% endif %}
+
+
+                                {% endfor %}
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="col-xs-12 col-md-9 col-lg-9 form-group">
+                        <div class="form-group has-feedback">
+                            <label class="label-left" for="query">Query: </label>
+                            <input type="text" class="form-control" name="query" id="query" value="{{vblock.query}}">
+                            <span class="glyphicon form-control-feedback"></span>
+                        </div>
+                    </div>
+                    <!-- /Type Query -->
+
+
+
                 </div>
 
             <!-- Assets modules -->
