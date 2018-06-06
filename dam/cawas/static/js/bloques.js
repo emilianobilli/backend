@@ -144,6 +144,38 @@ $( document ).ready(function() {
         var order = $('#order').val();
 
 
+
+
+        if (tipo =="D" && query==""){
+            errorMe("#query");
+            checkVal++;
+        }else{
+            okMe("#query");
+        }
+
+
+        //Si es Estatico se valida todo lo demas
+        if (tipo=="S"){
+
+            // chequea assets
+            if ( $('#search_to option').length < 1 )
+            {
+                errorMe("#search_to");
+                checkVal++;
+            }else{
+                okMe("#search_to");
+                asset_selected = [];
+                $('#search_to option').each(function(){
+                   var asset_id_aux = $(this).attr("value"); //val();
+                   if (asset_id_aux != null){
+                       asset_selected.push(asset_id_aux);
+                   }
+                })
+                console.log("search_to_selected:"+asset_selected);
+            }
+
+        }// fin si Tipo es Estatico
+
         // Order
         if(order=="" || order==" ")
         {
@@ -171,7 +203,6 @@ $( document ).ready(function() {
             serie_selected=$('#serie-id').val();
         }
 
-        
         // chequea idioma
         if (idioma_selected =="0" || idioma_selected ==""){
             errorMe("#idiomaSelect");
@@ -180,10 +211,7 @@ $( document ).ready(function() {
             okMe("#idiomaSelect");
             idioma_selected=$('#idiomaSelect').val();
         }
-        
-        
 
-        
         // chequea publish_date
         if(publish_date=="" || publish_date==" ")
         {
@@ -192,7 +220,7 @@ $( document ).ready(function() {
         }else{
             okMe("#date_blq");
         }
-        
+
         // chequea dispositivo
         if (device_selected =="0" || device_selected ==""){
             errorMe("#deviceSelect");
@@ -203,33 +231,6 @@ $( document ).ready(function() {
         }
 
 
-        //
-        if (tipo =="D" && query==""){
-            errorMe("#tipo");
-            checkVal++;
-        }else{
-            okMe("#tipo");
-        }
-
-
-
-
-         // chequea assets
-        if ( $('#search_to option').length < 1 )
-        {
-            errorMe("#search_to");
-            checkVal++;
-        }else{
-            okMe("#search_to");
-            asset_selected = [];
-            $('#search_to option').each(function(){
-               var asset_id_aux = $(this).attr("value"); //val();
-               if (asset_id_aux != null){
-                   asset_selected.push(asset_id_aux);
-               }
-            })
-            console.log("search_to_selected:"+asset_selected);
-        }
 
         //search_to_paises - No es obligatorio
         if ( $('#search_paises_to option').length > 0 )
@@ -243,17 +244,19 @@ $( document ).ready(function() {
                }
             })
             console.log("search_paises_to_selected:"+paises_selected);
+            }else{
+             errorMe("#search_paises_to");
+             checkVal++;
         }
 
-                
-        /* -----------  Sending Routine -----------*/
-        
         if(checkVal>0){
-            if(checkedOnce<1){// envía por primera vez y tiene error
+            if(checkedOnce<1)
+            // envía por primera vez y tiene error
+            {
                 $("#myModal2").modal();
             }
             console.log("checkVal:"+checkVal);
-        }else{
+            }else{
             if(checkedOnce<1){// envía por primera vez y NO tiene error
                 submitJson();
             }else{// se ha verificado más de una vez y ahora no tiene error
