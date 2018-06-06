@@ -44,7 +44,10 @@ class BlockController(object):
 
                 vgrabarypublicar = decjson['Block']['publicar']
                 vschedule_date = datetime.datetime.strptime(decjson['Block']['publish_date'], '%d-%m-%Y').strftime('%Y-%m-%d')
-                #vblock.publish_date = vschedule_date
+                if vschedule_date is None:
+                    vschedule_date = datetime.datetime.now().strftime('%Y-%m-%d')
+                vblock.publish_date = vschedule_date
+
                 vblock.language = Language.objects.get(code=decjson['Block']['language'])
                 vblock.queue_status = 'Q'
                 if decjson['Block']['channel_id'] is not None:
@@ -171,8 +174,7 @@ class BlockController(object):
                 vblock = Block.objects.get(block_id=decjson['Block']['block_id'])
                 vblock.name = decjson['Block']['name']
                 vblock.order = decjson['Block']['order']
-                vschedule_date = datetime.datetime.strptime(decjson['Block']['publish_date'], '%d-%m-%Y').strftime(
-                    '%Y-%m-%d')
+                vschedule_date = datetime.datetime.strptime(decjson['Block']['publish_date'], '%d-%m-%Y').strftime('%Y-%m-%d')
                 vblock.publish_date = vschedule_date
                 vblock.language = Language.objects.get(code=decjson['Block']['language'])
                 if decjson['Block']['channel_id'] is not None:
