@@ -806,7 +806,7 @@ class Block(models.Model):
     activated         = models.BooleanField(default=False)
     queue_status      = models.CharField(max_length=1, default='', blank=True, help_text="Status del item en PublishQueue")
     type              = models.CharField(max_length=1, choices=BLOCK_TYPE, default='P')
-    query             = models.CharField(max_length=2048, help_text="Query")
+    query             = models.CharField(max_length=2048, help_text="Query", blank=True, null=True )
 
     def save(self, *args, **kwargs):
         super(Block, self).save(*args, **kwargs)
@@ -835,7 +835,10 @@ class Block(models.Model):
         dict["block_id"]      = self.block_id
         dict["block_name"]    = self.name
         dict["lang"]          = self.language.code
-        dict["target"] = self.target_device.name
+        dict["target"]        = self.target_device.name
+        dict["type"]          = self.type
+        if self.query != '':
+            dict["query"] = self.query
         if self.channel is not None:
             dict["channel"] = self.channel.name
         if self.order is not None:
