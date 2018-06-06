@@ -130,7 +130,7 @@ class MovieMetadataAdmin(admin.ModelAdmin):
 @admin.register(models.Block)
 class BlockAdmin(admin.ModelAdmin):
     readonly_fields = ('block_id',)
-    list_display = ['block_id', 'name', 'language']
+    list_display = ['block_id', 'name', 'language','type','query']
 
 
 @admin.register(models.Slider)
