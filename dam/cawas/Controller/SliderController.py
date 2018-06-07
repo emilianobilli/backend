@@ -34,7 +34,6 @@ class SliderController(object):
             return self.code_return
         print 'debug'
         if request.method == 'POST':
-            print 'debugPost'
             # VARIABLES
             try:
                 vimg = Image()
@@ -392,7 +391,7 @@ class SliderController(object):
             for zone in vzones:
                 abr = ApiBackendResource(zone.backend_url, setting.value, api_key.value)
                 param = {"slider_id": slider.slider_id, "lang": slider.language.code}
-                respuesta = abr.delete(param)
+                respuesta = json.loads(abr.delete(param))
                 if respuesta['status'] != '200':
                     hasErrorBackend = True
 
