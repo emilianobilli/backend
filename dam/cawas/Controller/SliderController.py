@@ -391,9 +391,11 @@ class SliderController(object):
             for zone in vzones:
                 abr = ApiBackendResource(zone.backend_url, setting.value, api_key.value)
                 param = {"slider_id": slider.slider_id, "lang": slider.language.code}
-                respuesta = json.loads(abr.delete(param))
-                if respuesta['status'] != '200':
-                    hasErrorBackend = True
+                respuesta = abr.delete(param)
+
+                if 'status' in respuesta:
+                    if respuesta['status'] != 200:
+                        hasErrorBackend = True
 
 
             if not hasErrorBackend:
