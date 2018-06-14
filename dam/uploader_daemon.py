@@ -55,6 +55,8 @@ def purge_imgix_image(filename, itype):
         url = Setting.objects.get(code="image_cdn_landscape").value + filename
     elif itype == "portrait":
         url  = Setting.objects.get(code="image_cdn_portrait").value + filename
+    elif itype == "logo":
+        url  = Setting.objects.get(code="image_cdn_logo").value + filename
     else:
         return
     try:
@@ -66,8 +68,9 @@ def purge_imgix_image(filename, itype):
 def upload_images():
 
     try:
-        PORTRAIT_PATH = Setting.objects.get(code="s3_images_portrait").value
+        PORTRAIT_PATH  = Setting.objects.get(code="s3_images_portrait").value
         LANDSCAPE_PATH = Setting.objects.get(code="s3_images_landscape").value
+        LOGO_PATH      = Setting.objects.get(code="s3_images_logo").value
     except ObjectDoesNotExist as e:
         msg = 'Error loading settings: %s' % e.message
         logging.error(msg)
@@ -116,6 +119,30 @@ def upload_images():
                         s3.upload(src_path, filename, job.publish_zone.s3_bucket, dest_path)
                         logging.info("upload_images(): File %s/%s uploaded successfully" % (src_path, filename))
                         purge_imgix_image(filename, "landscape")
+                    else:
+                        job.status = 'E'
+                        msg = "File does not exist: %s" % img
+                        job.message = msg
+                        job.save()
+                        logging.error('upload_images(): %s' % msg)
+                except S3UploadException as err:
+                    job.status = 'E'
+                    job.message = str(err)
+                    job.save()
+                    logging.error('upload_images(): %s' % str(err))
+
+            if job.image.logo.name != '' and job.status != 'E':
+                try:
+                    img = job.image.logo.name
+                    if os.path.isfile(img):
+                        src_path = os.path.dirname(img)
+                        filename = os.path.basename(img)
+                        dest_path = LOGO_PATH
+                        job.status = 'U'
+                        job.save()
+                        s3.upload(src_path, filename, job.publish_zone.s3_bucket, dest_path)
+                        logging.info("upload_images(): File %s/%s uploaded successfully" % (src_path, filename))
+                        purge_imgix_image(filename, "logo")
                     else:
                         job.status = 'E'
                         msg = "File does not exist: %s" % img
