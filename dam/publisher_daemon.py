@@ -180,7 +180,8 @@ def publish_items():
         URLs['CA'] = Setting.objects.get(code="backend_category_url").value
         APIKEY = Setting.objects.get(code="backend_api_key").value
         CDN_LANDSCAPE_URL = Setting.objects.get(code="image_cdn_landscape").value
-        CDN_LOGO_URL      = Setting.objects.get(code="image_cdn_log").value
+        CDN_LOGO_URL      = Setting.objects.get(code="image_cdn_logo").value
+        CDN_SLIDER_VIDEO  = Setting.objects.get(code="slider_video_url").value
     except ObjectDoesNotExist as e:
         msg = 'Error loading settings: %s' % e.message
         logging.error(msg)
@@ -227,7 +228,10 @@ def publish_items():
                     job.save()
                 try:
                     item = slider_serializer(job.item_id)
-                    item[0]['media_url'] = "%s%s" % (CDN_LANDSCAPE_URL, item[0]['media_url'])
+                    if obj.media_type == 'image':
+                        item[0]['media_url'] = "%s%s" % (CDN_LANDSCAPE_URL, item[0]['media_url'])
+                    elif obj.media_type == 'video':
+                        item[0]['media_url'] = "%s%s" % (CDN_SLIDER_VIDEO, item[0]['media_url'])
                     if 'logo_url' in item[0]:
                         item[0]['logo_url'] = "%s%s" % (CDN_LOGO_URL, item[0]['logo_url'])
                 except SerializerException as err:
