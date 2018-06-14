@@ -107,6 +107,7 @@ class Image(models.Model):
     name      = models.CharField(max_length=128, unique=True, help_text="Nombre de la imagen")
     portrait  = models.FileField(help_text="Portrait image", null=True, blank=True)
     landscape = models.FileField(help_text="Landscape image", null=True, blank=True)
+    logo      = models.FileField(help_text="Logo image", null=True, blank=True)
 
     def __unicode__(self):
         return self.name
