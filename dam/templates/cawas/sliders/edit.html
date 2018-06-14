@@ -60,17 +60,28 @@
                   class="content-picker sliderChoose"  id="sliderForm">
 
                 <div class="row form-row">
-
                         <div class="col-xs-4 col-md-4 col-lg-4 form-group">
-                        <div class="form-group has-feedback imgUpload">
-                            <label class="label-left" for="ThumbHor" id="ThumbHorTit">Imagen Landscape: *</label>
-                            <input type="hidden" id="imgantlandscape" value="{{vslider.image.landscape.name}}" disabled></input>
-                            <input type="file" class="form-control" name="ThumbHor" id="ThumbHor" accept="image/*"
-                            value="{{ vslider.image.landscape.name }}">
-                            <span class="glyphicon form-control-feedback"></span>
-                            <img id="imageH" src="{{ imgland }}"/>
+                            <div class="form-group has-feedback imgUpload">
+                                <label class="label-left" for="ThumbHor" id="ThumbHorTit">Imagen Landscape: *</label>
+                                <input type="hidden" id="imgantlandscape" value="{{vslider.image.landscape.name}}" disabled />
+                                <input type="file" class="form-control" name="ThumbHor" id="ThumbHor" accept="image/*"  value="{{ vslider.image.landscape.name }}">
+                                <span class="glyphicon form-control-feedback"></span>
+                                <img id="imageH" src="{{ imgland }}"/>
+                            </div>
                         </div>
+
+                        <!-- LOGO IMAGEN -->
+                        <div class="col-xs-4 col-md-4 col-lg-4 form-group">
+                            <div class="form-group has-feedback imgUpload">
+                                <label class="label-left" for="logo" >Logo: </label>
+                                <input type="hidden" id="imgantlogo" value="{{vslider.image.logo.name}}" disabled />
+                                <input type="file" class="form-control" name="logo" id="logo" accept="image/*"  value="{{ vslider.image.logo.name }}">
+                                <span class="glyphicon form-control-feedback"></span>
+                                <img id="imglogo"  src="{{ imglogo }}" />
+                            </div>
                         </div>
+                        <!-- /LOGO IMAGEN -->
+
                 </div>
 
 

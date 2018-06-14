@@ -1,0 +1,97 @@
+{% extends "cawas/base.html" %}
+{% block extra_head %}
+    <script src="/static/js/channels.js"></script>
+{% endblock %}
+
+{% block subheader %}
+<div class="col-xs-12 col-md-12 col-lg-12 unpad">
+    <div class="subHeader">
+        <div class="notifications">
+            {% if user.is_authenticated %}
+
+                   <a href="{% url 'menu_view' %}"><span class="glyphicon glyphicon-home GLY-med">
+                               </span> &nbsp;Inicio / </a>
+                  <a href="{% url 'list_channels' %}">Channels</a>
+
+                 <button class="btn btn-lg btn-primary btn-block logOFF" type="button" id="exitBtn" data-toggle="modal" data-target="#myModal">LOG-OUT</button>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock subheader %}
+{% block content %}
+
+        
+         <!-- hidden form -->
+        <div class="container">
+        
+             <div class="row">
+                       <!-- left col -->
+                       <div class="col-xs-12 col-md-6 col-lg-6 sepTOP-big">
+                           <div class="col-xs-12 col-md-12 col-lg-12">
+                            <h1>Nuevo</h1>
+                           </div>
+                           <div class="col-xs-4 col-md-3 col-lg-3">
+                                <a href="/channels/" class="btn btn-primary btn-block form-control" >Cancelar</a>
+                           </div>
+                       </div> 
+                                                               
+              </div>
+              
+
+
+
+    <form method="post"
+          name="channelform"
+          class="content-picker movieChoose"
+          id="channelform"
+          enctype="multipart/form-data">
+
+
+            <div class="row form-row">
+                <div class="col-xs-12 col-md-12 col-lg-12">
+                    <div class="form-group has-feedback">
+                        <label class="label-left" for="nombre">Nombre: *</label>
+                        <input type="text" class="form-control" name="nombre" id="nombre" required autofocus><span class="glyphicon form-control-feedback"></span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="row form-row">
+                <div class="col-xs-4 col-md-4 col-lg-4 form-group">
+                   <div class="form-group has-feedback imgUpload">
+                        <label class="label-left" for="image_logo" id="image_logo_tit">Imagen Logo: *</label>
+                        <input type="file" class="form-control" name="image_logo" id="image_logo" accept="image/*">
+                        <span class="glyphicon form-control-feedback"></span>
+                        <img id="imageH"/>
+                    </div>
+                </div>
+
+                 <div class="col-xs-4 col-md-4 col-lg-4 form-group">
+                   <div class="form-group has-feedback imgUpload">
+                        <label class="label-left" for="image_logo" id="image_logo_hover_tit">Imagen Logo Hover: *</label>
+                        <input type="file" class="form-control" name="image_logo_hover" id="image_logo_hover" accept="image/*">
+                        <span class="glyphicon form-control-feedback"></span>
+                        <img id="imageV"/>
+                    </div>
+                 </div>
+
+                <div class="col-xs-4 col-md-4 col-lg-4">
+                </div>
+
+            </div>
+
+
+            <div class="row form-row">
+                <div class="col-xs-offset-2 col-xs-4 col-md-4 col-lg-4 ">
+                    <div class="btn btn-primary btn-block form-control" id="btn_agregar">Grabar</div>
+                </div>
+                <div class="col-xs-4 col-md-4 col-lg-4">
+                    <div class="btn btn-primary btn-block form-control" id="btn_agregar_publicar">Grabar y Publicar</div>
+                </div>
+            </div>
+            </form>
+        
+        </div>
+
+{% endblock content %}
