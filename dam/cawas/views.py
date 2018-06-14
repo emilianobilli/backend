@@ -17,6 +17,7 @@ from Controller.CableOperatorController import CableOperatorController
 from Controller.TagController import TagController
 from Controller.ContractController import ContractController
 from Controller.FatherAssetController import FatherAssetController
+from Controller.ChannelController import ChannelController
 
 from Controller.LogController import LogController
 from models import Channel, Device, Slider,  Episode, EpisodeMetadata, ImageQueue, PublishQueue, \
@@ -315,6 +316,35 @@ def api_edit_movies_view(request):
     mc = MovieController()
     resp = mc.api_edit(request)
     return HttpResponse(resp)
+
+
+
+
+#<CHANNEL>
+def add_channels_view(request):
+    mc = ChannelController()
+    resp = mc.add(request)
+    return HttpResponse(resp)
+
+def edit_channels_view(request, id):
+    mc = ChannelController()
+    resp = mc.edit(request, id)
+    return HttpResponse(resp)
+
+def delete_channels_view(request):
+    mc = ChannelController()
+    resp = mc.delete(request)
+    return HttpResponse(resp)
+
+def list_channels_view(request):
+    mc = ChannelController()
+    resp = mc.list(request)
+    return HttpResponse(resp)
+
+#</CHANNEL>
+
+
+
 
 
 
