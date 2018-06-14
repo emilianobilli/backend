@@ -32,7 +32,6 @@ class SliderController(object):
             request.session['list_slider_message'] = 'No existe Setting '
             request.session['list_slider_flag'] = FLAG_ALERT
             return self.code_return
-        print 'debug'
         if request.method == 'POST':
             # VARIABLES
             try:
@@ -353,6 +352,7 @@ class SliderController(object):
             ph = PublishHelper()
             ph.func_publish_queue(request, vslider.slider_id, vslider.language, 'SL', 'Q', vslider.publish_date)
             ph.func_publish_image(request, vslider.image)
+
 
         except Slider.DoesNotExist as e:
             self.code_return = -1
