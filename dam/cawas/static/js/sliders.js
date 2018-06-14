@@ -13,6 +13,7 @@ $( document ).ready(function() {
 
     $( "#ThumbHor" ).change(showPreviewImage_click);
     $( "#ThumbVer" ).change(showPreviewImage_click);
+    $( "#logo" ).change(showPreviewImage_click);
 
     $("#btngrabarypublicar").click(function(){
         $("#publicar").val("1");
@@ -20,7 +21,6 @@ $( document ).ready(function() {
         checkAll();
     });
 
-    console.log( "ready!" );
     var asset_id = $("#asset_id").val();
 
     $("#btnsearch").click(function(){
@@ -60,18 +60,21 @@ $( document ).ready(function() {
     });
 
     
-    var checkedOnce = 0; //chequea si el formulario se ha intentado enviar alguna vez
-    var checkVal=0; //chequea la cantidad de errores en el formulario
+    var checkedOnce     = 0; //chequea si el formulario se ha intentado enviar alguna vez
+    var checkVal        =0; //chequea la cantidad de errores en el formulario
     var clickedToSubmit = 0; //chequea si el botón de submit se ha presionado
-    var checkText="";
+    var checkText       ="";
     var display_runtimeJSON; //necesaria para armar el valor final que debe ir en el JSON
-    var langQ = 0; //Cuenta la cantidad de idiomas elegidos por el usuario
-    var langDesc = [] // recoge qué idiomas son los que se seleccionaron
+    var langQ           = 0; //Cuenta la cantidad de idiomas elegidos por el usuario
+    var langDesc        = [] // recoge qué idiomas son los que se seleccionaron
     var clickedVal; // recoge el valor del ID seleccionado en la lista de sliders;
     var clickedText; // recoge el nombre seleccionado en la lista de edición de sliders;
     var clickedTextID; // recoge el ID nombre seleccionado en la lista de edición de sliders;
     var hora;
     var minutos;
+    var TYPESLIDER_VIDEO = "video";
+    var TYPESLIDER_IMAGE = "image";
+
     // activar los selects con filtro
     countChecked();
 
@@ -83,8 +86,6 @@ $( document ).ready(function() {
     $("#getOut").click(function(){
            window.location.href = "/logout";
     })
-    
-    
 
     // Toma el ID de la slider seleccionada en la lista
     $( "#slider-select" ).change(function() {
@@ -95,10 +96,8 @@ $( document ).ready(function() {
             {
                 console.log( "clickedVal="+clickedVal ); // debug
                 $( "#sliderID" ).val(clickedVal);// Agrega el ID en el input field
-
             }
         });
-        
     });
 
     // Toma el nombre de la slider seleccionada en la lista
@@ -206,14 +205,15 @@ $( document ).ready(function() {
         // this function checks for all form values and makes json string to post or alerts user to complete fields.
         console.log("checking form...");
         checkVal = 0;
-        var asset_Id =$("#slider-select option:selected").attr("value");
-        var linked_url = $('#linked_url').val();
+        var asset_Id            =$("#slider-select option:selected").attr("value");
+        var linked_url          = $('#linked_url').val();
         var typeslider_selected = $('#typeslider option:selected');
-        var device_selected = $('#devices option:selected');
-        var idioma_selected = $('#idiomaSelect').val();
-        var publish_date = $('#date_blq').val();
-        var text = $("#text").val();
-        var publicar = $('#publicar').val();
+        var device_selected     = $('#devices option:selected');
+        var idioma_selected     = $('#idiomaSelect').val();
+        var publish_date        = $('#date_blq').val();
+        var text                = $("#text").val();
+        var videoname           = $("#videoname").val();
+        var publicar            = $('#publicar').val();
         var paises_selected = [];
 
 
@@ -227,13 +227,7 @@ $( document ).ready(function() {
             okMe("#linked_url");
         }
 
-        // chequea thumbnail horizaontal
-        if(!$('#ThumbHor').val() && !$('#imgantlandscape').val()){
-            errorMe("#ThumbHor");
-            checkVal++;
-        }else{
-            okMe("#ThumbHor");
-        }
+
 
         //Valida idioma
         if (idioma_selected =="0" || idioma_selected ==""){
@@ -272,6 +266,34 @@ $( document ).ready(function() {
              $(".select2-selection--single").css("border","1px #3c763d solid");
             typeslider_selected=$('#typeslider').val();
         }
+
+        // Validar si tipo de Slider es Video entonces es obligatorio completar el Nombre del video
+        if ( $('#typeslider').val() == TYPESLIDER_VIDEO ){
+            if (videoname.length< 1){
+                 errorMe("#videoname");
+                 checkVal++;
+             }
+        }else{
+            okMe("#videoname");
+        }
+
+        // Validar si es Slider IMAGE, la imagen es Obligatoria
+        if ( $('#typeslider').val() == TYPESLIDER_IMAGE ){
+            if(!$('#ThumbHor').val() && !$('#imgantlandscape').val()){
+                errorMe("#ThumbHor");
+                checkVal++;
+            }else{
+                okMe("#ThumbHor");
+            }
+        }else{
+            okMe("#ThumbHor");
+        }
+
+
+
+
+
+
         // chequea DEVICES
         console.log("#devices"+$('#devices').val());
         if ( $('#devices').val()=="0" || $('#devices').val()==0)
@@ -428,6 +450,7 @@ $( document ).ready(function() {
                     myJSON+='{"Slider":{';
                     myJSON+='"asset_id":"'+asset_Id+'",';
                     if (text=='' ){myJSON+='"text":"",';}else{myJSON+='"text":"'+text+'",';}
+                    if (videoname=='' ){myJSON+='"videoname":"",';}else{myJSON+='"videoname":"'+videoname+'",';}
                     if (myCountries=="[]"){myJSON+='"countries":null,'; }else{myJSON+='"countries":'+myCountries+',';}
 
                     myJSON+='"publish_date":"'+publish_date+'",';
