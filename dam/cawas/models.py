@@ -329,7 +329,7 @@ class Slider(models.Model):
     publish_status    = models.BooleanField(default=False)
     activated         = models.BooleanField(default=False)
     queue_status      = models.CharField(max_length=1, default='', help_text="Status del item en PublishQueue")
-
+    video_name        = models.CharField(max_length=256, blank=True, help_text="Nombre Del Video")
 
     def save(self, *args, **kwargs):
         super(Slider, self).save(*args, **kwargs)
@@ -357,6 +357,12 @@ class Slider(models.Model):
         if self.image is not None:
             if self.image.landscape.name != '':
                 dict["media_url"] = os.path.basename(self.image.landscape.name)
+            if self.image.logo.name != '':
+                dict["logo_url"] = os.path.basename(self.image.logo.name)
+
+        if 'media_url' not in dict:
+            dict["media_url"] = self.video_name
+
         if self.asset is not None:
             dict["linked_asset_id"]   = self.asset.asset_id
             dict["linked_asset_type"] = self.asset.asset_type
