@@ -16,22 +16,22 @@ class SliderController(object):
             lc = LogController()
             return redirect(lc.login_view(request))
 
-            # VARIABLES LOCALES
+        # VARIABLES LOCALES
         message = ''
-        varchivo=''
         vflag = ""
-        vschedule_date = ''
         vasset = Asset()
         vslider = Slider()
-
         try:
             pathfilesland = Setting.objects.get(code='image_repository_path_landscape')
-            base_dir = Setting.objects.get(code='dam_base_dir')
+            pathfileslogo = Setting.objects.get(code='image_repository_path_logo')
+            base_dir      = Setting.objects.get(code='dam_base_dir')
         except Setting.DoesNotExist as e:
-            self.code_return = -1
-            request.session['list_slider_message'] = 'No existe Setting '
-            request.session['list_slider_flag'] = FLAG_ALERT
-            return self.code_return
+            message ='No existe Setting '
+            return render(request, 'cawas/error.html', {'code': 500, 'message': message}, status=500)
+
+
+
+        #PROCESAMIENTO POST
         if request.method == 'POST':
             # VARIABLES
             try:
@@ -40,18 +40,19 @@ class SliderController(object):
                 strjson = request.POST['varsToJSON']
                 decjson = json.loads(strjson.replace('\r','\\r').replace('\n','\\n'))
                 vgrabarypublicar = decjson['Slider']['publicar']
-                print 'debug1'
                 if decjson['Slider']['asset_id'] is not None:
                     if Asset.objects.filter(asset_id=decjson['Slider']['asset_id']).exists():
                         vasset = Asset.objects.get(asset_id=decjson['Slider']['asset_id'])
                         vslider.asset = vasset
                     else:
                         vslider.asset = None
-                print 'debug2'
                 vslider.media_type = decjson['Slider']['media_type']
                 vdevice = Device.objects.get(id=decjson['Slider']['target_device_id'])
                 vslider.target_device = vdevice
                 vslider.text = decjson['Slider']['text']
+
+                if decjson['Slider']['videoname'] is not None:
+                    vslider.video_name = decjson['Slider']['videoname']
 
 
                 if decjson['Slider']['linked_url'] is None:
@@ -62,18 +63,30 @@ class SliderController(object):
                 vslider.language = Language.objects.get(code=decjson['Slider']['language'])
                 vslider.save()
 
-
                 vimg.name = vslider.slider_id
                 if (request.FILES.has_key('ThumbHor')):
                     if request.FILES['ThumbHor'].name != '':
                         # TRATAMIENTO DE IMAGEN Landscape
-                        vimg.landscape = request.FILES['ThumbHor']
-                        extension = os.path.splitext(vimg.landscape.name)[1]
-                        varchivo =  pathfilesland.value + vimg.name + extension
+                        vimg.landscape      = request.FILES['ThumbHor']
+                        extension           = os.path.splitext(vimg.landscape.name)[1]
+                        varchivo            =  pathfilesland.value + vimg.name + extension
                         vimg.landscape.name = varchivo
+                        varchivo_server     = base_dir.value + varchivo
+                        if os.path.isfile(varchivo_server):
+                            os.remove(varchivo_server)
+
+                #LOGO
+                if (request.FILES.has_key('logo')):
+                    if request.FILES['logo'].name != '':
+                        # TRATAMIENTO DE IMAGEN LOGO
+                        vimg.logo       = request.FILES['logo']
+                        extension       = os.path.splitext(vimg.logo.name)[1]
+                        varchivo        = pathfileslogo.value + vimg.name + extension
+                        vimg.logo.name  = varchivo
                         varchivo_server = base_dir.value + varchivo
                         if os.path.isfile(varchivo_server):
                             os.remove(varchivo_server)
+                #/LOGO
 
                 vimg.save()
                 vslider.image = vimg
@@ -88,9 +101,8 @@ class SliderController(object):
                             country = Country.objects.get(id=item['country_id'])
                             vslider.target_country.add(country)
                         except Country.DoesNotExist as e:
-                            request.session['list_slider_message'] = "Error: No Existe Pais (" + str(e.message) + ")"
-                            request.session['list_slider_flag'] = FLAG_ALERT
-                            self.code_return = -1
+                            message = "Error: No Existe Pais (" + str(e.message) + ")"
+                            return render(request, 'cawas/error.html', {'code': 500, 'message': message}, status=500)
 
 
                 if decjson['Slider']['text'] is None:
@@ -125,10 +137,8 @@ class SliderController(object):
                     request.session['list_slider_flag'] = FLAG_SUCCESS
 
             except Exception as e:
-                request.session['list_slider_message'] = "Error al Guardar Slider. (" + str(e) + " )"
-                request.session['list_slider_flag'] = FLAG_ALERT
-                self.code_return = -1
-                return self.code_return
+                message =  "Error al Guardar Slider. (" + str(e) + " )"
+                return render(request, 'cawas/error.html', {'code':500, 'message':message}, status=500)
 
         vassets = Asset.objects.all()
         vsliders = Slider.objects.all()
@@ -139,6 +149,8 @@ class SliderController(object):
 
         context = {'message': message, 'flag': vflag, 'vtypes': vtypes, 'vassets': vassets, 'vsliders': vsliders,
                    'vlanguages': vlanguages, 'vdevices': vdevices, 'countries':countries}
+
+
         return render(request, 'cawas/sliders/add.html', context)
 
 
@@ -148,47 +160,42 @@ class SliderController(object):
         if not request.user.is_authenticated:
             lc = LogController()
             return redirect(lc.login_view(request))
-
-            # VARIABLES LOCALES
+        # VARIABLES LOCALES
         vflag = ''
         message=''
-        varchivo =''
-        vschedule_date = ''
-        vasset = Asset()
-        vslider = Slider()
-        vimg = Image()
         imgland = ''
+        imglogo = ''
+
         try:
             pathfilesland = Setting.objects.get(code='image_repository_path_landscape')
+            pathfileslogo = Setting.objects.get(code='image_repository_path_logo')
             base_dir = Setting.objects.get(code='dam_base_dir')
         except Setting.DoesNotExist as e:
-            self.code_return = -1
-            request.session['list_slider_message'] = 'No existe Setting '
-            request.session['list_slider_flag'] = FLAG_ALERT
-            return self.code_return
+            message= 'No existe Setting '
+            return render(request, 'cawas/error.html', {'code': 500, 'message': message}, status=500)
+
         try:
-            vslider = Slider.objects.get(slider_id=slider_id)
-            vassets = Asset.objects.all()
-            vsliders = Slider.objects.all()
-            vlanguages = Language.objects.all()
-            vdevices = Device.objects.all()
-
-            countries_selected = vslider.target_country.all().order_by('name')
+            vslider               = Slider.objects.get(slider_id=slider_id)
+            vassets               = Asset.objects.all()
+            vsliders              = Slider.objects.all()
+            vlanguages            = Language.objects.all()
+            vdevices              = Device.objects.all()
+            countries_selected    = vslider.target_country.all().order_by('name')
             countries_notselected = Country.objects.exclude(id__in=countries_selected).order_by('name')
-
             vtypes = {"image": "Image", "video": "Video"}
 
             if vslider.image is not None:
                 i = len(vslider.image.landscape.name)
                 imgland = vslider.image.landscape.name[5:i]
 
+            if vslider.image.logo is not None:
+                i = len(vslider.image.logo.name)
+                imglogo = vslider.image.logo.name[5:i]
+
         except Slider.DoesNotExist as e:
-            self.code_return = -1
-            request.session['list_slider_message'] = 'Error: ' + e.message
-            request.session['list_slider_flag'] = FLAG_ALERT
-            return self.code_return
-        except Image.DoesNotExist as e:
-            imgland = ''
+            message =  'Error: ' + e.message
+            return render(request, 'cawas/error.html', {'code': 500, 'message': message}, status=500)
+
 
         if request.method == 'POST':
             # VARIABLES
@@ -196,7 +203,6 @@ class SliderController(object):
                 # Parsear JSON
                 strjson = request.POST['varsToJSON']
                 decjson = json.loads(strjson.replace('\r','\\r').replace('\n','\\n'))
-
                 vslider = Slider.objects.get(slider_id=slider_id)
 
 
@@ -207,13 +213,16 @@ class SliderController(object):
                     else:
                         vslider.asset = None
 
-                vslider.media_type = decjson['Slider']['media_type']
+                vslider.media_type      = decjson['Slider']['media_type']
                 vdevice = Device.objects.get(id=decjson['Slider']['target_device_id'])
-                vslider.target_device = vdevice
+                vslider.target_device   = vdevice
                 if decjson['Slider']['text'] is None:
                     vslider.text = ''
                 else:
                     vslider.text = decjson['Slider']['text']
+
+                if decjson['Slider']['videoname'] is not None:
+                    vslider.video_name = decjson['Slider']['videoname']
 
                 if decjson['Slider']['linked_url'] is None:
                     vslider.linked_url = ''
@@ -232,19 +241,16 @@ class SliderController(object):
                     vimg = Image.objects.get(name=vslider.slider_id)
                 else:
                     vimg = Image()
-
             except Device.DoesNotExist as e:
-                self.code_return = -1
-                request.session['list_slider_message'] = 'No existe Device '
-                request.session['list_slider_flag'] = FLAG_ALERT
-                return self.code_return
+                message = "Error: (" + str(e.message) + ")"
+                return render(request, 'cawas/error.html', {'code': 500, 'message': message}, status=500)
             except Asset.DoesNotExist as e:
-                self.code_return = -1
-                request.session['list_slider_message'] = 'No existe Asset '
-                request.session['list_slider_flag'] = FLAG_ALERT
-                return self.code_return
+                message = "Error: (" + str(e.message) + ")"
+                return render(request, 'cawas/error.html', {'code': 500, 'message': message}, status=500)
+
 
             vimg.name = vslider.slider_id
+
             # IMAGEN Portrait
             if (request.FILES.has_key('ThumbHor')):
                 if request.FILES['ThumbHor'].name != '':
@@ -256,6 +262,20 @@ class SliderController(object):
                     varchivo_server = base_dir.value + varchivo
                     if os.path.isfile(varchivo_server):
                         os.remove(varchivo_server)
+
+            # LOGO
+            if (request.FILES.has_key('logo')):
+                if request.FILES['logo'].name != '':
+                    # TRATAMIENTO DE IMAGEN LOGO
+                    vimg.logo = request.FILES['logo']
+                    extension = os.path.splitext(vimg.logo.name)[1]
+                    varchivo = pathfileslogo.value + vimg.name + extension
+                    vimg.logo.name = varchivo
+                    varchivo_server = base_dir.value + varchivo
+                    if os.path.isfile(varchivo_server):
+                        os.remove(varchivo_server)
+                        # /LOGO
+
 
             vimg.save()
             vslider.image = vimg
@@ -270,10 +290,8 @@ class SliderController(object):
                         country = Country.objects.get(id=item['country_id'])
                         vslider.target_country.add(country)
                     except Country.DoesNotExist as e:
-                        request.session['list_episode_message'] = "Error: No Existe Pais (" + str(e.message) + ")"
-                        request.session['list_episode_flag'] = FLAG_ALERT
-                        self.code_return = -1
-
+                        message = "Error: No Existe Pais (" + str(e.message) + ")"
+                        return render(request, 'cawas/error.html', {'code': 500, 'message': message}, status=500)
             vslider.save()
 
             # publicar
@@ -286,10 +304,19 @@ class SliderController(object):
             request.session['list_slider_flag'] = FLAG_SUCCESS
 
         if request.method == 'GET':
-            context = {'vtypes': vtypes, 'vassets': vassets, 'vsliders': vsliders, 'imgland':imgland,
-                       'vlanguages': vlanguages, 'vdevices': vdevices, 'flag': vflag, 'vslider': vslider,
-                        'message':message, 'countries_selected':countries_selected,
-                       'countries_notselected':countries_notselected}
+            context = {
+                'vtypes': vtypes,
+                'vassets': vassets,
+                'vsliders': vsliders,
+                'imgland':imgland,
+                'imglogo': imglogo,
+                'vlanguages': vlanguages,
+                'vdevices': vdevices,
+                'flag': vflag,
+                'vslider':vslider,
+                'message':message,
+                'countries_selected':countries_selected,
+                'countries_notselected':countries_notselected}
             return render(request, 'cawas/sliders/edit.html', context)
 
 
