@@ -165,9 +165,10 @@ $( document ).ready(function() {
         }else{
             okMe("#orginalName");
         }
+
+
         // chequea thumbnail horizaontal
         if(!$('#ThumbHor').val() && !$('#imgantlandscape').val()){
-
             errorMe("#ThumbHor");
             checkVal++;
         }else{
