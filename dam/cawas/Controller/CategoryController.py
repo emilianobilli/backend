@@ -142,17 +142,16 @@ class CategoryController(object):
             pathfilesport = Setting.objects.get(code='image_repository_path_portrait')
             pathfilesland = Setting.objects.get(code='image_repository_path_landscape')
             base_dir = Setting.objects.get(code='dam_base_dir')
-
-            #vasset = Asset.objects.get(asset_id=asset_id)
             vcategory = Category.objects.get(category_id=category_id)
             vtypecategory = {"pornstar": "Pornstar", "playmate": "Playmate"}
             vlanguages = Language.objects.all()
-        # carga imagenes
+            # carga imagenes
+            print 'debug 1'
             i = len(vcategory.image.portrait.name)
             imgport = vcategory.image.portrait.name[5:i]
             i = len(vcategory.image.landscape.name)
             imgland = vcategory.image.landscape.name[5:i]
-        #Nuevo diccionario para completar lenguages y metadata
+            #Nuevo diccionario para completar lenguages y metadata
             for itemlang in vlanguages:
                 vcategorymetadata = None
                 try:
@@ -186,6 +185,9 @@ class CategoryController(object):
             self.code_return = -1
             return self.code_return
 
+
+
+
         if request.method == 'POST':
             #VARIABLES
             vasset = Asset()
@@ -193,11 +195,10 @@ class CategoryController(object):
             # Parsear JSON
             strjson = request.POST['varsToJSON']
             decjson = json.loads(strjson.replace('\r','\\r').replace('\n','\\n'))
-            print 'debug1'
-            # Leer GIRL desde AssetID
             try:
+
                 vcategory = Category.objects.get(category_id=category_id)
-                vimg = Image.objects.get(name=vcategory.category_id)
+                vimg      = Image.objects.get(name=vcategory.category_id)
             except Asset.DoesNotExist as e:
                 request.session['list_category_message'] = "Error al Guardar Categoria. (" + e.message + ")"
                 request.session['list_category_flag'] = FLAG_ALERT
@@ -238,13 +239,11 @@ class CategoryController(object):
                         os.remove(varchivo_server)
 
             vimg.save()
-            print 'debug2'
-            #Actualiza Category
 
-            vcategory.name = decjson['Category']['original_name']
+            vcategory.original_name  = decjson['Category']['original_name']
             vcategory.image = vimg
             vcategory.save()
-            print 'debug3'
+            print 'debug Category.original_name: ' +  decjson['Category']['original_name']
 
             # Eliminar cola de publicacion para el item en estado Queued
             ph = PublishHelper()
@@ -257,24 +256,31 @@ class CategoryController(object):
                 except CategoryMetadata.DoesNotExist as e:
                     gmd = CategoryMetadata()
 
-                    if (item['Categorymetadata']['date'] is None):
-                        vschedule_date = datetime.datetime.now().strftime('%Y-%m-%d')
-                    else:
-                        vschedule_date = datetime.datetime.strptime(item['Categorymetadata']['date'],'%d-%m-%Y').strftime('%Y-%m-%d')
+                if (item['Categorymetadata']['date'] is None ):
+                    vschedule_date = datetime.datetime.now().strftime('%Y-%m-%d')
+                elif (item['Categorymetadata']['date'] == '' ):
+                    vschedule_date = datetime.datetime.now().strftime('%Y-%m-%d')
+                else:
+                    vschedule_date = datetime.datetime.strptime(item['Categorymetadata']['date'],'%d-%m-%Y').strftime('%Y-%m-%d')
 
-                    gmd.language = vlanguage
-                    gmd.name = item['Categorymetadata']['name']
-                    gmd.category = vcategory
-                    gmd.queue_status = 'Q'
-                    gmd.save()
-                    ph.func_publish_queue(request, gmd.category.category_id, gmd.language, 'CA', 'Q', vschedule_date)
-                    ph.func_publish_image(request, vimg)
+                gmd.language     = vlanguage
+                gmd.name         = item['Categorymetadata']['name']
+                print 'debug Categorymetadata.name' + item['Categorymetadata']['name']
+                gmd.category     = vcategory
+                gmd.publish_date = vschedule_date
+                gmd.queue_status = 'Q'
+                gmd.save()
+
+                ph.func_publish_queue(request, gmd.category.category_id, gmd.language, 'CA', 'Q', vschedule_date)
+                ph.func_publish_image(request, vimg)
 
             request.session['list_category_message'] = 'Guardado Correctamente'
             request.session['list_category_flag'] = FLAG_SUCCESS
 
-        context = { 'vlanguages': vlanguages, 'vcategory':vcategory,
-                   'vtypecategory':vtypecategory,'vlangmetadata':vlangmetadata,
+        context = { 'vlanguages': vlanguages,
+                    'vcategory':vcategory,
+                   'vtypecategory':vtypecategory,
+                    'vlangmetadata':vlangmetadata,
                    'imgport':imgport, 'imgland':imgland,
                    }
         # checks:
