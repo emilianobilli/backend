@@ -101,6 +101,7 @@ urlpatterns = [
     url(r'^api/fatherassets/edit/$', views.api_edit_fatherassets_view, name='api_edit_fatherassets'),
     url(r'^api/fatherassets/delete/$', views.api_delete_fatherassets_view, name='api_delete_fatherassets'),
     #</FatherAsset>
+
     # <Channel>
     url(r'^channels/$', views.list_channels_view, name='list_channels'),
     url(r'^channels/add/$', views.add_channels_view, name='add_channels'),
@@ -108,5 +109,10 @@ urlpatterns = [
     url(r'^channels/delete/$', views.delete_channels_view, name='delete_channels'),
     # </Channel>
 
+
+    url(r'^redirectionrules/$', views.list_redirectionrules_view, name='list_redirectionrules'),
+    url(r'^redirectionrules/add/$', views.add_redirectionrules_view, name='add_redirectionrules'),
+    url(r'^redirectionrules/edit/(?P<id>\w*)/$', views.edit_redirectionrules_view, name='edit_redirectionrules'),
+    #url(r'^redirectionrules/delete/$', views.delete_channels_view, name='delete_channels'),
 
 ]
