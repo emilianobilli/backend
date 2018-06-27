@@ -18,6 +18,7 @@ from Controller.TagController import TagController
 from Controller.ContractController import ContractController
 from Controller.FatherAssetController import FatherAssetController
 from Controller.ChannelController import ChannelController
+from Controller.RedirectionRulesController import RedirectionRulesController
 
 from Controller.LogController import LogController
 from models import Channel, Device, Slider,  Episode, EpisodeMetadata, ImageQueue, PublishQueue, \
@@ -759,3 +760,24 @@ def publish_cableoperators_view(request, id):
         return redirect(list_cableoperators_view)
 
 #</CRUD CATEGORIES>
+
+
+
+
+#<CRUD REDIRECTIONRULES>
+def add_redirectionrules_view(request):
+    controller = RedirectionRulesController()
+    return controller.add(request)
+
+def edit_redirectionrules_view(request, id):
+    controller = RedirectionRulesController()
+    return controller.edit(request, id)
+
+
+def list_redirectionrules_view(request):
+    controller = RedirectionRulesController()
+    return controller.index(request)
+
+#</CRUD REDIRECTIONRULES>
+
+
