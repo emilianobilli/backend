@@ -155,3 +155,7 @@ class ContractAdmin(admin.ModelAdmin):
 class FatherAssetAdmin(admin.ModelAdmin):
     list_display = ['id','asset_id']
 
+
+@admin.register(models.RedirectionRule)
+class RedirectionRulesAdmin(admin.ModelAdmin):
+    list_display = ['country', 'cableoperator','rule']
