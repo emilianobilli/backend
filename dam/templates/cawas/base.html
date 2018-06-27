@@ -192,6 +192,27 @@
               </div>
               {% endif %}
 
+
+
+            {% if messages %}
+              {% for message in messages %}
+                  <div class="row" >
+                   <div class="col-xs-12 col-md-12 col-lg-12 unpad">
+                        <div class="notifications">
+                              <div    {% if message.tags %} class="alert-{{ message.tags }} " {% endif %} >
+                                  <span class="closebtn" onclick="this.parentElement.style.display='none';">&times;</span>
+                                  {{ message }}
+                              </div>
+                         </div>
+                    </div>
+                  </div>
+
+                {% endfor %}
+            {% endif %}
+
+
+
+
               <div class="row">
               <div id="message" style="display:none">
                   <div class="col-xs-12 col-md-12 col-lg-12 unpad">

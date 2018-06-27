@@ -1,0 +1,111 @@
+{% extends "cawas/base.html" %}
+
+{% block extra_head %}
+
+{% endblock %}
+
+{% block subheader %}
+<div class="col-xs-12 col-md-12 col-lg-12 unpad">
+    <div class="subHeader">
+        <div class="notifications">
+            {% if user.is_authenticated %}
+                  <a href="{% url 'menu_view' %}"><span class="glyphicon glyphicon-home GLY-med"></span> &nbsp;Inicio / </a>
+                  <a href="{% url 'list_redirectionrules' %}">Redirection Rules  </a>
+                 <button class="btn btn-lg btn-primary btn-block logOFF" type="button" id="exitBtn" data-toggle="modal" data-target="#myModal">LOG-OUT</button>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock subheader %}
+
+{% block content %}
+<!-- CONTENT -->
+
+
+
+        <div class="container">
+            <!-- First Row -->
+              <div class="row">
+                  <div class="col-lg-12 col-md-12 col-sm-12">
+                       <h2>Redirection Rules </h2>
+                  </div>
+              </div>
+
+            <div class="row">
+                 <br>
+                 <div class="col-lg-2 col-md-2 col-sm-2" >
+                     <a href="{% url 'add_redirectionrules'  %}" class="btn btn-lg btn-primary btn-block logOFF" >Nuevo</a>
+                 </div>
+                 <div class="col-lg-8 col-md-8 col-sm-8" ></div>
+            </div>
+            <br>
+
+            <!-- formulario de busqueda -->
+            <form action="/movies/list" method="get" id="searchForID" name="searchForId">
+                <div class="col-xs-12 col-md-2 col-lg-2 ">
+                     <span class="boldIt">Busqueda</span>
+                </div>
+                <div class="col-xs-7 col-md-7 col-lg-7 ">
+                    <div>
+                        <input type="text" class="form-control fLEFT top6" id="search"
+                               name="search" placeholder="Ingresar Texto de Busqueda" >
+                    </div>
+                </div>
+                <div class="col-xs-1 col-md-1 col-lg-1 unpad">
+                    <button type="submit" class=""><span class="glyphicon glyphicon-filter inverse"></span>
+                    </button>
+                </div>
+            </form>
+            <!-- formulario de busqueda -->
+
+            <!-- GRID row -->
+            <br>
+            <div class="row">
+                <table class="tb-row tb-header">
+                    <thead>
+                        <th class="tb-cell">ID</th>
+                        <th class="tb-cell">Pais</th>
+                        <th class="tb-cell">Cable Operador</th>
+                        <th class="tb-cell">Rule</th>
+                        <th class="tb-cell">Acciones</th>
+
+                    </thead>
+
+                     {% for item in registros %}
+                         <tr class="tb-row">
+                            <td class="tb-cell">{{ item.id }}</td>
+                            <td class="tb-cell">{{ item.country.name}}</td>
+                            <td class="tb-cell">{{ item.cableoperator.name }}</td>
+                            <td class="tb-cell">
+                                {{ rules|get_item:item.rule }}
+                            </td>
+                            <td class="tb-cell"><a href="{% url 'edit_redirectionrules' item.id %}" class="btn-info btn tb-btn" >Editar</a></td>
+
+                        </tr>
+                    {% endfor %}
+
+
+                </table>
+
+
+                <div class="pagination">
+                    <span class="step-links">
+                        {% if registros.has_previous %}
+                            <a href="?page={{ registros.previous_page_number }}">Anterior</a>
+                        {% endif %}
+
+                        <span class="current">
+                            Pag. Actual {{ registros.number }} of {{ registros.paginator.num_pages }}.
+                        </span>
+
+                        {% if registros.has_next %}
+                            <a href="?page={{ registros.next_page_number }}">Siguiente</a>
+                        {% endif %}
+                    </span>
+                </div>
+
+            </div>
+
+            <div class="fNONE"></div>
+        </div>
+{% endblock content %}
