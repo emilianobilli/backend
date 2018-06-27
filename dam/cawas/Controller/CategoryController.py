@@ -196,7 +196,7 @@ class CategoryController(object):
             strjson = request.POST['varsToJSON']
             decjson = json.loads(strjson.replace('\r','\\r').replace('\n','\\n'))
             try:
-
+                print 'debug 2'
                 vcategory = Category.objects.get(category_id=category_id)
                 vimg      = Image.objects.get(name=vcategory.category_id)
             except Asset.DoesNotExist as e:
@@ -243,7 +243,7 @@ class CategoryController(object):
             vcategory.original_name  = decjson['Category']['original_name']
             vcategory.image = vimg
             vcategory.save()
-            print 'debug Category.original_name: ' +  decjson['Category']['original_name']
+            print 'debug 3'
 
             # Eliminar cola de publicacion para el item en estado Queued
             ph = PublishHelper()
@@ -265,7 +265,7 @@ class CategoryController(object):
 
                 gmd.language     = vlanguage
                 gmd.name         = item['Categorymetadata']['name']
-                print 'debug Categorymetadata.name' + item['Categorymetadata']['name']
+                print 'debug 4'
                 gmd.category     = vcategory
                 gmd.publish_date = vschedule_date
                 gmd.queue_status = 'Q'
@@ -279,9 +279,10 @@ class CategoryController(object):
 
         context = { 'vlanguages': vlanguages,
                     'vcategory':vcategory,
-                   'vtypecategory':vtypecategory,
+                    'vtypecategory':vtypecategory,
                     'vlangmetadata':vlangmetadata,
-                   'imgport':imgport, 'imgland':imgland,
+                    'imgport':imgport,
+                    'imgland':imgland,
                    }
         # checks:
         return render(request, 'cawas/categories/edit.html', context)
