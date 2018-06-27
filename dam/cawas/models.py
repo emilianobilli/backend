@@ -863,3 +863,16 @@ class VideoLog(models.Model):
     def __unicode__(self):
         return ('%s:%s') % (self.asset.asset_id, self.tag.name)
 
+
+
+class RedirectionRule(models.Model):
+    cableoperator = models.ForeignKey(CableOperator, blank=True, null=True)
+    country       = models.ForeignKey(Country, blank=True, null=True)
+    rule           = models.CharField(default='D', max_length=1, help_text="Rule", blank=True, null=True)
+
+
+
+class PackagePrice(models.Model):
+    country       = models.ForeignKey(Country, blank=True, null=True)
+    price         = models.IntegerField(help_text="Price", default=0)
+    price_display = models.CharField(max_length=64, help_text="Price Display", blank=True, null=True )
