@@ -43,7 +43,7 @@ urlpatterns = [
     url(r'^blocks/publish/(?P<id>\w*)$', views.publish_blocks_view, name='publish_blocks'),
 
 
-    url(r'^episodes/add/$', views.add_episodes_view, name='add_blocks'),
+    url(r'^episodes/add/$', views.add_episodes_view, name='add_episodes'),
     url(r'^episodes/edit/(?P<episode_id>\w+?)/$', views.edit_episodes_view, name='edit_episodes'),
     #url(r'^episodes/edit/(?P<episode_id>\w+?)/$', views.edit_episodes_view)
     url(r'^episodes/list/$', views.list_episodes_view, name='list_episodes'),
@@ -113,6 +113,6 @@ urlpatterns = [
     url(r'^redirectionrules/$', views.list_redirectionrules_view, name='list_redirectionrules'),
     url(r'^redirectionrules/add/$', views.add_redirectionrules_view, name='add_redirectionrules'),
     url(r'^redirectionrules/edit/(?P<id>\w*)/$', views.edit_redirectionrules_view, name='edit_redirectionrules'),
-    #url(r'^redirectionrules/delete/$', views.delete_channels_view, name='delete_channels'),
+    url(r'^redirectionrules/delete/$', views.delete_redirectionrules_view, name='delete_redirectionrules'),
 
 ]

@@ -778,6 +778,11 @@ def list_redirectionrules_view(request):
     controller = RedirectionRulesController()
     return controller.index(request)
 
+
+def delete_redirectionrules_view(request):
+    c = RedirectionRulesController()
+    return c.delete(request)
+
 #</CRUD REDIRECTIONRULES>
 
 
