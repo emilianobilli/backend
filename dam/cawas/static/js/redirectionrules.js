@@ -73,6 +73,33 @@ $( document ).ready(function() {
           }
     }
 
+     //ELIMINAR VIDEOLOG POR ID, FUNCION AJAX
+    function eliminar(id){
+        url = "/redirectionrules/delete/";
+        json_data= {
+                "id": id
+        };
+
+        $.ajax({
+            url: url,
+            dataType: 'json',
+            type: 'POST',
+            contentType: "application/json; charset=utf-8",
+            data: JSON.stringify( json_data ),
+            success: function(response){
+                    $("tr[data='"+id+"']").fadeOut(1000);
+                },
+            error:function(request, status, error){
+                alert(request.responseText);
+            }
+        });
+
+    }
+
+
+
+
+
 
     //Handle Events
     $("#grabar").click(function(){
@@ -84,6 +111,11 @@ $( document ).ready(function() {
     $("#grabarypublicar").click(function(){
         publicar = true;
         proccess();
+    });
+
+    $("button[name='btndelete']").click(function(){
+        var data = $(this).attr("data");
+        eliminar(data);
     });
 
 
