@@ -157,6 +157,28 @@ class RedirectionRulesController(object):
 
 
 
+
+    def delete(self, request):
+        if request.is_ajax():
+            if request.method == 'POST':
+                try:
+                    json_data = json.loads(request.body)
+                    id = json_data['id']
+                    print 'Id: ' + id
+                    rr = RedirectionRule.objects.get(id=id)
+                    rr.delete()
+
+                    mydata = [{'code': 200, 'message': 'Guardado Correctamente'}]
+
+                    return HttpResponse(json.dumps(mydata), None, 200)
+                except RedirectionRule.DoesNotExist as e:
+                    mydata = [{'code': 500, 'message': 'No existe el Registro'}]
+                    return HttpResponse(json.dumps(mydata), None, 500)
+                except Exception as e:
+                    mydata = [{'code': 500, 'message': e.message}]
+                    return HttpResponse(json.dumps(mydata), None, 500)
+
+
     @register.filter
     def get_item(dictionary, key):
         return dictionary.get(key)
