@@ -29,10 +29,35 @@
 {% endif %}
 {% block content %}
 <div class="container">
+      <div class="row">
+            <div class="col-xs-12 col-md-6 col-lg-6 sepTOP-big">
+            <h1>Cargar contenido</h1>
+            <div class="helpICON fRIGHT">
+                <a href="#" data-toggle="tooltip" title="Selecciona el tipo de contenido que quieres dar de alta en HOT-GO. Ten en cuenta que para agregar un capítulo en una serie la misma debe estar dada de alta previamente.">
+                    <span class="glyphicon glyphicon-question-sign"></span>
+                </a>
+            </div>
+            <h3>Elige el tipo de contenido</h3>
+                <div class="content-picker">
+                    <form method="post" action="" name="content-pickerForm"  class="content-picker">
+                        <select id="content-select" class="form-control">
+                            <option value="0"></option>
+                            {% for item in assetstypes %}
+                               <option value="{{ item.0 }}">{{ item.1 }}</option>
+                            {% endfor %}
+                        </select>
+                    </form>
+                </div>
+
+            </div>
+        </div>
+
     <div class="row">
        <!-- left col -->
+<!-- right col -->
 
-        <div class="col-xs-12 col-md-6 col-lg-6 sepTOP-big">
+
+        <div class="col-xs-12 col-md-12 col-lg-12 ">
 
             <h1>Manejar contenido</h1>
             <h3>Elige un contenido para editarlo, borrarlo o publicarlo.</h3>
@@ -57,177 +82,129 @@
                 </row>
 
                 <div class="fNONE"><hr></div>
-                <row class="sepBOT">
-                    <div class="col-xs-12 col-md-3 col-lg-3 ">
-                        Por <span class="boldIt">TIPO</span>
-                    </div>
-                    <div id="TIPO">
-                        <div class="col-xs-3 col-md-2 col-lg-2 sepBOT">
-                               <span class="glyphicon glyphicon-th-list GLY-big" id="glyTIPO"></span>
-                        </div>
-                        <div class="col-xs-9 col-md-7 col-lg-7 sepBOT">
-                            <a href="/episodes/list">Listado de Episodios</a>
-                        </div>
-                    </div>
-                </row>
-                <div class="fNONE"></div>
 
 
-                <row>
-                    <div class="col-xs-12 col-md-3 col-lg-3 ">
-                        &nbsp;
-                    </div>
-                    <div id="SERIE">
-                        <div class="col-xs-3 col-md-2 col-lg-2 sepBOT">
-                              <span class="glyphicon glyphicon-th-list GLY-big" id="glySERIE"></span>
-                        </div>
-                        <div class="col-xs-9 col-md-7 col-lg-7 sepBOT">
-                            <a href="/movies/list">Listado de Movies</a>
-                        </div>
-                    </div>
-                </row>
+                <div class="row">
+                    <div class="col-xs-12 col-md-12 col-lg-12">
 
 
-                <div class="fNONE"></div>
-                <row>
-                    <div class="col-xs-12 col-md-3 col-lg-3 ">
-                        &nbsp;
-                    </div>
-                    <div id="BLOQ">
-                        <div class="col-xs-3 col-md-2 col-lg-2 sepBOT">
-                              <span class="glyphicon glyphicon-th-list GLY-big" id="glyBLOQ"></span>
-                        </div>
-                        <div class="col-xs-9 col-md-7 col-lg-7 sepBOT">
-                           <a href="/series/list">Listado de Series</a>
-                        </div>
-                    </div>
-                </row>
-                <div class="fNONE"></div>
-                <row>
-                    <div class="col-xs-12 col-md-3 col-lg-3 ">
-                        &nbsp;
-                    </div>
-                    <div id="CHIC">
-                        <div class="col-xs-3 col-md-2 col-lg-2 sepBOT">
-                              <span class="glyphicon glyphicon-th-list GLY-big" id="glyCHIC"></span>
-                        </div>
-                        <div class="col-xs-9 col-md-7 col-lg-7 sepBOT">
-                             <a href="/girls/list">Listado de Chicas</a>
-                        </div>
-                    </div>
-                </row>
-                <div class="fNONE"></div>
-                <row>
-                    <div class="col-xs-12 col-md-3 col-lg-3 ">
-                        &nbsp;
-                    </div>
-                    <div id="CHIC">
-                        <div class="col-xs-3 col-md-2 col-lg-2 sepBOT">
-                               <span class="glyphicon glyphicon-th-list GLY-big" id="glySERIE"></span>
-                        </div>
-                        <div class="col-xs-9 col-md-7 col-lg-7 sepBOT">
-                             <a href="/blocks/list">Listado de Bloques</a>
-                        </div>
-                    </div>
-                </row>
-                <div class="fNONE"></div>
-                <row>
-                    <div class="col-xs-12 col-md-3 col-lg-3 ">
-                        &nbsp;
-                    </div>
-                    <div id="CHIC">
-                        <div class="col-xs-3 col-md-2 col-lg-2 sepBOT">
-                             <span class="glyphicon glyphicon-th-list GLY-big" id="glyTIPO"></span>
-                        </div>
-                        <div class="col-xs-9 col-md-7 col-lg-7 sepBOT">
-                             <a href="/sliders/list">Listado de Sliders</a>
-                        </div>
-                    </div>
-                </row>
-                <div class="fNONE"></div>
-                <row>
-                    <div class="col-xs-12 col-md-3 col-lg-3">
-                    </div>
-                    <div id="CHIC">
-                        <div class="col-xs-3 col-md-2 col-lg-2 sepBOT">
-                             <span class="glyphicon glyphicon-th-list GLY-big" id="glyTIPO"></span>
-                        </div>
-                        <div class="col-xs-9 col-md-7 col-lg-7 sepBOT">
-                             <a href="/categories/list">Listado de Categorias</a>
-                        </div>
-                    </div>
-                </row>
-                <div class="fNONE"></div>
 
-                <row>
-                    <div class="col-xs-12 col-md-3 col-lg-3">
-                    </div>
-                    <div id="CHIC">
-                        <div class="col-xs-3 col-md-2 col-lg-2 sepBOT">
-                             <span class="glyphicon glyphicon-th-list GLY-big" id="glyTIPO"></span>
+                        <div class="col-xs-9 col-md-3 col-lg-3 sepBOT">
+                            <a href="{% url 'list_episodes' %}"><i class="glyphicon glyphicon-menu-right" ></i> Episodios</a>
                         </div>
-                        <div class="col-xs-9 col-md-7 col-lg-7 sepBOT">
-                             <a href="/cableoperators/list">Listado de Cable Operadores</a>
-                        </div>
-                    </div>
-                </row>
-                <div class="fNONE"></div>
 
 
-             <row>
-                <div class="col-xs-12 col-md-3 col-lg-3">
-                </div>
-                <div id="Tags">
-                    <div class="col-xs-3 col-md-2 col-lg-2 sepBOT">
-                         <span class="glyphicon glyphicon-th-list GLY-big" id="glyTIPO"></span>
-                    </div>
-                    <div class="col-xs-9 col-md-7 col-lg-7 sepBOT">
-                         <a href="/tags">Listado de Tags</a>
-                    </div>
-                </div>
-            </row>
-            <div class="fNONE"></div>
 
-             <row>
-                <div class="col-xs-12 col-md-3 col-lg-3">
-                </div>
-                <div id="Contratos">
-                    <div class="col-xs-3 col-md-2 col-lg-2 sepBOT">
-                         <span class="glyphicon glyphicon-th-list GLY-big" id="glyTIPO"></span>
-                    </div>
-                    <div class="col-xs-9 col-md-7 col-lg-7 sepBOT">
-                         <a href="/contracts">Listado de Contratos</a>
-                    </div>
-                </div>
-            </row>
-            <div class="fNONE"></div>
-                <row>
-                <div class="col-xs-12 col-md-3 col-lg-3">
-                </div>
-                <div id="fatherassets">
-                    <div class="col-xs-3 col-md-2 col-lg-2 sepBOT">
-                         <span class="glyphicon glyphicon-th-list GLY-big" id="glyTIPO"></span>
-                    </div>
-                    <div class="col-xs-9 col-md-7 col-lg-7 sepBOT">
-                         <a href="/fatherassets">Father Assets</a>
+                        <div class="col-xs-9 col-md-3 col-lg-3 sepBOT">
+                            <a href="{% url 'list_movies' %}"> <i class="glyphicon glyphicon-menu-right" ></i>  Movies</a>
+                        </div>
+
+
+
+
+                        <div class="col-xs-9 col-md-3 col-lg-3 sepBOT">
+                            <a href="{% url 'list_series' %}"> <i class="glyphicon glyphicon-menu-right" ></i>  Series</a>
+                        </div>
+
+
+
+
+                        <div class="col-xs-9 col-md-3 col-lg-3 sepBOT">
+                            <a href="{% url 'list_girls' %}"> <i class="glyphicon glyphicon-menu-right" ></i>  Chicas</a>
+                        </div>
+
+
                     </div>
                 </div>
-            </row>
-            <div class="fNONE"></div>
-                 <div class="fNONE"></div>
-                <row>
-                <div class="col-xs-12 col-md-3 col-lg-3">
-                </div>
-                <div id="channels">
-                    <div class="col-xs-3 col-md-2 col-lg-2 sepBOT">
-                         <span class="glyphicon glyphicon-th-list GLY-big" ></span>
+
+
+
+
+                <div class="row">
+                    <div class="col-xs-12 col-md-12 col-lg-12">
+
+
+
+                        <div class="col-xs-9 col-md-3 col-lg-3 sepBOT">
+                            <a href="{% url 'list_blocks' %}"> <i class="glyphicon glyphicon-menu-right" ></i> Bloques</a>
+                        </div>
+
+
+
+
+                        <div class="col-xs-9 col-md-3 col-lg-3 sepBOT">
+                            <a href="{% url 'list_sliders' %}"> <i class="glyphicon glyphicon-menu-right" ></i> Slides</a>
+                        </div>
+
+
+
+
+                        <div class="col-xs-9 col-md-3 col-lg-3 sepBOT">
+                            <a href="{% url 'list_categories' %}"> <i class="glyphicon glyphicon-menu-right" ></i>  Categorias</a>
+                        </div>
+
+
+
+
+                        <div class="col-xs-9 col-md-3 col-lg-3 sepBOT">
+                            <a href="{% url 'list_cableoperators' %}"> <i class="glyphicon glyphicon-menu-right" ></i>  Cable Operadores</a>
+                        </div>
+
                     </div>
-                    <div class="col-xs-9 col-md-7 col-lg-7 sepBOT">
-                         <a href="/channels">Channels</a>
+                </div>
+
+                <div class="row">
+                    <div class="col-xs-12 col-md-12 col-lg-12">
+
+
+
+                        <div class="col-xs-9 col-md-3 col-lg-3 sepBOT">
+                            <a href="{% url 'list_tags' %}"> <i class="glyphicon glyphicon-menu-right" ></i> Tags</a>
+                        </div>
+
+
+
+
+                        <div class="col-xs-9 col-md-3 col-lg-3 sepBOT">
+                            <a href="{% url 'list_contracts' %}"> <i class="glyphicon glyphicon-menu-right" ></i> Contratos</a>
+                        </div>
+
+
+
+                        <div class="col-xs-9 col-md-3 col-lg-3 sepBOT">
+                            <a href="{% url 'list_fatherassets' %}">  <i class="glyphicon glyphicon-menu-right" ></i> Father Assets</a>
+                        </div>
+
+
+
+
+                        <div class="col-xs-9 col-md-3 col-lg-3 sepBOT">
+                            <a href="{% url 'list_channels' %}"> <i class="glyphicon glyphicon-menu-right" ></i> Channels</a>
+                        </div>
+
                     </div>
                 </div>
-            </row>
-            <div class="fNONE"></div>
+
+                <div class="row">
+                    <div class="col-xs-12 col-md-12 col-lg-12">
+
+
+
+                        <div class="col-xs-9 col-md-3 col-lg-3 sepBOT">
+                            <a href="{% url 'list_redirectionrules' %}"> <i class="glyphicon glyphicon-menu-right" ></i> Redirection Rules</a>
+                        </div>
+
+
+
+                    </div>
+                </div>
+
+
+
+
+
+
+
 
 
             </div>
@@ -235,27 +212,7 @@
 
         </div>
 
-        <!-- right col -->
-        <div class="col-xs-12 col-md-6 col-lg-6 sepTOP-big">
-            <h1>Cargar contenido</h1>
-            <div class="helpICON fRIGHT">
-                <a href="#" data-toggle="tooltip" title="Selecciona el tipo de contenido que quieres dar de alta en HOT-GO. Ten en cuenta que para agregar un capítulo en una serie la misma debe estar dada de alta previamente.">
-                    <span class="glyphicon glyphicon-question-sign"></span>
-                </a>
-            </div>
-            <h3>Elige el tipo de contenido</h3>
-                <div class="content-picker">
-                    <form method="post" action="" name="content-pickerForm"  class="content-picker">
-                        <select id="content-select" class="form-control">
-                            <option value="0"></option>
-                            {% for item in assetstypes %}
-                               <option value="{{ item.0 }}">{{ item.1 }}</option>
-                            {% endfor %}
-                        </select>
-                    </form>
-                </div>
 
-            </div>
 
         </div>
 </div>
