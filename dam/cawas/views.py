@@ -19,6 +19,7 @@ from Controller.ContractController import ContractController
 from Controller.FatherAssetController import FatherAssetController
 from Controller.ChannelController import ChannelController
 from Controller.RedirectionRulesController import RedirectionRulesController
+from Controller.PackagePriceController import PackagePriceController
 
 from Controller.LogController import LogController
 from models import Channel, Device, Slider,  Episode, EpisodeMetadata, ImageQueue, PublishQueue, \
@@ -784,5 +785,29 @@ def delete_redirectionrules_view(request):
     return c.delete(request)
 
 #</CRUD REDIRECTIONRULES>
+
+
+
+
+
+#<CRUD PACKAGE PRICE>
+def add_packageprices_view(request):
+    controller = PackagePriceController()
+    return controller.add(request)
+
+def edit_packageprices_view(request, id):
+    controller = PackagePriceController()
+    return controller.edit(request, id)
+
+
+def list_packageprices_view(request):
+    controller = PackagePriceController()
+    return controller.index(request)
+
+
+def delete_packageprices_view(request):
+    c = PackagePriceController()
+    return c.delete(request)
+#</CRUD PACKAGE PRICE>
 
 

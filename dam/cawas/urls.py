@@ -115,4 +115,10 @@ urlpatterns = [
     url(r'^redirectionrules/edit/(?P<id>\w*)/$', views.edit_redirectionrules_view, name='edit_redirectionrules'),
     url(r'^redirectionrules/delete/$', views.delete_redirectionrules_view, name='delete_redirectionrules'),
 
+
+    url(r'^packageprices/$', views.list_packageprices_view, name='list_packageprices'),
+    url(r'^packageprices/add/$', views.add_packageprices_view, name='add_packageprices'),
+    url(r'^packageprices/edit/(?P<id>\w*)/$', views.edit_packageprices_view, name='edit_packageprices'),
+    url(r'^packageprices/delete/$', views.delete_packageprices_view, name='delete_packageprices'),
+
 ]
