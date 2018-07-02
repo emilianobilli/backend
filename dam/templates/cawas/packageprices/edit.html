@@ -1,0 +1,94 @@
+
+{% extends "cawas/base.html" %}
+{% block extra_head %}
+    <script src="/static/js/packageprice.js"></script>
+{% endblock %}
+
+{% block subheader %}
+<div class="col-xs-12 col-md-12 col-lg-12 unpad">
+    <div class="subHeader">
+        <div class="notifications">
+            {% if user.is_authenticated %}
+                  <a href="{% url 'menu_view' %}"><span class="glyphicon glyphicon-home GLY-med"></span> &nbsp;Inicio / </a>
+                  <a href="{% url 'list_packageprices' %}">Package Price / </a>
+                  <a href="#">Editar</a>
+                 <button class="btn btn-lg btn-primary btn-block logOFF" type="button" id="exitBtn" data-toggle="modal" data-target="#myModal">LOG-OUT</button>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock subheader %}
+
+{% block content %}
+
+<div class="container" >
+                <h2>Editar</h2>
+                <!-- Pais-->
+                 <div class="row form-row">
+                    <input type="hidden" value="{{ registro.id }}" id="packageprice_id"/>
+                    <div class="col-xs-12 col-md-6 col-lg-6 form-group">
+                        <div class="form-group has-feedback" >
+                            <label class="label-left" for="pais">Pais: </label>
+                            <div class="helpright">
+                                <span class="glyphicon glyphicon-question-sign"
+                                      data-toggle="tooltip"
+                                      title="Selecciona Pais">
+                                </span>
+                            </div>
+                            <select type="text" class="form-control" name="country" id="country">
+                                 <option value=""></option>
+                                 {% for item in countries %}
+                                    {% if item.id == registro.country.id %}
+                                         <option selected value="{{item.id}}">{{item.name}}</option>
+                                    {% else %}
+                                         <option  value="{{item.id}}">{{item.name}}</option>
+                                    {% endif %}
+                                {% endfor %}
+
+
+
+                            </select>
+                            <span class="glyphicon form-control-feedback"></span>
+                        </div>
+                    </div>
+                 </div>
+
+
+
+
+                    <!-- Row 4: Altura y peso -->
+                    <div class="row form-row">
+                       <div class="col-xs-12 col-md-4 col-lg-4">
+                           <div class="form-group has-feedback">
+                            <label class="label-left" for="price">Precio: </label>
+                             <input type="number" class="form-control"
+                                    name="price" id="price"
+                                    value="{{ registro.price }}"
+                                    >
+                               <span class="glyphicon form-control-feedback"></span>
+                           </div>
+                        </div>
+
+                        <div class="col-xs-12 col-md-4 col-lg-4">
+                           <div class="form-group has-feedback">
+                            <label class="label-left" for="price_display">Precio Display: </label>
+                             <input type="text" class="form-control"
+                                    name="price_display" id="price_display"
+                                    value="{{ registro.price_display }}">
+                               <span class="glyphicon form-control-feedback"></span>
+                            </div>
+                        </div>
+                    </div>
+
+
+            <div class="row form-row">
+                <div class=" col-xs-6 col-md-3 col-lg-3 ">
+                    <div class="btn btn-primary btn-block form-control" id="grabar">Grabar</div>
+                </div>
+                <div class="col-xs-6 col-md-3 col-lg-3">
+                    <div class="btn btn-primary btn-block form-control" id="grabarypublicar">Grabar y Publicar</div>
+                </div>
+             </div>
+</div>
+
+{% endblock content %}

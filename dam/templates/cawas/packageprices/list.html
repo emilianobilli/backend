@@ -1,0 +1,94 @@
+{% extends "cawas/base.html" %}
+
+{% block extra_head %}
+<script src="/static/js/packageprice.js"></script>
+{% endblock %}
+
+{% block subheader %}
+<div class="col-xs-12 col-md-12 col-lg-12 unpad">
+    <div class="subHeader">
+        <div class="notifications">
+            {% if user.is_authenticated %}
+                  <a href="{% url 'menu_view' %}"><span class="glyphicon glyphicon-home GLY-med"></span> &nbsp;Inicio / </a>
+                  <a href="{% url 'list_packageprices' %}">Package Price </a>
+                 <button class="btn btn-lg btn-primary btn-block logOFF" type="button" id="exitBtn" data-toggle="modal" data-target="#myModal">LOG-OUT</button>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock subheader %}
+
+{% block content %}
+<!-- CONTENT -->
+
+
+
+        <div class="container">
+            <!-- First Row -->
+              <div class="row">
+                  <div class="col-lg-12 col-md-12 col-sm-12">
+                       <h2>Package Price </h2>
+                  </div>
+              </div>
+
+            <div class="row">
+                 <br>
+                 <div class="col-lg-2 col-md-2 col-sm-2" >
+                     <a href="{% url 'add_packageprices'  %}" class="btn btn-lg btn-primary btn-block logOFF" >Nuevo</a>
+                 </div>
+                 <div class="col-lg-8 col-md-8 col-sm-8" ></div>
+            </div>
+            <br>
+
+
+
+            <!-- GRID row -->
+            <br>
+            <div class="row">
+                <table class="tb-row tb-header">
+                    <thead>
+                        <th class="tb-cell">ID</th>
+                        <th class="tb-cell">Pais</th>
+                        <th class="tb-cell">Price</th>
+                        <th class="tb-cell">Price Display</th>
+                        <th class="tb-cell">Acciones</th>
+
+                    </thead>
+
+                     {% for item in registros %}
+                          <tr class="tb-row" data="{{item.id}}">
+                            <td class="tb-cell">{{ item.id }}</td>
+                            <td class="tb-cell">{{ item.country.name}}</td>
+                            <td class="tb-cell">{{ item.price }}</td>
+                            <td class="tb-cell">{{ item.price_display }}</td>
+
+                            <td class="tb-cell"><a href="{% url 'edit_packageprices' item.id %}" class="btn-info btn tb-btn" >Editar</a></td>
+                            <td class="tb-cell"><button data="{{item.id}}"  name="btndelete" class="btn-md btn-danger" ><span class="glyphicon glyphicon-trash"></span>  </button></td>
+                        </tr>
+                    {% endfor %}
+
+
+                </table>
+
+
+                <div class="pagination">
+                    <span class="step-links">
+                        {% if registros.has_previous %}
+                            <a href="?page={{ registros.previous_page_number }}">Anterior</a>
+                        {% endif %}
+
+                        <span class="current">
+                            Pag. Actual {{ registros.number }} of {{ registros.paginator.num_pages }}.
+                        </span>
+
+                        {% if registros.has_next %}
+                            <a href="?page={{ registros.next_page_number }}">Siguiente</a>
+                        {% endif %}
+                    </span>
+                </div>
+
+            </div>
+
+            <div class="fNONE"></div>
+        </div>
+{% endblock content %}
