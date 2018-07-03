@@ -135,7 +135,6 @@ class dynamodbCollection(object):
 				       IndexName=self.index_name,
 				       KeyConditionExpression='%s = :pk AND %s = :sk' %(self.pk,self.index_sk),
                             	       ExpressionAttributeValues={':pk': { 'S':'%s' % to_get[self.pk]}, ':sk':{'S':'%s' %to_get[self.index_sk]}})
-	    print ret
         except Exception, e:
             raise DynamoException(str(e))
 
@@ -306,7 +305,6 @@ class cloudsearchCollection(object):
 	uri = urlparse.urlparse(self.document_endpoint + self.document_url) 
 #	h = httplib2.Http()
         
-#        print body
 
 	try:
     	    response, content = self.h.request(uri.geturl(), method, body, header)
@@ -321,7 +319,6 @@ class cloudsearchCollection(object):
 	qString = qString.replace(' ', '%20')
 	qString = qString.replace('\'', '%27')
 
-#        print self.search_endpoint + self.search_url + '?' + qString
 	uri = urlparse.urlparse(self.search_endpoint + self.search_url + '?' + qString)
 #	h = httplib2.Http()
 
@@ -338,8 +335,6 @@ class cloudsearchCollection(object):
 	doc['type'] = 'delete'
 
 	response, content = self.doPost(json.dumps([doc]))
-	print response
-	print content
 	if response and 'status' in response:
 	    if response['status'] != '200':
 		raise CloudSearchException(str(content))
@@ -418,9 +413,19 @@ class cloudsearchCollection(object):
         p.size    = size
         p.sort    = sort
         qString   = p.make()
-#	print qString
         ret = self.doGet(qString)
-#        print ret
+        return self._check_query_return(ret)
+
+    def query_union(self, querylist=[],start=0, size=10,  sort=None):
+	p = self.parser_class()
+        for ql in querylist:
+            p.fq_add(ql)
+        p.return_fields = self.return_fields
+	p.start   = start
+        p.size    = size
+        p.sort    = sort
+        qString   = p.make(union=True)
+        ret = self.doGet(qString)
         return self._check_query_return(ret)
 
     def search(self, q=None, exclude=None, start=0, size=10):
@@ -432,12 +437,8 @@ class cloudsearchCollection(object):
         p.size    = size
 
         qString   = p.make()
-	print qString
         ret = self.doGet(qString)
         return self._check_query_return(ret)
 
 
 
-#cs = cloudsearchCollection({ 'domain': { 'name': 'sdhotgotest'}})
-#fq = [{'channel': 'Venus'}, {'category': 'anal'}]
-#print cs.query(fq)

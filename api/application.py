@@ -16,6 +16,7 @@ from keys   import MA
 from keys   import CAWAS
 from keys   import MA_SIGNATURE
 from keys   import APP_QUERY
+from keys   import GATRA
 
 application = Flask(__name__)
 
@@ -98,11 +99,12 @@ backend = Backend({"languages": ['es','pt'],
                         "views" : {'table_name': 'Views', 'commit_index':'lala'},
                         "asset_type": {'database': {'table': 'AssetType', 'pk': 'asset_id', 'schema': {'asset_id': 'S', 'asset_type':'S', 'asset_human_id':'S','human_id':'S'}}},
                         "vote": {'database': {'table': 'Vote', 'pk': 'asset_id', 'sk':'username', 'schema': {'asset_id': 'S', 'username':'S', 'voted':'N'}}},
+			"resume": {"domain": {"id_field": "asset_user", "filter_query": "", "schema": ["asset_user", "asset_id", "username", "episode", "season", "progress", "seekto", "country", "timestamp"], "return_fields": ["asset_user", "asset_id", "username", "episode", "season", "progress", "seekto", "timestamp", "country"], "name": "resume"}},
                         "search_domain": {'es' : {"domain": {
                                                         "id_field": "asset_id",
                                                         "filter_query" : '',
                                                         "schema": ["channel","asset_id","human_id", "title","summary_short","display_runtime","seasons","season","episode","episodes","categories","show_type","year","serie_id","girls_id","name", "image_big", "image_landscape", "image_portrait", "views", "ranking", "asset_type", "blocks", "publish_date", "class", "summary_long", "nationality", "target_country"],
-                                                        "return_fields": ["publish_date","asset_id","human_id" ,"name", "title", "ranking", "views","display_runtime", "summary_short" ,"categories", "image_landscape", "image_portrait", "channel", "show_type","asset_type", "year", "seasons", "class","episodes", "episode", "serie_id"],
+                                                        "return_fields": ["publish_date","asset_id","human_id" ,"name", "title", "ranking", "views","display_runtime", "summary_short" ,"summary_long","categories", "image_landscape", "image_portrait", "channel", "show_type","asset_type", "year", "seasons", "class","episodes", "episode", "serie_id"],
                                                         "name" : "eshotgodomain",
                                                         }
                                                  },
@@ -171,13 +173,15 @@ components = Components({
                             "lang": "S",
                             "slider_id": "S",
                             "media_url": "S",
+			    "logo_url": "S",
                             "target_country": "SS",
                             "media_type": "S",
                             "linked_asset_id": "S",
                             "linked_human_id": "S",
 			    "linked_asset_type": "S",
                             "target": "S",
-			    "linked_url": "S"
+			    "linked_url": "S",
+			    "text": "S"
                         },
                     }
                 },
@@ -418,6 +422,8 @@ def urlSearch():
     for k in request.args.keys():
         args[k] = request.args.get(k)
     ret  = backend.search(args)
+
+
     return Response(response=dumps(ret['body']), status=ret['status'])
 
 @application.route('/v1/suggest/<string:asset_id>/', methods=['GET'])
@@ -430,6 +436,39 @@ def urlSuggest(asset_id):
         for k in request.args.keys():
             args[k] = request.args.get(k)
         ret = backend.suggest(args)
+	
+	if ret['status'] == 200:
+	    if 'X-API-KEY' in request.headers and backend.resume is not None:
+		x_api_key = request.headers.get('X-API-KEY')
+    		ret_auth  = authorization.check_api_key(x_api_key)
+    		if ret_auth['status'] == 200:
+        	    username = ret_auth['body']['username']
+        	    resume_list =  backend.query_resume(username)
+		    #{'status': 200, 'body': 
+		    #	{
+		    #	   'count': 1, 
+		    #	   'items': [{u'asset_id': u'018123', u'username': u'UN_hotgo_npajoni', u'asset_user': u'018123_UN_hotgo_npajoni', u'seekto': u'15.0', u'progress': u'12'}], 
+		    #	   'total': 1
+		    #   }
+		    #}
+		    #
+		    if resume_list['body']['count'] > 0:
+			for asset in resume_list['body']['items']:
+			    i = 0
+			    while i < ret['body']['count']:
+				if asset['asset_id'] == ret['body']['items'][i]['asset_id']:
+				    ret['body']['items'][i]['viewed'] = {}
+				    if 'progress' in asset:
+					ret['body']['items'][i]['viewed']['progress'] = asset['progress']
+				    if 'seekto' in asset:
+					ret['body']['items'][i]['viewed']['seekto'] = asset['seekto']
+				    if 'season' in asset:
+					ret['body']['items'][i]['viewed']['season'] = asset['season']
+				    if 'episode' in asset:
+					ret['body']['items'][i]['viewed']['episode'] = asset['episode']
+				i = i + 1
+
+
         return Response(response=dumps(ret['body']), status=ret['status'])
 
 @application.route('/v1/episodes/', methods=['GET'])
@@ -441,7 +480,53 @@ def urlEpisode():
         for k in request.args.keys():
             args[k] = request.args.get(k)
         ret = backend.query_episode(args)
+
+	if ret['status'] == 200:
+	    if 'X-API-KEY' in request.headers and backend.resume is not None:
+		x_api_key = request.headers.get('X-API-KEY')
+    		ret_auth  = authorization.check_api_key(x_api_key)
+    		if ret_auth['status'] == 200:
+        	    username = ret_auth['body']['username']
+        	    resume_list =  backend.query_resume(username)
+		    #{'status': 200, 'body': 
+		    #	{
+		    #	   'count': 1, 
+		    #	   'items': [{u'asset_id': u'018123', u'username': u'UN_hotgo_npajoni', u'asset_user': u'018123_UN_hotgo_npajoni', u'seekto': u'15.0', u'progress': u'12'}], 
+		    #	   'total': 1
+		    #   }
+		    #}
+		    #
+		    if resume_list['body']['count'] > 0:
+			for asset in resume_list['body']['items']:
+			    i = 0
+			    while i < ret['body']['count']:
+				if asset['asset_id'] == ret['body']['items'][i]['asset_id']:
+				    ret['body']['items'][i]['viewed'] = {}
+				    if 'progress' in asset:
+					ret['body']['items'][i]['viewed']['progress'] = asset['progress']
+				    if 'seekto' in asset:
+					ret['body']['items'][i]['viewed']['seekto'] = asset['seekto']
+				    if 'season' in asset:
+					ret['body']['items'][i]['viewed']['season'] = asset['season']
+				    if 'episode' in asset:
+					ret['body']['items'][i]['viewed']['episode'] = asset['episode']
+				i = i + 1
+
+
         return Response(response=dumps(ret['body']), status=ret['status'])
+
+
+@application.route('/v1/trends/', methods=['GET'])
+@application.route('/v1/trends', methods=['GET'])
+@cross_origin()
+def urlTrends():
+    if request.method == 'GET':
+	args = {}
+	for k in request.args.keys():
+	    args[k] = request.args.get(k)
+	ret = backend.query_trends(args)
+
+	return Response(response=dumps(ret['body']), status=ret['status'])
 
 #@application.route('/v1/episodes/<string:asset_id>/', methods=['GET'])
 @application.route('/v1/shows/', methods=['GET'])
@@ -463,6 +548,37 @@ def urlShow():
         	ret['status'] = 422
 	else:
     	    ret = backend.query_show_full(args)
+
+	if ret['status'] == 200:
+	    if 'X-API-KEY' in request.headers and backend.resume is not None:
+		x_api_key = request.headers.get('X-API-KEY')
+    		ret_auth  = authorization.check_api_key(x_api_key)
+    		if ret_auth['status'] == 200:
+        	    username = ret_auth['body']['username']
+        	    resume_list =  backend.query_resume(username)
+		    #{'status': 200, 'body': 
+		    #	{
+		    #	   'count': 1, 
+		    #	   'items': [{u'asset_id': u'018123', u'username': u'UN_hotgo_npajoni', u'asset_user': u'018123_UN_hotgo_npajoni', u'seekto': u'15.0', u'progress': u'12'}], 
+		    #	   'total': 1
+		    #   }
+		    #}
+		    if resume_list['body']['count'] > 0:
+			for asset in resume_list['body']['items']:
+			    i = 0
+			    while i < ret['body']['count']:
+				if asset['asset_id'] == ret['body']['items'][i]['asset_id']:
+				    ret['body']['items'][i]['viewed'] = {}
+				    if 'progress' in asset:
+					ret['body']['items'][i]['viewed']['progress'] = asset['progress']
+				    if 'seekto' in asset:
+					ret['body']['items'][i]['viewed']['seekto'] = asset['seekto']
+				    if 'season' in asset:
+					ret['body']['items'][i]['viewed']['season'] = asset['season']
+				    if 'episode' in asset:
+					ret['body']['items'][i]['viewed']['episode'] = asset['episode']
+				i = i + 1
+
         return Response(response=dumps(ret['body']), status=ret['status'])
 
 
@@ -487,10 +603,8 @@ def urlVote():
                 if 'X-API-KEY' in request.headers:
                     x_api_key = request.headers.get('X-API-KEY')
                     ret       = authorization.check_api_key(x_api_key)
-                    print "Ret: %s" % str(ret)
                     if ret['status'] == 200:
                         username = ret['body']['username']
-                        print "App: %s" % username
                         ret = backend.doVote(data['asset_id'], username, data['voted'])
                 else:
                     ret['body']     = {'status': 'failure', 'message': 'Missing header'}
@@ -538,7 +652,6 @@ def urlGetShow(asset_id):
 
     else:
 	ret = backend.get_show(args, None,False)
-    print ret        
     return Response(response=dumps(ret['body']), status=ret['status'])
 
 
@@ -565,6 +678,7 @@ def urlGetShowByHumanId(human_id):
 	    x_api_key = request.headers.get('X-API-KEY')
     	    ret       = authorization.check_api_key(x_api_key)
     	    if ret['status'] == 200:
+		print ret
         	username = ret['body']['username']
         	ret      = backend.get_show_by_human_id(args, username)
 	else:
@@ -649,7 +763,6 @@ def urlAuthorize():
 
     try:
         user_data = loads(request.data)
-        print "Authorize: %s" % str(user_data)
     except Exception as e:
         ret = {}
         ret['status'] = 422
@@ -662,6 +775,39 @@ def urlAuthorize():
         ret = {}
         ret['status'] = 500
         ret['body']   = {'status': 'failure', 'message': str(e)}
+
+    return Response(response=dumps(ret['body']), status=ret['status'])
+
+
+@application.route('/v1/private/resume/', methods=['POST'])
+@cross_origin()
+def urlResume():
+    if request.method == 'POST':
+        if 'X-PRIVATE-APIKEY' in request.headers:
+            private_key = request.headers.get('X-PRIVATE-APIKEY')
+            if private_key == GATRA:
+                body = loads(request.data)
+		if 'asset_user' in body and 'asset_id' in body and 'username' in body:
+		    ret_show = backend.get_show({'lang':'es', 'asset_id': body['asset_id']}, None,False)
+		    if ret_show['body']['item']['show_type'] == 'episode':
+			serie = {}
+			serie['username']  = body['username']
+			serie['timestamp'] = body['timestamp']
+			serie['country'] = body['country']
+			serie['asset_id'] = ret_show['body']['item']['serie_id']
+			serie['asset_user'] = serie['asset_id'] + '_' + serie['username']
+			serie['episode'] = ret_show['body']['item']['episode']
+			serie['season'] = ret_show['body']['item']['season']
+			backend.add_resume(serie)
+                    ret  = backend.add_resume(body)
+            else:
+                ret = {}
+                ret['status'] = 401
+                ret['body']   = {'status': 'failure', 'message': 'Unauthorized'}
+        else:
+            ret = {}
+            ret['status'] = 422
+            ret['body']   = {'status': 'failure', 'message': 'Missing Header'}
 
     return Response(response=dumps(ret['body']), status=ret['status'])
 

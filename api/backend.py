@@ -10,6 +10,7 @@ from views      import Views
 from cdnimg     import CdnImg
 from random     import randrange
 from ranking    import Ranking
+from Gatra      import Gatra
 
 import json
 import socket
@@ -347,6 +348,13 @@ class Backend(object):
         if 'vote' in config:
             self.vote       = dynamodbCollection(config['vote'])
 
+	if 'resume' in config:
+	    self.resume     = cloudsearchCollection(config['resume'])
+	else:
+	    self.resume     = None
+
+	self.gatra     = Gatra('https://gatra.zolechamedia.net:6968/hash/')
+
         self.videoauth = VideoAuth("https://videoauth.zolechamedia.net/video/", "7a407d4ae99b7c1a1655daddf218ef05")
         self.subtitle  = Subtitle("https://videoauth.zolechamedia.net/subtitle")
         self.thumbs    = Thumbs("https://cdnlevel3.zolechamedia.net")
@@ -376,6 +384,7 @@ class Backend(object):
 			if idp_hotgo:
 			    if video:
                     		asset['item']['video'] = self.videoauth.get_hls_url(asset['item']['asset_id'])
+				asset['item']['gatra-hash'] = self.gatra.postHash(username,asset['item']['title'])
 			else:
 			    if idp_apikey is not None and toolbox_user_token is not None:
 				asset['item']['video'] = self.videoauth.get_hls_url_toolbox(asset['item']['asset_id'], idp_apikey, toolbox_user_token)
@@ -406,6 +415,13 @@ class Backend(object):
             	        vote = self.vote.get(q)
                 	if vote['item'] != {}:
                     	    asset['item']['voted'] = vote['item']['voted']
+
+			viewed_ret = self.query_resume(username,args['asset_id'])
+			if viewed_ret['body']['count'] == 1:
+			    if asset['item']['show_type'] == 'serie' and 'season' in viewed_ret['body']['items'][0] and 'episode' in  viewed_ret['body']['items'][0]:
+				asset['item']['viewed'] = {'episode': viewed_ret['body']['items'][0]['episode'], 'season': viewed_ret['body']['items'][0]['season']}
+			    else:
+				asset['item']['viewed'] = {'seekto': viewed_ret['body']['items'][0]['seekto'], 'progress': viewed_ret['body']['items'][0]['progress']}
 
                     status = 200
                 else:
@@ -478,7 +494,7 @@ class Backend(object):
                     if n > 0:
                         asset['item']['ranking'] = str(round(float(n)/25,2))
                     #
-                    # Busca el voto del usuario
+                    # Busca el voto del usuario y si fue visualizado
                     #
 		    if idp_hotgo and video:
                 	q = {}
@@ -488,6 +504,12 @@ class Backend(object):
             	        if vote['item'] != {}:
                     	    asset['item']['voted'] = vote['item']['voted']
 
+			viewed_ret = self.query_resume(username,asset_id)
+			if viewed_ret['body']['count'] == 1:
+			    if asset['item']['show_type'] == 'serie' and 'season' in viewed_ret['body']['items'][0] and 'episode' in  viewed_ret['body']['items'][0]:
+				asset['item']['viewed'] = {'episode': viewed_ret['body']['items'][0]['episode'], 'season': viewed_ret['body']['items'][0]['season']}
+			    else:
+				asset['item']['viewed'] = {'seekto': viewed_ret['body']['items'][0]['seekto'], 'progress': viewed_ret['body']['items'][0]['progress']}
                     status = 200
                 else:
                     asset['item'] = {} 
@@ -761,6 +783,110 @@ class Backend(object):
         response['items'] = ni
         return response
 
+
+    def __resume_query(self, username, asset_id=None):
+	args  = {'username': username}
+	if asset_id is not None:
+	    args['asset_id'] = asset_id
+
+	fqset = self._load_valid_fq_from_args(args,['username', 'asset_id'])
+	try:
+	    ret = self.resume.query(fqset)
+	    status = 200
+	except Exception, e:
+	    ret    = {'status': 'failure', 'message': str(e)}
+            status = 500
+
+        return {'status': status, 'body': ret}
+	
+    def query_trends(self, args):
+        qArgs = ['asset_id']
+	fqset = []
+	
+	if 'target_country' in args:
+	    fqset = self._load_valid_fq_from_args({'country':args['target_country']},['country'])
+
+	try:
+	    ret = self.resume.query(fqset,'',0,100,'-timestamp')
+	    if ret['count'] > 0:
+		alst = ''
+		for asset in ret['items']:
+		    alst = alst + ',' + asset['asset_id']
+		args['asset_id'] = alst
+		return self._cs_query_union(args,qArgs)
+	    status = 200
+	except Exception, e:
+	    ret    = {'status': 'failure', 'message': str(e)}
+            status = 500
+
+        return {'status': status, 'body': ret}
+    
+
+    def _cs_query_union(self, args, qArgs):
+        '''
+            args:  Received Arguments
+            qArgs: Valid Arguments
+            fq:    Default filter query
+            exclude: Negative default filter query
+        '''
+        if 'lang' in args:
+            lang  = args['lang']
+            
+            fqset = self._load_valid_fq_from_args(args,qArgs)
+            if 'start' in args:
+                start = args['start']
+            else:
+                start = 0
+            if 'size' in args:
+                size  = args['size']
+            else:
+                size  = 10
+            if 'sort' in args:
+                sort  = args['sort']
+            else:
+                sort  = None
+
+            if 'img' in args:
+                img = args['img']
+            else:
+                img = None
+
+            return self.__cloudsearch_query_union(lang, fqset, start, size, sort,img)
+        else:
+            ret    = {'status': 'failure', 'message': 'Mandatory parameter not found (lang)'}
+            status = 422
+
+        return {'status': status, 'body': ret}
+
+    def __cloudsearch_query_union(self, lang, fqset, start, size, sort, img):
+        '''
+            Hace el query definitivo a Cloud Search cuando se 
+            solicita un listado.
+            Retorna un diccionatio con los valores para ser mapeados
+            en una respuesta http
+        '''
+        try:
+            if lang in self.lang:
+                ret    = self.domain[lang].query_union(fqset,start,size, sort)
+                ret    = self.__modify_ranking(ret)
+                ret    = self.__add_cdn_images(ret, img)
+                status = 200
+            else:
+                ret = {'status': 'failure', 'messaage': 'Invalid language %s' % lang}
+                status = 422
+        except CollectionException as  e:
+            ret    = {'status': 'failure', 'message': str(e)}
+            status = 422
+        except CloudSearchException as e:
+            ret    = {'status': 'failure', 'message': str(e)}
+            status = 500
+        except Exception, e:
+            ret    = {'status': 'failure', 'message': str(e)}
+            status = 500
+
+        return {'status': status, 'body': ret}    
+
+    
     def __cloudsearch_query(self, lang, fqset, exclude, start, size, sort, img):
         '''
             Hace el query definitivo a Cloud Search cuando se 
@@ -1038,6 +1164,28 @@ class Backend(object):
 
         return {'status': status, 'body': ret}
 
+    def add_resume(self, item):
+	try:
+	    asset = {}
+	    asset['asset_user'] = item['asset_user']
+	    self.resume.delete(asset)
+	    ret = self.resume.add(item)
+	    status = 201
+	except CollectionException as e:
+            status = 422
+            ret    = {'status': 'failure', 'message': str(e)}
+        except DynamoException as e:
+            ret    = {'status': 'failure', 'message': str(e)}
+            status = 500
+        except CloudSearchException as e:
+            ret    = {'status': 'failure', 'message': str(e)}
+            status = 500    
+        except Exception as e:
+            ret    = {'status': 'failure', 'message': str(e)}
+            status = 500
+
+	return {'status': status, 'body': ret}
+	
     def __add_asset(self,where,item,inmutable_fields=[]):
         if 'lang' in item and item['lang'] in self.lang:
             lang = item['lang']
@@ -1213,7 +1361,8 @@ class Backend(object):
 
         return self._cs_query(args,qArgs,fq,exclude)
 
-
+    def query_resume(self, username, asset_id=None):
+	return self.__resume_query(username,asset_id)
 
     def query_girl(self, args):
         fq      = {'asset_type':'girl'}
