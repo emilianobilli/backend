@@ -83,7 +83,7 @@ def upload_images():
         if job.schedule_date < timezone.now():
             s3 = S3Upload(job.publish_zone.s3_aws_access_key, job.publish_zone.s3_aws_secret_key)
 
-            if job.image.portrait.name != '':
+            if job.image.portrait.name != '' and job.image.portrait.name is not None :
                 try:
                     img = job.image.portrait.name
                     if os.path.isfile(img):
@@ -107,7 +107,7 @@ def upload_images():
                     job.save()
                     logging.error('upload_images(): %s' % str(err))
 
-            if job.image.landscape.name != '' and job.status != 'E':
+            if job.image.landscape.name != '' and job.image.landscape.name is not None and job.status != 'E':
                 try:
                     img = job.image.landscape.name
                     if os.path.isfile(img):
@@ -131,7 +131,7 @@ def upload_images():
                     job.save()
                     logging.error('upload_images(): %s' % str(err))
 
-            if job.image.logo.name != '' and job.status != 'E':
+            if job.image.logo.name != '' and job.image.logo.name is not None and job.status != 'E':
                 try:
                     img = job.image.logo.name
                     if os.path.isfile(img):

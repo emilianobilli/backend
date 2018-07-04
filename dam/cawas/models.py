@@ -512,7 +512,7 @@ class SerieMetadata(models.Model):
         categories = []
         for cat in self.serie.category.all():
             try:
-                cat_metadata = CategoryMetadata.objects.get(category=cat, language=self.language)
+                cat_metadata = CategoryMetadata.objects.get(category=cat, language=self.language, activated=True)
                 categories.append(cat_metadata.name)
             except ObjectDoesNotExist:
                 pass
@@ -630,7 +630,7 @@ class EpisodeMetadata(models.Model):
         categories = []
         for cat in self.episode.category.all():
             try:
-                cat_metadata = CategoryMetadata.objects.get(category=cat, language=self.language)
+                cat_metadata = CategoryMetadata.objects.get(category=cat, language=self.language, activated=True)
                 categories.append(cat_metadata.name)
             except ObjectDoesNotExist:
                 pass
@@ -742,7 +742,7 @@ class MovieMetadata(models.Model):
         categories = []
         for cat in self.movie.category.all():
             try:
-                cat_metadata = CategoryMetadata.objects.get(category=cat, language=self.language)
+                cat_metadata = CategoryMetadata.objects.get(category=cat, language=self.language, activated=True)
                 categories.append(cat_metadata.name)
             except ObjectDoesNotExist:
                 pass

@@ -78,6 +78,26 @@ class Structured(object):
             else:
                 ret = ''
         return ret
+
+    def _make_union(self, q=[]):
+        ret = ''
+
+        if len(q) > 1:
+            ret = ret + '(or '
+            for kv in q:
+                k = kv.keys()[0]
+                v = self._check_range(kv[k])
+                if v is not None:    
+                    ret = ret + "%s:%s " % (k,v)
+            ret = ret[0:len(ret)-1] + ')'
+        else:
+            k = (q[0].keys())[0]
+            v = self._check_range((q[0])[k])
+            if v is not None:
+                    ret = "%s:%s" % (k,v)
+            else:
+                ret = ''
+        return ret
         
     def _make_sort(self):
         if self.sort is not None:
@@ -97,6 +117,10 @@ class Structured(object):
         ret = self._make_q(self.fq)
         return ('&fq=%s' % ret) if ret != '' else ''
 
+    def _make_filter_query_union(self):
+	ret = self._make_union(self.fq)
+        return ('&fq=%s' % ret) if ret != '' else ''
+
     def _make_return(self):
         if self.return_fields != []:    
             return '&return=%s' % ','.join(self.return_fields)
@@ -112,9 +136,9 @@ class Structured(object):
         ret = self._make_search()
         return ('q=%s' % ret) if ret != '' else 'q=matchall'
         
-    def make(self):
+    def make(self, union=False):
         return '%s%s%s%s%s%s%s' % (self._make_query(),
-                                   self._make_filter_query(),
+                                   self._make_filter_query() if union == False else self._make_filter_query_union(),
                                    self._make_size(),
                                    self._make_start(),
                                    self._make_sort(),
