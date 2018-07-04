@@ -876,3 +876,12 @@ class PackagePrice(models.Model):
     country       = models.ForeignKey(Country, blank=True, null=True)
     price         = models.IntegerField(help_text="Price", default=0)
     price_display = models.CharField(max_length=64, help_text="Price Display", blank=True, null=True )
+
+    def __unicode__(self):
+        return "%s_%s" % (self.price, self.country.code)
+
+    def toDict(self):
+        dict = {}
+        dict[self.country.code] = self.price_display
+        return dict
+
