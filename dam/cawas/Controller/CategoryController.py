@@ -5,8 +5,9 @@ from LogController import LogController
 from ..backend_sdk import  ApiBackendServer, ApiBackendResource, ApiBackendException
 from ..Helpers.GlobalValues import *
 from ..Helpers.PublishHelper import PublishHelper
-from ..models import Asset, Setting,  Category, Language ,PublishZone, PublishQueue,Image, CategoryMetadata
+from ..models import Asset, Setting,  Category, Language ,PublishZone, PublishQueue,Image, CategoryMetadata, Movie, MovieMetadata, Serie,SerieMetadata, Episode, EpisodeMetadata
 from django.db.models import Q
+from django.contrib.messages import constants as messages
 
 #ApiBackendResource, ApiBackendException,ApiBackendServer
 class CategoryController(object):
@@ -243,7 +244,8 @@ class CategoryController(object):
             vcategory.original_name  = decjson['Category']['original_name']
             vcategory.image = vimg
             vcategory.save()
-            print 'debug 3'
+
+
 
             # Eliminar cola de publicacion para el item en estado Queued
             ph = PublishHelper()
@@ -274,6 +276,10 @@ class CategoryController(object):
                 ph.func_publish_queue(request, gmd.category.category_id, gmd.language, 'CA', 'Q', vschedule_date)
                 ph.func_publish_image(request, vimg)
 
+                #reencolar todos los assets asociados a la categoria
+                self.reprocess_assets(request, vcategory, vschedule_date)
+                #/reencolar todos los assets asociados a la categoria
+
             request.session['list_category_message'] = 'Guardado Correctamente'
             request.session['list_category_flag'] = FLAG_SUCCESS
 
@@ -287,6 +293,46 @@ class CategoryController(object):
         # checks:
         return render(request, 'cawas/categories/edit.html', context)
 
+
+
+    def reprocess_assets(self, request, category, schedule_date):
+        try:
+            # <Buscar todos los assets vinculados a la categoria>
+            # Movies
+            movies      = Movie.objects.filter(category=category)
+            #buscar metadata
+            for r in movies:
+                moviemetadatas = MovieMetadata.objects.filter(movie=r, activated=True)
+                for mm in moviemetadatas:
+                    ph = PublishHelper()
+                    ph.func_publish_queue(request, mm.movie.asset.asset_id, mm.language, 'AS', 'Q', schedule_date)
+
+
+            # Series
+            series      = Serie.objects.filter(category=category)
+            # buscar metadata
+            for r in series:
+                seriemetadatas = SerieMetadata.objects.filter(serie=r, activated=True)
+                for mm in seriemetadatas:
+                    ph = PublishHelper()
+                    ph.func_publish_queue(request, mm.episode.asset.asset_id, mm.language, 'AS', 'Q', schedule_date)
+
+
+            # Episodes
+            episodes = Episode.objects.filter(category=category)
+            # buscar metadata
+            for e in episodes:
+                episodemetadatas = EpisodeMetadata.objects.filter(episode=e, activated=True)
+                for mm in episodemetadatas:
+                    ph = PublishHelper()
+                    ph.func_publish_queue(request, mm.episode.asset.asset_id, mm.language, 'AS', 'Q',schedule_date)
+
+
+            # </Buscar todos los assets vinculados a la categoria>
+        except Exception as e:
+            messages.error(request, "Error al Guardar Categoria. (" + e.message + ")")
+            self.code_return = -1
+            return self.code_return
 
 
 
@@ -409,12 +455,19 @@ class CategoryController(object):
     def publish(self, request, id):
         try:
             gmd = CategoryMetadata.objects.get(id=id)
-
             gmd.queue_status = 'Q'
             gmd.save()
+
             ph = PublishHelper()
-            ph.func_publish_queue(request, gmd.category.category_id, gmd.language, 'CA', 'Q', datetime.datetime.now().strftime('%Y-%m-%d'))
+            vschedule_date = datetime.datetime.now().strftime('%Y-%m-%d')
+            ph.func_publish_queue(request, gmd.category.category_id, gmd.language, 'CA', 'Q', vschedule_date)
             ph.func_publish_image(request, gmd.category.image)
+
+            # reencolar todos los assets asociados a la categoria
+            self.reprocess_assets(request, gmd.category, vschedule_date)
+            # /reencolar todos los assets asociados a la categoria
+
+
             request.session['list_category_message'] = 'Metadata en ' + gmd.language.name + ' de Categoria ' + gmd.category.category_id + ' Guardado en Cola de Publicacion'
             request.session['list_category_flag'] = FLAG_SUCCESS
             self.code_return = 0
