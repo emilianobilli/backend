@@ -808,6 +808,11 @@ def list_packageprices_view(request):
 def delete_packageprices_view(request):
     c = PackagePriceController()
     return c.delete(request)
+
+def publish_packageprices_view(request):
+    c = PackagePriceController()
+    return c.publish(request)
+
 #</CRUD PACKAGE PRICE>
 
 
