@@ -873,23 +873,19 @@ class RedirectionRule(models.Model):
 
 
 class PackagePrice(models.Model):
-    PACKAGE_DURATION = (
-        ('1', '1 Mes'),
-        ('6', '6 Meses'),
-    )
 
     country       = models.ForeignKey(Country, blank=True, null=True)
-    price         = models.IntegerField(help_text="Price", default=0)
+    price         = models.FloatField(help_text="Price", default=0)
     price_display = models.CharField(max_length=64, help_text="Price Display", blank=True, null=True )
     duration      = models.CharField(max_length=1, choices=PACKAGE_DURATION, default='', help_text='Periodo')
 
     def __unicode__(self):
-        return "%s_%s" % (self.price, self.country.code)
+        return "%s_%s" % (str(self.price), self.country.code)
 
     def toDict(self):
         dict = {}
-        dict[self.country.code][self.duration]['price_display'] = self.price_display
-        dict[self.country.code][self.duration]['price'] = self.price
+        dict[self.country.code.lower()] = {self.duration: {"price_display": self.price_display}}
+        dict[self.country.code.lower()][self.duration]['price'] = self.price
 
         return dict
 
