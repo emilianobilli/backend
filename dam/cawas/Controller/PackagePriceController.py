@@ -1,14 +1,14 @@
 import os, datetime, json
 from LogController import LogController
 from django.shortcuts import render,redirect
-from ..models import PackagePrice, CableOperator, Country, PackagePrice
+from ..models import PackagePrice, CableOperator, Country, PackagePrice,PublishZone, Setting
+from ..backend_sdk import  ApiBackendServer, ApiBackendResource, ApiBackendException
 from django.http import HttpResponse
 from django.template.defaulttags import register
 from django.contrib import messages
+from ..Helpers.GlobalValues import PACKAGE_DURATION_VIEW, RULES
 
-RULES = {'H': 'HotGo Registration Page',
-         'P': 'Provider Registration Page',
-         'D': 'Default Page'}
+
 
 class PackagePriceController(object):
     #Option
@@ -36,9 +36,15 @@ class PackagePriceController(object):
                             price_display = json_data['data']['price_display']
                             rr.price_display = price_display
 
+                    if (json_data['data']['package_duration'] is not None):
+                        if (json_data['data']['package_duration'] != ''):
+                            package_duration = json_data['data']['package_duration']
+                            rr.duration = package_duration
+
                     rr.save()
                     mydata = [{'code': 200, 'message': 'Guardado Correctamente'}]
-                    #messages.add_message(request, messages.INFO, 'Guardado Correctamente')
+                    messages.add_message(request, messages.INFO, 'Guardado Correctamente')
+
                     return HttpResponse(json.dumps(mydata), None, 200)
 
 
@@ -50,7 +56,8 @@ class PackagePriceController(object):
                 context = {
                     'title': 'Package Price',
                     'countries': countries,
-                    'rules':RULES
+                    'rules':RULES,
+                    'duration':PACKAGE_DURATION_VIEW
                 }
                 return render(request, 'cawas/packageprices/add.html', context)
 
@@ -61,6 +68,38 @@ class PackagePriceController(object):
             return HttpResponse("Hubo un error:(" + str(e.message) + ")", None, 500)
         except KeyError:
             return HttpResponse("Error en decodificacion de datos", None, 500)
+
+
+
+    def publish(self, request):
+        try:
+            packages_dict = {}
+            packages = PackagePrice.objects.all()
+            for p in packages:
+                self.add_price(packages_dict, p.toDict())
+            #print packages_dict
+            setting = Setting.objects.get(code='backend_package_price_url')
+            api_key = Setting.objects.get(code='backend_api_key')
+            vzones = PublishZone.objects.filter(enabled=True)
+            for zone in vzones:
+                abr = ApiBackendResource(zone.backend_url, setting.value, api_key.value)
+                abr.add(packages_dict)
+            messages.add_message(request, messages.INFO, 'Packages Price, publicados correctamente...')
+            return redirect('list_packageprices')
+        except Exception as e:
+            return HttpResponse("PackagePricePublish. Hubo un error:(" + str(e.message) + ")", None, 500)
+
+
+
+    def add_price(self, price_dict, price):
+        for k in price:
+            print 'packageprice_jso' \
+                  'n ' + str(price_dict)
+            if k in price_dict:
+                price_dict[k].update(price[k])
+            else:
+                price_dict.update(price)
+        return price_dict
 
 
 
@@ -77,17 +116,24 @@ class PackagePriceController(object):
                             country_id = json_data['data']['country']
                             country = Country.objects.get(id=country_id)
                             rr.country = country
-                            print 'edit: ' +country_id
+
+
                     if (json_data['data']['price'] is not None):
                         if (json_data['data']['price'] != ''):
                             price = json_data['data']['price']
                             rr.price = price
-                            print 'edit: ' + price
+
+
                     if (json_data['data']['price_display'] is not None):
                         if (json_data['data']['price_display'] != ''):
                             price_display = json_data['data']['price_display']
                             rr.price_display = price_display
-                            print 'edit: ' + price_display
+
+                    if (json_data['data']['package_duration'] is not None):
+                        if (json_data['data']['package_duration'] != ''):
+                            package_duration = json_data['data']['package_duration']
+                            rr.duration = package_duration
+
                     rr.save()
                     mydata = [{'code': 200, 'message': 'Guardado Correctamente'}]
                     #messages.add_message(request, messages.INFO, 'Guardado Correctamente')
@@ -108,7 +154,8 @@ class PackagePriceController(object):
                 context = {
                            'registro':  registro,
                            'countries': countries,
-                           'rules':     RULES
+                           'rules':     RULES,
+                           'duration': PACKAGE_DURATION_VIEW
                            }
                 return render(request, 'cawas/packageprices/edit.html', context)
 
@@ -130,7 +177,8 @@ class PackagePriceController(object):
             registros = PackagePrice.objects.all()
             context = {'title': 'Listado Package Price',
                        'registros': registros,
-                       'rules': RULES
+                       'rules': RULES,
+                       'duration': PACKAGE_DURATION_VIEW
                        }
             return render(request, 'cawas/packageprices/list.html', context)
         except Country.DoesNotExist as e:
