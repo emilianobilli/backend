@@ -120,5 +120,6 @@ urlpatterns = [
     url(r'^packageprices/add/$', views.add_packageprices_view, name='add_packageprices'),
     url(r'^packageprices/edit/(?P<id>\w*)/$', views.edit_packageprices_view, name='edit_packageprices'),
     url(r'^packageprices/delete/$', views.delete_packageprices_view, name='delete_packageprices'),
+    url(r'^packageprices/publish/$', views.publish_packageprices_view, name='publish_packageprices'),
 
 ]
