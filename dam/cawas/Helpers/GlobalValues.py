@@ -10,3 +10,17 @@ BLOCK_TYPE = (
     ('S', 'Static'),
     ('D', 'Dynamic')
 )
+
+PACKAGE_DURATION = (
+        ('1', '1 Mes'),
+        ('6', '6 Meses'),
+    )
+
+PACKAGE_DURATION_VIEW = {
+        '1': '1 Mes',
+        '6': '6 Meses',
+}
+
+RULES = {'H': 'HotGo Registration Page',
+         'P': 'Provider Registration Page',
+         'D': 'Default Page'}
