@@ -267,7 +267,6 @@ class CategoryController(object):
 
                 gmd.language     = vlanguage
                 gmd.name         = item['Categorymetadata']['name']
-                print 'debug 4'
                 gmd.category     = vcategory
                 gmd.publish_date = vschedule_date
                 gmd.queue_status = 'Q'
@@ -277,7 +276,7 @@ class CategoryController(object):
                 ph.func_publish_image(request, vimg)
 
                 #reencolar todos los assets asociados a la categoria
-                self.reprocess_assets(request, vcategory, vschedule_date)
+                self.reprocess_assets(request, vcategory, vschedule_date, gmd.language)
                 #/reencolar todos los assets asociados a la categoria
 
             request.session['list_category_message'] = 'Guardado Correctamente'
@@ -295,14 +294,14 @@ class CategoryController(object):
 
 
 
-    def reprocess_assets(self, request, category, schedule_date):
+    def reprocess_assets(self, request, category, schedule_date, lang):
         try:
             # <Buscar todos los assets vinculados a la categoria>
             # Movies
             movies      = Movie.objects.filter(category=category)
             #buscar metadata
             for r in movies:
-                moviemetadatas = MovieMetadata.objects.filter(movie=r, activated=True)
+                moviemetadatas = MovieMetadata.objects.filter(movie=r, activated=True,language=lang)
                 for mm in moviemetadatas:
                     ph = PublishHelper()
                     ph.func_publish_queue(request, mm.movie.asset.asset_id, mm.language, 'AS', 'Q', schedule_date)
@@ -312,17 +311,17 @@ class CategoryController(object):
             series      = Serie.objects.filter(category=category)
             # buscar metadata
             for r in series:
-                seriemetadatas = SerieMetadata.objects.filter(serie=r, activated=True)
+                seriemetadatas = SerieMetadata.objects.filter(serie=r, activated=True, language=lang)
                 for mm in seriemetadatas:
                     ph = PublishHelper()
-                    ph.func_publish_queue(request, mm.episode.asset.asset_id, mm.language, 'AS', 'Q', schedule_date)
+                    ph.func_publish_queue(request, mm.serie.asset.asset_id, mm.language, 'AS', 'Q', schedule_date)
 
 
             # Episodes
             episodes = Episode.objects.filter(category=category)
             # buscar metadata
             for e in episodes:
-                episodemetadatas = EpisodeMetadata.objects.filter(episode=e, activated=True)
+                episodemetadatas = EpisodeMetadata.objects.filter(episode=e, activated=True,language=lang)
                 for mm in episodemetadatas:
                     ph = PublishHelper()
                     ph.func_publish_queue(request, mm.episode.asset.asset_id, mm.language, 'AS', 'Q',schedule_date)
@@ -401,7 +400,10 @@ class CategoryController(object):
             if CategoryMetadata.objects.filter(category=c).count()==1:
                 borrarcategory = True
 
-            #print 'debug1metadata' + categorymetadata
+            # reencolar todos los assets asociados a la categoria
+            self.reprocess_assets(request, c, categorymetadata.publish_date, categorymetadata.language)
+            # /reencolar todos los assets asociados a la categoria
+
             if not categorymetadata.activated:
                 categorymetadata.delete()
                 if borrarcategory==True:
@@ -430,6 +432,8 @@ class CategoryController(object):
             #Actualizar Activated a False
             categorymetadata.activated = False
             categorymetadata.save()
+
+
 
             self.code_return = 0
             request.session['list_category_message'] = 'Metadata en ' + categorymetadata.language.name + ' de Categoria ' + categorymetadata.category.category_id + ' Despublicado Correctamente'
@@ -464,7 +468,7 @@ class CategoryController(object):
             ph.func_publish_image(request, gmd.category.image)
 
             # reencolar todos los assets asociados a la categoria
-            self.reprocess_assets(request, gmd.category, vschedule_date)
+            self.reprocess_assets(request, gmd.category, vschedule_date, gmd.language)
             # /reencolar todos los assets asociados a la categoria
 
 
