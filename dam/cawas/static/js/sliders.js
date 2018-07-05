@@ -269,7 +269,7 @@ $( document ).ready(function() {
 
         // Validar si tipo de Slider es Video entonces es obligatorio completar el Nombre del video
         if ( $('#typeslider').val() == TYPESLIDER_VIDEO ){
-            if (videoname.length< 1){
+            if (videoname == "" || videoname == null){
                  errorMe("#videoname");
                  checkVal++;
              }
