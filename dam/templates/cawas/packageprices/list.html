@@ -34,7 +34,11 @@
             <div class="row">
                  <br>
                  <div class="col-lg-2 col-md-2 col-sm-2" >
-                     <a href="{% url 'add_packageprices'  %}" class="btn btn-lg btn-primary btn-block logOFF" >Nuevo</a>
+                     <a href="{% url 'add_packageprices'  %}" class="btn btn-lg btn-primary btn-block logOFF" ><span class="glyphicon glyphicon-inbox"></span> Nuevo</a>
+
+                 </div>
+                <div class="col-lg-2 col-md-2 col-sm-2" >
+                    <a href="{% url 'publish_packageprices' %}" class="btn btn-lg btn-default btn-block logOFF" ><span class="glyphicon glyphicon-flash"></span> Publicar</a>
                  </div>
                  <div class="col-lg-8 col-md-8 col-sm-8" ></div>
             </div>
@@ -49,6 +53,7 @@
                     <thead>
                         <th class="tb-cell">ID</th>
                         <th class="tb-cell">Pais</th>
+                        <th class="tb-cell">Duration</th>
                         <th class="tb-cell">Price</th>
                         <th class="tb-cell">Price Display</th>
                         <th class="tb-cell">Acciones</th>
@@ -59,11 +64,12 @@
                           <tr class="tb-row" data="{{item.id}}">
                             <td class="tb-cell">{{ item.id }}</td>
                             <td class="tb-cell">{{ item.country.name}}</td>
+                            <td class="tb-cell">{{ duration|get_item:item.duration }}</td>
                             <td class="tb-cell">{{ item.price }}</td>
                             <td class="tb-cell">{{ item.price_display }}</td>
 
-                            <td class="tb-cell"><a href="{% url 'edit_packageprices' item.id %}" class="btn-info btn tb-btn" >Editar</a></td>
-                            <td class="tb-cell"><button data="{{item.id}}"  name="btndelete" class="btn-md btn-danger" ><span class="glyphicon glyphicon-trash"></span>  </button></td>
+                            <td class="tb-cell"><a href="{% url 'edit_packageprices' item.id %}" class="btn-info btn tb-btn" ><span class="glyphicon glyphicon-edit"></span> Editar</a></td>
+                            <td class="tb-cell"><a data="{{item.id}}"  name="btndelete" class="btn-danger btn tb-btn" ><span class="glyphicon glyphicon-trash"></span> Eliminar  </a></td>
                         </tr>
                     {% endfor %}
 

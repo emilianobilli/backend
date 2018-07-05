@@ -43,8 +43,35 @@
                             </select>
                             <span class="glyphicon form-control-feedback"></span>
                         </div>
+
                     </div>
                  </div>
+
+
+                 <div class="row form-row">
+                        <!-- Rule -->
+                        <div class="col-xs-12 col-md-6 col-lg-6 form-group">
+                                <div class="form-group has-feedback" >
+                                    <label class="label-left" for="package_duration">Duration: </label>
+                                    <div class="helpright">
+                                        <span class="glyphicon glyphicon-question-sign"
+                                              data-toggle="tooltip"
+                                              title="Selecciona una Regla">
+                                        </span>
+                                    </div>
+
+                                    <select type="text" class="form-control" name="package_duration" id="package_duration"  >
+                                        <option value=""></option>
+                                        {% for key, i in duration.items %}
+                                            <option value="{{key}}">{{i}}</option>
+                                        {% endfor %}
+
+                                    </select>
+
+                                    <span class="glyphicon form-control-feedback"></span>
+                                </div>
+                            </div>
+                    </div>
 
 
 
