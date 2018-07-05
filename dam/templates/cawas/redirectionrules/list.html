@@ -34,7 +34,7 @@
             <div class="row">
                  <br>
                  <div class="col-lg-2 col-md-2 col-sm-2" >
-                     <a href="{% url 'add_redirectionrules'  %}" class="btn btn-lg btn-primary btn-block logOFF" >Nuevo</a>
+                     <a href="{% url 'add_redirectionrules'  %}" class="btn btn-lg btn-primary btn-block logOFF" ><span class="glyphicon glyphicon-inbox"></span> Nuevo</a>
                  </div>
                  <div class="col-lg-8 col-md-8 col-sm-8" ></div>
             </div>
@@ -63,8 +63,8 @@
                             <td class="tb-cell">
                                 {{ rules|get_item:item.rule }}
                             </td>
-                            <td class="tb-cell"><a href="{% url 'edit_redirectionrules' item.id %}" class="btn-info btn tb-btn" >Editar</a></td>
-                            <td class="tb-cell"><button data="{{item.id}}"  name="btndelete" class="btn-md btn-danger" ><span class="glyphicon glyphicon-trash"></span>  </button></td>
+                            <td class="tb-cell"><a href="{% url 'edit_redirectionrules' item.id %}" class="btn-info btn tb-btn" ><span class="glyphicon glyphicon-edit"></span> Editar</a></td>
+                            <td class="tb-cell"><button data="{{item.id}}"  name="btndelete" class="btn-danger btn tb-btn" ><span class="glyphicon glyphicon-trash"></span> Eliminar </button></td>
                         </tr>
                     {% endfor %}
 
