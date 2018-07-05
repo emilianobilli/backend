@@ -6,6 +6,7 @@ $( document ).ready(function() {
     var country             = 0;
     var price               = 0;
     var price_display       = "";
+    var package_duration    = 0;
     var rule                = "";
 
     var publicar            = false;
@@ -18,6 +19,7 @@ $( document ).ready(function() {
         country             = $('#country').val();
         price               = $('#price').val();
         price_display       = $('#price_display').val();
+        package_duration     = $('#package_duration').val();
         URL                 = '/packageprices/add/';
 
         if (packageprice_id > 0 ){
@@ -47,11 +49,12 @@ $( document ).ready(function() {
             //Setear objeto JSON
             json_data = {
                 "data":{
-                        "packageprice_id": packageprice_id,
-                        "price":           price,
-                        "country":         country,
-                        "price_display":   price_display,
-                        "publicar":        publicar
+                        "packageprice_id":  packageprice_id,
+                        "price":            price,
+                        "country":          country,
+                        "price_display":    price_display,
+                        "package_duration": package_duration,
+                        "publicar":         publicar
                         }
              };
 
@@ -97,12 +100,31 @@ $( document ).ready(function() {
 
     }
 
+    //Publicar todos los packages price
+    function publish(){
+        url = "/publish/";
+
+        $.ajax({
+            url: url,
+            dataType: 'json',
+            type: 'POST',
+            contentType: "application/json; charset=utf-8",
+
+            success: function(response){
+                    alert("Packages Price publicados correctamente");
+                },
+            error:function(request, status, error){
+                alert(request.responseText);
+            }
+        });
+
+    }
 
 
 
 
 
-    //Handle Events
+//--------- Handle Events -----------------------------------------------
     $("#grabar").click(function(){
         publicar = false;
         proccess();
@@ -114,9 +136,13 @@ $( document ).ready(function() {
         proccess();
     });
 
-    $("button[name='btndelete']").click(function(){
+    $("a[name='btndelete']").click(function(){
         var data = $(this).attr("data");
         eliminar(data);
+    });
+
+     $("#btn_publicar").click(function(){
+        publish();
     });
 
 
