@@ -221,14 +221,15 @@ class SliderController(object):
                 else:
                     vslider.text = decjson['Slider']['text']
 
+
                 if decjson['Slider']['videoname'] is not None:
                     vslider.video_name = decjson['Slider']['videoname']
-
                 if decjson['Slider']['linked_url'] is None:
                     vslider.linked_url = ''
                 else:
                     vslider.linked_url = decjson['Slider']['linked_url']
-
+                print 'videoname '
+                vslider.save()
 
                 vslider.language = Language.objects.get(code=decjson['Slider']['language'])
                 if (decjson['Slider']['publish_date'] != ''):
@@ -241,6 +242,8 @@ class SliderController(object):
                     vimg = Image.objects.get(name=vslider.slider_id)
                 else:
                     vimg = Image()
+
+
             except Device.DoesNotExist as e:
                 message = "Error: (" + str(e.message) + ")"
                 return render(request, 'cawas/error.html', {'code': 500, 'message': message}, status=500)
