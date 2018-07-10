@@ -31,10 +31,10 @@ class PackagePriceController(object):
                             price = json_data['data']['price']
                             rr.price = price
 
-                    if (json_data['data']['price_display'] is not None):
-                        if (json_data['data']['price_display'] != ''):
-                            price_display = json_data['data']['price_display']
-                            rr.price_display = price_display
+                    if (json_data['data']['currency'] is not None):
+                        if (json_data['data']['currency'] != ''):
+                            currency = json_data['data']['currency']
+                            rr.currency = currency
 
                     if (json_data['data']['package_duration'] is not None):
                         if (json_data['data']['package_duration'] != ''):
@@ -124,19 +124,18 @@ class PackagePriceController(object):
                             rr.price = price
 
 
-                    if (json_data['data']['price_display'] is not None):
-                        if (json_data['data']['price_display'] != ''):
-                            price_display = json_data['data']['price_display']
-                            rr.price_display = price_display
+                    if (json_data['data']['currency'] is not None):
+                        if (json_data['data']['currency'] != ''):
+                            currency = json_data['data']['currency']
+                            rr.currency = currency
 
                     if (json_data['data']['package_duration'] is not None):
                         if (json_data['data']['package_duration'] != ''):
                             package_duration = json_data['data']['package_duration']
                             rr.duration = package_duration
-
+                    print ' error'
                     rr.save()
                     mydata = [{'code': 200, 'message': 'Guardado Correctamente'}]
-                    #messages.add_message(request, messages.INFO, 'Guardado Correctamente')
                     return HttpResponse(json.dumps(mydata), None, 200)
 
 
@@ -149,7 +148,7 @@ class PackagePriceController(object):
 
                 registro = PackagePrice.objects.get(id=id)
                 countries = Country.objects.all()
-                cableoperators = CableOperator.objects.all()
+
 
                 context = {
                            'registro':  registro,
