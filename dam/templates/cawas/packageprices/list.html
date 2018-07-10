@@ -55,7 +55,7 @@
                         <th class="tb-cell">Pais</th>
                         <th class="tb-cell">Duration</th>
                         <th class="tb-cell">Price</th>
-                        <th class="tb-cell">Price Display</th>
+                        <th class="tb-cell">Currency</th>
                         <th class="tb-cell">Acciones</th>
 
                     </thead>
@@ -66,7 +66,7 @@
                             <td class="tb-cell">{{ item.country.name}}</td>
                             <td class="tb-cell">{{ duration|get_item:item.duration }}</td>
                             <td class="tb-cell">{{ item.price }}</td>
-                            <td class="tb-cell">{{ item.price_display }}</td>
+                            <td class="tb-cell">{{ item.currency }}</td>
 
                             <td class="tb-cell"><a href="{% url 'edit_packageprices' item.id %}" class="btn-info btn tb-btn" ><span class="glyphicon glyphicon-edit"></span> Editar</a></td>
                             <td class="tb-cell"><a data="{{item.id}}"  name="btndelete" class="btn-danger btn tb-btn" ><span class="glyphicon glyphicon-trash"></span> Eliminar  </a></td>
