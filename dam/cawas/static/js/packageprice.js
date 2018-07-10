@@ -5,7 +5,7 @@ $( document ).ready(function() {
     var packageprice_id     = 0;
     var country             = 0;
     var price               = 0;
-    var price_display       = "";
+    var currency            = "";
     var package_duration    = 0;
     var rule                = "";
 
@@ -18,8 +18,8 @@ $( document ).ready(function() {
         packageprice_id     = $('#packageprice_id').val();
         country             = $('#country').val();
         price               = $('#price').val();
-        price_display       = $('#price_display').val();
-        package_duration     = $('#package_duration').val();
+        currency            = $('#currency').val();
+        package_duration    = $('#package_duration').val();
         URL                 = '/packageprices/add/';
 
         if (packageprice_id > 0 ){
@@ -52,7 +52,7 @@ $( document ).ready(function() {
                         "packageprice_id":  packageprice_id,
                         "price":            price,
                         "country":          country,
-                        "price_display":    price_display,
+                        "currency":         currency,
                         "package_duration": package_duration,
                         "publicar":         publicar
                         }
