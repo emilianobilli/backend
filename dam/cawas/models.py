@@ -876,7 +876,7 @@ class PackagePrice(models.Model):
 
     country       = models.ForeignKey(Country, blank=True, null=True)
     price         = models.FloatField(help_text="Price", default=0)
-    price_display = models.CharField(max_length=64, help_text="Price Display", blank=True, null=True )
+    currency      = models.CharField(max_length=3, help_text="Currency", blank=True, null=True )
     duration      = models.CharField(max_length=1, choices=PACKAGE_DURATION, default='', help_text='Periodo')
 
     def __unicode__(self):
@@ -884,8 +884,10 @@ class PackagePrice(models.Model):
 
     def toDict(self):
         dict = {}
-        dict[self.country.code.lower()] = {self.duration: {"price_display": self.price_display}}
+        price_display = "%s %s" % (str(self.price), self.currency)
+        dict[self.country.code.lower()] = {self.duration: {"price_display": price_display}}
         dict[self.country.code.lower()][self.duration]['price'] = self.price
+        dict[self.country.code.lower()][self.duration]['currency'] = self.currency
 
         return dict
 
