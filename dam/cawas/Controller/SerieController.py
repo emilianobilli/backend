@@ -570,7 +570,7 @@ class SerieController(object):
 
                 try:
                     # Despublicar los episodios que tengan el mismo idioma que la serie.
-                    mde = EpisodeMetadata.objects.filter(episode=item, language=seriemetadata.language)
+                    mde = EpisodeMetadata.objects.filter(episode=item, language=seriemetadata.language,activated=True)
                     for episodemetadata in mde:
 
                         # VERIFICAR SI estado de publicacion de EPISODE esta en Q, se debe eliminar
