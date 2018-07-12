@@ -616,11 +616,12 @@ class SerieController(object):
             request.session['list_serie_flag'] = FLAG_ALERT
             self.code_return = -1
             return self.code_return
+
         except ApiBackendException as e:
             request.session['list_serie_message'] = "Error al despublicar (" + str(e.value) + ")"
             request.session['list_serie_flag'] = FLAG_ALERT
-
-        return self.code_return
+            self.code_return = -1
+            return self.code_return
 
 
 
