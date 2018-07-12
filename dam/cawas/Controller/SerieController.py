@@ -588,7 +588,7 @@ class SerieController(object):
                         episodemetadata.activated = False
                         episodemetadata.save()
                 except Exception as e:
-                    request.session['list_serie_message'] = "Error al Despublicar (" + str(e.value) + ")"
+                    request.session['list_serie_message'] = "Error al Despublicar Episodios(" + str(e.value) + ")"
                     request.session['list_serie_flag'] = FLAG_ALERT
                     self.code_return = -1
                     return self.code_return
@@ -607,19 +607,19 @@ class SerieController(object):
             request.session['list_serie_flag'] = FLAG_SUCCESS
 
         except PublishZone.DoesNotExist as e:
-            request.session['list_serie_message'] = "Error al Publicar (" + str(e.value) + ")"
+            request.session['list_serie_message'] = "No existe Publish Zone (" + str(e.value) + ")"
             request.session['list_serie_flag'] = FLAG_ALERT
             self.code_return = -1
             return self.code_return
 
         except SerieMetadata.DoesNotExist as e:
-            request.session['list_serie_message'] = "Error al Publicar (" + str(e.value) + ")"
+            request.session['list_serie_message'] = "No Existe Metadata para Serie (" + str(e.value) + ")"
             request.session['list_serie_flag'] = FLAG_ALERT
             self.code_return = -1
             return self.code_return
 
         except ApiBackendException as e:
-            request.session['list_serie_message'] = "Error al despublicar (" + str(e.value) + ")"
+            request.session['list_serie_message'] = "Error al despublicar Backend(" + str(e.value) + ")"
             request.session['list_serie_flag'] = FLAG_ALERT
             self.code_return = -1
             return self.code_return
