@@ -587,8 +587,21 @@ class SerieController(object):
                             abr.delete(param)
                         episodemetadata.activated = False
                         episodemetadata.save()
+
+                except ApiBackendException as e:
+                    request.session['list_serie_message'] = "Error al Despublicar Episodios en Backend(" + str(e.value) + ")"
+                    request.session['list_serie_flag'] = FLAG_ALERT
+                    self.code_return = -1
+                    return self.code_return
+
+                except PublishQueue.DoesNotExist as e:
+                    request.session['list_serie_message'] = "No existen PublishQueue para eliminar (" + str(e.value) + ")"
+                    request.session['list_serie_flag'] = FLAG_ALERT
+                    self.code_return = -1
+                    return self.code_return
+
                 except Exception as e:
-                    request.session['list_serie_message'] = "Error al Despublicar Episodios(" + str(e.value) + ")"
+                    request.session['list_serie_message'] = "Error General al Despublicar Episodios(" + str(e.value) + ")"
                     request.session['list_serie_flag'] = FLAG_ALERT
                     self.code_return = -1
                     return self.code_return
