@@ -544,16 +544,16 @@ class SerieController(object):
             vasset_id = seriemetadata.serie.asset.asset_id
 
             # 1 - VERIFICAR, si estado de publicacion DE SERIE esta en Q, se debe eliminar
-            publishs = PublishQueue.objects.filter(item_id=vasset_id, status='Q')
-            if publishs.count > 0:
-                publishs.delete()
+
+            if PublishQueue.objects.filter(item_id=vasset_id, status='Q').count() > 0:
+                PublishQueue.objects.filter(item_id=vasset_id, status='Q').delete()
 
 
             # 2 - Realizar delete al backend de la Serie
             setting = Setting.objects.get(code='backend_asset_url')
             api_key = Setting.objects.get(code='backend_api_key')
             vzones = PublishZone.objects.filter(enabled=True)
-
+            #despublica la serie
             for zone in vzones:
                 abr = ApiBackendResource(zone.backend_url, setting.value, api_key.value)
                 param = {"asset_id": seriemetadata.serie.asset.asset_id,
@@ -574,9 +574,10 @@ class SerieController(object):
                     for episodemetadata in mde:
 
                         # VERIFICAR SI estado de publicacion de EPISODE esta en Q, se debe eliminar
-                        publishs = PublishQueue.objects.filter(item_id=episodemetadata.episode.asset.asset_id, status='Q')
-                        if publishs.count > 0:
-                            publishs.delete()
+
+                        if PublishQueue.objects.filter(item_id=episodemetadata.episode.asset.asset_id, status='Q').count() > 0:
+                            PublishQueue.objects.filter(item_id=episodemetadata.episode.asset.asset_id, status='Q').delete()
+
 
                         for zone in vzones:
                             abr = ApiBackendResource(zone.backend_url, setting.value, api_key.value)
