@@ -583,8 +583,7 @@ def unpublish_girls_view(request, id):
 def unpublish_series_view(request, id):
     controller = SerieController()
     controller.unpublish(request, id)
-    if controller.code_return == RETURN_OK:
-        return redirect(list_series_view)
+    return redirect(list_series_view)
 
 # Funciones de Despublicacion
 def unpublish_blocks_view(request, id):
