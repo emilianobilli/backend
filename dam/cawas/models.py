@@ -370,7 +370,8 @@ class Slider(models.Model):
             dict["linked_url"] = self.linked_url
         dict["target"] = self.target_device.name
         dict["lang"]   = self.language.code
-        dict["text"]   = self.text
+        if self.text != '':
+            dict["text"]   = self.text
 
         return dict
 
