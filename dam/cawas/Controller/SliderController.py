@@ -189,8 +189,9 @@ class SliderController(object):
                 imgland = vslider.image.landscape.name[5:i]
 
             if vslider.image.logo is not None:
-                i = len(vslider.image.logo.name)
-                imglogo = vslider.image.logo.name[5:i]
+                if vslider.image.logo.name is not None:
+                    i = len(vslider.image.logo.name)
+                    imglogo = vslider.image.logo.name[5:i]
 
         except Slider.DoesNotExist as e:
             message =  'Error: ' + e.message
@@ -268,17 +269,16 @@ class SliderController(object):
 
             # LOGO
             if (request.FILES.has_key('logo')):
-                if request.FILES['logo'].name is None:
-                    if request.FILES['logo'].name != '':
-                        # TRATAMIENTO DE IMAGEN LOGO
-                        vimg.logo = request.FILES['logo']
-                        extension = os.path.splitext(vimg.logo.name)[1]
-                        varchivo = pathfileslogo.value + vimg.name + extension
-                        vimg.logo.name = varchivo
-                        varchivo_server = base_dir.value + varchivo
-                        if os.path.isfile(varchivo_server):
-                            os.remove(varchivo_server)
-                            # /LOGO
+                if request.FILES['logo'].name != '':
+                    # TRATAMIENTO DE IMAGEN LOGO
+                    vimg.logo = request.FILES['logo']
+                    extension = os.path.splitext(vimg.logo.name)[1]
+                    varchivo = pathfileslogo.value + vimg.name + extension
+                    vimg.logo.name = varchivo
+                    varchivo_server = base_dir.value + varchivo
+                    if os.path.isfile(varchivo_server):
+                        os.remove(varchivo_server)
+                        # /LOGO
 
 
             vimg.save()
