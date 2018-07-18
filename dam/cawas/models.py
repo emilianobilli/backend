@@ -864,6 +864,23 @@ class VideoLog(models.Model):
     def __unicode__(self):
         return ('%s:%s') % (self.asset.asset_id, self.tag.name)
 
+    def toDict(self, lang):
+        dict = {}
+
+        try:
+            language = Language.objects.get(code=lang)
+            metadata = TagMetadata.objects.get(tag=self.tag, language=language)
+        except ObjectDoesNotExist:
+            return dict
+
+        dict["lang"]     = lang
+        dict["tag_id"]   = self.id
+        dict["tag"]      = metadata.name
+        dict["asset_id"] = self.asset.asset_id
+        dict["tc_in"]    = self.tc_in
+        dict["tc_out"]   = self.tc_out
+
+        return dict
 
 
 class RedirectionRule(models.Model):
