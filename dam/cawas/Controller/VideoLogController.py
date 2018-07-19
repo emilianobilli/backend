@@ -1,8 +1,9 @@
 import os, datetime, json
 from django.http import HttpResponse
-from ..models import Asset, Tag, VideoLog
+from ..models import Asset, Tag, VideoLog, TagMetadata, Setting, PublishZone
 from django.shortcuts import render, redirect
 from django.http import JsonResponse
+from ..backend_sdk import ApiBackendResource
 
 class VideoLogController(object):
 
@@ -22,6 +23,7 @@ class VideoLogController(object):
 
                     tag = Tag.objects.get(tag_id=tag_id)
                     asset = Asset.objects.get(asset_id=asset_id)
+
                     videolog = VideoLog()
                     videolog.asset = asset
                     videolog.tag = tag
@@ -29,9 +31,21 @@ class VideoLogController(object):
                     videolog.tc_out = timeout
                     videolog.save()
 
+                    #Publicar Tag
+                    tagmetadatas = TagMetadata.objects.filter(tag=tag)
+                    for m in tagmetadatas:
+                        setting = Setting.objects.get(code='backend_package_price_url')
+                        api_key = Setting.objects.get(code='backend_api_key')
+                        vzones = PublishZone.objects.filter(enabled=True)
+                        for zone in vzones:
+                            abr = ApiBackendResource(zone.backend_url, setting.value, api_key.value)
+                            abr.add(videolog.toDict(m.language))
+
                     return JsonResponse({'code': 200, 'message': 'Guardado Correctamente', 'data':videolog.id })
                 except Asset.DoesNotExist as e:
                     return JsonResponse({'code': 500, 'message': 'No Existe Asset'})
+                except TagMetadata.DoesNotExist as e:
+                    return JsonResponse({'code': 500, 'message': 'No Existe TagMetadata'})
                 except Tag.DoesNotExist as e:
                     return JsonResponse({'code': 500, 'message': 'No Existe Tag'})
                 except Exception as e:
@@ -84,12 +98,38 @@ class VideoLogController(object):
         if request.is_ajax():
             if request.method == 'POST':
                 try:
+
                     json_data = json.loads(request.body)
                     id = json_data['id']
+                    response = {'code': 200, 'message': 'Eliminado Correctamente', 'data': id}
+
+                    # Despublicar desde el Backend
+                    setting = Setting.objects.get(code='backend_tags_url')
+                    api_key = Setting.objects.get(code='backend_api_key')
+                    vzones = PublishZone.objects.filter(enabled=True)
+                    video = VideoLog.objects.get(id=id)
+
+                    # Buscar el videolog y su tag, por cada metadata
+                    tagmetadatas = TagMetadata.objects.filter(tag=video.tag)
+                    for m in tagmetadatas:
+                        for zone in vzones:
+                            abr = ApiBackendResource(zone.backend_url, setting.value, api_key.value)
+                            respuesta = abr.delete(video.toDict(m.language))
+                            if 'status' in respuesta:
+                                if respuesta['status'] != 200:
+                                    response = {'code': 500, 'message': 'Error al Despublicar', 'data': id}
+                                    return JsonResponse(response)
+
                     VideoLog.objects.filter(id=id).delete()
-                    return JsonResponse({'code': 200, 'message': 'Eliminado Correctamente', 'data': id})
+
+                    return JsonResponse(response)
+
+                except Tag.DoesNotExist as e:
+                    return JsonResponse({'code': 500, 'message': 'No Existe Tag'})
                 except VideoLog.DoesNotExist as e:
                     return JsonResponse({'code': 500, 'message': 'No Existe VideoLog'})
+                except TagMetadata.DoesNotExist as e:
+                    return JsonResponse({'code': 500, 'message': 'No Existe TagMetadata'})
                 except Exception as e:
-                    return JsonResponse({'code': 500, 'message': 'Error:' + e.message})
+                    return JsonResponse({'code': 500, 'message': 'Error en Despublicacion de tag:' + e.message})
 
