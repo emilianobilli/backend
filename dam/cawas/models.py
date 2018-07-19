@@ -864,16 +864,15 @@ class VideoLog(models.Model):
     def __unicode__(self):
         return ('%s:%s') % (self.asset.asset_id, self.tag.name)
 
-    def toDict(self, lang):
+    def toDict(self, language):
         dict = {}
 
         try:
-            language = Language.objects.get(code=lang)
             metadata = TagMetadata.objects.get(tag=self.tag, language=language)
         except ObjectDoesNotExist:
             return dict
 
-        dict["lang"]     = lang
+        dict["lang"]     = language.code
         dict["tag_id"]   = self.id
         dict["tag"]      = metadata.name
         dict["asset_id"] = self.asset.asset_id
