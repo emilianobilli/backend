@@ -293,11 +293,11 @@
                             videolog_id = response.data;
                             tag_id = response.data.tag_id;
 
-                             $("button[name='btndelete'][data-id='"+index+"']").attr("data", tag_id);
+                             //$("button[name='btndelete'][data-id='"+index+"']").attr("data", tag_id);
 
                             //index es el numero de fila
                             //videolog_id es la PK de la tabla videolog
-                            addButtonDelete(index, videolog_id)
+                            addButtonDelete(index, tag_id)
                             removeClassSelect2(index, videolog_id);
                             applyFunctionsList();
 
