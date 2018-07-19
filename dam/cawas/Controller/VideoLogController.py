@@ -15,11 +15,10 @@ class VideoLogController(object):
                 try:
                     json_data = json.loads(request.body)
 
-                    tag_id = json_data['tag_id']
+                    tag_id   = json_data['tag_id']
                     asset_id = json_data['asset_id']
-                    print 'debug1'
-                    timein = int(json_data['timein'])
-                    timeout = int(json_data['timeout'])
+                    timein   = int(json_data['timein'])
+                    timeout  = int(json_data['timeout'])
 
                     tag = Tag.objects.get(tag_id=tag_id)
                     asset = Asset.objects.get(asset_id=asset_id)
@@ -39,11 +38,13 @@ class VideoLogController(object):
                         vzones = PublishZone.objects.filter(enabled=True)
                         for zone in vzones:
                             abr = ApiBackendResource(zone.backend_url, setting.value, api_key.value)
-                            abr.add(videolog.toDict(m.language))
+                            json_body = videolog.toDict(m.language)
+                            print json_body
+                            abr.add(json_body)
 
-                    return JsonResponse({'code': 200, 'message': 'Guardado Correctamente', 'data':videolog.id })
+                    return JsonResponse({'code': 200, 'message': 'Guardado Correctamente', 'data':json_body })
                 except Asset.DoesNotExist as e:
-                    return JsonResponse({'code': 500, 'message': 'No Existe Asset'})
+                    return JsonResponse({'code': 500, 'message': 'No Existe Asset', 'data':json_body })
                 except TagMetadata.DoesNotExist as e:
                     return JsonResponse({'code': 500, 'message': 'No Existe TagMetadata'})
                 except Tag.DoesNotExist as e:
