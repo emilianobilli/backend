@@ -134,7 +134,7 @@ class VideoLogController(object):
                 except TagMetadata.DoesNotExist as e:
                     return HttpResponse(json.dumps({'message': 'No Existe TagMetadata'}), None, 500)
                 except ApiBackendException as e:
-                    return HttpResponse(json.dumps({'message': 'Error en ApiBackendException ' + str(e) + ' ' + str(json_body)}), None,500)
+                    return HttpResponse(json.dumps({'message': 'Error en ApiBackendException ' + str(e) }), None,500)
                 except Exception as e:
-                    return HttpResponse(json.dumps({'message': 'Error en Despublicacion de tag'+ str(e) + ' ' + str(json_body)}), None, 500)
+                    return HttpResponse(json.dumps({'message': 'Error en Despublicacion de tag'+ str(e) }), None, 500)
 
