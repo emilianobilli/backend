@@ -39,7 +39,6 @@ class VideoLogController(object):
                         for zone in vzones:
                             abr = ApiBackendResource(zone.backend_url, setting.value, api_key.value)
                             json_body = videolog.toDict(m.language)
-                            print 'json_body:' + json_body
                             respuesta = abr.add(json_body)
                             if 'status' in respuesta:
                                 if respuesta['status'] != 201:
@@ -55,9 +54,9 @@ class VideoLogController(object):
                 except Tag.DoesNotExist as e:
                     return HttpResponse(json.dumps({'message': 'No Existe Tag'}), None, 500)
                 except ApiBackendException as e:
-                    return HttpResponse(json.dumps({'message': 'Error en ApiBackendException ' + str(e)}), None, 500)
+                    return HttpResponse(json.dumps({'message': 'Error en ApiBackendException ' + str(e) + ' ' + json_body}), None, 500)
                 except Exception as e:
-                    return HttpResponse(json.dumps({'message': 'Error '+ str(e)}), None, 500)
+                    return HttpResponse(json.dumps({'message': 'Error '+ str(e)+ ' ' + json_body}), None, 500)
 
 
 
