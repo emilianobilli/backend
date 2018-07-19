@@ -122,11 +122,7 @@ class VideoLogController(object):
                         for zone in vzones:
                             abr = ApiBackendResource(zone.backend_url, setting.value, api_key.value)
                             json_body  = video.toDict(m.language)
-                            respuesta = abr.delete(json_body)
-                            if 'status' in respuesta:
-                                if respuesta['status'] != 201:
-                                    response = {'message': 'Error al despublicar' + str(respuesta['message']),'status': respuesta['status'], 'data': json_body}
-                                    return HttpResponse(json.dumps(response), None, 500)
+                            abr.delete(json_body)
 
                     video.delete()
                     return HttpResponse(json.dumps(response), None, 200)
