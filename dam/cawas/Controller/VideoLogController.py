@@ -34,7 +34,7 @@ class VideoLogController(object):
                     #Publicar Tag
                     tagmetadatas = TagMetadata.objects.filter(tag=tag)
                     for m in tagmetadatas:
-                        setting = Setting.objects.get(code='backend_package_price_url')
+                        setting = Setting.objects.get(code='backend_tags_url')
                         api_key = Setting.objects.get(code='backend_api_key')
                         vzones = PublishZone.objects.filter(enabled=True)
                         for zone in vzones:
