@@ -128,7 +128,7 @@ class VideoLogController(object):
                                     response = {'message': 'Error al despublicar' + str(respuesta['message']),'status': respuesta['status'], 'data': json_body}
                                     return HttpResponse(json.dumps(response), None, 500)
 
-                    VideoLog.objects.filter(id=id).delete()
+                    video.delete()
                     return HttpResponse(json.dumps(response), None, 200)
 
                 except Tag.DoesNotExist as e:
