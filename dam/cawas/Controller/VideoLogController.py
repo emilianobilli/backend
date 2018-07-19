@@ -41,8 +41,8 @@ class VideoLogController(object):
                             json_body = videolog.toDict(m.language)
                             respuesta = abr.add(json_body)
                             if 'status' in respuesta:
-                                if respuesta['status'] != 200:
-                                    response = {'message': respuesta['message'], 'data': json_body}
+                                if respuesta['status'] != 201:
+                                    response = {'message': respuesta['message'], 'status':respuesta['status'], 'data': json_body}
                                     return HttpResponse(json.dumps(response), None, 500)
 
 
