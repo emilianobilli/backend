@@ -42,7 +42,7 @@ class VideoLogController(object):
                             respuesta = abr.add(json_body)
                             if 'status' in respuesta:
                                 if respuesta['status'] != 201:
-                                    response = {'message': respuesta['message'], 'status':respuesta['status'], 'data': json_body}
+                                    response = {'message': 'error al despublicar:' + str(respuesta['message']), 'status':respuesta['status'], 'data': json_body}
                                     return HttpResponse(json.dumps(response), None, 500)
 
 
