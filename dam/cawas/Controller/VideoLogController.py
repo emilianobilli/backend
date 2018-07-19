@@ -42,7 +42,7 @@ class VideoLogController(object):
                             respuesta = abr.add(json_body)
                             if 'status' in respuesta:
                                 if respuesta['status'] != 201:
-                                    response = {'message': 'error al despublicar' + str(respuesta['message']), 'status':respuesta['status'], 'data': json_body}
+                                    response = {'message': 'Error al publicar' + str(respuesta['message']), 'status':respuesta['status'], 'data': json_body}
                                     return HttpResponse(json.dumps(response), None, 500)
 
 
@@ -124,8 +124,8 @@ class VideoLogController(object):
                             json_body  = video.toDict(m.language)
                             respuesta = abr.delete(json_body)
                             if 'status' in respuesta:
-                                if respuesta['status'] != 200:
-                                    response = {'message': respuesta['message'], 'data': json_body}
+                                if respuesta['status'] != 201:
+                                    response = {'message': 'Error al despublicar' + str(respuesta['message']),'status': respuesta['status'], 'data': json_body}
                                     return HttpResponse(json.dumps(response), None, 500)
 
                     VideoLog.objects.filter(id=id).delete()
@@ -137,6 +137,8 @@ class VideoLogController(object):
                     return HttpResponse(json.dumps({ 'message': 'No Existe VideoLog'}), None, 500)
                 except TagMetadata.DoesNotExist as e:
                     return HttpResponse(json.dumps({'message': 'No Existe TagMetadata'}), None, 500)
+                except ApiBackendException as e:
+                    return HttpResponse(json.dumps({'message': 'Error en ApiBackendException ' + str(e) + ' ' + str(json_body)}), None,500)
                 except Exception as e:
                     return HttpResponse(json.dumps({'message': 'Error en Despublicacion de tag'}), None, 500)
 
