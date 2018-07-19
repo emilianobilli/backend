@@ -54,9 +54,9 @@ class VideoLogController(object):
                 except Tag.DoesNotExist as e:
                     return HttpResponse(json.dumps({'message': 'No Existe Tag'}), None, 500)
                 except ApiBackendException as e:
-                    return HttpResponse(json.dumps({'message': 'Error en ApiBackendException ' + str(e) + ' ' + json_body}), None, 500)
+                    return HttpResponse(json.dumps({'message': 'Error en ApiBackendException ' + str(e) + ' ' + str(json_body)}), None, 500)
                 except Exception as e:
-                    return HttpResponse(json.dumps({'message': 'Error '+ str(e)+ ' ' + json_body}), None, 500)
+                    return HttpResponse(json.dumps({'message': 'Error '+ str(e)+ ' ' + str(json_body)}), None, 500)
 
 
 
