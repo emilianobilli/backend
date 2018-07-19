@@ -3,7 +3,7 @@ from django.http import HttpResponse
 from ..models import Asset, Tag, VideoLog, TagMetadata, Setting, PublishZone
 from django.shortcuts import render, redirect
 from django.http import JsonResponse
-from ..backend_sdk import ApiBackendResource
+from ..backend_sdk import ApiBackendResource, ApiBackendException
 
 class VideoLogController(object):
 
@@ -20,13 +20,13 @@ class VideoLogController(object):
                     timein   = int(json_data['timein'])
                     timeout  = int(json_data['timeout'])
 
-                    tag = Tag.objects.get(tag_id=tag_id)
+                    tag   = Tag.objects.get(tag_id=tag_id)
                     asset = Asset.objects.get(asset_id=asset_id)
 
-                    videolog = VideoLog()
-                    videolog.asset = asset
-                    videolog.tag = tag
-                    videolog.tc_in = timein
+                    videolog        = VideoLog()
+                    videolog.asset  = asset
+                    videolog.tag    = tag
+                    videolog.tc_in  = timein
                     videolog.tc_out = timeout
                     videolog.save()
 
@@ -39,10 +39,11 @@ class VideoLogController(object):
                         for zone in vzones:
                             abr = ApiBackendResource(zone.backend_url, setting.value, api_key.value)
                             json_body = videolog.toDict(m.language)
+                            print 'json_body:' + json_body
                             respuesta = abr.add(json_body)
                             if 'status' in respuesta:
                                 if respuesta['status'] != 201:
-                                    response = {'message': 'error al despublicar:' + str(respuesta['message']), 'status':respuesta['status'], 'data': json_body}
+                                    response = {'message': 'error al despublicar' + str(respuesta['message']), 'status':respuesta['status'], 'data': json_body}
                                     return HttpResponse(json.dumps(response), None, 500)
 
 
@@ -53,8 +54,10 @@ class VideoLogController(object):
                     return HttpResponse(json.dumps({'message': 'No Existe TagMetadata'}), None, 500)
                 except Tag.DoesNotExist as e:
                     return HttpResponse(json.dumps({'message': 'No Existe Tag'}), None, 500)
+                except ApiBackendException as e:
+                    return HttpResponse(json.dumps({'message': 'Error en ApiBackendException ' + str(e)}), None, 500)
                 except Exception as e:
-                    return HttpResponse(json.dumps({'message': 'Error:'+ e.message}), None, 500)
+                    return HttpResponse(json.dumps({'message': 'Error '+ str(e)}), None, 500)
 
 
 
