@@ -39,18 +39,22 @@ class VideoLogController(object):
                         for zone in vzones:
                             abr = ApiBackendResource(zone.backend_url, setting.value, api_key.value)
                             json_body = videolog.toDict(m.language)
-                            print json_body
-                            abr.add(json_body)
+                            respuesta = abr.add(json_body)
+                            if 'status' in respuesta:
+                                if respuesta['status'] != 200:
+                                    response = {'message': respuesta['message'], 'data': json_body}
+                                    return HttpResponse(json.dumps(response), None, 500)
 
-                    return JsonResponse({'code': 200, 'message': 'Guardado Correctamente', 'data':json_body })
+
+                    return HttpResponse(json.dumps({'message': 'Guardado Correctamente',  'data':json_body}), None, 200)
                 except Asset.DoesNotExist as e:
-                    return JsonResponse({'code': 500, 'message': 'No Existe Asset', 'data':json_body })
+                    return HttpResponse(json.dumps({'message': 'No Existe Asset' }), None, 500)
                 except TagMetadata.DoesNotExist as e:
-                    return JsonResponse({'code': 500, 'message': 'No Existe TagMetadata'})
+                    return HttpResponse(json.dumps({'message': 'No Existe TagMetadata'}), None, 500)
                 except Tag.DoesNotExist as e:
-                    return JsonResponse({'code': 500, 'message': 'No Existe Tag'})
+                    return HttpResponse(json.dumps({'message': 'No Existe Tag'}), None, 500)
                 except Exception as e:
-                    return JsonResponse({'code': 500, 'message': 'Error:'+ e.message})
+                    return HttpResponse(json.dumps({'message': 'Error:'+ e.message}), None, 500)
 
 
 
@@ -102,35 +106,35 @@ class VideoLogController(object):
 
                     json_data = json.loads(request.body)
                     id = json_data['id']
-                    response = {'code': 200, 'message': 'Eliminado Correctamente', 'data': id}
+                    response = { 'message': 'Eliminado Correctamente', 'data': id}
 
                     # Despublicar desde el Backend
                     setting = Setting.objects.get(code='backend_tags_url')
                     api_key = Setting.objects.get(code='backend_api_key')
-                    vzones = PublishZone.objects.filter(enabled=True)
-                    video = VideoLog.objects.get(id=id)
+                    vzones  = PublishZone.objects.filter(enabled=True)
+                    video   = VideoLog.objects.get(id=id)
 
                     # Buscar el videolog y su tag, por cada metadata
                     tagmetadatas = TagMetadata.objects.filter(tag=video.tag)
                     for m in tagmetadatas:
                         for zone in vzones:
                             abr = ApiBackendResource(zone.backend_url, setting.value, api_key.value)
-                            respuesta = abr.delete(video.toDict(m.language))
+                            json_body  = video.toDict(m.language)
+                            respuesta = abr.delete(json_body)
                             if 'status' in respuesta:
                                 if respuesta['status'] != 200:
-                                    response = {'code': 500, 'message': 'Error al Despublicar', 'data': id}
-                                    return JsonResponse(response)
+                                    response = {'message': respuesta['message'], 'data': json_body}
+                                    return HttpResponse(json.dumps(response), None, 500)
 
                     VideoLog.objects.filter(id=id).delete()
-
-                    return JsonResponse(response)
+                    return HttpResponse(json.dumps(response), None, 200)
 
                 except Tag.DoesNotExist as e:
-                    return JsonResponse({'code': 500, 'message': 'No Existe Tag'})
+                    return HttpResponse(json.dumps({ 'message': 'No Existe Tag'}), None, 500)
                 except VideoLog.DoesNotExist as e:
-                    return JsonResponse({'code': 500, 'message': 'No Existe VideoLog'})
+                    return HttpResponse(json.dumps({ 'message': 'No Existe VideoLog'}), None, 500)
                 except TagMetadata.DoesNotExist as e:
-                    return JsonResponse({'code': 500, 'message': 'No Existe TagMetadata'})
+                    return HttpResponse(json.dumps({'message': 'No Existe TagMetadata'}), None, 500)
                 except Exception as e:
-                    return JsonResponse({'code': 500, 'message': 'Error en Despublicacion de tag:' + e.message})
+                    return HttpResponse(json.dumps({'message': 'Error en Despublicacion de tag'}), None, 500)
 
