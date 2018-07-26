@@ -58,7 +58,7 @@ $('#search_category').multiselect({
 
     $("#btngrabarypublicar").click(function(){
 
-        $("#publicar").val("1");
+        publicar = 1;
         clickedToSubmit=1;
         checkAll();
     });
@@ -207,7 +207,7 @@ $('#search_category').multiselect({
     $("#grabar").click(function(e){
         e.preventDefault();
         clickedToSubmit=1;
-        $("#publicar").val("0");
+        publicar = 0;
         checkAll();
     });
     
@@ -231,7 +231,7 @@ $('#search_category').multiselect({
          director_selected = $('#director').val();
          elenco_selected = $('#elenco').val();
          year_selected = $('#releaseYear').val();
-         publicar = $('#publicar').val();
+
         countChecked();
         // chequea original Title
         if(original_Title=="" || original_Title==" ")
