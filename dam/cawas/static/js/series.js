@@ -83,7 +83,7 @@ $('#search_category').multiselect({
     var director_selected ="";
     var elenco_selected="" ;
     var year_selected ="" ;
-    var publicar ="";
+    var publicar =0;
     var myGirls="[]";
     var myCategories="[]";
     var myCountries="[]";
