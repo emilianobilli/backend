@@ -204,9 +204,10 @@ $('#search_category').multiselect({
       }
     
     /* triggers for checkALL function */
-    $("#sendBut").click(function(e){
+    $("#grabar").click(function(e){
         e.preventDefault();
         clickedToSubmit=1;
+        $("#publicar").val("0");
         checkAll();
     });
     
@@ -223,9 +224,9 @@ $('#search_category').multiselect({
         // this function checks for all form values and makes json string to post or alerts user to complete fields.
         console.log("checking form...");
         checkVal = 0;
-         asset_Id = $('#movieID').val();
-         original_Title = $('#orginalTitle').val();
-         canal_selected = $('#canalSelect option:selected');
+        asset_Id       = $('#movieID').val();
+        original_Title = $('#orginalTitle').val();
+        canal_selected = $('#canalSelect option:selected');
 
          director_selected = $('#director').val();
          elenco_selected = $('#elenco').val();
