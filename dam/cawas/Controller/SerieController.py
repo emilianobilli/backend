@@ -254,7 +254,9 @@ class SerieController(object):
 
             vimg.save()
             # FIN IMAGEN
-            publicar = decjson['Serie']['publicar']
+            publicar = int(decjson['Serie']['publicar'])
+            print 'debug ' +str (publicar)
+
             # Datos de Serie
             vserie.asset = vasset
             vserie.original_title = decjson['Serie']['original_title']
