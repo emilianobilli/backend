@@ -196,7 +196,7 @@ class SerieController(object):
         # VARIABLES LOCALES
         message  = ''
         flag = ''
-        vgrabarypublicar=''
+        publicar=0
         if request.method == 'POST':
             # VARIABLES
             vserie = Serie()
@@ -253,9 +253,8 @@ class SerieController(object):
                         os.remove(varchivo_server)
 
             vimg.save()
-            print 'flag2'
             # FIN IMAGEN
-            vgrabarypublicar = decjson['Serie']['publicar']
+            publicar = decjson['Serie']['publicar']
             # Datos de Serie
             vserie.asset = vasset
             vserie.original_title = decjson['Serie']['original_title']
@@ -285,7 +284,7 @@ class SerieController(object):
                         request.session['list_serie_flag'] = FLAG_ALERT
                         return self.code_return
                 vserie.save()
-            print 'flag3'
+
             # CARGAR CATEGORIES
             vserie.category = []
             vserie.save()
@@ -316,7 +315,7 @@ class SerieController(object):
                         request.session['list_serie_flag'] = FLAG_ALERT
                         self.code_return = -1
 
-            print 'flag4'
+
             # Channel
             try:
                 vserie.channel = Channel.objects.get(pk=decjson['Serie']['channel_id'])
@@ -328,7 +327,6 @@ class SerieController(object):
 
             vserie.save()
             message = 'Categoria - Registrado Correctamente'
-            print 'flag5'
             # BORRAR Y CREAR METADATA
             vseriemetadatas = decjson['Serie']['Seriemetadatas']
 
@@ -354,17 +352,16 @@ class SerieController(object):
                 smd.queue_status = 'Q'
                 smd.save()
 
-
-                if (Episode.objects.filter(serie=vserie).count() > 0):
-                    print 'ingreso'
-                    ph = PublishHelper()
-                    ph.func_publish_queue(request, vserie.asset.asset_id, smd.language, 'AS', 'Q',vschedule_date)
-                    ph.func_publish_image(request, vimg)
-                else:
-                    self.code_return = -1
-                    request.session['list_serie_message'] = 'No se puede Publicar Serie sin Episodios asignados '
-                    request.session['list_serie_flag'] = FLAG_ALERT
-                    return self.code_return
+                if publicar > 0:
+                    if (Episode.objects.filter(serie=vserie).count() > 0):
+                        ph = PublishHelper()
+                        ph.func_publish_queue(request, vserie.asset.asset_id, smd.language, 'AS', 'Q',vschedule_date)
+                        ph.func_publish_image(request, vimg)
+                    else:
+                        self.code_return = -1
+                        request.session['list_serie_message'] = 'No se puede Publicar Serie sin Episodios asignados '
+                        request.session['list_serie_flag'] = FLAG_ALERT
+                        return self.code_return
                 # Fin de POST
 
             flag = "success"
@@ -400,6 +397,7 @@ class SerieController(object):
             vcategorynotselected = Category.objects.exclude(id__in=vcategoryselected)
 
             # Nuevo diccionario para completar lenguages y metadata
+            is_activated = SerieMetadata.objects.filter(serie=vserie, activated=True)
             vlangmetadata = []
             for itemlang in vlanguages:
                 vseriemetadata = None
@@ -443,7 +441,8 @@ class SerieController(object):
                    'vepisodes':vepisodes,
                    'countries_selected':countries_selected,
                    'countries_notselected':countries_notselected,
-                   'message':message
+                   'message':message,
+                   'is_activated':is_activated
                    }
 
         return render(request, 'cawas/series/edit.html', context)
