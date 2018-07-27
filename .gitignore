@@ -1,0 +1,8 @@
+dam/dam/settings.py
+*.pyc
+dam/db.sqlite3
+dam/import_items.py
+dam/log/*
+dam/pid/*
+*.jpg
+dam/cawas/static/images/*
