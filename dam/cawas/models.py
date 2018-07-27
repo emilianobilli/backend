@@ -494,6 +494,7 @@ class SerieMetadata(models.Model):
     title             = models.CharField(max_length=128, help_text="Titulo en el idioma correspondiente")
     summary_short     = models.CharField(max_length=2048, blank=True, help_text="Descripcion corta")
     summary_long      = models.CharField(max_length=4096, blank=True, help_text="Descripcion larga")
+    keywords          = models.TextField(blank=True, help_text="Keywords separadas por ;")
     modification_date = models.DateTimeField(auto_now=True)
     publish_date      = models.DateTimeField(auto_now=False, auto_now_add=False, blank=True, null=True)
     publish_status    = models.BooleanField(default=False)
@@ -536,6 +537,8 @@ class SerieMetadata(models.Model):
         dict["available_seasons"] = seasons
         dict["seasons"]  = len(seasons)
         dict["episodes"] = len(ep_metadata)
+        if self.keywords != '':
+            dict["keywords"] = self.keywords.split(";")
 
         return dict
 
@@ -611,12 +614,14 @@ class EpisodeMetadata(models.Model):
     title             = models.CharField(max_length=128, help_text="Titulo en el idioma correspondiente")
     summary_short     = models.CharField(max_length=2048, blank=True, help_text="Descripcion corta")
     summary_long      = models.CharField(max_length=4096, blank=True, help_text="Descripcion larga")
+    keywords          = models.TextField(blank=True, help_text="Keywords separadas por ;")
     subtitle          = models.BooleanField(default=False )
     modification_date = models.DateTimeField(auto_now=True)
     publish_date      = models.DateTimeField(auto_now=False, auto_now_add=False, blank=True, null=True)
     publish_status    = models.BooleanField(default=False)
     activated         = models.BooleanField(default=False)
     queue_status      = models.CharField(max_length=1, default='', blank=True, help_text="Status del item en PublishQueue")
+
 
     class Meta:
         unique_together = ('episode', 'language',)
@@ -656,6 +661,9 @@ class EpisodeMetadata(models.Model):
         dict["subtitle"]       = self.subtitle
         if len(categories) > 0:
             dict["categories"] = categories
+
+        if self.keywords != '':
+            dict["keywords"] = self.keywords.split(";")
 
         return dict
 
@@ -723,6 +731,7 @@ class MovieMetadata(models.Model):
     title             = models.CharField(max_length=128, help_text="Titulo en el idioma correspondiente")
     summary_short     = models.CharField(max_length=2048, blank=True, help_text="Descripcion corta")
     summary_long      = models.CharField(max_length=4096, blank=True, help_text="Descripcion larga")
+    keywords          = models.TextField(blank=True, help_text="Keywords separadas por ;")
     subtitle          = models.BooleanField(default=False)
     modification_date = models.DateTimeField(auto_now=True)
     publish_date      = models.DateTimeField(auto_now=False, auto_now_add=False, blank=True, null=True)
@@ -756,7 +765,9 @@ class MovieMetadata(models.Model):
             dict["summary_long"]   = self.summary_long
         dict["subtitle"]       = self.subtitle
         if len(categories) > 0:
-            dict["categories"]     = categories
+            dict["categories"] = categories
+        if self.keywords != '':
+            dict["keywords"] = self.keywords.split(";")
 
         return dict
 
