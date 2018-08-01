@@ -118,11 +118,12 @@ class MovieController(object):
                     mmd = MovieMetadata.objects.get(movie=mv, language=vlanguage)
                 except MovieMetadata.DoesNotExist as e:
                     mmd = MovieMetadata()
-                mmd.language = vlanguage
-                mmd.title = item['Moviemetadata']['title']
-                mmd.summary_short = item['Moviemetadata']['summary_short']
-                mmd.summary_long = item['Moviemetadata']['summary_long']
-                mmd.movie = mv
+                mmd.language        = vlanguage
+                mmd.title           = item['Moviemetadata']['title']
+                mmd.summary_short   = item['Moviemetadata']['summary_short']
+                mmd.summary_long    = item['Moviemetadata']['summary_long']
+                mmd.keywords        = item['Moviemetadata']['keywords']
+                mmd.movie           = mv
                 mmd.save()
 
                 #si la movie existe, entonces se publica
@@ -333,9 +334,15 @@ class MovieController(object):
                 try:
                     vmoviemetadata = MovieMetadata.objects.get(movie=vmovie, language=itemlang)
                     vlangmetadata.append(
-                        {'checked': True, 'code': itemlang.code, 'name': itemlang.name, 'title': vmoviemetadata.title,
-                         'summary_short': vmoviemetadata.summary_short, 'summary_long': vmoviemetadata.summary_long,
-                         'publish_date': vmoviemetadata.publish_date})
+                        {'checked': True,
+                         'code': itemlang.code,
+                         'name': itemlang.name,
+                         'title': vmoviemetadata.title,
+                         'summary_short': vmoviemetadata.summary_short,
+                         'summary_long': vmoviemetadata.summary_long,
+                         'publish_date': vmoviemetadata.publish_date,
+                         'keywords': vmoviemetadata.keywords_as_list
+                         })
                 except MovieMetadata.DoesNotExist as a:
                     vlangmetadata.append({'checked': False, 'code': itemlang.code, 'name': itemlang.name, 'titulo': '',
                                           'descripcion': '', 'fechapub': ''})
