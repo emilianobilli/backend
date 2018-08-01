@@ -1,6 +1,9 @@
 $( document ).ready(function() {
 
-    console.log( "ready!" );
+    $(".select_keywords").select2({
+        tags: true,
+        tokenSeparators: [',', ' ']
+    });
 
 
     $('#search_girls').multiselect({
@@ -459,11 +462,15 @@ $('#search_category').multiselect({
                     var tit = $("#tit_"+lang).val();
                     var short = $("#short_desc_"+lang).val().trim();
                     var long = $("#short_desc_"+lang).val().trim();
+                    var keywords = getKeywords(lang);
+
                     myLangs += '{"Seriemetadata":';
                     myLangs += '{"language": "'+lang+'",';
                     myLangs += '"title": "'+tit+'",';
                     myLangs += '"summary_short": "'+short+'",';
-                    myLangs += '"summary_long":"'+long+'"';
+                    myLangs += '"summary_long":"'+long+',"';
+                    myLangs += '"keywords":"'+keywords+'"';
+
                     myLangs += '}}';
                     if(i<lngth-1){
                         myLangs += ',';
@@ -471,6 +478,32 @@ $('#search_category').multiselect({
                 }
                 return(myLangs);
             };
+
+
+
+            function getKeywords(idiom){
+                var keywords_selected ="";
+                //Keywords
+                var id = 'keywords_' + idiom;
+                var nameselect = 'select[id='+id+'] option:selected ';
+                if ( $(nameselect).length > 0 )
+                {
+                    okMe(nameselect);
+                    $(nameselect).each(function(){
+
+                       var item = $(this).attr("value");
+                       if (item != null){
+                           if (keywords_selected != "") {keywords_selected = keywords_selected +"|" };
+                           keywords_selected = keywords_selected + item;
+                       }
+                    })
+                }
+                return keywords_selected;
+            }
+
+
+
+
 
 
             function submitJson(){
