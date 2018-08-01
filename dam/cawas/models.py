@@ -501,6 +501,9 @@ class SerieMetadata(models.Model):
     activated         = models.BooleanField(default=False)
     queue_status      = models.CharField(max_length=1, default='', blank=True, help_text="Status del item en PublishQueue")
 
+    def keywords_as_list(self):
+        return self.keywords.split('|')
+
     class Meta:
         unique_together = ('serie', 'language',)
 
