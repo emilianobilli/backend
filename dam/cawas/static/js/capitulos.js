@@ -2,10 +2,10 @@
 
 $( document ).ready(function() {
 
-$(".select_keywords").select2({
-    tags: true,
-    tokenSeparators: [',', ' ']
-});
+    $(".select_keywords").select2({
+        tags: true,
+        tokenSeparators: [',', ' ']
+    });
 
     console.log( "ready!" );
     var minutos = 0 ;
