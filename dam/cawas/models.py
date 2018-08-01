@@ -685,6 +685,9 @@ class Movie(models.Model):
     thumbnails      = models.BooleanField(default=False)
     category        = models.ManyToManyField(Category)
 
+
+
+
     def __unicode__(self):
         return self.asset.asset_id
 
@@ -740,6 +743,10 @@ class MovieMetadata(models.Model):
     publish_status    = models.BooleanField(default=False)
     activated         = models.BooleanField(default=False)
     queue_status      = models.CharField(max_length=1, default='', blank=True, help_text="Status del item en PublishQueue")
+
+
+    def keywords_as_list(self):
+        return self.keywords.split('|')
 
     class Meta:
         unique_together = ('movie', 'language',)
