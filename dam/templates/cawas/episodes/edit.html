@@ -375,9 +375,11 @@
                            </div>
 
 
-                           <label class="label-left" for="keywords_{{item.code}}">Keywords</label>
-                           <select class="select_keywords form-control" id="keywords_{{item.code}}" multiple="multiple">
-                                {% for i in item.keywords_as_list %}
+                           <label class="label-left" for="keywords_{{item.code}}">Keywords: {{item.keywords_as_list}}</label>
+
+                            <select class="select_keywords form-control" id="keywords_{{item.code}}" multiple="multiple">
+
+                               {% for i in item.keywords_as_list %}
                                     <option >{{ i }}</option>
                                 {% endfor %}
                            </select>
