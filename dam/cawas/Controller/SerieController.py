@@ -148,6 +148,7 @@ class SerieController(object):
                     smd.title = item['Seriemetadata']['title']
                     smd.summary_short = item['Seriemetadata']['summary_short']
                     smd.summary_long = item['Seriemetadata']['summary_long']
+                    smd.keywords     = item['Seriemetadata']['keywords']
                     smd.serie = vserie
                     smd.publish_date = vschedule_date
                     smd.queue_status = 'Q'
@@ -212,7 +213,6 @@ class SerieController(object):
                 pathfilesport = Setting.objects.get(code='image_repository_path_portrait')
                 pathfilesland = Setting.objects.get(code='image_repository_path_landscape')
                 base_dir = Setting.objects.get(code='dam_base_dir')
-                print 'flag1'
 
 
             except Exception as e:
@@ -224,11 +224,9 @@ class SerieController(object):
 
             vimg.name = vasset.asset_id
             # IMAGEN Landscape
-            print 'debug1'
             if (request.FILES.has_key('ThumbHor')):
                 if request.FILES['ThumbHor'].name != '':
                     # TRATAMIENTO DE IMAGEN Landscape
-                    print 'debug2'
                     vimg.landscape = request.FILES['ThumbHor']
                     extension = os.path.splitext(vimg.landscape.name)[1]
                     varchivo = pathfilesland.value + vimg.name + extension
@@ -238,11 +236,9 @@ class SerieController(object):
                         os.remove(varchivo_server)
 
             # IMAGEN Landscape
-            print 'debug3'
             if (request.FILES.has_key('ThumbVer')):
                 if request.FILES['ThumbVer'].name != '':
                     # Landscape
-                    print 'debug4'
                     vimg.portrait = request.FILES['ThumbVer']
                     extension = os.path.splitext(vimg.portrait.name)[1]
                     varchivo = pathfilesport.value + vimg.name + extension
@@ -255,7 +251,6 @@ class SerieController(object):
             vimg.save()
             # FIN IMAGEN
             publicar = int(decjson['Serie']['publicar'])
-            print 'debug ' +str (publicar)
 
             # Datos de Serie
             vserie.asset = vasset
@@ -344,14 +339,15 @@ class SerieController(object):
                     request.session['list_serie_flag'] = FLAG_ALERT
                     return self.code_return
 
-                vschedule_date = datetime.datetime.now().strftime('%Y-%m-%d')
-                smd.language = vlanguage
-                smd.title = item['Seriemetadata']['title']
-                smd.summary_short = item['Seriemetadata']['summary_short']
-                smd.summary_long = item['Seriemetadata']['summary_long']
-                smd.serie = vserie
-                smd.publish_date = vschedule_date
-                smd.queue_status = 'Q'
+                vschedule_date      = datetime.datetime.now().strftime('%Y-%m-%d')
+                smd.language        = vlanguage
+                smd.title           = item['Seriemetadata']['title']
+                smd.summary_short   = item['Seriemetadata']['summary_short']
+                smd.summary_long    = item['Seriemetadata']['summary_long']
+                smd.keywords        = item['Seriemetadata']['keywords']
+                smd.serie           = vserie
+                smd.publish_date    = vschedule_date
+                smd.queue_status    = 'Q'
                 smd.save()
 
                 if publicar > 0:
@@ -411,7 +407,8 @@ class SerieController(object):
                          'name': itemlang.name,
                          'title': vseriemetadata.title,
                          'summary_short': vseriemetadata.summary_short,
-                         'summary_long': vseriemetadata.summary_long,
+                         'summary_long':  vseriemetadata.summary_long,
+                         'keywords':      vseriemetadata.keywords,
                          })
                 except SerieMetadata.DoesNotExist as a:
                     vlangmetadata.append({'checked': False,
@@ -419,7 +416,8 @@ class SerieController(object):
                                           'name': itemlang.name,
                                           'title': '',
                                           'summary_short': '',
-                                          'summary_long': ''})
+                                          'summary_long': '',
+                                          'keywords':''})
 
         except Exception as e:
             self.code_return = -1
