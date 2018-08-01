@@ -344,8 +344,13 @@ class MovieController(object):
                          'keywords': vmoviemetadata.keywords_as_list
                          })
                 except MovieMetadata.DoesNotExist as a:
-                    vlangmetadata.append({'checked': False, 'code': itemlang.code, 'name': itemlang.name, 'titulo': '',
-                                          'descripcion': '', 'fechapub': ''})
+                    vlangmetadata.append({'checked': False,
+                                          'code': itemlang.code,
+                                          'name': itemlang.name,
+                                          'titulo': '',
+                                          'descripcion': '',
+                                          'fechapub': '',
+                                          'keywords':''})
             #imagenes
             if (vmovie.image is not None):
                 i = len(vmovie.image.portrait.name)
