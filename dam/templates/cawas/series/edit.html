@@ -383,6 +383,13 @@
                                </div>
                            </div>
 
+                           <label class="label-left" for="keywords_{{item.code}}">Keywords:</label>
+                           <select class="select_keywords form-control" id="keywords_{{item.code}}" data-id="{{item.code}}" multiple="multiple">
+                               {% for i in item.keywords %}
+                                   <option value="{{i}}" selected >{{i}}</option>
+                               {% endfor %}
+                           </select>
+
 
                     </div>
                 </div>
