@@ -16,10 +16,6 @@ class EpisodeController(object):
     # 0 = ok, -1= error
 
 
-    @register.filter
-    def get_split(text):
-        desc = text.split("|")
-        return desc
 
 
     def add(self, request):
