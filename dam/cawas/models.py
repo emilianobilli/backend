@@ -538,7 +538,7 @@ class SerieMetadata(models.Model):
         dict["seasons"]  = len(seasons)
         dict["episodes"] = len(ep_metadata)
         if self.keywords != '':
-            dict["keywords"] = self.keywords.split(";")
+            dict["keywords"] = self.keywords.split("|")
 
         return dict
 
@@ -665,7 +665,7 @@ class EpisodeMetadata(models.Model):
             dict["categories"] = categories
 
         if self.keywords != '':
-            dict["keywords"] = self.keywords.split(";")
+            dict["keywords"] = self.keywords.split("|")
 
         return dict
 
@@ -769,7 +769,7 @@ class MovieMetadata(models.Model):
         if len(categories) > 0:
             dict["categories"] = categories
         if self.keywords != '':
-            dict["keywords"] = self.keywords.split(";")
+            dict["keywords"] = self.keywords.split("|")
 
         return dict
 
