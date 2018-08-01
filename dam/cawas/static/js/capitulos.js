@@ -1,6 +1,11 @@
+
+
 $( document ).ready(function() {
 
-
+$(".select_keywords").select2({
+    tags: true,
+    tokenSeparators: [',', ' ']
+});
 
     console.log( "ready!" );
     var minutos = 0 ;
@@ -95,7 +100,7 @@ $( document ).ready(function() {
     var $myVerifSelect = $("#canalSelect").select2();
     var $myVerifEpisodeSelect = $("#episode-select").select2();
 
-
+    $("#keywords-select").select2();
 
 
 
@@ -289,6 +294,8 @@ $( document ).ready(function() {
         var publicar = $('#publicar').val();
 
 
+
+
         countChecked();
         // chequea original Title
         if(original_Title=="" || original_Title==" ")
@@ -355,6 +362,8 @@ $( document ).ready(function() {
         }else{
             okMe("#ThumbVer");
         }
+
+
 
 
 
@@ -575,6 +584,7 @@ $( document ).ready(function() {
 
 
             function addMetadata(arr){
+            //
                 var lngth = arr.length;
                 var myLangs = "";
 
@@ -585,12 +595,16 @@ $( document ).ready(function() {
                     var short = $("#short_desc_"+lang).val().trim().substring(0,50)+"...";
                     var long = $("#short_desc_"+lang).val().trim();
                     var fechapub = $("#date_"+lang).val().trim();
+
                     myLangs += '{"Episodemetadata":';
                     myLangs += '{"language": "'+lang+'",';
                     myLangs += '"title": "'+tit+'",';
                     myLangs += '"summary_short": "'+short+'",';
                     myLangs += '"summary_long":"'+long+'",';
-                    myLangs += '"schedule_date":"'+fechapub+'"';
+                    myLangs += '"schedule_date":"'+fechapub+'",';
+
+                    myLangs+= '"keywords":"'+getKeywords(lang)+'"';
+
                     myLangs += '}}';
                     if(i<lngth-1){
                         myLangs += ',';
@@ -598,6 +612,26 @@ $( document ).ready(function() {
                 }
                 return(myLangs);
             };
+
+            function getKeywords(idiom){
+                var keywords_selected ="";
+                //Keywords
+                var nameselect = '#keywords_' + idiom;
+                if ( $(nameselect).length > 0 )
+                {
+                    okMe(nameselect);
+                    $(nameselect+' option').each(function(){
+                       var item = $(this).attr("value");
+                       if (item != null){
+                           if (keywords_selected != "") {keywords_selected = keywords_selected +"|" };
+                           keywords_selected = keywords_selected + item;
+                       }
+                    })
+                }
+                return keywords_selected;
+            }
+
+
         
         
             function submitJson(){
