@@ -336,11 +336,11 @@
 
                 <!-- LANGUAGE modules -->
                {% for item in vlangmetadata %}
-               {% if item.checked == True %}
-                     <div class="row form-row" id="Module_{{item.code}}">
-               {% else %}
-                     <div class="row form-row hid" id="Module_{{item.code}}">
-               {% endif %}
+                   {% if item.checked == True %}
+                         <div class="row form-row" id="Module_{{item.code}}">
+                   {% else %}
+                         <div class="row form-row hid" id="Module_{{item.code}}">
+                   {% endif %}
                     <div class="col-xs-12 col-md-12 col-lg-12 form-group">
                         <h2>{{ item.name }}</h2>
                            <div class="col-xs-12 col-md-12 col-lg-12 form-group inlang">
@@ -370,11 +370,19 @@
                                     <input type="text" class="form-control datePick"
                                            name="date_{{item.code}}" id="date_{{item.code}}"
                                            value="{{ item.publish_date|date:'d-m-Y' }}">
-
-
                                     <span class="glyphicon form-control-feedback"></span>
                                </div>
                            </div>
+
+
+                           <label class="label-left" for="keywords_{{item.code}}">Keywords</label>
+                           <select class="select_keywords form-control" id="keywords_{{item.code}}" multiple="multiple">
+                                {% for i in item.keywords|get_split %}
+                                    <option >{{ i }}</option>
+                                {% endfor %}
+                           </select>
+
+
 
                     </div>
                 </div>
