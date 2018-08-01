@@ -616,11 +616,13 @@ $(".select_keywords").select2({
             function getKeywords(idiom){
                 var keywords_selected ="";
                 //Keywords
-                var nameselect = '#keywords_' + idiom;
+                var id = 'keywords_' + idiom;
+                var nameselect = 'select[id='+id+'] option:selected ';
                 if ( $(nameselect).length > 0 )
                 {
                     okMe(nameselect);
-                    $(nameselect+' option selected').each(function(){
+                    $(nameselect).each(function(){
+
                        var item = $(this).attr("value");
                        if (item != null){
                            if (keywords_selected != "") {keywords_selected = keywords_selected +"|" };
