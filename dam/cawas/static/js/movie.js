@@ -1,6 +1,12 @@
 
 
 $( document ).ready(function() {
+
+    $(".select_keywords").select2({
+        tags: true,
+        tokenSeparators: [',', ' ']
+    });
+
     var publicar = 0;
     var asset_Id = 0;
 
@@ -510,10 +516,33 @@ $( document ).ready(function() {
                     var short = $("#short_desc_"+lang).val().trim().substring(0,50)+"...";
                     var long = $("#short_desc_"+lang).val().trim();
                     var fechapub = $("#date_"+lang).val().trim();
-                    json_moviemetadatas.push({"Moviemetadata":{"language":lang, "title":tit, "summary_short":short, "summary_long":long, "schedule_date":fechapub}});
+                    var keywords = getKeywords(lang);
+                    json_moviemetadatas.push({"Moviemetadata":{"language":lang, "title":tit, "summary_short":short, "summary_long":long, "schedule_date":fechapub, 'keywords': keywords}});
                 }
                 return(myLangs);
             };
+
+
+            function getKeywords(idiom){
+                var keywords_selected ="";
+                //Keywords
+                var id = 'keywords_' + idiom;
+                var nameselect = 'select[id='+id+'] option:selected ';
+                if ( $(nameselect).length > 0 )
+                {
+                    okMe(nameselect);
+                    $(nameselect).each(function(){
+
+                       var item = $(this).attr("value");
+                       if (item != null){
+                           if (keywords_selected != "") {keywords_selected = keywords_selected +"|" };
+                           keywords_selected = keywords_selected + item;
+                       }
+                    })
+                }
+                return keywords_selected;
+            }
+
         
         
             function submitJson(){
