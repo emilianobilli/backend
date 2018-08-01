@@ -620,7 +620,7 @@ $(".select_keywords").select2({
                 if ( $(nameselect).length > 0 )
                 {
                     okMe(nameselect);
-                    $(nameselect+' option').each(function(){
+                    $(nameselect+' option selected').each(function(){
                        var item = $(this).attr("value");
                        if (item != null){
                            if (keywords_selected != "") {keywords_selected = keywords_selected +"|" };
