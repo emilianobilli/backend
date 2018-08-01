@@ -529,13 +529,18 @@ class EpisodeController(object):
                 try:
                     vepisodemetadata = EpisodeMetadata.objects.get(episode=vepisode, language=itemlang)
                     vlangmetadata.append({
-                        'checked': True, 'code': itemlang.code, 'name': itemlang.name,
-                        'title': vepisodemetadata.title, 'summary_short': vepisodemetadata.summary_short,
-                        'summary_long': vepisodemetadata.summary_long, 'publish_date': vepisodemetadata.publish_date
+                        'checked': True, 'code': itemlang.code,
+                        'name': itemlang.name,
+                        'title': vepisodemetadata.title,
+                        'summary_short': vepisodemetadata.summary_short,
+                        'summary_long': vepisodemetadata.summary_long,
+                        'publish_date': vepisodemetadata.publish_date,
+                        'keywords':vepisodemetadata.keywords
+
                     })
                 except EpisodeMetadata.DoesNotExist as a:
                     vlangmetadata.append({'checked': False, 'code': itemlang.code, 'name': itemlang.name, 'titulo': '',
-                                          'descripcion': '', 'fechapub': ''})
+                                          'descripcion': '', 'fechapub': '', 'keywords':''})
 
         except Girl.DoesNotExist as e:
             return render(request, 'cawas/error.html', {"message": "No existe Chica. (" + e.message + ")"})
