@@ -535,7 +535,7 @@ class EpisodeController(object):
                         'summary_short': vepisodemetadata.summary_short,
                         'summary_long': vepisodemetadata.summary_long,
                         'publish_date': vepisodemetadata.publish_date,
-                        'keywords':vepisodemetadata.keywords
+                        'keywords':vepisodemetadata.keywords_as_list
 
                     })
                 except EpisodeMetadata.DoesNotExist as a:
