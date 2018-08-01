@@ -380,7 +380,7 @@
                             <select class="select_keywords form-control" id="keywords_{{item.code}}" multiple="multiple">
 
                                {% for i in item.keywords %}
-                                    <option selected >{{ i }}</option>
+                                    <option value="{{i}}" data-select2-tag="true"></option>
                                 {% endfor %}
                            </select>
 
