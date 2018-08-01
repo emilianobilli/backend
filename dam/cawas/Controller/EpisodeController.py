@@ -7,11 +7,19 @@ from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from ..Helpers.GlobalValues import *
 from ..backend_sdk import ApiBackendServer, ApiBackendResource, ApiBackendException
 from django.db.models import Q
+from django.template.defaulttags import register
+
 
 class EpisodeController(object):
     code_return = 0
     message_return = ''
     # 0 = ok, -1= error
+
+
+    @register.filter
+    def get_split(text):
+        desc = text.split("|")
+        return desc
 
 
     def add(self, request):
@@ -199,10 +207,11 @@ class EpisodeController(object):
                     else:
                         vschedule_date = datetime.datetime.now().strftime('%Y-%m-%d')
 
-                    emd.language = vlang
-                    emd.title = item['Episodemetadata']['title']
+                    emd.language      = vlang
+                    emd.title         = item['Episodemetadata']['title']
                     emd.summary_short = item['Episodemetadata']['summary_short']
-                    emd.summary_long = item['Episodemetadata']['summary_long']
+                    emd.summary_long  = item['Episodemetadata']['summary_long']
+                    emd.keywords      = item['Episodemetadata']['keywords']
                     #emd.publish_date = vschedule_date
                     emd.episode = vepisode
                     emd.save()
@@ -454,6 +463,7 @@ class EpisodeController(object):
                     emd.title         = item['Episodemetadata']['title']
                     emd.summary_short = item['Episodemetadata']['summary_short']
                     emd.summary_long  = item['Episodemetadata']['summary_long']
+                    emd.keywords      = item['Episodemetadata']['keywords']
                     #emd.publish_date  = vschedule_date
                     emd.episode       = vepisode
                     emd.queue_status  = 'Q'
@@ -739,3 +749,7 @@ class EpisodeController(object):
             self.code_return = 0
 
         return self.code_return
+
+
+
+
