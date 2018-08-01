@@ -408,7 +408,7 @@ class SerieController(object):
                          'title': vseriemetadata.title,
                          'summary_short': vseriemetadata.summary_short,
                          'summary_long':  vseriemetadata.summary_long,
-                         'keywords':      vseriemetadata.keywords,
+                         'keywords':      vseriemetadata.keywords
                          })
                 except SerieMetadata.DoesNotExist as a:
                     vlangmetadata.append({'checked': False,
