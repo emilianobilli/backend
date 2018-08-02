@@ -468,6 +468,7 @@ $('#search_category').multiselect({
                     myLangs += '{"language": "'+lang+'",';
                     myLangs += '"title": "'+tit+'",';
                     myLangs += '"summary_short": "'+short+'",';
+
                     myLangs += '"summary_long":"'+long+'",';
                     myLangs += '"keywords":"'+keywords+'"';
 
