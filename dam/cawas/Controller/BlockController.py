@@ -455,8 +455,7 @@ class BlockController(object):
     def publish(self, request, id):
         #Publicar la Serie
         block = Block.objects.get(id = id)
-        vpublish_date = datetime.datetime.now().strftime('%Y-%m-%d')
-        block.publish_date = vpublish_date
+        vpublish_date           = datetime.datetime.now().strftime('%Y-%m-%d')
         block.queue_status = 'Q'
         block.save()
        # ENCOLA LOS ASSETS QUE CORRESPONDEN AL BLOQUE, SOLO en el IDIOMA QUE SE SELECCIONO
@@ -483,7 +482,7 @@ class BlockController(object):
                         registro = Serie.objects.get(asset = item)
                         ph.func_publish_image(request, registro.image)
 
-                ph.func_publish_queue(request, asset_id, block.language, 'AS', 'Q', block.publish_date)
+                ph.func_publish_queue(request, asset_id, block.language, 'AS', 'Q', vpublish_date)
 
             except Asset.DoesNotExist as e:
                 request.session['list_block_message'] = "Error: (" + str(e.message) + ")"
