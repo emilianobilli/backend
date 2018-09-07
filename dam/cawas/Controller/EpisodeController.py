@@ -34,22 +34,36 @@ class EpisodeController(object):
             try:
                 pathfilesport = Setting.objects.get(code='image_repository_path_portrait')
                 pathfilesland = Setting.objects.get(code='image_repository_path_landscape')
-                base_dir = Setting.objects.get(code='dam_base_dir')
+                base_dir      = Setting.objects.get(code='dam_base_dir')
 
                 # Parsear JSON
                 strjson = request.POST['varsToJSON']
                 decjson = json.loads(strjson.replace('\r','\\r').replace('\n','\\n'))
 
+                vasset_serie   = Asset.objects.get(asset_id=decjson['Episode']['serie_id'])
+                vepisode.serie = Serie.objects.get(asset=vasset_serie)
+
+                #Validar siel episodio existe
+                #buscar episodio con igual serie, chapter y temporada
+                chapter = decjson['Episode']['chapter']
+                season  = decjson['Episode']['season']
+                if Episode.objects.filter(chapter=chapter, season=season, serie=vasset_serie).count() > 0:
+                    request.session['list_episode_message'] = 'Error: el numero de episodio ya existe para la Serie'
+                    request.session['list_episode_flag'] = FLAG_ALERT
+                    self.code_return = -1
+                    return self.code_return
+
                 # DATOS OBLIGATORIOS
                 vasset = Asset.objects.get(asset_id=decjson['Episode']['asset_id'])
                 vasset.asset_type = "episode"
                 vasset.save()
+
                 vepisode.asset = vasset
                 vepisode.original_title  = decjson['Episode']['original_title']
                 vepisode.channel         = Channel.objects.get(pk=decjson['Episode']['channel_id'])
                 vepisode.display_runtime = decjson['Episode']['display_runtime']
-                vasset_serie             = Asset.objects.get(asset_id=decjson['Episode']['serie_id'])
-                vepisode.serie           = Serie.objects.get(asset=vasset_serie)
+
+
                 vepisode.chapter         = decjson['Episode']['chapter']
                 vepisode.season          = decjson['Episode']['season']
                 vgrabarypublicar         = decjson['Episode']['publicar']
@@ -330,12 +344,29 @@ class EpisodeController(object):
                 # Parsear JSON
                 strjson = request.POST['varsToJSON']
                 decjson = json.loads(strjson.replace('\r','\\r').replace('\n','\\n'))
+
+                vasset_serie = Asset.objects.get(asset_id=decjson['Episode']['serie_id'])
+                vepisode.serie = Serie.objects.get(asset=vasset_serie)
+
+                # Validar siel episodio existe
+                # buscar episodio con igual serie, chapter y temporada
+                # en la edicion se debe comprobar si el usuario cambio algun dato (episodio, temporada),
+                #       si se cambio entonces corroborar integracion de datos
+                #       si no cambio estos datos, entonces no hacer la validacion, para no mostrar el mensaje
+                chapter = decjson['Episode']['chapter']
+                season  = decjson['Episode']['season']
+                if ((vepisode.chapter != chapter & vepisode.season ==season)|(vepisode.chapter == chapter & vepisode.season !=season)):
+                    if Episode.objects.filter(chapter=chapter,season=season, serie=vasset_serie).count() > 0:
+                        request.session['list_episode_message'] = 'Error: el numero de episodio ya existe para la Serie'
+                        request.session['list_episode_flag'] = FLAG_ALERT
+                        self.code_return = -1
+                        return self.code_return
+
+
                 # DATOS OBLIGATORIOS
                 vepisode.original_title  = decjson['Episode']['original_title']
                 vepisode.channel         = Channel.objects.get(pk=decjson['Episode']['channel_id'])
                 vepisode.display_runtime = decjson['Episode']['display_runtime']
-                vasset_serie             = Asset.objects.get(asset_id=decjson['Episode']['serie_id'])
-                vepisode.serie           = Serie.objects.get(asset=vasset_serie)
                 vepisode.chapter         = decjson['Episode']['chapter']
                 vepisode.season          = decjson['Episode']['season']
                 publicar                 = decjson['Episode']['publicar']
