@@ -136,7 +136,6 @@ def menu_view(request):
             id = request.GET['inputid']
             request.session['search_id'] = id
 
-            print 'episode_id '+ id
             #Buscar en Movie, Girl, Category
             if (Asset.objects.filter(asset_id=id).count() > 0 ):
                 asset = Asset.objects.get(asset_id=id)
@@ -603,8 +602,7 @@ def unpublish_episodes_view(request, id):
 def unpublish_sliders_view(request, id):
     controller = SliderController()
     controller.unpublish(request, id)
-    if controller.code_return == RETURN_OK:
-        return redirect(list_sliders_view)
+    return redirect(list_sliders_view)
 
 
 
