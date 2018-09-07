@@ -404,6 +404,8 @@ class SliderController(object):
             return redirect(lc.login_view(request))
 
         try:
+            delete_param = int(request.GET.get('delete'))
+
             if (Slider.objects.filter(slider_id=id).count() > 0 ):
                 slider = Slider.objects.get(slider_id=id)
 
@@ -430,11 +432,16 @@ class SliderController(object):
 
 
             if not hasErrorBackend:
-                slider.delete()
-                self.code_return = 0
-                request.session['list_slider_message'] = 'Slider Eliminado Correctamente '
+                if delete_param == 1:
+                    print 'se elimino'
+                    slider.delete()
+                    message = 'Slider Eliminado Correctamente '
+                else:
+                    print 'se despublico'
+                    message = 'Slider Despublicado Correctamente '
+
+                request.session['list_slider_message'] = message
                 request.session['list_slider_flag'] = FLAG_SUCCESS
-                return self.code_return
 
         except PublishZone.DoesNotExist as e:
             self.code_return = -1
@@ -447,4 +454,10 @@ class SliderController(object):
             request.session['list_slider_flag'] = FLAG_ALERT
             return self.code_return
 
-        return self.code_return
+
+
+
+
+
+
+
