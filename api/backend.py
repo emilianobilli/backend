@@ -442,6 +442,9 @@ class Backend(object):
                     n = int(asset['item']['ranking']) if 'ranking' in asset['item'] else 4
                     if n > 0:
                         asset['item']['ranking'] = str(round(float(n)/25,2))
+
+                    if 'name' not in asset['item'] and 'title' in asset['item']:
+                        asset['item']['name'] = asset['item']['title']
                     #
                     # Busca el voto del usuario
                     #
@@ -531,6 +534,9 @@ class Backend(object):
                     n = int(asset['item']['ranking']) if 'ranking' in asset['item'] else 4
                     if n > 0:
                         asset['item']['ranking'] = str(round(float(n)/25,2))
+
+                    if 'name' not in asset['item'] and 'title' in asset['item']:
+                        asset['item']['name'] = asset['item']['title']
                     #
                     # Busca el voto del usuario y si fue visualizado
                     #
