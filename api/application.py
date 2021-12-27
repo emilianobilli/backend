@@ -105,7 +105,7 @@ backend = Backend({"languages": ['es','pt',"br"],
                         "search_domain": {u'es' : {"domain": {
                                                         "id_field": "asset_id",
                                                         "filter_query" : '',
-                                                        "schema": ["channel","asset_id","human_id", "title","summary_short","display_runtime","seasons","season","episode","episodes","categories","show_type","year","serie_id","girls_id","name", "image_big", "image_landscape", "image_portrait", "views", "ranking", "asset_type", "blocks", "publish_date", "class", "summary_long", "nationality", "target_country"],
+                                                        "schema": ["channel","asset_id","human_id", "summary_short","display_runtime","seasons","season","episode","episodes","categories","show_type","year","serie_id","girls_id","name", "image_big", "image_landscape", "image_portrait", "views", "ranking", "asset_type", "blocks", "publish_date", "class", "summary_long", "nationality", "target_country"],
                                                         "return_fields": ["publish_date","asset_id","human_id" ,"name", "title", "ranking", "views","display_runtime", "summary_short" ,"summary_long","categories", "image_landscape", "image_portrait", "channel", "show_type","asset_type", "year", "seasons", "class","episodes", "episode", "serie_id"],
                                                         "name" : "es-hotgodomain",
                                                         }
@@ -113,7 +113,7 @@ backend = Backend({"languages": ['es','pt',"br"],
 					  u'br' : {"domain": {
                                                         "id_field": "asset_id",
                                                         "filter_query" : '',
-                                                        "schema": ["channel","asset_id","human_id", "title","summary_short","display_runtime","seasons","season","episode","episodes","categories","show_type","year","serie_id","girls_id","name", "image_big", "image_landscape", "image_portrait", "views", "ranking", "asset_type", "blocks", "publish_date", "class", "summary_long", "nationality", "target_country"],
+                                                        "schema": ["channel","asset_id","human_id", "name", "summary_short","display_runtime","seasons","season","episode","episodes","categories","show_type","year","serie_id","girls_id", "image_big", "image_landscape", "image_portrait", "views", "ranking", "asset_type", "blocks", "publish_date", "class", "summary_long", "nationality", "target_country"],
                                                         "return_fields": ["publish_date","asset_id","human_id" ,"name", "title", "ranking", "views","display_runtime", "summary_short" ,"summary_long","categories", "image_landscape", "image_portrait", "channel", "show_type","asset_type", "year", "seasons", "class","episodes", "episode", "serie_id"],
                                                         "name" : "br-hotgodomain",
                                                         }
@@ -121,7 +121,7 @@ backend = Backend({"languages": ['es','pt',"br"],
                                           u'pt' : {"domain": {
                                                         "id_field": "asset_id",
                                                         "filter_query" : '',
-                                                        "schema": ["channel","asset_id","human_id" ,"title","summary_short","display_runtime","seasons","season","episode","episodes","categories","show_type","year","serie_id","girls_id","name", "image_big", "image_landscape", "image_portrait", "views", "ranking", "asset_type", "blocks", "publish_date", "class", "summary_long", "nationality", "target_country"],
+                                                        "schema": ["channel","asset_id","human_id", "summary_short","display_runtime","seasons","season","episode","episodes","categories","show_type","year","serie_id","girls_id","name", "image_big", "image_landscape", "image_portrait", "views", "ranking", "asset_type", "blocks", "publish_date", "class", "summary_long", "nationality", "target_country"],
                                                         "return_fields": ["asset_id", "human_id","name", "title", "ranking", "views","display_runtime", "summary_short" ,"categories", "image_landscape", "image_portrait", "channel", "show_type","asset_type", "year", "seasons", "class","episodes", "episode", "serie_id"],
                                                         "name" : "pthotgodomain",
                                                         }

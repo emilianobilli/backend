@@ -1243,7 +1243,6 @@ class Backend(object):
                         item[k]   = Item[k]
 
                 item['enabled'] = 1
-
                 self.domain[lang].add(item)
                 ret = where.add(item)
                 status = 201
