@@ -10,7 +10,7 @@ from views      import Views
 from cdnimg     import CdnImg
 from random     import randrange
 from ranking    import Ranking
-from Gatra      import Gatra
+#from Gatra      import Gatra
 
 import json
 import socket
@@ -108,15 +108,30 @@ class Components(object):
             self.sliders    = dynamodbCollection(config['sliders'])
         if 'co' in config:
             self.co         = dynamodbCollection(config['co'])
-
+	if 'cams' in config:
+	    self.cams       = dynamodbCollection(config['cams'])
 
         self.images    = {}
         #self.images['image_landscape'] = CdnImg(['http://cdnimages.zolechamedia.net/','http://cdnimages1.zolechamedia.net/','http://cdnimages2.zolechamedia.net/','http://cdnimages3.zolechamedia.net/','http://cdnimages4.zolechamedia.net/','http://cdnimages5.zolechamedia.net/'], 'landscape/')
         #self.images['image_portrait']  = CdnImg(['http://cdnimages.zolechamedia.net/','http://cdnimages1.zolechamedia.net/','http://cdnimages2.zolechamedia.net/','http://cdnimages3.zolechamedia.net/','http://cdnimages4.zolechamedia.net/','http://cdnimages5.zolechamedia.net/'], 'landscape/')
-
 	self.images['image_landscape'] = CdnImg(['https://joflu.imgix.net/'], 'landscape/')
         self.images['image_portrait']  = CdnImg(['https://joflu.imgix.net/'], 'landscape/')
 
+
+    def _get_image_base_url(self, image_type, lang):
+	if lang is not None and lang == 'br':
+	    base_url = 'https://joflubr.imgix.net/'
+	else:
+	    base_url = 'https://joflu.imgix.net/'
+	
+	if image_type == 'image_landscape':
+	    url_type = 'landscape/'
+	elif image_type == 'image_portrait':
+	    url_type = 'landscape/'
+	else:
+	    url_type = 'landscape/'
+
+	return CdnImg([base_url], url_type)
 
 
     def __query(self, where, q, qfilter=None):
@@ -206,7 +221,8 @@ class Components(object):
         for item in items:
             for k in self.images.keys():
                 if k in item:
-                    item[k] = self.images[k].getUrl(item[k], self.parse_img_arg(k,imgArgs))
+                    #item[k] = self.images[k].getUrl(item[k], self.parse_img_arg(k,imgArgs))
+		    item[k] =  self._get_image_base_url(k, item['lang']).getUrl(item[k], self.parse_img_arg(k,imgArgs))
             ni.append(item)
         response['items'] = ni
         return response
@@ -312,6 +328,10 @@ class Components(object):
     def query_channels(self, arg):
         return self.__query(self.channels, arg)
 
+    def query_cams(self, arg):
+	return self.__query(self.cams, arg)
+
+
 class Backend(object):
     def __init__(self, config):
 
@@ -353,16 +373,32 @@ class Backend(object):
 	else:
 	    self.resume     = None
 
-	self.gatra     = Gatra('https://gatra.zolechamedia.net:6968/hash/')
+	#self.gatra     = Gatra('https://gatra.zolechamedia.net:6968/hash/')
 
         self.videoauth = VideoAuth("https://videoauth.zolechamedia.net/video/", "7a407d4ae99b7c1a1655daddf218ef05")
         self.subtitle  = Subtitle("https://videoauth.zolechamedia.net/subtitle")
-        self.thumbs    = Thumbs("https://cdnlevel3.zolechamedia.net")
+        self.thumbs    = Thumbs("https://cdnlevel3cos.zolechamedia.net")
         self.images    = {}
         #self.images['image_landscape'] = CdnImg(['http://cdnimages.zolechamedia.net/','http://cdnimages1.zolechamedia.net/','http://cdnimages2.zolechamedia.net/','http://cdnimages3.zolechamedia.net/','http://cdnimages4.zolechamedia.net/','http://cdnimages5.zolechamedia.net/'], 'landscape/')
         #self.images['image_portrait']  = CdnImg(['http://cdnimages.zolechamedia.net/','http://cdnimages1.zolechamedia.net/','http://cdnimages2.zolechamedia.net/','http://cdnimages3.zolechamedia.net/','http://cdnimages4.zolechamedia.net/','http://cdnimages5.zolechamedia.net/'], 'portrait/')
 	self.images['image_landscape'] = CdnImg(['https://joflu.imgix.net/'], 'landscape/')
-        self.images['image_portrait']  = CdnImg(['https://joflu.imgix.net/'], 'portrait/')
+	self.images['image_portrait']  = CdnImg(['https://joflu.imgix.net/'], 'portrait/')
+
+
+    def _get_image_base_url(self, image_type, lang):
+	if lang is not None and lang == 'br':
+	    base_url = 'https://joflubr.imgix.net/'
+	else:
+	    base_url = 'https://joflu.imgix.net/'
+	
+	if image_type == 'image_landscape':
+	    url_type = 'landscape/'
+	elif image_type == 'image_portrait':
+	    url_type = 'portrait/'
+	else:
+	    url_type = 'landscape/'
+
+	return CdnImg([base_url], url_type)
 
 
     def del_asset():     # borra asset
@@ -384,7 +420,7 @@ class Backend(object):
 			if idp_hotgo:
 			    if video:
                     		asset['item']['video'] = self.videoauth.get_hls_url(asset['item']['asset_id'])
-				asset['item']['gatra-hash'] = self.gatra.postHash(username,asset['item']['title'])
+				#asset['item']['gatra-hash'] = self.gatra.postHash(username,asset['item']['title'])
 			else:
 			    if idp_apikey is not None and toolbox_user_token is not None:
 				asset['item']['video'] = self.videoauth.get_hls_url_toolbox(asset['item']['asset_id'], idp_apikey, toolbox_user_token)
@@ -399,10 +435,11 @@ class Backend(object):
                         img = None
                     for k in self.images.keys():
                         if k in asset['item']:
-                            asset['item'][k] = self.images[k].getUrl(asset['item'][k], self.parse_img_arg(k,img))
+                            #asset['item'][k] = self.images[k].getUrl(asset['item'][k], self.parse_img_arg(k,img))
+                            asset['item'][k] = self._get_image_base_url(k, item['lang']).getUrl(asset['item'][k], self.parse_img_arg(k,img))
                     if asset_id is not None and self.views is not None:
                         self.views.add_view(asset_id)
-                    n = int(asset['item']['ranking'])
+                    n = int(asset['item']['ranking']) if 'ranking' in asset['item'] else 4
                     if n > 0:
                         asset['item']['ranking'] = str(round(float(n)/25,2))
                     #
@@ -487,10 +524,11 @@ class Backend(object):
                         img = None
                     for k in self.images.keys():
                         if k in asset['item']:
-                            asset['item'][k] = self.images[k].getUrl(asset['item'][k], self.parse_img_arg(k,img))
+                            #asset['item'][k] = self.images[k].getUrl(asset['item'][k], self.parse_img_arg(k,img))
+                            asset['item'][k] = self._get_image_base_url(k, item['lang']).getUrl(asset['item'][k], self.parse_img_arg(k,img))
                     if asset_id is not None and self.views is not None:
                         self.views.add_view(asset_id)
-                    n = int(asset['item']['ranking'])
+                    n = int(asset['item']['ranking']) if 'ranking' in asset['item'] else 4
                     if n > 0:
                         asset['item']['ranking'] = str(round(float(n)/25,2))
                     #
@@ -546,7 +584,7 @@ class Backend(object):
                 if asset['item'] != {} and asset['item']['enabled'] == "1":
                     asset_id = asset['item']['asset_id']
                     status   = 200
-                    n = int(asset['item']['ranking'])
+                    n = int(asset['item']['ranking']) if 'ranking' in asset['item'] else 4
                     if n > 0:
                         asset['item']['ranking'] = str(round(float(n)/25,2))
                     if 'img' in args:
@@ -556,8 +594,8 @@ class Backend(object):
 
                     for k in self.images.keys():
                         if k in asset['item']:
-                            asset['item'][k] = self.images[k].getUrl(asset['item'][k], self.parse_img_arg(k,img))
-            
+                            #asset['item'][k] = self.images[k].getUrl(asset['item'][k], self.parse_img_arg(k,img))
+                            asset['item'][k] = self._get_image_base_url(k, item['lang']).getUrl(asset['item'][k], self.parse_img_arg(k,img))
                 else:
                     asset['item'] = {} 
                     status = 404
@@ -594,7 +632,7 @@ class Backend(object):
                 if asset['item'] != {} and asset['item']['enabled'] == "1":
                     asset_id = asset['item']['asset_id']
                     status   = 200
-                    n = int(asset['item']['ranking'])
+                    n = int(asset['item']['ranking']) if 'ranking' in asset['item'] else 4
                     if n > 0:
                         asset['item']['ranking'] = str(round(float(n)/25,2))
                     if 'img' in args:
@@ -604,8 +642,8 @@ class Backend(object):
 
                     for k in self.images.keys():
                         if k in asset['item']:
-                            asset['item'][k] = self.images[k].getUrl(asset['item'][k], self.parse_img_arg(k,img))
-            
+                            #asset['item'][k] = self.images[k].getUrl(asset['item'][k], self.parse_img_arg(k,img))
+                            asset['item'][k] = self._get_image_base_url(k, item['lang']).getUrl(asset['item'][k], self.parse_img_arg(k,img))
                 else:
                     asset['item'] = {} 
                     status = 404
@@ -761,13 +799,14 @@ class Backend(object):
         return fset
 
 
-    def __add_cdn_images(self, response, imgArgs):
+    def __add_cdn_images(self, response, imgArgs, lang='es'):
         items = response['items']
         ni = []
         for item in items:
             for k in self.images.keys():
                 if k in item:
-                    item[k] = self.images[k].getUrl(item[k], self.parse_img_arg(k,imgArgs))
+                    #item[k] = self.images[k].getUrl(item[k], self.parse_img_arg(k,imgArgs))
+                    item[k] = self._get_image_base_url(k, lang).getUrl(item[k], self.parse_img_arg(k,imgArgs))
             ni.append(item)
         response['items'] = ni
         return response
@@ -776,7 +815,7 @@ class Backend(object):
         items = response['items']
         ni = []
         for item in items:
-            n = int(item['ranking'])
+            n = int(item['ranking']) if 'ranking' in item else 4
             if n > 0:
                 item['ranking'] = str(round(float(n)/25,2))
             ni.append(item)
@@ -869,7 +908,7 @@ class Backend(object):
             if lang in self.lang:
                 ret    = self.domain[lang].query_union(fqset,start,size, sort)
                 ret    = self.__modify_ranking(ret)
-                ret    = self.__add_cdn_images(ret, img)
+                ret    = self.__add_cdn_images(ret, img, lang)
                 status = 200
             else:
                 ret = {'status': 'failure', 'messaage': 'Invalid language %s' % lang}
@@ -894,25 +933,26 @@ class Backend(object):
             Retorna un diccionatio con los valores para ser mapeados
             en una respuesta http
         '''
-        try:
-            if lang in self.lang:
-                ret    = self.domain[lang].query(fqset,exclude,start,size, sort)
-                ret    = self.__modify_ranking(ret)
-                ret    = self.__add_cdn_images(ret, img)
-                status = 200
-            else:
-                ret = {'status': 'failure', 'messaage': 'Invalid language %s' % lang}
-                status = 422
-        except CollectionException as  e:
-            ret    = {'status': 'failure', 'message': str(e)}
+        #try:
+        if lang in self.lang:
+            ret    = self.domain[lang].query(fqset,exclude,start,size, sort)
+            ret    = self.__modify_ranking(ret)
+            ret    = self.__add_cdn_images(ret, img, lang)
+            status = 200
+        else:
+            ret = {'status': 'failure', 'messaage': 'Invalid language %s' % lang}
             status = 422
-        except CloudSearchException as e:
-            ret    = {'status': 'failure', 'message': str(e)}
-            status = 500
-        except Exception, e:
-            ret    = {'status': 'failure', 'message': str(e)}
-            status = 500
-
+        '''
+ 	    except CollectionException as  e:
+        	ret    = {'status': 'failure', 'message': str(e)}
+        	status = 422
+    	    except CloudSearchException as e:
+        	ret    = {'status': 'failure', 'message': str(e)}
+        	status = 500
+    	    except Exception, e:
+        	ret    = {'status': 'failure', 'message': str(e)}
+        	status = 500
+	'''
         return {'status': status, 'body': ret}
 
 
@@ -927,7 +967,7 @@ class Backend(object):
             if lang in self.lang:
                 ret    = self.domain[lang].search(q,exclude,start,size)
                 ret    = self.__modify_ranking(ret)
-                ret    = self.__add_cdn_images(ret, img)
+                ret    = self.__add_cdn_images(ret, img, lang)
                 status = 200
             else:
                 ret = {'status': 'failure', 'messaage': 'Invalid language %s' % lang}
@@ -983,7 +1023,8 @@ class Backend(object):
             exclude: Negative default filter query
         '''
         if 'lang' in args:
-            lang  = args['lang']
+            print(args)
+	    lang  = args['lang']
             
             fqset = self._load_valid_fq_from_args(args,qArgs)
             if fq is not None:
@@ -1066,7 +1107,8 @@ class Backend(object):
 		    Item['human_id'] = clean_char(Item['title'])
 
 		at = self.add_human_id_in_asset_type(at,Item['human_id'], Item['lang'])
-                self.asset_type.add(at) # Ojo con las Excepciones
+        	print("ITEM --------------", at)
+	        self.asset_type.add(at) # Ojo con las Excepciones
                 return self.__add_asset(self.shows,Item, inmutable_fields)
             else:
                 status = 422

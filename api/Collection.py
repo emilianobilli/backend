@@ -56,10 +56,10 @@ class dynamodbCollection(object):
 
         self.schema              = db['schema']
         self.data_mapper         = dataMapper(self.schema)
-        try:
-            self.client          = boto3.client('dynamodb')
-        except Exception, e:
-            DynamoException(str(e))
+        #try:
+        self.client          = boto3.client('dynamodb')
+        #except Exception, e:
+        #    DynamoException(str(e))
 
     def _check_query_return(self, ret):
         doc = {}

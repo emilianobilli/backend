@@ -1,3 +1,5 @@
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
 from flask import Flask
 from flask import request
 from flask import redirect
@@ -17,11 +19,11 @@ from keys   import CAWAS
 from keys   import MA_SIGNATURE
 from keys   import APP_QUERY
 from keys   import GATRA
-
+from time   import time
 application = Flask(__name__)
 
 
-backend = Backend({"languages": ['es','pt'], 
+backend = Backend({"languages": ['es','pt',"br"], 
                     "girls":
                         {"database": {
                             "table": "Girls",
@@ -100,15 +102,23 @@ backend = Backend({"languages": ['es','pt'],
                         "asset_type": {'database': {'table': 'AssetType', 'pk': 'asset_id', 'schema': {'asset_id': 'S', 'asset_type':'S', 'asset_human_id':'S','human_id':'S'}}},
                         "vote": {'database': {'table': 'Vote', 'pk': 'asset_id', 'sk':'username', 'schema': {'asset_id': 'S', 'username':'S', 'voted':'N'}}},
 			"resume": {"domain": {"id_field": "asset_user", "filter_query": "", "schema": ["asset_user", "asset_id", "username", "episode", "season", "progress", "seekto", "country", "timestamp"], "return_fields": ["asset_user", "asset_id", "username", "episode", "season", "progress", "seekto", "timestamp", "country"], "name": "resume"}},
-                        "search_domain": {'es' : {"domain": {
+                        "search_domain": {u'es' : {"domain": {
                                                         "id_field": "asset_id",
                                                         "filter_query" : '',
                                                         "schema": ["channel","asset_id","human_id", "title","summary_short","display_runtime","seasons","season","episode","episodes","categories","show_type","year","serie_id","girls_id","name", "image_big", "image_landscape", "image_portrait", "views", "ranking", "asset_type", "blocks", "publish_date", "class", "summary_long", "nationality", "target_country"],
                                                         "return_fields": ["publish_date","asset_id","human_id" ,"name", "title", "ranking", "views","display_runtime", "summary_short" ,"summary_long","categories", "image_landscape", "image_portrait", "channel", "show_type","asset_type", "year", "seasons", "class","episodes", "episode", "serie_id"],
-                                                        "name" : "eshotgodomain",
+                                                        "name" : "es-hotgodomain",
                                                         }
                                                  },
-                                          'pt' : {"domain": {
+					  u'br' : {"domain": {
+                                                        "id_field": "asset_id",
+                                                        "filter_query" : '',
+                                                        "schema": ["channel","asset_id","human_id", "title","summary_short","display_runtime","seasons","season","episode","episodes","categories","show_type","year","serie_id","girls_id","name", "image_big", "image_landscape", "image_portrait", "views", "ranking", "asset_type", "blocks", "publish_date", "class", "summary_long", "nationality", "target_country"],
+                                                        "return_fields": ["publish_date","asset_id","human_id" ,"name", "title", "ranking", "views","display_runtime", "summary_short" ,"summary_long","categories", "image_landscape", "image_portrait", "channel", "show_type","asset_type", "year", "seasons", "class","episodes", "episode", "serie_id"],
+                                                        "name" : "br-hotgodomain",
+                                                        }
+                                                 },
+                                          u'pt' : {"domain": {
                                                         "id_field": "asset_id",
                                                         "filter_query" : '',
                                                         "schema": ["channel","asset_id","human_id" ,"title","summary_short","display_runtime","seasons","season","episode","episodes","categories","show_type","year","serie_id","girls_id","name", "image_big", "image_landscape", "image_portrait", "views", "ranking", "asset_type", "blocks", "publish_date", "class", "summary_long", "nationality", "target_country"],
@@ -202,7 +212,21 @@ components = Components({
                             "target": "S",
                         },
                     }
-                }
+                },
+                "cams" : {
+		    "database": {
+			"table": "Cams",
+			"pk": "lang",
+			"schema": {
+			    "lang": "S",
+			    "cam_id": "S",
+			    "date": "N",
+			    "image_url": "S",
+			    "url": "S",
+			    "name": "S"
+			}
+		    }
+		}
             })
 
 #
@@ -223,6 +247,26 @@ authorization = Auth({
                     }
                 })
 
+@application.route('/v1/cams/', methods=['GET'])
+@application.route('/v1/cams', methods=['GET'])
+@cross_origin()
+def cams():
+    args = {}
+    now  = int(time())
+
+    items = []
+
+    for k in request.args.keys():
+        args[k] = request.args.get(k)
+    ret = components.query_cams(args)
+    
+    for item in ret['body']['items']:
+	if int(item['date']) + 3600 > now:
+	    items.append(item)
+    ret['body']['count'] = len(items)
+    ret['body']['items'] = items
+    ret['body']['now'] = now
+    return Response(response=dumps(ret['body']), status=ret['status'])
 
 #------------------------------------------------------------------------------------------------------------------------
 #       Pages Components: Channels, Categories, Sliders, Blocks
@@ -511,7 +555,10 @@ def urlEpisode():
 				    if 'episode' in asset:
 					ret['body']['items'][i]['viewed']['episode'] = asset['episode']
 				i = i + 1
-
+		
+	for item in ret['body']['items']:
+	    if not 'title' in item and 'name' in item:
+		item['title'] = item['name']
 
         return Response(response=dumps(ret['body']), status=ret['status'])
 
