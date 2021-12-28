@@ -1246,7 +1246,11 @@ class Backend(object):
                             item[k]   = 0
                 else:
                     for k in inmutable_fields:
-                        item[k]   = Item[k]
+                        if k not in Item:
+                            if where.schema[k] == 'N':
+                                item[k] = 0
+                        else:
+                            item[k]   = Item[k]
 
                 item['enabled'] = 1
                 self.domain[lang].add(item)
