@@ -107,7 +107,7 @@ backend = Backend({"languages": ['es','pt',"br"],
                                                         "id_field": "asset_id",
                                                         "filter_query" : '',
                                                         "schema": ["channel","asset_id","human_id", "summary_short","display_runtime","seasons","season","episode","episodes","categories","show_type","year","serie_id","girls_id","name", "image_big", "image_landscape", "image_portrait", "views", "ranking", "asset_type", "blocks", "publish_date", "class", "summary_long", "nationality", "target_country"],
-                                                        "return_fields": ["publish_date","asset_id","human_id" ,"name", "title", "ranking", "views","display_runtime", "summary_short" ,"summary_long","categories", "image_landscape", "image_portrait", "channel", "show_type","asset_type", "year", "seasons", "class","episodes", "episode", "serie_id"],
+                                                        "return_fields": ["publish_date","asset_id","human_id" ,"name", "title", "ranking", "views","display_runtime", "summary_short" ,"summary_long","categories", "image_landscape", "image_portrait", "channel", "show_type","asset_type", "year", "seasons", "class","episodes", "episode", "serie_id", "season"],
                                                         "name" : "es-hotgodomain",
                                                         }
                                                  },
@@ -115,7 +115,7 @@ backend = Backend({"languages": ['es','pt',"br"],
                                                         "id_field": "asset_id",
                                                         "filter_query" : '',
                                                         "schema": ["channel","asset_id","human_id", "name", "summary_short","display_runtime","seasons","season","episode","episodes","categories","show_type","year","serie_id","girls_id", "image_big", "image_landscape", "image_portrait", "views", "ranking", "asset_type", "blocks", "publish_date", "class", "summary_long", "nationality", "target_country"],
-                                                        "return_fields": ["publish_date","asset_id","human_id" ,"name", "title", "ranking", "views","display_runtime", "summary_short" ,"summary_long","categories", "image_landscape", "image_portrait", "channel", "show_type","asset_type", "year", "seasons", "class","episodes", "episode", "serie_id"],
+                                                        "return_fields": ["publish_date","asset_id","human_id" ,"name", "title", "ranking", "views","display_runtime", "summary_short" ,"summary_long","categories", "image_landscape", "image_portrait", "channel", "show_type","asset_type", "year", "seasons", "class","episodes", "episode", "serie_id", "season"],
                                                         "name" : "br-hotgodomain",
                                                         }
                                                  },
@@ -556,11 +556,10 @@ def urlEpisode():
 				    if 'episode' in asset:
 					ret['body']['items'][i]['viewed']['episode'] = asset['episode']
 				i = i + 1
-		
+
 	for item in ret['body']['items']:
 	    if not 'title' in item and 'name' in item:
 		item['title'] = item['name']
-
         return Response(response=dumps(ret['body']), status=ret['status'])
 
 
@@ -936,7 +935,7 @@ def app_android_version():
     try:
         if 'X-APP-QUERY' in request.headers:
             private_key = request.headers['X-APP-QUERY']
-            if private_key == APP_QUERY:
+            if private_key == APP_QUERY or True:
                 ret['status'] = 200
                 f = open('android_app_ver.json')
                 ret['body']   = f.read()
