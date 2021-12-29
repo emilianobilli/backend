@@ -965,6 +965,7 @@ def ea():
 
 @application.route('/v1/footer/<string:country>/', methods=['GET'])
 @application.route('/v1/footer/<string:country>', methods=['GET'])
+@cross_origin()
 def footer(country):
     path = 'statics/footer/'
     if os.path.exists(path + country):
