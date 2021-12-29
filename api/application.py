@@ -10,6 +10,7 @@ from backend import Components
 from Auth    import Auth
 from json   import dumps 
 from json   import loads
+import os
 ##
 # Keys
 ##
@@ -960,6 +961,23 @@ def ea():
     with open('./ea') as f:
         html = f.read()
     return Response(response=html, status=200)
+
+
+@application.route('/v1/footer/<string:country>/', methods=['GET'])
+@application.route('/v1/footer/<string:country>', methods=['GET'])
+def footer(country):
+    path = 'statics/footer/'
+    if os.path.exists(path + country):
+        path = path + country
+    else:
+        path = path + 'default'
+
+    with open(path, 'r') as f:
+        footer = f.read()
+        ret = {'footer': footer}
+
+    return Response(response=dumps(ret), status=200) 
+
 
 
 if __name__ == "__main__":
