@@ -255,16 +255,17 @@ authorization = Auth({
 def cams():
     args = {}
     now  = int(time())
+    cam_duration = 40*60
+    cam_start = 10*60
 
     items = []
 
     for k in request.args.keys():
         args[k] = request.args.get(k)
     ret = components.query_cams(args)
-    
     for item in ret['body']['items']:
-	if int(item['date']) + 3600 > now:
-	    if int(item['date']) -60 < now:
+	if int(item['date']) + cam_duration > now:
+	    if int(item['date']) - cam_start < now:
 		item['url'] = 'https://www.hotgo.tv/cams/show'
 	    items.append(item)
     ret['body']['count'] = len(items)
