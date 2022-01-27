@@ -23,7 +23,6 @@ from keys   import GATRA
 from time   import time
 application = Flask(__name__)
 
-
 backend = Backend({"languages": ['es','pt',"br"], 
                     "girls":
                         {"database": {
@@ -83,6 +82,7 @@ backend = Backend({"languages": ['es','pt',"br"],
                                     "show_type": "S",
                                     "asset_type": "S",
                                     "blocks": "SS",
+                                    "freeview": "N",
                                     "channel": "S",
                                     "serie_id": "S",
                                     "available_seasons": "SS",
@@ -264,10 +264,14 @@ def cams():
     
     for item in ret['body']['items']:
 	if int(item['date']) + 3600 > now:
+	    if int(item['date']) -60 < now:
+		item['url'] = 'https://www.hotgo.tv/cams/show'
 	    items.append(item)
     ret['body']['count'] = len(items)
     ret['body']['items'] = items
     ret['body']['now'] = now
+	    
+
     return Response(response=dumps(ret['body']), status=ret['status'])
 
 #------------------------------------------------------------------------------------------------------------------------
@@ -393,6 +397,31 @@ def urlGetBlock(block_id):
         ret['body']   = {'status': 'failure', 'message': 'Mandatory Parameter is Missing'}
     else:
 	ret = components.get_block({'lang': args['lang'],'block_id':block_id})
+
+    return Response(response=dumps(ret['body']), status=ret['status'])
+
+
+@application.route('/v1/private/tags/', methods=['POST'])
+@application.route('/v1/private/tags', methods=['GET'])
+@cross_origin()
+def tagsAdd():
+    ret = {}
+    #if 'X-PRIVATE-APIKEY' in request.headers:
+    private_key = request.headers.get('X-PRIVATE-APIKEY')
+    body = loads(request.data)
+    with open('tags.info', 'wt') as f:
+        f.write(request.data)
+ 
+    print("################################################")
+    print("BODY:, ", body)
+    print("################################################")
+    if 'action' in body and body['action'] == 'add':
+        ret = backend.add_tag(body['item'])    
+	print("**************************************************************",ret)
+    else:
+        ret['status'] = 422
+        ret['body']   = {'status': 'failure', 'message': 'Missing Header'}
+
 
     return Response(response=dumps(ret['body']), status=ret['status'])
 
@@ -627,6 +656,13 @@ def urlShow():
 					ret['body']['items'][i]['viewed']['episode'] = asset['episode']
 				i = i + 1
 
+	    i = 0
+	    for asset in ret['body']['items']:
+		if 'show_type' in asset and asset['show_type'] == 'serie' and 'lang' in args:
+		    serie = backend.get_show({'asset_id': asset['asset_id'], 'lang': args['lang'] }, None, False)
+		    if 'body' in serie and 'item' in serie['body'] and 'available_seasons' in serie['body']['item']:
+			ret['body']['items'][i]['available_seasons'] = serie['body']['item']['available_seasons']
+                i = i + 1
         return Response(response=dumps(ret['body']), status=ret['status'])
 
 
@@ -884,6 +920,26 @@ def urlAsset():
 
         
         return Response(response=dumps(ret['body']), status=ret['status'])
+
+
+@application.route('/v1/prices/', methods=['POST', 'GET'])
+@cross_origin()
+def urlPrices():
+    if request.method == 'POST':
+    	body = loads(request.data)
+	a = body['item']
+	f = open("prices.json", 'wt')
+	f.write(dumps(a))
+	f.close()
+        return Response(response=201, status={})
+
+    ret = {}
+    ret['status'] = 200
+    f = open('prices.json')
+    ret['body']   = loads(f.read())
+    f.close()
+    return Response(response=dumps(ret['body']), status=ret['status'])
+
     
 #--------------------------------------------------------------------------------------------
 # Updates

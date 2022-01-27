@@ -11,7 +11,7 @@ from cdnimg     import CdnImg
 from random     import randrange
 from ranking    import Ranking
 #from Gatra      import Gatra
-
+from Tags       import export_tags
 import json
 import socket
 import httplib2
@@ -417,8 +417,11 @@ class Backend(object):
                 asset = self.shows.get(item)
                 if asset['item'] != {} and asset['item']['enabled'] == "1":
                     if asset['item']['show_type'] == 'movie' or asset['item']['show_type'] == 'episode':
-			if idp_hotgo:
-			    if video:
+	                tags = export_tags.getTags(args['lang'], args['asset_id'])
+                        if tags != {}:
+			    asset['item']['tags'] = tags
+      		        if idp_hotgo:
+			    if video or ('freeview' in asset['item'] and asset['item']['freeview'] == "1"):
                     		asset['item']['video'] = self.videoauth.get_hls_url(asset['item']['asset_id'])
 				#asset['item']['gatra-hash'] = self.gatra.postHash(username,asset['item']['title'])
 			else:
@@ -509,8 +512,11 @@ class Backend(object):
                 asset = self.shows.get_by_index(item)
                 if asset['item'] != {} and asset['item']['enabled'] == "1":
                     if asset['item']['show_type'] == 'movie' or asset['item']['show_type'] == 'episode':
+			#tags = export_tags.getTags(args['lang'], args['asset_id'])
+                        #if tags != {}:
+                        #    asset['item']['tags'] = tags
 			if idp_hotgo:
-			    if video:
+			    if video or ('freeview' in asset['item'] and asset['item']['freeview'] == "1"):
                     		asset['item']['video'] = self.videoauth.get_hls_url(asset['item']['asset_id'])
 			else:
 			    if idp_apikey is not None and toolbox_user_token is not None:
@@ -683,6 +689,14 @@ class Backend(object):
             status = 500
             ret    = {'status': 'failure', 'message': str(e)}
         return {'status': status, 'body': ret}
+
+    def add_tag(self, asset):
+        ret = {}
+        if 'lang' in asset:
+	    ret = export_tags.addTag(asset['lang'], asset)
+	status = 201 if ret != {} else 500
+	return {'status': status, 'body': ret}
+
 
     def doVote(self, asset_id, username, voted):
 #        print "Backend: %s" % username 
